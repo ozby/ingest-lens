@@ -8,10 +8,10 @@
     "node/jest-preset.ts"
   ],
   "dependencies": {
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.6"
+    "jest": "catalog:tooling",
+    "ts-jest": "catalog:tooling"
   },
   "devDependencies": {
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "catalog:"
   }
 }

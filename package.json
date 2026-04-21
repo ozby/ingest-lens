@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "catalog:check": "bun ./scripts/check-catalog-drift.ts",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml}\"",
@@ -19,10 +20,10 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.5.0",
+    "husky": "catalog:",
+    "lint-staged": "catalog:",
     "oxlint": "^1.61.0",
-    "prettier": "^3.8.3",
+    "prettier": "catalog:tooling",
     "secretlint": "^9.3.0",
     "turbo": "^2.4.4"
   },

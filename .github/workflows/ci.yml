@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
@@ -12,50 +12,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 8.15.6
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.6
 
-    - name: Get pnpm store directory
-      id: pnpm-cache
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-    - name: Cache pnpm modules
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pnpm-store-
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-    - name: Install Dependencies
-      run: pnpm install
+      - name: Install Dependencies
+        run: pnpm install
 
-    - name: Lint
-      id: lint
-      run: pnpm lint
-      continue-on-error: true
-      
-    - name: Test
-      id: test
-      run: pnpm test
-      continue-on-error: true
-      
-    - name: Check Results
-      if: steps.lint.outcome == 'failure' || steps.test.outcome == 'failure'
-      run: |
-        echo "Lint status: ${{ steps.lint.outcome }}"
-        echo "Test status: ${{ steps.test.outcome }}"
-        exit 1 
+      - name: Check catalog drift
+        run: pnpm catalog:check
+
+      - name: Lint
+        id: lint
+        run: pnpm lint
+        continue-on-error: true
+
+      - name: Test
+        id: test
+        run: pnpm test
+        continue-on-error: true
+
+      - name: Check Results
+        if: steps.lint.outcome == 'failure' || steps.test.outcome == 'failure'
+        run: |
+          echo "Lint status: ${{ steps.lint.outcome }}"
+          echo "Test status: ${{ steps.test.outcome }}"
+          exit 1
