@@ -8,7 +8,7 @@ Read it before you touch a file. The rules are not guidelines.
 ## Plan first
 
 Every non-trivial change starts as a blueprint. Blueprint specs live in
-[`blueprints/planned/`](./blueprints/planned/) with lifecycle tracked in
+[`blueprints/`](./blueprints/) (`planned/` → `in-progress/` → `completed/`) with lifecycle tracked in
 [`blueprints/README.md`](./blueprints/README.md).
 
 Use the skills in [`.agent/skills/`](./.agent/skills/):

@@ -135,7 +135,7 @@ Key decisions are recorded as ADRs in [`docs/adrs/`](./docs/adrs/):
 
 ## Roadmap (blueprints)
 
-Planned work lives in [`blueprints/planned/`](./blueprints/planned/).
+Completed work lives in [`blueprints/completed/`](./blueprints/completed/).
 Each blueprint is a self-contained execution spec with verification gates.
 
 | Blueprint                            | Goal                                          | Status    |

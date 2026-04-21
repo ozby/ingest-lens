@@ -172,4 +172,4 @@ Or use the official [Doppler GitHub Action](https://github.com/DopplerHQ/doppler
 
 ## 7. Phase 3 (Blocked)
 
-Per-PR Doppler config lifecycle (`preview_pr_<n>`) requires Cloudflare infrastructure provisioned via `cloudflare-pulumi-infra`. This is tracked in `blueprints/planned/doppler-secrets/_overview.md` and not yet implemented.
+Per-PR Doppler config lifecycle (`preview_pr_<n>`) requires Cloudflare infrastructure provisioned via `cloudflare-pulumi-infra`. See `blueprints/completed/doppler-secrets/_overview.md`. The infra workspace is complete; per-PR config creation requires wiring in CI once the Worker is deployed.
