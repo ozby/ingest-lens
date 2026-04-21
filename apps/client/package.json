@@ -6,8 +6,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite --host 0.0.0.0 --clearScreen false",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src/",
+    "check-types": "tsgo --noEmit",
+    "lint": "oxlint src/",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -68,7 +68,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/jest-presets": "workspace:*",
     "@testing-library/jest-dom": "^6.4.3",
@@ -77,25 +76,16 @@
     "@types/jest": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "catalog:tooling",
     "@vitejs/plugin-react": "^4.3.4",
-    "dotenv": "catalog:",
-    "eslint": "catalog:tooling",
-    "jest": "catalog:tooling",
-    "jest-environment-jsdom": "catalog:",
-    "ts-jest": "catalog:tooling",
-    "typescript": "catalog:tooling",
-    "vite": "^5.4.14",
-    "@eslint/js": "catalog:tooling",
     "@tailwindcss/typography": "^0.5.15",
     "@types/node": "catalog:",
-    "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
-    "eslint-plugin-react-hooks": "catalog:",
-    "eslint-plugin-react-refresh": "^0.4.9",
-    "globals": "catalog:tooling",
-    "lovable-tagger": "^1.1.7",
+    "jest": "catalog:tooling",
+    "jest-environment-jsdom": "catalog:",
     "postcss": "^8.4.47",
     "tailwindcss": "catalog:",
-    "typescript-eslint": "catalog:tooling"
+    "ts-jest": "catalog:tooling",
+    "vite": "^8.0.0"
   }
 }
