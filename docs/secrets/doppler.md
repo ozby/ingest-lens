@@ -1,7 +1,12 @@
 # Doppler Secret Management Runbook
 
 This runbook covers the complete setup for the `node-pubsub` Doppler project.
-All commands require the [Doppler CLI](https://docs.doppler.com/docs/install-cli) and a Doppler account with access to the project.
+All commands require the [Doppler CLI](https://docs.doppler.com/docs/install-cli) and a Doppler account with access to both projects.
+
+> **Two Doppler projects are used:**
+>
+> - `node-pubsub` — application secrets (MongoDB URI, JWT, ports, etc.)
+> - `ozby-shell` — infrastructure credentials (`CLOUDFLARE_API_TOKEN`, `PULUMI_ACCESS_TOKEN`, Neon DB connection strings). These are kept in a separate project because they are shared across multiple repos and scoped to an operator account rather than a single application.
 
 ---
 
@@ -37,6 +42,8 @@ To create the `preview` root config and its children in the Doppler dashboard:
 
 ## 3. Required Secrets per Config
 
+### `node-pubsub` project
+
 | Secret              | `dev`                           | `preview` (root / inherited) | `prd`                        |
 | ------------------- | ------------------------------- | ---------------------------- | ---------------------------- |
 | `MONGODB_URI`       | `mongodb://localhost:27017/dev` | connection string per env    | Atlas production URI         |
@@ -45,11 +52,34 @@ To create the `preview` root config and its children in the Doppler dashboard:
 | `API_PORT`          | `3001`                          | `3001`                       | `3001`                       |
 | `NOTIFICATION_PORT` | `3002`                          | `3002`                       | `3002`                       |
 
+### `ozby-shell` project (infrastructure credentials)
+
+| Secret                  | `dev`                     | `production`               |
+| ----------------------- | ------------------------- | -------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | scoped API token (deploy) | same or production token   |
+| `CLOUDFLARE_ACCOUNT_ID` | CF account ID             | same                       |
+| `CLOUDFLARE_ZONE_ID`    | CF zone for the domain    | same                       |
+| `PULUMI_ACCESS_TOKEN`   | personal access token     | CI service token           |
+| `DATABASE_URL`          | Neon dev branch URL       | Neon production branch URL |
+
+The `infra/` workspace scripts always inject from `ozby-shell`:
+
+```bash
+# Local preview
+pnpm --filter @repo/infra preview
+# expands to: doppler run --project ozby-shell --config dev -- pulumi preview
+
+# Deploy to production
+pnpm --filter @repo/infra up:prd
+# expands to: doppler run --project ozby-shell --config production -- pulumi up --yes
+```
+
 **Rules:**
 
 - `MONGODB_URI` must be set in every config individually — it is never shared.
 - `JWT_SECRET` should be set once at the `preview` root and inherited by child configs; override in `prd` with a separate value.
 - `NODE_ENV`, `API_PORT`, and `NOTIFICATION_PORT` can be set at `preview` root and overridden per-child as needed.
+- All Cloudflare and Pulumi credentials live exclusively in `ozby-shell` — never in `node-pubsub`.
 
 ---
 
