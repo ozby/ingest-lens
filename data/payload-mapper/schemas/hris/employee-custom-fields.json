@@ -1,0 +1,50 @@
+[
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "custom_fields.fav_color",
+    "field_type": "string",
+    "unified_key": "custom_fields.fav_color",
+    "required": false,
+    "notes": "Alias for 'Favorite Color' remote field; string value",
+    "aliases": ["Favorite Color", "fav_colour"],
+    "source_url": "vendor-docs:features/custom-fields"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "custom_fields.shirt_size",
+    "field_type": "string",
+    "unified_key": "custom_fields.shirt_size",
+    "required": false,
+    "notes": "Alias for 'T-Shirt Size' remote field; string value",
+    "aliases": ["T-Shirt Size", "Shirt Size"],
+    "source_url": "vendor-docs:features/custom-fields"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "custom_fields.cost_center",
+    "field_type": "string",
+    "unified_key": "custom_fields.cost_center",
+    "required": false,
+    "notes": "Alias for 'Cost Center' remote field; may be string or object with code/name",
+    "aliases": ["Cost Center", "Cost Center ID", "CostCenter"],
+    "source_url": "vendor-docs:features/custom-fields"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "custom_fields.tax_id",
+    "field_type": "string",
+    "unified_key": "custom_fields.tax_id",
+    "required": false,
+    "notes": "Alias for tax identifier fields; vendor-specific naming varies significantly",
+    "aliases": ["Tax ID", "TaxIdentifier", "SSN", "NIN"],
+    "source_url": "vendor-docs:features/custom-fields"
+  }
+]

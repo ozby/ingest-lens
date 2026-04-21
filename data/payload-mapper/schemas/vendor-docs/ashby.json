@@ -1,0 +1,132 @@
+{
+  "system": "ashby",
+  "category": "ats",
+  "source_url": "vendor-docs:ats/connectors/ashby",
+  "fetch_date": "2026-04-22",
+  "models": {
+    "jobs": {
+      "fields": [
+        {
+          "field": "id",
+          "field_type": "string",
+          "unified_key": "id",
+          "required": true,
+          "notes": "Unique job identifier; stable"
+        },
+        {
+          "field": "name",
+          "field_type": "string",
+          "unified_key": "name",
+          "required": true,
+          "notes": "Job title / name"
+        },
+        {
+          "field": "post_url",
+          "field_type": "string",
+          "unified_key": "post_url",
+          "required": false,
+          "notes": "Canonical posting URL on the Ashby career site"
+        },
+        {
+          "field": "employment_type",
+          "field_type": "string",
+          "unified_key": "employment_type",
+          "required": false,
+          "notes": "FullTime | PartTime | Contract | Intern"
+        },
+        {
+          "field": "department",
+          "field_type": "string",
+          "unified_key": "department",
+          "required": false,
+          "notes": "Department name string"
+        },
+        {
+          "field": "location",
+          "field_type": "string",
+          "unified_key": "location",
+          "required": false,
+          "notes": "Location string; may be Remote"
+        }
+      ]
+    },
+    "candidates": {
+      "fields": [
+        {
+          "field": "id",
+          "field_type": "string",
+          "unified_key": "id",
+          "required": true,
+          "notes": "Candidate ID — may change after deduplication; prefer application ID for progression tracking"
+        },
+        {
+          "field": "first_name",
+          "field_type": "string",
+          "unified_key": "first_name",
+          "required": false,
+          "notes": "Candidate first name"
+        },
+        {
+          "field": "last_name",
+          "field_type": "string",
+          "unified_key": "last_name",
+          "required": false,
+          "notes": "Candidate last name"
+        },
+        {
+          "field": "email_addresses",
+          "field_type": "array<string>",
+          "unified_key": "email_addresses",
+          "required": false,
+          "notes": "List of email addresses; primary is [0]"
+        },
+        {
+          "field": "phone_numbers",
+          "field_type": "array<string>",
+          "unified_key": "phone_numbers",
+          "required": false,
+          "notes": "List of phone numbers"
+        }
+      ]
+    },
+    "applications": {
+      "fields": [
+        {
+          "field": "id",
+          "field_type": "string",
+          "unified_key": "id",
+          "required": true,
+          "notes": "Application ID; stable and preferred over candidate ID for progression tracking"
+        },
+        {
+          "field": "candidate_id",
+          "field_type": "string",
+          "unified_key": "candidate_id",
+          "required": true,
+          "notes": "Reference to candidate; may be unstable if deduplication occurs"
+        },
+        {
+          "field": "job_id",
+          "field_type": "string",
+          "unified_key": "job_id",
+          "required": true,
+          "notes": "Reference to the job posting"
+        },
+        {
+          "field": "current_stage",
+          "field_type": "string",
+          "unified_key": "current_stage",
+          "required": false,
+          "notes": "Current pipeline stage name"
+        },
+        {
+          "field": "status",
+          "field_type": "string",
+          "unified_key": "status",
+          "required": false,
+          "notes": "active | rejected | hired"
+        }
+      ]
+    }
+  }
+}

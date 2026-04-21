@@ -1,0 +1,68 @@
+[
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "candidates",
+    "field": "id",
+    "field_type": "string",
+    "unified_key": "id",
+    "required": true,
+    "notes": "Candidate ID; may change after deduplication — use application ID for progression tracking",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "candidates",
+    "field": "first_name",
+    "field_type": "string",
+    "unified_key": "first_name",
+    "required": false,
+    "notes": "Candidate first name",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "candidates",
+    "field": "last_name",
+    "field_type": "string",
+    "unified_key": "last_name",
+    "required": false,
+    "notes": "Candidate last name",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "candidates",
+    "field": "email_addresses",
+    "field_type": "array<string>",
+    "unified_key": "email_addresses",
+    "required": false,
+    "notes": "List of email addresses; primary is index 0",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "candidates",
+    "field": "phone_numbers",
+    "field_type": "array<string>",
+    "unified_key": "phone_numbers",
+    "required": false,
+    "notes": "List of phone numbers",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "candidates",
+    "field": "resume_url",
+    "field_type": "string",
+    "unified_key": "resume_url",
+    "required": false,
+    "notes": "URL to the candidate resume or CV",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  }
+]

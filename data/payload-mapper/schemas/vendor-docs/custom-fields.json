@@ -1,0 +1,53 @@
+{
+  "system": "unified-api",
+  "category": "hris",
+  "source_url": "vendor-docs:features/custom-fields",
+  "fetch_date": "2026-04-22",
+  "description": "Custom fields allow HRIS systems to expose vendor-specific data through a normalized alias mechanism",
+  "concepts": {
+    "custom_fields": {
+      "type": "object",
+      "notes": "JSON object keyed by unified custom-field key; values may be strings, numbers, objects, or arrays",
+      "example": {
+        "fav_color": "blue",
+        "shirt_size": "Large",
+        "team_budget": 50000,
+        "certifications": ["AWS", "GCP"]
+      }
+    },
+    "aliases": {
+      "type": "object",
+      "notes": "Map from remote vendor field name to unified custom-field key; enables multi-vendor normalization",
+      "example": {
+        "Favorite Color": "fav_color",
+        "T-Shirt Size": "shirt_size",
+        "Budget": "team_budget"
+      }
+    },
+    "remote_fields": {
+      "type": "array",
+      "notes": "Raw vendor fields not yet mapped to unified keys; surfaced for operator self-service alignment",
+      "example": ["Department Code", "Cost Center ID", "Manager Badge"]
+    }
+  },
+  "models": {
+    "employees": {
+      "fields": [
+        {
+          "field": "custom_fields",
+          "field_type": "object",
+          "unified_key": "custom_fields",
+          "required": false,
+          "notes": "Keyed by unified custom-field key; values are vendor-dependent types"
+        },
+        {
+          "field": "remote_fields",
+          "field_type": "array<object>",
+          "unified_key": "remote_fields",
+          "required": false,
+          "notes": "Unmapped vendor-specific fields surfaced for operator review"
+        }
+      ]
+    }
+  }
+}

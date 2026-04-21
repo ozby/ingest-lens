@@ -1,0 +1,68 @@
+[
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "applications",
+    "field": "id",
+    "field_type": "string",
+    "unified_key": "id",
+    "required": true,
+    "notes": "Application ID; stable — preferred over candidate ID for progression tracking",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "applications",
+    "field": "candidate_id",
+    "field_type": "string",
+    "unified_key": "candidate_id",
+    "required": true,
+    "notes": "Candidate reference; may be unstable if deduplication occurs",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "applications",
+    "field": "job_id",
+    "field_type": "string",
+    "unified_key": "job_id",
+    "required": true,
+    "notes": "Reference to the job posting",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "applications",
+    "field": "current_stage",
+    "field_type": "string",
+    "unified_key": "current_stage",
+    "required": false,
+    "notes": "Current pipeline stage name",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "applications",
+    "field": "status",
+    "field_type": "string",
+    "unified_key": "status",
+    "required": false,
+    "notes": "active | rejected | hired",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "applications",
+    "field": "applied_at",
+    "field_type": "string",
+    "unified_key": "applied_at",
+    "required": false,
+    "notes": "ISO 8601 timestamp of application submission",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  }
+]

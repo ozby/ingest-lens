@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Payload Mapper Eval Contract",
+  "version": "v1",
+  "description": "Executable contract for the integration payload mapper eval harness. Future mapper implementations must satisfy this contract.",
+  "input_format": {
+    "description": "Mapper input: source payload + target field list",
+    "schema": {
+      "type": "object",
+      "required": ["source_system", "source_model", "target_model", "target_contract_version", "source_payload", "target_fields"],
+      "properties": {
+        "source_system": { "type": "string" },
+        "source_model": { "type": "string" },
+        "target_model": { "type": "string" },
+        "target_contract_version": { "type": "string" },
+        "source_payload": { "type": "object" },
+        "target_fields": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "output_format": {
+    "description": "Mapper output: suggested mappings + ambiguities + missing fields + confidence",
+    "schema": {
+      "type": "object",
+      "required": ["suggested_mapping", "missing_fields", "ambiguous_fields", "confidence"],
+      "properties": {
+        "suggested_mapping": {
+          "type": "object",
+          "description": "Target field -> source field path expression. Empty object means full abstention.",
+          "additionalProperties": { "type": "string" }
+        },
+        "missing_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Target fields that cannot be populated from the source payload"
+        },
+        "ambiguous_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields where the mapping is uncertain or requires operator review"
+        },
+        "confidence": {
+          "type": "object",
+          "required": ["overall", "summary"],
+          "properties": {
+            "overall": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Overall mapping confidence score 0–1"
+            },
+            "per_field": {
+              "type": "object",
+              "description": "Per-target-field confidence scores",
+              "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "summary": {
+              "type": "string",
+              "description": "Human-readable confidence summary with caveats and reasoning"
+            }
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Optional mapper reasoning notes"
+        }
+      }
+    }
+  },
+  "scoring_rules": {
+    "exact_match": {
+      "description": "Compare suggested_mapping values to gold expected_mapping values",
+      "method": "string_equality",
+      "weight": 0.4
+    },
+    "missing_field_detection": {
+      "description": "Compare missing_fields to gold missing_fields using set operations",
+      "method": "set_recall_and_precision",
+      "weight": 0.2
+    },
+    "ambiguity_detection": {
+      "description": "Compare ambiguous_fields to gold ambiguous_fields using set operations",
+      "method": "set_recall_and_precision",
+      "weight": 0.2
+    },
+    "non_hallucination": {
+      "description": "Verify every suggested source path expression exists in the source_payload",
+      "method": "path_existence_check",
+      "weight": 0.15,
+      "hard_gate": true
+    },
+    "correct_abstention": {
+      "description": "On adversarial tasks with expected_mapping={}, mapper should return minimal or empty suggested_mapping",
+      "method": "empty_mapping_check",
+      "weight": 0.05
+    }
+  },
+  "pass_thresholds": {
+    "eval_weighted_score": 0.75,
+    "adversarial_weighted_score": 0.6,
+    "non_hallucination_hard_gate": 0.75
+  },
+  "non_goals": [
+    "Autonomous mutation of production delivery payloads",
+    "Fine-tuning or training a custom model",
+    "Full HRIS/payroll dataset coverage across many vendors",
+    "Free-form text generation or summarization"
+  ]
+}

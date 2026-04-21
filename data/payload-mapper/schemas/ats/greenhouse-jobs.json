@@ -1,0 +1,79 @@
+[
+  {
+    "system": "greenhouse",
+    "category": "ats",
+    "model": "jobs",
+    "field": "id",
+    "field_type": "integer",
+    "unified_key": "id",
+    "required": true,
+    "notes": "Unique stable integer job ID",
+    "source_url": "https://developers.greenhouse.io/harvest.html#jobs"
+  },
+  {
+    "system": "greenhouse",
+    "category": "ats",
+    "model": "jobs",
+    "field": "name",
+    "field_type": "string",
+    "unified_key": "name",
+    "required": true,
+    "notes": "Job name / title",
+    "source_url": "https://developers.greenhouse.io/harvest.html#jobs"
+  },
+  {
+    "system": "greenhouse",
+    "category": "ats",
+    "model": "jobs",
+    "field": "status",
+    "field_type": "string",
+    "unified_key": "status",
+    "required": false,
+    "notes": "open | closed | draft",
+    "source_url": "https://developers.greenhouse.io/harvest.html#jobs"
+  },
+  {
+    "system": "greenhouse",
+    "category": "ats",
+    "model": "jobs",
+    "field": "departments",
+    "field_type": "array<object>",
+    "unified_key": "department",
+    "required": false,
+    "notes": "Array of department objects; take departments[0].name for unified department",
+    "source_url": "https://developers.greenhouse.io/harvest.html#jobs"
+  },
+  {
+    "system": "greenhouse",
+    "category": "ats",
+    "model": "jobs",
+    "field": "offices",
+    "field_type": "array<object>",
+    "unified_key": "location",
+    "required": false,
+    "notes": "Array of office objects; take offices[0].location.name for unified location",
+    "source_url": "https://developers.greenhouse.io/harvest.html#jobs"
+  },
+  {
+    "system": "greenhouse",
+    "category": "ats",
+    "model": "jobs",
+    "field": "created_at",
+    "field_type": "string",
+    "unified_key": "created_at",
+    "required": false,
+    "notes": "ISO 8601 creation timestamp",
+    "source_url": "https://developers.greenhouse.io/harvest.html#jobs"
+  },
+  {
+    "system": "greenhouse",
+    "category": "ats",
+    "model": "jobs",
+    "field": "updated_at",
+    "field_type": "string",
+    "unified_key": "updated_at",
+    "required": false,
+    "notes": "ISO 8601 last-update timestamp",
+    "source_url": "https://developers.greenhouse.io/harvest.html#jobs"
+  }
+]
