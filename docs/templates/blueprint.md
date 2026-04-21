@@ -51,7 +51,7 @@ tags: []
 
 #### [lane] Task 1.1: [Component Name]
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** None
 
