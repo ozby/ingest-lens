@@ -45,7 +45,7 @@ tags: []
 **Lifecycle:** Blueprint frontmatter `status` is one of `draft`, `planned`, `parked`, `in-progress`, `completed`, `archived`. There is no blueprint-level `blocked` status; when work waits on a dependency, set the task **Status:** to `blocked` and add a non-empty **Blocked:** line with the reason.
 
 > [!NOTE]
-> This template mirrors the Webpresso blueprint structure and task conventions, but verification commands are adapted to this repo’s `pnpm` + `turbo` command authority.
+> This template mirrors the reference repo blueprint structure and task conventions, but verification commands are adapted to this repo’s `pnpm` + `turbo` command authority.
 
 ### Phase 1: [Phase Name] [Complexity: S]
 

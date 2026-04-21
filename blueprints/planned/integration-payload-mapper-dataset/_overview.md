@@ -811,7 +811,6 @@ Run the final refinement audit on the dataset blueprint output itself:
 Findings:
 
 - All `Files:` paths resolve against the repo root (`data/payload-mapper/` is intentionally created by Task 1.1).
-- Company-name anonymization verified — no residual references (`grep -i ingestlens` returns empty).
 - Product-wedge anchor: **the AI capstone surface** in `VISION.md` + first-consumer file `apps/api-server/src/platform/services/payloadMapper.ts` (future file referenced by blueprint — acceptable since blueprint explicitly creates it).
 - Cross-plan references point to `deep-interview-*` which does not exist under `blueprints/`; marked as _upstream conversational context_, not a blueprint dependency.
 

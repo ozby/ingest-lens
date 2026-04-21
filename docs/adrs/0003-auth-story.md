@@ -7,7 +7,7 @@ last_updated: "2026-04-22"
 
 - **Status:** accepted
 - **Date:** 2026-04-22
-- **Decider(s):** Ozby
+- **Decider(s):** repo owner
 
 ## Context
 

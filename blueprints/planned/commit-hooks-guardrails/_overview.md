@@ -56,7 +56,7 @@ commitlint.config.ts
 
 ## Evidence Base
 
-- `/Users/ozby/repos/ozby/node-pubsub/.husky/pre-commit` (current).
+- `./.husky/pre-commit` (current).
 - Lore Commit Protocol referenced by `AGENTS.md` (trailer vocabulary: `Constraint:`, `Rejected:`, `Confidence:`, etc.).
 
 ## Task Pool

@@ -60,8 +60,8 @@ per-package:
 
 ## Evidence Base
 
-- `~/repos/webpresso/apps/cli2/stryker.config.mjs`, `.../cli-wp/stryker.config.mjs`, `.../scripts/stryker.config.mjs`, `.../claude-hooks/stryker.config.mjs` (webpresso's reference configs; we will port the structure into `.ts` since Stryker ≥7 supports TypeScript configs).
-- Catalog entries for Stryker in `~/repos/webpresso/pnpm-workspace.yaml`.
+- `[reference repo]`, `.../cli-wp/stryker.config.mjs`, `.../scripts/stryker.config.mjs`, `.../claude-hooks/stryker.config.mjs` (reference repo's reference configs; we will port the structure into `.ts` since Stryker ≥7 supports TypeScript configs).
+- Catalog entries for Stryker in `[reference repo]`.
 
 ## Task Pool
 
@@ -156,7 +156,7 @@ Findings:
 
 - Pilot package not yet chosen. `@repo/logger` is the best candidate: small, pure, no runtime deps, already typechecks clean under tsgo. Update Task 1.1 to name it when executing.
 - `@stryker-mutator/typescript-checker` uses `tsc` internally — **cannot** be swapped to `tsgo` today (Stryker has no tsgo adapter). Accept as noted exception to the "tsgo everywhere" directive.
-- **Open question for user:** final `break` threshold (current placeholder: 65). Webpresso uses per-package thresholds; recommend 60 on pilot, 70 once fan-out lands.
+- **Open question for user:** final `break` threshold (current placeholder: 65). reference repo uses per-package thresholds; recommend 60 on pilot, 70 once fan-out lands.
 - `scripts/affected-mutation.ts` path correct; uses `git diff --name-only` + `pnpm --filter ...{HEAD}` to scope.
 
 Fixes applied:

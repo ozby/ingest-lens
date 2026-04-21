@@ -25,7 +25,7 @@ while leaving per-Worker code + bindings under `wrangler.toml`.
 
 - **Why two tools:** Pulumi manages stateful, account-level resources (DNS records, Zero Trust tokens, Hyperdrive bindings, Neon projects). `wrangler.toml` remains the source of truth for per-Worker code deploys. Splitting responsibilities keeps code deploys fast while keeping infra changes auditable.
 - **Why Pulumi over Terraform:** TypeScript stacks align with the rest of the monorepo, live under pnpm workspaces, and can share types with `packages/*`.
-- **Reference:** `~/repos/webpresso/infra/` uses this exact split.
+- **Reference:** `[reference repo]` uses this exact split.
 
 ## Architecture Overview
 
@@ -59,14 +59,14 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 | ID  | Severity | Claim                                          | Reality                                                                                                                                  | Fix                                                           |
 | --- | -------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | F1  | HIGH     | Pulumi can manage everything Cloudflare offers | Mostly yes via `@pulumi/cloudflare ^6.x`, but per-Worker routes still change often enough that wrangler-managed code deploys are faster. | Keep wrangler for Worker code; Pulumi owns account resources. |
-| F2  | HIGH     | Pulumi stacks can be anonymous per-PR          | Yes — webpresso uses `preview-pr-<n>` stacks created by CI.                                                                              | Mirror the naming + lifecycle.                                |
+| F2  | HIGH     | Pulumi stacks can be anonymous per-PR          | Yes — reference repo uses `preview-pr-<n>` stacks created by CI.                                                                         | Mirror the naming + lifecycle.                                |
 | F3  | MEDIUM   | Secrets live inside Pulumi state               | No — secrets stay in Doppler; Pulumi reads them via the `@pulumiverse/doppler` provider at plan time.                                    | Doppler blueprint must land first.                            |
 
 ## Evidence Base
 
-- `~/repos/webpresso/infra/Pulumi.yaml` (`runtime: nodejs`, `nodeargs: --import tsx`, `packages.neon: terraform-provider kislerdm/neon 1.0.2`).
-- `~/repos/webpresso/infra/package.json` (dependency list).
-- `~/repos/webpresso/infra/README.md` (Pulumi vs. wrangler split, Canonical Preview Naming, Doppler config inheritance).
+- `[reference repo]` (`runtime: nodejs`, `nodeargs: --import tsx`, `packages.neon: terraform-provider kislerdm/neon 1.0.2`).
+- `[reference repo]` (dependency list).
+- `[reference repo]` (Pulumi vs. wrangler split, Canonical Preview Naming, Doppler config inheritance).
 
 ## Task Pool
 

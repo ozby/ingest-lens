@@ -54,11 +54,11 @@ each workspace package.json:
 | --- | -------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | F1  | HIGH     | All workspaces use identical dep versions today                | Partial. Catalog exists and is enforced by `catalogMode: prefer`, but coverage is incomplete — production deps still declared literally are a drift vector. | Task 1.1 audits the gap.      |
 | F2  | HIGH     | `minimumReleaseAge` blocks day-of-release supply-chain attacks | Currently set to `60` (seconds). Higher values (1 day, ideally 7 days) are much safer.                                                                      | Raise to `86400` in Task 2.1. |
-| F3  | MEDIUM   | Catalog protocol is compatible with Vite Plus overrides        | Verified in webpresso — `overrides.vite -> npm:@voidzero-dev/vite-plus-core@<v>` works alongside `vite: catalog:`.                                          | Use the same pattern.         |
+| F3  | MEDIUM   | Catalog protocol is compatible with Vite Plus overrides        | Verified in reference repo — `overrides.vite -> npm:@voidzero-dev/vite-plus-core@<v>` works alongside `vite: catalog:`.                                     | Use the same pattern.         |
 
 ## Evidence Base
 
-- `~/repos/webpresso/pnpm-workspace.yaml` (`catalog:`, `catalogs.workers:`, `minimumReleaseAge: 360`, `cleanupUnusedCatalogs: true`).
+- `[reference repo]` (`catalog:`, `catalogs.workers:`, `minimumReleaseAge: 360`, `cleanupUnusedCatalogs: true`).
 - Current workspace manifests under `apps/*/package.json` and `packages/*/package.json`.
 
 ## Task Pool
@@ -156,10 +156,10 @@ each workspace package.json:
 
 ## Technology Choices
 
-| Component       | Technology                 | Version | Why                                   |
-| --------------- | -------------------------- | ------- | ------------------------------------- |
-| Package manager | pnpm                       | 10.x    | Catalog protocol, workspace stability |
-| Catalog layout  | single default + `workers` | n/a     | Matches webpresso's proven structure  |
+| Component       | Technology                 | Version | Why                                       |
+| --------------- | -------------------------- | ------- | ----------------------------------------- |
+| Package manager | pnpm                       | 10.x    | Catalog protocol, workspace stability     |
+| Catalog layout  | single default + `workers` | n/a     | Matches reference repo's proven structure |
 
 ## Refinement Summary (2026-04-22 pass)
 

@@ -47,12 +47,12 @@ before:                              after:
 | --- | -------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | F1  | HIGH     | Vite Plus is a drop-in for Turbo            | Partial. `vp run` fans out scripts, but parallelism semantics differ; Turbo's `dependsOn` graph must be re-expressed through package-level dependencies and `vp run --deps`. | Rewrite `turbo.json` pipeline in terms of pnpm workspace deps + `vp run` flags.       |
 | F2  | HIGH     | Caching parity is automatic                 | No. Vite Plus uses per-package Vite cache; there is no remote cache equivalent to Turbo's.                                                                                   | Document accepted caching downgrade; add Nx-style remote cache only if measured need. |
-| F3  | MEDIUM   | Overriding `vite`/`vitest` globally is safe | Works because webpresso does it (`overrides.vite -> npm:@voidzero-dev/vite-plus-core@<v>`), but it must match the `vite-plus` version exactly.                               | Pin `vite-plus`, `vite`, and `vitest` together via catalog + overrides.               |
+| F3  | MEDIUM   | Overriding `vite`/`vitest` globally is safe | Works because reference repo does it (`overrides.vite -> npm:@voidzero-dev/vite-plus-core@<v>`), but it must match the `vite-plus` version exactly.                          | Pin `vite-plus`, `vite`, and `vitest` together via catalog + overrides.               |
 
 ## Evidence Base
 
-- Webpresso reference repo: `~/repos/webpresso/package.json`, `pnpm-workspace.yaml`, and workspace `package.json` files (`"qa": "vp run typecheck && vp run test"`).
-- Current Turbo surface: `/Users/ozby/repos/ozby/node-pubsub/turbo.json` and root scripts in `package.json`.
+- reference repo reference repo: `[reference repo]`, `pnpm-workspace.yaml`, and workspace `package.json` files (`"qa": "vp run typecheck && vp run test"`).
+- Current Turbo surface: `./turbo.json` and root scripts in `package.json`.
 
 ## Task Pool
 

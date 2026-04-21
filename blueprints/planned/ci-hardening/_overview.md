@@ -53,7 +53,7 @@ on `main`.
 
 ## Evidence Base
 
-- `/Users/ozby/repos/ozby/node-pubsub/.github/workflows/ci.yml` (current state).
+- `./.github/workflows/ci.yml` (current state).
 - Deleted: `pr-feedback.yml`, `test-feedback.yml` (per git status — replaced by the new model).
 
 ## Task Pool

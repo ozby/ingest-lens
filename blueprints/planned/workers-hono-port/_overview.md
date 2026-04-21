@@ -79,7 +79,7 @@ before:                                   after:
 - `apps/api-server/src/platform/services/eventPlatformService.ts` — source for route + service logic.
 - `apps/api-server/src/platform/services/deliveryDispatcher.ts` — delivery fan-out logic.
 - `apps/api-server/package.json` — current deps including `mongoose`, `express`.
-- Webpresso pattern: `~/repos/webpresso/apps/workers/` for Hono + Hyperdrive reference.
+- reference repo pattern: `[reference repo]` for Hono + Hyperdrive reference.
 
 ## Task Pool
 

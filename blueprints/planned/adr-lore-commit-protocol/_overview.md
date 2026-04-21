@@ -40,7 +40,7 @@ docs/adrs/
   - if subject contains "[lore]", validates the Lore trailer block
 
 docs/conventions/lore-commit-protocol.md
-  - full trailer vocabulary (from webpresso): Constraint / Rejected / Confidence /
+  - full trailer vocabulary (from reference repo): Constraint / Rejected / Confidence /
     Scope-risk / Reversibility / Directive / Tested / Not-tested / Related
 ```
 
@@ -53,7 +53,7 @@ docs/conventions/lore-commit-protocol.md
 
 ## Evidence Base
 
-- `~/repos/webpresso/AGENTS.md` → "Lore Commit Protocol > Trailer Vocabulary" section.
+- `[reference repo]` → "Lore Commit Protocol > Trailer Vocabulary" section.
 - Decision records methodology: Michael Nygard ADR format.
 
 ## Task Pool

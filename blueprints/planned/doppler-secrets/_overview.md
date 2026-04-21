@@ -17,7 +17,7 @@ tags:
 
 **Goal:** Adopt Doppler as the single source of truth for secrets across
 local dev, per-PR previews, main-branch CI, and production, using the same
-config-inheritance model proven in the webpresso repo.
+config-inheritance model proven in the reference repo repo.
 
 ## Planning Summary
 
@@ -52,13 +52,13 @@ Doppler project: node-pubsub
 
 | ID  | Severity | Claim                                            | Reality                                                                           | Fix                                                                  |
 | --- | -------- | ------------------------------------------------ | --------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| F1  | HIGH     | Doppler inheritance collapses secret duplication | Verified in webpresso; root-of-truth in `preview` avoids fan-out.                 | Mirror the `preview` → `preview_<branch>` layout.                    |
+| F1  | HIGH     | Doppler inheritance collapses secret duplication | Verified in reference repo; root-of-truth in `preview` avoids fan-out.            | Mirror the `preview` → `preview_<branch>` layout.                    |
 | F2  | HIGH     | Pulumi reads Doppler via `@pulumiverse/doppler`  | Yes, version `^0.9`; requires a service token in the executing env.               | Provision the service token in CI via OIDC → Doppler token exchange. |
 | F3  | MEDIUM   | Per-PR Doppler configs can be auto-created       | Yes via the Doppler API; lifecycle script hooks `pull_request` open/close events. | Task 3.1 owns the lifecycle script.                                  |
 
 ## Evidence Base
 
-- `~/repos/webpresso/infra/README.md` — section "Secrets Management > Doppler Config Architecture".
+- `[reference repo]` — section "Secrets Management > Doppler Config Architecture".
 - Doppler provider: `@pulumiverse/doppler ^0.9`.
 
 ## Task Pool
