@@ -26,7 +26,8 @@
     "dev": "bunchee --watch",
     "lint": "eslint src/",
     "check-types": "tsc --noEmit",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "mutation": "stryker run"
   },
   "jest": {
     "preset": "@repo/jest-presets/node"
@@ -36,6 +37,9 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@stryker-mutator/core": "catalog:",
+    "@stryker-mutator/jest-runner": "catalog:",
+    "@stryker-mutator/typescript-checker": "catalog:",
     "@types/node": "catalog:",
     "bunchee": "catalog:",
     "eslint": "catalog:tooling",
