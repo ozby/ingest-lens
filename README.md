@@ -1,181 +1,151 @@
-# Node PubSub Implementation + Dashboard (for FUN)
+# node-pubsub
 
-A Turborepo project that provides a PubSub and corresponding managing dashboard.
+An event-delivery platform built as a principal-engineer showcase: typed
+end-to-end, CI-gated, secrets managed via Doppler, and structured for
+progressive migration to Cloudflare Workers.
 
-## Getting Started
+## Stack
 
-This repository uses [pnpm](https://pnpm.io/) for package management and [Turborepo](https://turbo.build/repo) for build system orchestration.
+| Layer           | Technology                                      |
+| --------------- | ----------------------------------------------- |
+| Runtime         | Node.js 22 / Bun (scripts)                      |
+| API framework   | Express → Hono (migration: `workers-hono-port`) |
+| Package manager | pnpm 9 + workspace catalogs                     |
+| Build           | Turborepo                                       |
+| Type checking   | tsgo (`@typescript/native-preview`)             |
+| Linting         | oxlint + prettier                               |
+| Testing         | Vitest (unit) + Supertest (integration)         |
+| Secrets         | Doppler — no `.env` files ever                  |
+| Infra           | Cloudflare Workers + Pulumi (planned)           |
 
-### Prerequisites
+## Prerequisites
 
-- Node.js 18 or later
-- pnpm 8 or later
-- Docker and Docker Compose (for local database)
-
-### Installation
+Install every tool with one command:
 
 ```sh
-# Install pnpm if you don't have it already
-npm install -g pnpm
+brew bundle
+```
 
-# Install dependencies
+This installs: `node`, `bun`, `pnpm`, `doppler`, `gh`, `act`, `oxlint`.
+See [`Brewfile`](./Brewfile) for the full list with rationale.
+
+Node version is pinned in `.nvmrc`. Activate it with `fnm` or `nvm`:
+
+```sh
+fnm use   # or: nvm use
+```
+
+## Secrets setup (Doppler)
+
+This repo uses **Doppler** for all secret injection. There are no `.env` files.
+
+```sh
+# 1. Authenticate
+doppler login
+
+# 2. Link this directory to the project
+doppler setup
+# → select project: node-pubsub
+# → select config: dev (local development)
+```
+
+Available configs:
+
+| Config       | When to use                    |
+| ------------ | ------------------------------ |
+| `dev`        | Local development              |
+| `test`       | Running the test suite locally |
+| `preview`    | PR preview environments (CI)   |
+| `production` | Production deploy (CI only)    |
+
+## Install dependencies
+
+```sh
 pnpm install
-
-# Set up environment variables
-cp .env.example .env
 ```
-
-### Environment Setup
-
-After copying the environment file, open it in your editor to configure the necessary values:
-
-```sh
-# Edit the environment file
-nano .env
-```
-
-The repository uses a single `.env` file at the root level for all applications. **All required environment variables must be set or the applications will not start**.
-
-#### Required Environment Variables
-
-- `MONGODB_URI`: MongoDB connection string (e.g., `mongodb://localhost:27017/pubsub`)
-- `JWT_SECRET`: Secret key for JWT token generation and validation
-
-#### Application-specific Variables
-
-Environment variables are prefixed to indicate which service they apply to:
-- Common variables: `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV`
-- API server variables: prefixed with `API_` (e.g., `API_PORT`)
-- Notification server variables: prefixed with `NOTIFICATION_` (e.g., `NOTIFICATION_PORT`)
-
-#### Troubleshooting Environment Variables
-
-If you see errors about missing environment variables:
-
-1. Make sure the `.env` file exists in the root directory of the project
-2. Verify that it contains all required variables (`MONGODB_URI` and `JWT_SECRET` at minimum)
-3. Check for typos in variable names
-4. Ensure the file is properly formatted (one variable per line, no spaces around the `=` sign)
-5. Restart the application after making changes to the `.env` file
 
 ## Development
 
-### Start the Database
-
 ```sh
-# Start MongoDB and Mongo Express using Docker Compose
-docker-compose up -d
+# Start all apps (secrets injected by Doppler)
+doppler run --config dev -- pnpm dev
 
-# MongoDB will be available at mongodb://localhost:27017
-# Mongo Express UI will be available at http://localhost:8081
+# Or scope to one workspace
+doppler run --config dev -- pnpm --filter api-server dev
 ```
 
-### Run the Applications
+## Common commands
 
 ```sh
-# Start all applications in development mode
-pnpm dev
-
-# Build all applications and packages
-pnpm build
-
-# Run linting
-pnpm lint
-
-# Type checking
-pnpm check-types
-
-# Run tests
-pnpm test
+pnpm build          # build all workspaces via Turborepo
+pnpm test           # run all test suites
+pnpm check-types    # type-check with tsgo (fast native checker)
+pnpm lint           # oxlint across all workspaces
+pnpm format         # prettier --write
+pnpm catalog:check  # detect dependencies that should use catalog: refs
 ```
 
-## Workspace Structure
+## Workspace structure
 
-This Turborepo includes the following packages and apps:
+```
+apps/
+  api-server/          Express API — topic/queue management, auth, metrics
+  notification-server/ MongoDB change-stream fan-out → subscriber delivery
+  client/              Vite + React dashboard UI
 
-### Apps
-- `client`: A Vite React application for the PubSub dashboard UI
-- `api-server`: An Express server providing the main PubSub API for publishing and subscribing to messages
-- `notification-server`: A specialized server that monitors database changes and handles event notifications
+packages/
+  @repo/logger         Shared structured logger (Winston)
+  @repo/types          Shared TypeScript types
+  @repo/ui             Shared React component library
+  @repo/config-eslint  Shared ESLint config
+  @repo/config-typescript  Shared tsconfig bases
+  @repo/jest-presets   Shared Jest/Vitest presets
+```
 
-### Packages
-- `@repo/ui`: A shared UI component library 
-- `@repo/eslint-config`: ESLint configurations
-- `@repo/typescript-config`: TypeScript configurations
-- `@repo/types`: Shared TypeScript types
-- `@repo/logger`: Shared logging utilities
+## Commit conventions
 
-## Service Overview
+All commits follow [Conventional Commits](https://www.conventionalcommits.org/).
+The `commit-msg` hook validates format and rejects non-conforming subjects.
+`lint-staged` runs oxlint + prettier on staged files at pre-commit.
 
-### API Server
-The API server handles the core PubSub functionality, including:
-- Topic and queue management
-- Message publishing and subscribing
-- User authentication and authorization
-- Dashboard metrics and monitoring
+```
+feat(api-server): add HMAC-signed delivery receipts
+fix(db): scope idempotency key to tenant
+docs(adrs): record auth strategy decision
+```
 
-### Notification Server
-The notification server is responsible for:
-- Monitoring MongoDB change streams to detect data changes
-- Processing database events (message creation, updates, queue changes)
-- Managing notification records for event tracking
-- Providing real-time notification capabilities to connected clients
+## Adding dependencies
 
-## Working with the Monorepo
-
-### Running Commands on Specific Workspaces
+Always add shared dependencies to the pnpm catalog rather than pinning
+versions per-workspace:
 
 ```sh
-# Run a command in a specific workspace
-pnpm --filter=client dev
-pnpm --filter=api-server dev
-pnpm --filter=notification-server dev
-
-# Build a specific package
-pnpm --filter=@repo/ui build
+# Add to catalog first (pnpm-workspace.yaml), then reference:
+pnpm --filter api-server add some-package   # adds catalog: ref automatically
+pnpm catalog:check                          # verify no drift
 ```
 
-### Adding Dependencies
+## Architecture decisions
 
-```sh
-# Add a dependency to a specific workspace
-pnpm --filter=client add react-router-dom
+Key decisions are recorded as ADRs in [`docs/adrs/`](./docs/adrs/):
 
-# Add a development dependency
-pnpm --filter=client add -D @types/react
+- [ADR 0001](./docs/adrs/0001-event-delivery-signing-model.md) — HMAC signing for delivery receipts
+- [ADR 0002](./docs/adrs/0002-pubsub-in-process-vs-durable.md) — In-process fan-out vs. durable queue
+- [ADR 0003](./docs/adrs/0003-auth-story.md) — API key auth for v1
 
-# Add a workspace dependency
-pnpm --filter=client add @repo/ui@workspace:*
-```
+## Roadmap (blueprints)
 
-## Testing
+Planned work lives in [`blueprints/planned/`](./blueprints/planned/).
+Each blueprint is a self-contained execution spec with verification gates.
 
-### Running All Tests
-
-```sh
-# Run all tests in the repo
-pnpm test
-
-# Run tests for a specific package or app
-pnpm --filter=api-server test
-pnpm --filter=notification-server test
-pnpm --filter=client test
-```
-
-### Running Specific Tests
-
-```sh
-# Run a specific test file in an app or package
-pnpm --filter=api-server test src/tests/integration/dashboard.test.ts
-
-# Run tests with Jest options
-pnpm --filter=api-server test -- src/tests/integration/dashboard.test.ts --watch
-
-# Run a specific test by name
-pnpm --filter=api-server test src/tests/integration/dashboard.test.ts -t "should return server metrics"
-```
-
-These commands can be run from the root of the monorepo, so you don't need to change directories.
+| Blueprint                     | Goal                                     | Status  |
+| ----------------------------- | ---------------------------------------- | ------- |
+| `workers-hono-port`           | Hard-cut Express → Hono on CF Workers    | planned |
+| `cloudflare-pulumi-infra`     | CF + Pulumi infra, preview-per-PR        | planned |
+| `doppler-secrets`             | Full Doppler config hierarchy            | planned |
+| `ci-hardening`                | Production-grade GitHub Actions pipeline | planned |
+| `stryker-mutation-guardrails` | Mutation score gates in CI               | planned |
+| `vite-plus-migration`         | Turbo → Vite Plus build system           | planned |
 
 ## License
 
