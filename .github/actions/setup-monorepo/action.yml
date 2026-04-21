@@ -1,5 +1,5 @@
 name: Setup monorepo
-description: Checkout, install Node 22 + pnpm 9, restore pnpm store cache
+description: Checkout, install Node 24 + pnpm 10, restore pnpm store cache
 
 inputs:
   fetch-depth:
@@ -15,11 +15,11 @@ runs:
 
     - uses: pnpm/action-setup@v4
       with:
-        version: 9
+        version: 10
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: 24
         cache: pnpm
 
     - name: Install dependencies

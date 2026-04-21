@@ -8,7 +8,7 @@ progressive migration to Cloudflare Workers.
 
 | Layer           | Technology                                      |
 | --------------- | ----------------------------------------------- |
-| Runtime         | Node.js 22 / Bun (scripts)                      |
+| Runtime         | Node.js 24 / Bun (scripts)                      |
 | API framework   | Express → Hono (migration: `workers-hono-port`) |
 | Package manager | pnpm 9 + workspace catalogs                     |
 | Build           | Turborepo                                       |
