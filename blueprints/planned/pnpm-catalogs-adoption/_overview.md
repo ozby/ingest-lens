@@ -67,7 +67,7 @@ each workspace package.json:
 
 #### [research] Task 1.1: Enumerate dependency drift across workspaces
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -88,7 +88,7 @@ each workspace package.json:
 
 #### [config] Task 2.1: Add baseline `catalog:` to `pnpm-workspace.yaml`
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -101,7 +101,7 @@ each workspace package.json:
 
 #### [refactor] Task 2.2: Rewrite workspaces to use `catalog:`
 
-**Status:** todo **Depends:** Task 2.1
+**Status:** pending **Depends:** Task 2.1
 
 **Files:**
 
@@ -116,7 +116,7 @@ each workspace package.json:
 
 #### [qa] Task 3.1: Add a catalog-drift check to CI
 
-**Status:** todo **Depends:** Task 2.2
+**Status:** pending **Depends:** Task 2.2
 
 **Files:**
 

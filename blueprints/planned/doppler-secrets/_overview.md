@@ -67,7 +67,7 @@ Doppler project: node-pubsub
 
 #### [ops] Task 1.1: Create Doppler project + configs
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -82,7 +82,7 @@ Doppler project: node-pubsub
 
 #### [dx] Task 2.1: Integrate `doppler run` into pnpm dev commands
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -98,7 +98,7 @@ Doppler project: node-pubsub
 
 #### [ops] Task 3.1: Auto-create + cleanup `preview_pr_<n>` configs
 
-**Status:** todo **Depends:** Task 1.1 **Blocked:** cloudflare-pulumi-infra blueprint must land first (stack names drive config names).
+**Status:** pending **Depends:** Task 1.1 **Blocked:** cloudflare-pulumi-infra blueprint must land first (stack names drive config names).
 
 **Files:**
 

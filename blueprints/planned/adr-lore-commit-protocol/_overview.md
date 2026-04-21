@@ -62,7 +62,7 @@ docs/conventions/lore-commit-protocol.md
 
 #### [docs] Task 1.1: ADR directory + template
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -75,7 +75,7 @@ docs/conventions/lore-commit-protocol.md
 
 #### [docs] Task 1.2: Lore trailer spec
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -90,7 +90,7 @@ docs/conventions/lore-commit-protocol.md
 
 #### [docs] Task 2.1: Write ADRs 0001–0003
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -106,7 +106,7 @@ docs/conventions/lore-commit-protocol.md
 
 #### [dx] Task 3.1: commit-msg validator for `[lore]` commits
 
-**Status:** todo **Depends:** Task 1.2 **Blocked:** commit-hooks-guardrails commit-msg hook exists.
+**Status:** pending **Depends:** Task 1.2 **Blocked:** commit-hooks-guardrails commit-msg hook exists.
 
 **Files:**
 

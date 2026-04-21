@@ -87,7 +87,7 @@ before:                                   after:
 
 #### [scaffold] Task 1.1: Create `apps/workers/` workspace
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -105,7 +105,7 @@ before:                                   after:
 
 #### [deps] Task 1.2: Add Hono + Drizzle + postgres-js to catalog
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -121,7 +121,7 @@ before:                                   after:
 
 #### [db] Task 2.1: Drizzle schema + Hyperdrive client
 
-**Status:** todo **Depends:** Task 1.2
+**Status:** pending **Depends:** Task 1.2
 
 Replace mongoose models (`Topic`, `Subscription`, `Event`, `Delivery`) with
 Drizzle table definitions.
@@ -141,7 +141,7 @@ Drizzle table definitions.
 
 #### [port] Task 3.1: Port REST API routes
 
-**Status:** todo **Depends:** Task 2.1
+**Status:** pending **Depends:** Task 2.1
 
 **Files:**
 
@@ -158,7 +158,7 @@ Drizzle table definitions.
 
 #### [port] Task 3.2: Port SSE / real-time push
 
-**Status:** todo **Depends:** Task 3.1
+**Status:** pending **Depends:** Task 3.1
 
 **Files:**
 
@@ -172,7 +172,7 @@ Drizzle table definitions.
 
 #### [test] Task 4.1: Integration test suite for Workers workspace
 
-**Status:** todo **Depends:** Task 3.1, Task 3.2
+**Status:** pending **Depends:** Task 3.1, Task 3.2
 
 **Files:**
 
@@ -187,7 +187,7 @@ Drizzle table definitions.
 
 #### [delete] Task 5.1: Remove `apps/api-server/` and `apps/notification-server/`
 
-**Status:** todo **Depends:** Task 4.1
+**Status:** pending **Depends:** Task 4.1
 
 **Files:**
 

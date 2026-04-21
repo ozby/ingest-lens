@@ -62,7 +62,7 @@ on `main`.
 
 #### [ci] Task 1.1: Composite setup action
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -76,7 +76,7 @@ on `main`.
 
 #### [ci] Task 2.1: Rewrite `ci.yml` with gate matrix
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -92,7 +92,7 @@ on `main`.
 
 #### [ci] Task 3.1: PR preview + destroy workflows
 
-**Status:** todo **Depends:** Task 2.1 **Blocked:** cloudflare-pulumi-infra + doppler-secrets.
+**Status:** pending **Depends:** Task 2.1 **Blocked:** cloudflare-pulumi-infra + doppler-secrets.
 
 **Files:**
 
@@ -108,7 +108,7 @@ on `main`.
 
 #### [sec] Task 4.1: Add gitleaks + osv-scanner + semgrep + SBOM
 
-**Status:** todo **Depends:** Task 2.1
+**Status:** pending **Depends:** Task 2.1
 
 **Files:**
 
@@ -122,10 +122,10 @@ on `main`.
 
 ## Verification Gates
 
-| Gate              | Command                  | Success                |
-| ----------------- | ------------------------ | ---------------------- |
-| Local CI sim      | `act -j test` (optional) | Passes locally         |
-| Branch protection | GitHub settings review   | Required checks listed |
+| Gate              | Command                                                                                      | Success                 |
+| ----------------- | -------------------------------------------------------------------------------------------- | ----------------------- |
+| Local CI sim      | `act -j test` (optional)                                                                     | Passes locally          |
+| Branch protection | `gh api repos/:owner/:repo/branches/main --jq '.protection.required_status_checks.contexts'` | Returns non-empty array |
 
 ## Cross-Plan References
 

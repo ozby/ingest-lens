@@ -74,7 +74,7 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 #### [infra] Task 1.1: Create `infra/` workspace
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -94,7 +94,7 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 #### [infra] Task 2.1: Provision DNS + Workers routing
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -107,7 +107,7 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 #### [infra] Task 2.2: Provision Hyperdrive + Neon + R2 + KV
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -123,7 +123,7 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 #### [infra] Task 3.1: Generate wrangler.toml from Pulumi outputs
 
-**Status:** todo **Depends:** Task 2.1, Task 2.2
+**Status:** pending **Depends:** Task 2.1, Task 2.2
 
 **Files:**
 

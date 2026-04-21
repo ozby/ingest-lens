@@ -65,7 +65,7 @@ commitlint.config.ts
 
 #### [dx] Task 1.1: Wire lint-staged
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -78,7 +78,7 @@ commitlint.config.ts
 
 #### [dx] Task 1.2: Wire commitlint + scope-enum
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -93,7 +93,7 @@ commitlint.config.ts
 
 #### [dx] Task 1.3: Wire secretlint pre-commit
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -108,7 +108,7 @@ commitlint.config.ts
 
 #### [dx] Task 2.1: Pre-push blueprint validation + affected mutation
 
-**Status:** todo **Depends:** Task 1.1 **Blocked:** stryker-mutation-guardrails must pilot first.
+**Status:** pending **Depends:** Task 1.1 **Blocked:** stryker-mutation-guardrails must pilot first.
 
 **Files:**
 

@@ -470,7 +470,7 @@ The eval set should score:
 
 #### [research] Task 1.1: Freeze vendor schema/mapping source extracts
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** None
 
@@ -499,7 +499,7 @@ Capture the exact vendor docs needed for the mapper dataset: custom fields, crea
 
 #### [research] Task 1.2: Freeze public ATS realism source
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** None
 
@@ -525,7 +525,7 @@ Create a small, pinned working subset from `open-apply-jobs` rather than couplin
 
 #### [research] Task 1.3: Define mapper guardrails and non-goals
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** None
 
@@ -552,7 +552,7 @@ Write the explicit guardrails for the LLM mapper so it remains suggestion-only, 
 
 #### [schema] Task 2.1: Implement the exact dataset schemas
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3
 
@@ -587,7 +587,7 @@ This must be machine-readable and strict enough that examples and future code ca
 
 #### [data] Task 2.2: Create the first gold mapping-task pack
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** Task 2.1
 
@@ -614,7 +614,7 @@ Create a first gold mapping-task pack with exact expected mappings, missing-fiel
 
 #### [data] Task 2.3: Create a synthetic HRIS payload subset
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** Task 1.1, Task 2.1
 
@@ -642,7 +642,7 @@ Because public ATS data is not enough for the employee/custom-field mapping stor
 
 #### [qa] Task 3.1: Build a mapper evaluation harness contract
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** Task 2.2, Task 2.3
 
@@ -675,7 +675,7 @@ This task does not need a full model integration yet; it needs an executable con
 
 #### [docs] Task 3.2: Integrate the dataset story into the event-delivery platform docs
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** Task 3.1
 
@@ -708,7 +708,7 @@ Document how the mapper dataset fits the platform story:
 
 #### [qa] Task 4.1: Verify blueprint readiness and parallel safety
 
-**Status:** todo
+**Status:** pending
 
 **Depends:** Task 3.1, Task 3.2
 

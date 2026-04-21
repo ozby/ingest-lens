@@ -57,7 +57,7 @@ AGENTS.md
 
 #### [docs] Task 1.1: Draft principal-layer content
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -72,7 +72,7 @@ AGENTS.md
 
 #### [docs] Task 2.1: Align `README.md` and `.agent/README.md`
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 

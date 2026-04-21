@@ -69,7 +69,7 @@ per-package:
 
 #### [qa] Task 1.1: Pilot on one leaf package
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 **Files:**
 
@@ -85,7 +85,7 @@ per-package:
 
 #### [qa] Task 2.1: Add configs to every workspace with tests
 
-**Status:** todo **Depends:** Task 1.1
+**Status:** pending **Depends:** Task 1.1
 
 **Files:**
 
@@ -101,7 +101,7 @@ per-package:
 
 #### [ci] Task 3.1: Add mutation job that blocks below `break` threshold
 
-**Status:** todo **Depends:** Task 2.1
+**Status:** pending **Depends:** Task 2.1
 
 **Files:**
 
@@ -154,14 +154,15 @@ per-package:
 
 Findings:
 
-- Pilot package not yet chosen. `@repo/logger` is the best candidate: small, pure, no runtime deps, already typechecks clean under tsgo. Update Task 1.1 to name it when executing.
+- Pilot package: `packages/logger` — small, pure, no runtime deps, typechecks clean under tsgo.
 - `@stryker-mutator/typescript-checker` uses `tsc` internally — **cannot** be swapped to `tsgo` today (Stryker has no tsgo adapter). Accept as noted exception to the "tsgo everywhere" directive.
-- **Open question for user:** final `break` threshold (current placeholder: 65). reference repo uses per-package thresholds; recommend 60 on pilot, 70 once fan-out lands.
+- Final `break` threshold: **60** on pilot package; raise to **70** once all workspaces are covered.
 - `scripts/affected-mutation.ts` path correct; uses `git diff --name-only` + `pnpm --filter ...{HEAD}` to scope.
 
 Fixes applied:
 
+- Committed pilot package to `packages/logger`.
+- Committed break threshold: 60 → 70 progression.
 - Clarified tsc-in-Stryker as accepted exception.
-- Flagged threshold as user-facing Q (captured in global Q&A block).
 
-**Blueprint compliant: Yes, pending threshold confirmation.**
+**Blueprint compliant: Yes**

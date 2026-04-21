@@ -60,7 +60,7 @@ before:                              after:
 
 #### [spike] Task 1.1: Baseline current Turbo command surface
 
-**Status:** todo **Depends:** None
+**Status:** pending **Depends:** None
 
 Capture the exact Turbo pipeline and all per-workspace `turbo` references so the migration is reversible.
 
@@ -83,7 +83,7 @@ Capture the exact Turbo pipeline and all per-workspace `turbo` references so the
 
 #### [deps] Task 2.1: Add vite-plus to the pnpm catalog
 
-**Status:** todo **Depends:** Task 1.1 **Blocked:** pnpm-catalogs-adoption blueprint must land first so the catalog exists.
+**Status:** pending **Depends:** Task 1.1 **Blocked:** pnpm-catalogs-adoption blueprint must land first so the catalog exists.
 
 **Files:**
 
@@ -103,7 +103,7 @@ Capture the exact Turbo pipeline and all per-workspace `turbo` references so the
 
 #### [refactor] Task 2.2: Swap root scripts from `turbo run` to `vp run`
 
-**Status:** todo **Depends:** Task 2.1
+**Status:** pending **Depends:** Task 2.1
 
 **Files:**
 
@@ -121,7 +121,7 @@ Capture the exact Turbo pipeline and all per-workspace `turbo` references so the
 
 #### [qa] Task 3.1: Parity check and rollback recipe
 
-**Status:** todo **Depends:** Task 2.2
+**Status:** pending **Depends:** Task 2.2
 
 **Files:**
 
