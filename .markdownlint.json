@@ -1,0 +1,12 @@
+{
+  "default": true,
+  "MD013": false,
+  "MD024": { "siblings_only": true },
+  "MD033": { "allowed_elements": ["br", "details", "summary", "sub", "sup"] },
+  "MD041": false,
+  "MD046": { "style": "fenced" },
+  "MD049": { "style": "asterisk" },
+  "MD050": { "style": "asterisk" },
+  "MD055": { "style": "leading_and_trailing" },
+  "MD060": false
+}

@@ -1,0 +1,64 @@
+# Lychee link checker configuration
+# Docs: https://lychee.cli.rs/
+
+# Output format
+format = "detailed"
+no_progress = true
+verbose = "info"
+
+# Request settings
+max_redirects = 5
+max_retries = 2
+timeout = 20
+
+# Cache settings (speeds up repeated runs)
+cache = true
+max_cache_age = "7d"
+
+# Only check http(s) + file links by default
+include_verbatim = false
+include_mail = false
+
+# Accept any 2xx and common expected 4xx where the resource exists but requires auth
+accept = [200, 204, 206, 301, 302, 303, 307, 308, 401, 403, 429]
+
+# Skip common bot-hostile sites that do not meaningfully link-check.
+exclude = [
+  "linkedin\\.com",
+  "twitter\\.com",
+  "x\\.com",
+  "facebook\\.com",
+  "instagram\\.com",
+  "tiktok\\.com",
+  "npmjs\\.com",
+  "google\\.com",
+  "apple\\.com",
+  "microsoft\\.com",
+  "github\\.com/.*/pull/",
+  "github\\.com/.*/issues/",
+  "github\\.com/.*/blob/",
+  "localhost",
+  "127\\.0\\.0\\.1",
+  # Placeholder URLs used in templates and examples
+  "example\\.com",
+  "example\\.org",
+  "your-",
+  "YOUR_",
+  "\\{\\{",
+  "<slug>",
+  "vendor-docs:",
+]
+
+# Exclude local paths that can't be resolved offline
+exclude_path = [
+  "node_modules",
+  ".generated",
+  "dist",
+  ".turbo",
+  ".next",
+  ".playwright-mcp",
+  "pnpm-lock.yaml",
+]
+
+# Base URL for relative links
+# (set per-repo if you serve docs at a specific origin)

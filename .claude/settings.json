@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Write(.worktrees/**)",
+      "Edit(.worktrees/**)",
+      "Bash(* .worktrees/**)"
+    ],
+    "additionalDirectories": [".worktrees"]
+  }
+}

@@ -27,4 +27,8 @@ coverage/
 
 # OS-specific
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# MCP / tool session artifacts
+.playwright-mcp/
+.omx/ 

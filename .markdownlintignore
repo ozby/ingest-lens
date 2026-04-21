@@ -1,0 +1,8 @@
+node_modules/
+**/dist/
+**/.next/
+**/.turbo/
+**/.generated/
+**/generated/
+pnpm-lock.yaml
+.playwright-mcp/

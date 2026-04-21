@@ -38,6 +38,7 @@ The dataset pack lives at `data/payload-mapper/` and has three layers:
 Source: Unified-API vendor docs and ATS connector docs (Ashby, Greenhouse, Lever).
 
 Files:
+
 - `schemas/ats/ashby-jobs.json` — Ashby job fields with unified keys
 - `schemas/ats/ashby-candidates.json` — Ashby candidate fields (including ID instability note)
 - `schemas/ats/ashby-applications.json` — Ashby application fields
@@ -52,6 +53,7 @@ Files:
 Source: `open-apply-jobs` public dataset (Ashby, Greenhouse, Lever) + synthetic HRIS payloads.
 
 Files:
+
 - `payloads/ats/open-apply-sample.jsonl` — 8 pinned ATS job posting payloads (3 systems)
 - `payloads/synthetic/employee-updates.jsonl` — 5 HRIS employee payloads (4 vendor styles)
 - `payloads/synthetic/application-stage-changes.jsonl` — 5 application stage event payloads
@@ -63,11 +65,11 @@ stream. The repo-local sample is pinned for deterministic demos and task generat
 
 Hand-authored mapping tasks with exact expected mappings, missing-field labels, and ambiguity labels.
 
-| File | Tasks | Purpose |
-|------|-------|---------|
-| `mapping_tasks/train.jsonl` | 12 | Standard mapping cases across 5 systems |
-| `mapping_tasks/eval.jsonl` | 8 | Held-out eval: exact-match, missing, ambiguous |
-| `mapping_tasks/adversarial.jsonl` | 7 | Hard cases: unstable IDs, unknown fields, alias collisions |
+| File                              | Tasks | Purpose                                                    |
+| --------------------------------- | ----- | ---------------------------------------------------------- |
+| `mapping_tasks/train.jsonl`       | 12    | Standard mapping cases across 5 systems                    |
+| `mapping_tasks/eval.jsonl`        | 8     | Held-out eval: exact-match, missing, ambiguous             |
+| `mapping_tasks/adversarial.jsonl` | 7     | Hard cases: unstable IDs, unknown fields, alias collisions |
 
 Total: 27 tasks.
 
