@@ -40,5 +40,12 @@
   "packageManager": "pnpm@9.15.2",
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "vite>esbuild": "*"
+      }
+    }
   }
 }

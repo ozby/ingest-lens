@@ -24,26 +24,19 @@
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee --watch",
-    "lint": "eslint src/",
-    "check-types": "tsc --noEmit",
-    "test": "jest --passWithNoTests",
+    "lint": "oxlint src/",
+    "check-types": "tsgo --noEmit",
+    "test": "vitest run",
     "mutation": "stryker run"
   },
-  "jest": {
-    "preset": "@repo/jest-presets/node"
-  },
   "devDependencies": {
-    "@jest/globals": "catalog:",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/jest-runner": "catalog:",
     "@stryker-mutator/typescript-checker": "catalog:",
+    "@typescript/native-preview": "catalog:tooling",
     "@types/node": "catalog:",
     "bunchee": "catalog:",
-    "eslint": "catalog:tooling",
-    "jest": "catalog:tooling",
-    "typescript": "catalog:tooling"
+    "vitest": "catalog:tooling"
   }
 }

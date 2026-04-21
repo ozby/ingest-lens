@@ -7,13 +7,10 @@
     "start": "node dist/index.js",
     "dev": "tsup --watch --onSuccess \"node dist/index.cjs\"",
     "build": "tsup",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src/ --max-warnings 0",
-    "test": "jest --detectOpenHandles",
+    "check-types": "tsgo --noEmit",
+    "lint": "oxlint src/",
+    "test": "vitest run",
     "mutation": "stryker run"
-  },
-  "jest": {
-    "preset": "@repo/jest-presets/node"
   },
   "dependencies": {
     "@repo/logger": "workspace:*",
@@ -22,7 +19,6 @@
     "express": "catalog:",
     "morgan": "catalog:",
     "axios": "catalog:",
-    "dotenv": "catalog:",
     "helmet": "catalog:",
     "jsonwebtoken": "catalog:",
     "mongodb": "^6.5.0",
@@ -32,31 +28,22 @@
     "winston": "catalog:"
   },
   "devDependencies": {
-    "@jest/globals": "catalog:",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@typescript/native-preview": "catalog:tooling",
     "@types/cors": "catalog:",
     "@types/express": "catalog:",
     "@types/morgan": "catalog:",
     "@types/node": "catalog:",
     "@types/supertest": "catalog:",
-    "eslint": "catalog:tooling",
-    "jest": "catalog:tooling",
-    "supertest": "catalog:",
-    "tsup": "catalog:",
-    "typescript": "catalog:tooling",
     "@types/axios": "catalog:",
-    "@types/jest": "catalog:",
     "@types/jsonwebtoken": "catalog:",
     "@types/mongoose": "catalog:",
-    "husky": "catalog:",
-    "lint-staged": "catalog:",
-    "prettier": "catalog:tooling",
+    "supertest": "catalog:",
+    "tsup": "catalog:",
+    "ts-node": "catalog:",
+    "vitest": "catalog:tooling",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/jest-runner": "catalog:",
-    "@stryker-mutator/typescript-checker": "catalog:",
-    "ts-jest": "catalog:tooling",
-    "ts-node": "catalog:"
+    "@stryker-mutator/typescript-checker": "catalog:"
   }
 }

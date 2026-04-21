@@ -33,12 +33,9 @@
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee --watch",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src/",
-    "test": "jest --passWithNoTests"
-  },
-  "jest": {
-    "preset": "@repo/jest-presets/browser"
+    "check-types": "tsgo --noEmit",
+    "lint": "oxlint src/",
+    "test": "vitest run"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "catalog:",
@@ -61,15 +58,11 @@
     "tailwindcss-animate": "catalog:"
   },
   "devDependencies": {
-    "@jest/globals": "catalog:",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@typescript/native-preview": "catalog:tooling",
     "@types/node": "catalog:",
     "bunchee": "catalog:",
-    "eslint": "catalog:tooling",
-    "jest": "catalog:tooling",
-    "typescript": "catalog:tooling"
+    "vitest": "catalog:tooling"
   },
   "peerDependencies": {
     "@types/react": ">=18",

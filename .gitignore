@@ -35,3 +35,9 @@ Thumbs.db
 
 # Stryker incremental cache
 .stryker-incremental.json
+
+# Git worktrees (parallel blueprint lanes)
+.worktrees/
+
+# Wrangler local dev secrets
+.dev.vars
