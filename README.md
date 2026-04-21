@@ -138,14 +138,19 @@ Key decisions are recorded as ADRs in [`docs/adrs/`](./docs/adrs/):
 Planned work lives in [`blueprints/planned/`](./blueprints/planned/).
 Each blueprint is a self-contained execution spec with verification gates.
 
-| Blueprint                     | Goal                                     | Status  |
-| ----------------------------- | ---------------------------------------- | ------- |
-| `workers-hono-port`           | Hard-cut Express → Hono on CF Workers    | planned |
-| `cloudflare-pulumi-infra`     | CF + Pulumi infra, preview-per-PR        | planned |
-| `doppler-secrets`             | Full Doppler config hierarchy            | planned |
-| `ci-hardening`                | Production-grade GitHub Actions pipeline | planned |
-| `stryker-mutation-guardrails` | Mutation score gates in CI               | planned |
-| `vite-plus-migration`         | Turbo → Vite Plus build system           | planned |
+| Blueprint                            | Goal                                          | Status    |
+| ------------------------------------ | --------------------------------------------- | --------- |
+| `adr-lore-commit-protocol`           | Lore-tagged commits with structured trailers  | completed |
+| `commit-hooks-guardrails`            | lint-staged, commitlint, secretlint, pre-push | completed |
+| `pnpm-catalogs-adoption`             | Workspace catalogs + drift-check CI gate      | completed |
+| `integration-payload-mapper-dataset` | AI training dataset + eval pack               | completed |
+| `agents-md-principal-rewrite`        | Rewrite AGENTS.md to principal-level standard | planned   |
+| `workers-hono-port`                  | Hard-cut Express → Hono on CF Workers         | planned   |
+| `cloudflare-pulumi-infra`            | CF + Pulumi infra, preview-per-PR             | planned   |
+| `doppler-secrets`                    | Full Doppler config hierarchy                 | planned   |
+| `ci-hardening`                       | Production-grade GitHub Actions pipeline      | planned   |
+| `stryker-mutation-guardrails`        | Mutation score gates in CI                    | planned   |
+| `vite-plus-migration`                | Turbo → Vite Plus build system                | planned   |
 
 ## License
 
