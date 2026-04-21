@@ -31,4 +31,7 @@ Thumbs.db
 
 # MCP / tool session artifacts
 .playwright-mcp/
-.omx/ 
+.omx/
+
+# Stryker incremental cache
+.stryker-incremental.json

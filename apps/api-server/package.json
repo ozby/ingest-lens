@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint src/ --max-warnings 0",
     "test": "jest --detectOpenHandles",
+    "mutation": "stryker run",
     "perf:test": "artillery run artillery.yml",
     "perf:test:report": "artillery report artillery-report.json",
     "perf:clinic": "clinic doctor -- node dist/index.cjs",
@@ -71,6 +72,9 @@
     "prettier": "catalog:tooling",
     "ts-jest": "catalog:tooling",
     "ts-node": "catalog:",
+    "@stryker-mutator/core": "catalog:",
+    "@stryker-mutator/jest-runner": "catalog:",
+    "@stryker-mutator/typescript-checker": "catalog:",
     "artillery": "^2.0.0-41",
     "clinic": "^12.0.0"
   }
