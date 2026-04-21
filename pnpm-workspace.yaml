@@ -57,6 +57,9 @@ catalog:
   "@stryker-mutator/jest-runner": ^9.6.0
   "@stryker-mutator/typescript-checker": ^9.6.0
 
+  # Task runner
+  vite-plus: 0.1.19
+
   # Shared build tools
   bunchee: ^6.4.0
   eslint-plugin-react-hooks: ^5.2.0

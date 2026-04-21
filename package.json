@@ -2,17 +2,17 @@
   "name": "ozbys-node-pubsub",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
+    "build": "vp run build",
     "catalog:check": "bun ./scripts/check-catalog-drift.ts",
-    "clean": "turbo run clean",
-    "dev": "bun ./scripts/with-doppler.ts dev turbo run dev",
-    "dev:no-doppler": "turbo run dev",
+    "clean": "vp run clean",
+    "dev": "bun ./scripts/with-doppler.ts dev vp run dev",
+    "dev:no-doppler": "vp run dev",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml}\"",
-    "lint": "turbo run lint",
+    "lint": "vp run lint",
     "lint:repo": "oxlint .",
-    "test": "turbo run test",
-    "check-types": "turbo run check-types",
+    "test": "vp run test",
+    "check-types": "vp run check-types",
     "commitlint": "commitlint",
     "secretlint": "secretlint",
     "prepare": "husky"
@@ -26,7 +26,7 @@
     "oxlint": "^1.61.0",
     "prettier": "catalog:tooling",
     "secretlint": "^9.3.0",
-    "turbo": "^2.4.4"
+    "vite-plus": "catalog:"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
