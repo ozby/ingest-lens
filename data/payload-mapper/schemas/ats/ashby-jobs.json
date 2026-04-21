@@ -1,0 +1,68 @@
+[
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "jobs",
+    "field": "id",
+    "field_type": "string",
+    "unified_key": "id",
+    "required": true,
+    "notes": "Unique stable job identifier",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "jobs",
+    "field": "name",
+    "field_type": "string",
+    "unified_key": "name",
+    "required": true,
+    "notes": "Job title displayed on the career site",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "jobs",
+    "field": "post_url",
+    "field_type": "string",
+    "unified_key": "post_url",
+    "required": false,
+    "notes": "Canonical posting URL on the Ashby career site",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "jobs",
+    "field": "employment_type",
+    "field_type": "string",
+    "unified_key": "employment_type",
+    "required": false,
+    "notes": "FullTime | PartTime | Contract | Intern",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "jobs",
+    "field": "department",
+    "field_type": "string",
+    "unified_key": "department",
+    "required": false,
+    "notes": "Department name string",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  },
+  {
+    "system": "ashby",
+    "category": "ats",
+    "model": "jobs",
+    "field": "location",
+    "field_type": "string",
+    "unified_key": "location",
+    "required": false,
+    "notes": "Location string; may be 'Remote'",
+    "source_url": "vendor-docs:ats/connectors/ashby"
+  }
+]

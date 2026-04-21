@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Payload Mapper Evaluation Metrics Spec",
+  "version": "v1",
+  "description": "Metric definitions and thresholds for the integration payload mapper eval harness",
+  "metrics": [
+    {
+      "id": "exact_mapping_accuracy",
+      "label": "Exact Mapping Accuracy",
+      "description": "Fraction of target fields where the suggested source path exactly matches the gold label",
+      "formula": "correct_exact_mappings / total_mapped_target_fields",
+      "range": [0, 1],
+      "target_threshold": 0.9,
+      "eval_sets": ["eval", "adversarial"],
+      "weight": 0.4
+    },
+    {
+      "id": "missing_field_recall",
+      "label": "Missing Field Recall",
+      "description": "Fraction of truly missing target fields that the mapper correctly identifies",
+      "formula": "correctly_identified_missing / total_truly_missing",
+      "range": [0, 1],
+      "target_threshold": 0.85,
+      "eval_sets": ["eval", "adversarial"],
+      "weight": 0.2
+    },
+    {
+      "id": "missing_field_precision",
+      "label": "Missing Field Precision",
+      "description": "Fraction of mapper-flagged missing fields that are truly missing (not false positives)",
+      "formula": "correctly_identified_missing / mapper_flagged_missing",
+      "range": [0, 1],
+      "target_threshold": 0.9,
+      "eval_sets": ["eval", "adversarial"],
+      "weight": 0.1
+    },
+    {
+      "id": "ambiguity_recall",
+      "label": "Ambiguity Detection Recall",
+      "description": "Fraction of truly ambiguous fields that the mapper correctly flags",
+      "formula": "correctly_flagged_ambiguous / total_truly_ambiguous",
+      "range": [0, 1],
+      "target_threshold": 0.8,
+      "eval_sets": ["eval", "adversarial"],
+      "weight": 0.1
+    },
+    {
+      "id": "non_hallucination_rate",
+      "label": "Non-Hallucination Rate",
+      "description": "Fraction of mapping suggestions where the source path actually exists in the payload",
+      "formula": "valid_source_paths / total_suggested_paths",
+      "range": [0, 1],
+      "target_threshold": 0.95,
+      "eval_sets": ["eval", "adversarial"],
+      "weight": 0.15,
+      "hard_gate": true,
+      "hard_gate_minimum": 0.75
+    },
+    {
+      "id": "correct_abstention_rate",
+      "label": "Correct Abstention Rate",
+      "description": "Fraction of adversarial tasks where the mapper correctly returns an empty or minimal mapping",
+      "formula": "correct_abstentions / total_adversarial_tasks_requiring_abstention",
+      "range": [0, 1],
+      "target_threshold": 0.75,
+      "eval_sets": ["adversarial"],
+      "weight": 0.05
+    }
+  ],
+  "pass_thresholds": {
+    "eval_set": {
+      "weighted_score_minimum": 0.75,
+      "non_hallucination_rate_minimum": 0.75,
+      "description": "Required for merge gate on standard eval set"
+    },
+    "adversarial_set": {
+      "weighted_score_minimum": 0.6,
+      "non_hallucination_rate_minimum": 0.75,
+      "description": "Required for merge gate on adversarial eval set"
+    }
+  },
+  "eval_sets": {
+    "eval": {
+      "file": "mapping_tasks/eval.jsonl",
+      "description": "Standard eval set; exact-match, missing-field, and ambiguity cases"
+    },
+    "adversarial": {
+      "file": "mapping_tasks/adversarial.jsonl",
+      "description": "Adversarial set; unstable IDs, unknown mappings, alias collisions, type mismatches"
+    }
+  }
+}

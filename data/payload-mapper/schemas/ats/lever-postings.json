@@ -1,0 +1,79 @@
+[
+  {
+    "system": "lever",
+    "category": "ats",
+    "model": "postings",
+    "field": "id",
+    "field_type": "string",
+    "unified_key": "id",
+    "required": true,
+    "notes": "Unique posting UUID",
+    "source_url": "https://hire.lever.co/developer/documentation#postings"
+  },
+  {
+    "system": "lever",
+    "category": "ats",
+    "model": "postings",
+    "field": "text",
+    "field_type": "string",
+    "unified_key": "name",
+    "required": true,
+    "notes": "Posting title; maps to unified 'name' field",
+    "source_url": "https://hire.lever.co/developer/documentation#postings"
+  },
+  {
+    "system": "lever",
+    "category": "ats",
+    "model": "postings",
+    "field": "state",
+    "field_type": "string",
+    "unified_key": "status",
+    "required": false,
+    "notes": "published | closed | draft | pending; maps to unified 'status'",
+    "source_url": "https://hire.lever.co/developer/documentation#postings"
+  },
+  {
+    "system": "lever",
+    "category": "ats",
+    "model": "postings",
+    "field": "team",
+    "field_type": "string",
+    "unified_key": "department",
+    "required": false,
+    "notes": "Team/department name; maps to unified 'department'",
+    "source_url": "https://hire.lever.co/developer/documentation#postings"
+  },
+  {
+    "system": "lever",
+    "category": "ats",
+    "model": "postings",
+    "field": "location",
+    "field_type": "string",
+    "unified_key": "location",
+    "required": false,
+    "notes": "Location string",
+    "source_url": "https://hire.lever.co/developer/documentation#postings"
+  },
+  {
+    "system": "lever",
+    "category": "ats",
+    "model": "postings",
+    "field": "applyUrl",
+    "field_type": "string",
+    "unified_key": "post_url",
+    "required": false,
+    "notes": "Application URL; maps to unified 'post_url'",
+    "source_url": "https://hire.lever.co/developer/documentation#postings"
+  },
+  {
+    "system": "lever",
+    "category": "ats",
+    "model": "postings",
+    "field": "workplaceType",
+    "field_type": "string",
+    "unified_key": "work_mode",
+    "required": false,
+    "notes": "remote | onsite | hybrid; no direct Ashby/Greenhouse equivalent",
+    "source_url": "https://hire.lever.co/developer/documentation#postings"
+  }
+]

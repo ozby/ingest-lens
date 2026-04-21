@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mapping-task.schema.json",
+  "title": "MappingTask",
+  "description": "A gold mapping task: maps a source payload to a target contract, including expected mappings, missing fields, and ambiguous fields",
+  "type": "object",
+  "required": [
+    "id",
+    "source_system",
+    "source_model",
+    "target_model",
+    "target_contract_version",
+    "source_payload",
+    "target_fields",
+    "expected_mapping",
+    "missing_fields",
+    "ambiguous_fields"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique task identifier, e.g. map-ashby-job-001"
+    },
+    "source_system": {
+      "type": "string",
+      "description": "Source system identifier"
+    },
+    "source_model": {
+      "type": "string",
+      "description": "Model name within the source system"
+    },
+    "target_model": {
+      "type": "string",
+      "description": "Target unified model name, e.g. job, candidate, employee"
+    },
+    "target_contract_version": {
+      "type": "string",
+      "description": "Version of the target contract, e.g. v1"
+    },
+    "source_payload": {
+      "type": "object",
+      "description": "The raw source payload to be mapped"
+    },
+    "target_fields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of unified target field names that should be populated"
+    },
+    "expected_mapping": {
+      "type": "object",
+      "description": "Gold mapping: target_field -> source_field_path expression. Empty object means abstain.",
+      "additionalProperties": { "type": "string" }
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Target fields that cannot be mapped from the source payload"
+    },
+    "ambiguous_fields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Fields where the mapping is unclear or requires operator review"
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Human-readable notes about mapping decisions, caveats, or edge cases"
+    },
+    "split": {
+      "type": "string",
+      "enum": ["train", "eval", "adversarial"],
+      "description": "Dataset split this task belongs to"
+    }
+  }
+}

@@ -1,0 +1,123 @@
+[
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "id",
+    "field_type": "string",
+    "unified_key": "id",
+    "required": true,
+    "notes": "Unified employee ID; stable across vendor updates",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "first_name",
+    "field_type": "string",
+    "unified_key": "first_name",
+    "required": true,
+    "notes": "Employee first name",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "last_name",
+    "field_type": "string",
+    "unified_key": "last_name",
+    "required": true,
+    "notes": "Employee last name",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "email",
+    "field_type": "string",
+    "unified_key": "email",
+    "required": true,
+    "notes": "Primary work email address",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "employment_type",
+    "field_type": "string",
+    "unified_key": "employment_type",
+    "required": false,
+    "notes": "full_time | part_time | contract | intern",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "department",
+    "field_type": "string",
+    "unified_key": "department",
+    "required": false,
+    "notes": "Department name",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "manager_id",
+    "field_type": "string",
+    "unified_key": "manager_id",
+    "required": false,
+    "notes": "Unified employee ID of the direct manager",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "start_date",
+    "field_type": "string",
+    "unified_key": "start_date",
+    "required": false,
+    "notes": "ISO 8601 employment start date",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "job_title",
+    "field_type": "string",
+    "unified_key": "job_title",
+    "required": false,
+    "notes": "Job title / role name",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "custom_fields",
+    "field_type": "object",
+    "unified_key": "custom_fields",
+    "required": false,
+    "notes": "Keyed by unified custom-field key; values are vendor-dependent types",
+    "source_url": "vendor-docs:hris/employees"
+  },
+  {
+    "system": "unified-api",
+    "category": "hris",
+    "model": "employees",
+    "field": "remote_fields",
+    "field_type": "array<object>",
+    "unified_key": "remote_fields",
+    "required": false,
+    "notes": "Unmapped vendor-specific fields surfaced for operator review",
+    "source_url": "vendor-docs:hris/employees"
+  }
+]

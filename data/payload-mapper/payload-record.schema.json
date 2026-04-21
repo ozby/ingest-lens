@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "payload-record.schema.json",
+  "title": "PayloadRecord",
+  "description": "A source payload envelope for a single ATS or HRIS event or record",
+  "type": "object",
+  "required": ["id", "source_system", "source_model", "source_kind", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique deterministic identifier for this payload record"
+    },
+    "source_system": {
+      "type": "string",
+      "description": "Source system identifier, e.g. ashby, greenhouse, lever, personio_like"
+    },
+    "source_model": {
+      "type": "string",
+      "description": "Model name within the source system"
+    },
+    "source_kind": {
+      "type": "string",
+      "enum": ["public_dataset", "synthetic", "event_platform"],
+      "description": "Data provenance: public_dataset from open-apply-jobs, synthetic from docs, or event_platform"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Raw source payload object; shape varies by source_system and source_model"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "Provenance URL for the data source"
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Optional notes about this specific payload record"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Payload Mapper Source Manifest",
+  "description": "Frozen source manifest for all vendor docs and public datasets used in the payload mapper dataset pack",
+  "fetch_date": "2026-04-22",
+  "sources": [
+    {
+      "id": "ashby-connector",
+      "system": "ashby",
+      "category": "ats",
+      "label": "Ashby ATS Connector Docs",
+      "url": "vendor-docs:ats/connectors/ashby",
+      "scope": ["jobs", "candidates", "applications"],
+      "notes": "Candidate IDs may change after deduplication; application IDs are safer for progression tracking",
+      "models": ["jobs", "candidates", "applications"]
+    },
+    {
+      "id": "custom-fields",
+      "system": "unified-api",
+      "category": "hris",
+      "label": "Custom Fields Feature Docs",
+      "url": "vendor-docs:features/custom-fields",
+      "scope": ["custom_fields", "aliases", "remote_fields"],
+      "notes": "custom_fields is a JSON object; values may be strings, numbers, objects, or arrays; aliases map remote names to unified keys",
+      "models": ["employees", "custom_fields"]
+    },
+    {
+      "id": "create-employee",
+      "system": "unified-api",
+      "category": "hris",
+      "label": "Create Employee / Smart Field Mapping Docs",
+      "url": "vendor-docs:hris/employees/create",
+      "scope": ["employee", "unified_keys", "smart_field_mapping"],
+      "notes": "Smart field mapping uses unified keys; operators can self-serve field alignment",
+      "models": ["employees"]
+    },
+    {
+      "id": "greenhouse-connector",
+      "system": "greenhouse",
+      "category": "ats",
+      "label": "Greenhouse ATS API",
+      "url": "https://developers.greenhouse.io/harvest.html",
+      "scope": ["jobs", "candidates", "applications"],
+      "notes": "Public Harvest API; job IDs are stable; stage IDs are per-pipeline",
+      "models": ["jobs", "candidates", "applications"]
+    },
+    {
+      "id": "lever-connector",
+      "system": "lever",
+      "category": "ats",
+      "label": "Lever Postings API",
+      "url": "https://hire.lever.co/developer/documentation",
+      "scope": ["postings", "opportunities", "candidates"],
+      "notes": "Lever uses 'postings' not 'jobs'; 'opportunities' for applications",
+      "models": ["postings", "opportunities"]
+    },
+    {
+      "id": "open-apply-jobs",
+      "system": "multi-ats",
+      "category": "public_dataset",
+      "label": "Open Apply Jobs Dataset",
+      "url": "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
+      "scope": ["job_posting_snapshot"],
+      "notes": "Daily full snapshot of active public postings from Ashby, Greenhouse, Lever; not an event stream",
+      "models": ["job_posting_snapshot"]
+    },
+    {
+      "id": "downstream-webhooks",
+      "system": "event-platform",
+      "category": "platform",
+      "label": "Downstream Webhook Delivery Docs",
+      "url": "vendor-docs:platform/webhooks",
+      "scope": ["event", "endpoint_delivery_payload"],
+      "notes": "Webhook docs provide product rationale; not a direct mapping data source",
+      "models": ["event", "endpoint_delivery_payload"]
+    }
+  ]
+}

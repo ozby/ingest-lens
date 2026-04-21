@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schema-record.schema.json",
+  "title": "SchemaRecord",
+  "description": "A single field definition extracted from a vendor or unified-API schema",
+  "type": "object",
+  "required": ["system", "category", "model", "field", "field_type", "unified_key", "required"],
+  "additionalProperties": false,
+  "properties": {
+    "system": {
+      "type": "string",
+      "description": "Source system identifier, e.g. ashby, greenhouse, lever, unified-api"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["ats", "hris", "lms", "payroll", "platform", "public_dataset"],
+      "description": "Integration category"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model name within the system, e.g. jobs, candidates, employees"
+    },
+    "field": {
+      "type": "string",
+      "description": "Field name as exposed by the source system"
+    },
+    "field_type": {
+      "type": "string",
+      "description": "Field type, e.g. string, integer, boolean, array<string>, object"
+    },
+    "unified_key": {
+      "type": "string",
+      "description": "The unified/canonical key this field maps to"
+    },
+    "required": {
+      "type": "boolean",
+      "description": "Whether this field is required by the source system"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Human-readable notes about mapping semantics or edge cases"
+    },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Alternative remote field names that map to the same unified key"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "Reference URL or vendor-docs identifier for provenance"
+    }
+  }
+}

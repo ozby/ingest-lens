@@ -1,0 +1,89 @@
+{
+  "system": "unified-api",
+  "category": "hris",
+  "source_url": "vendor-docs:hris/employees/create",
+  "fetch_date": "2026-04-22",
+  "description": "Create employee endpoint with smart field mapping; operators use unified keys for cross-vendor field alignment",
+  "smart_field_mapping": {
+    "description": "The create-employee flow highlights unified keys for cross-vendor field alignment. Operators self-serve to map vendor-specific field names to unified keys.",
+    "unified_keys_example": {
+      "first_name": "First name of the employee",
+      "last_name": "Last name of the employee",
+      "email": "Primary work email address",
+      "employment_type": "full_time | part_time | contract | intern",
+      "department": "Department name or ID",
+      "manager_id": "Unified ID of the employee's manager",
+      "start_date": "ISO 8601 employment start date",
+      "job_title": "Job title / role name"
+    }
+  },
+  "models": {
+    "employees": {
+      "fields": [
+        {
+          "field": "first_name",
+          "field_type": "string",
+          "unified_key": "first_name",
+          "required": true,
+          "notes": "Employee first name"
+        },
+        {
+          "field": "last_name",
+          "field_type": "string",
+          "unified_key": "last_name",
+          "required": true,
+          "notes": "Employee last name"
+        },
+        {
+          "field": "email",
+          "field_type": "string",
+          "unified_key": "email",
+          "required": true,
+          "notes": "Primary work email"
+        },
+        {
+          "field": "employment_type",
+          "field_type": "string",
+          "unified_key": "employment_type",
+          "required": false,
+          "notes": "full_time | part_time | contract | intern"
+        },
+        {
+          "field": "department",
+          "field_type": "string",
+          "unified_key": "department",
+          "required": false,
+          "notes": "Department name"
+        },
+        {
+          "field": "manager_id",
+          "field_type": "string",
+          "unified_key": "manager_id",
+          "required": false,
+          "notes": "Unified employee ID of the manager"
+        },
+        {
+          "field": "start_date",
+          "field_type": "string",
+          "unified_key": "start_date",
+          "required": false,
+          "notes": "ISO 8601 employment start date"
+        },
+        {
+          "field": "job_title",
+          "field_type": "string",
+          "unified_key": "job_title",
+          "required": false,
+          "notes": "Job title / role name"
+        },
+        {
+          "field": "custom_fields",
+          "field_type": "object",
+          "unified_key": "custom_fields",
+          "required": false,
+          "notes": "Keyed by unified custom-field key; values are vendor-dependent types"
+        }
+      ]
+    }
+  }
+}
