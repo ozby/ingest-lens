@@ -1,0 +1,6 @@
+name: node-pubsub
+runtime:
+  name: nodejs
+  options:
+    nodeargs: --import tsx
+description: Cloudflare infrastructure for node-pubsub
