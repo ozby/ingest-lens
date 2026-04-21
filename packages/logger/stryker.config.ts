@@ -1,6 +1,4 @@
-import type { Config } from "@stryker-mutator/core";
-
-const config: Config = {
+export default {
   testRunner: "jest",
   checkers: ["typescript"],
   tsconfigFile: "tsconfig.json",
@@ -9,5 +7,3 @@ const config: Config = {
   incremental: true,
   incrementalFile: ".stryker-incremental.json",
 };
-
-export default config;
