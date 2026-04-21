@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: XL
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "0% (drafted)"
+progress: "100%"
 depends_on:
   - doppler-secrets
   - pnpm-catalogs-adoption
