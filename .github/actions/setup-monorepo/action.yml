@@ -1,0 +1,27 @@
+name: Setup monorepo
+description: Checkout, install Node 22 + pnpm 9, restore pnpm store cache
+
+inputs:
+  fetch-depth:
+    description: Git fetch depth
+    default: "1"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: pnpm
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      shell: bash

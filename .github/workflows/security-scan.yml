@@ -1,0 +1,33 @@
+name: Security scan
+
+on:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *" # nightly on main
+  workflow_dispatch:
+
+jobs:
+  scan:
+    name: Secret + dependency scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: OSV Scanner
+        uses: google/osv-scanner-action@v2
+        with:
+          scan-args: |-
+            --recursive
+            ./
+
+      - name: Secretlint
+        run: |
+          pnpm exec secretlint "**/*"
+        continue-on-error: false

@@ -2,103 +2,68 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-and-test:
+  setup:
+    name: Install
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: ./.github/actions/setup-monorepo
+      - run: pnpm lint
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8.15.6
+  check-types:
+    name: Type check
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: ./.github/actions/setup-monorepo
+      - run: pnpm check-types
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: ./.github/actions/setup-monorepo
+      - run: pnpm test
 
-      - name: Cache pnpm modules
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+  catalog-drift:
+    name: Catalog drift
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: ./.github/actions/setup-monorepo
+      - run: pnpm catalog:check
 
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Check catalog drift
-        run: pnpm catalog:check
-
-      - name: Lint
-        id: lint
-        run: pnpm lint
-        continue-on-error: true
-
-      - name: Test
-        id: test
-        run: pnpm test
-        continue-on-error: true
-
-      - name: Check Results
-        if: steps.lint.outcome == 'failure' || steps.test.outcome == 'failure'
-        run: |
-          echo "Lint status: ${{ steps.lint.outcome }}"
-          echo "Test status: ${{ steps.test.outcome }}"
-          exit 1
+  blueprint-validate:
+    name: Blueprint validation
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: ./.github/actions/setup-monorepo
+      - run: bun ./scripts/validate-blueprints.ts
 
   mutation:
-    name: Mutation testing (affected)
+    name: Mutation (affected)
     runs-on: ubuntu-latest
-    needs: [lint-and-test]
+    needs: [test]
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-monorepo
         with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run mutation on affected packages
-        run: bun ./scripts/affected-mutation.ts
+          fetch-depth: "0"
+      - run: bun ./scripts/affected-mutation.ts
