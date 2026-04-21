@@ -10,8 +10,9 @@
  * Run with: bun ./scripts/check-catalog-drift.ts
  */
 
-import { readFileSync, readdirSync, statSync, existsSync } from "fs";
-import { join, resolve } from "path";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { join, resolve } from "node:path";
+import process from "node:process";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -142,7 +143,7 @@ function discoverWorkspacePackages(root: string): string[] {
 // Main
 // ---------------------------------------------------------------------------
 
-const ROOT = resolve(import.meta.dir, "..");
+const ROOT = resolve(process.cwd());
 const workspaceYamlText = readFileSync(join(ROOT, "pnpm-workspace.yaml"), "utf-8");
 const catalogNames = parseCatalogNames(workspaceYamlText);
 
