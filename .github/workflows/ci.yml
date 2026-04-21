@@ -43,6 +43,9 @@ jobs:
     - name: Install Dependencies
       run: pnpm install
 
+    - name: Check catalog drift
+      run: pnpm catalog:check
+
     - name: Lint
       id: lint
       run: pnpm lint

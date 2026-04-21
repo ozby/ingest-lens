@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "catalog:check": "bun ./scripts/check-catalog-drift.ts",
     "clean": "turbo run clean",
     "dev": "turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -12,9 +13,9 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "prettier": "^3.5.3",
+    "prettier": "catalog:tooling",
     "turbo": "^2.4.4",
-    "husky": "^9.0.7"
+    "husky": "catalog:"
   },
   "packageManager": "pnpm@9.15.2",
   "engines": {

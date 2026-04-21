@@ -4,15 +4,196 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@jest/globals':
+      specifier: ^29.7.0
+      version: 29.7.0
+    '@radix-ui/react-checkbox':
+      specifier: ^1.1.1
+      version: 1.1.4
+    '@radix-ui/react-dialog':
+      specifier: ^1.1.2
+      version: 1.1.6
+    '@radix-ui/react-dropdown-menu':
+      specifier: ^2.1.1
+      version: 2.1.6
+    '@radix-ui/react-label':
+      specifier: ^2.1.0
+      version: 2.1.2
+    '@radix-ui/react-select':
+      specifier: ^2.1.1
+      version: 2.1.6
+    '@radix-ui/react-slot':
+      specifier: ^1.1.0
+      version: 1.1.2
+    '@radix-ui/react-tabs':
+      specifier: ^1.1.0
+      version: 1.1.3
+    '@radix-ui/react-toast':
+      specifier: ^1.2.1
+      version: 1.2.6
+    '@radix-ui/react-tooltip':
+      specifier: ^1.1.4
+      version: 1.1.8
+    '@types/axios':
+      specifier: ^0.9.36
+      version: 0.9.36
+    '@types/cors':
+      specifier: ^2.8.17
+      version: 2.8.17
+    '@types/express':
+      specifier: 4.17.17
+      version: 4.17.17
+    '@types/jest':
+      specifier: ^29.5.12
+      version: 29.5.14
+    '@types/jsonwebtoken':
+      specifier: ^9.0.9
+      version: 9.0.9
+    '@types/mongoose':
+      specifier: ^5.11.96
+      version: 5.11.97
+    '@types/morgan':
+      specifier: ^1.9.9
+      version: 1.9.9
+    '@types/node':
+      specifier: ^22.13.9
+      version: 22.13.9
+    '@types/react':
+      specifier: ^18.3.18
+      version: 18.3.18
+    '@types/react-dom':
+      specifier: ^18.3.5
+      version: 18.3.5
+    '@types/supertest':
+      specifier: ^6.0.2
+      version: 6.0.2
+    axios:
+      specifier: ^1.8.3
+      version: 1.8.4
+    bunchee:
+      specifier: ^6.4.0
+      version: 6.4.0
+    class-variance-authority:
+      specifier: ^0.7.1
+      version: 0.7.1
+    clsx:
+      specifier: ^2.1.1
+      version: 2.1.1
+    cors:
+      specifier: ^2.8.5
+      version: 2.8.5
+    dotenv:
+      specifier: ^16.4.5
+      version: 16.4.7
+    eslint-plugin-react-hooks:
+      specifier: ^5.2.0
+      version: 5.2.0
+    express:
+      specifier: ^5.0.1
+      version: 5.0.1
+    helmet:
+      specifier: ^7.1.0
+      version: 7.2.0
+    husky:
+      specifier: ^9.0.7
+      version: 9.1.7
+    jest-environment-jsdom:
+      specifier: ^29.7.0
+      version: 29.7.0
+    jsonwebtoken:
+      specifier: ^9.0.2
+      version: 9.0.2
+    lint-staged:
+      specifier: ^15.2.0
+      version: 15.5.0
+    lucide-react:
+      specifier: ^0.462.0
+      version: 0.462.0
+    mongodb-memory-server:
+      specifier: ^10.1.4
+      version: 10.1.4
+    mongoose:
+      specifier: ^8.0.3
+      version: 8.12.1
+    morgan:
+      specifier: ^1.10.0
+      version: 1.10.0
+    next-themes:
+      specifier: ^0.3.0
+      version: 0.3.0
+    react:
+      specifier: ^18.3.1
+      version: 18.3.1
+    react-dom:
+      specifier: ^18.3.1
+      version: 18.3.1
+    react-hook-form:
+      specifier: ^7.53.0
+      version: 7.54.2
+    sonner:
+      specifier: ^1.5.0
+      version: 1.7.4
+    supertest:
+      specifier: ^7.0.0
+      version: 7.0.0
+    tailwind-merge:
+      specifier: ^2.5.2
+      version: 2.6.0
+    tailwindcss:
+      specifier: ^3.4.11
+      version: 3.4.17
+    tailwindcss-animate:
+      specifier: ^1.0.7
+      version: 1.0.7
+    ts-node:
+      specifier: ^10.9.2
+      version: 10.9.2
+    tsup:
+      specifier: ^8.4.0
+      version: 8.4.0
+    uuid:
+      specifier: ^9.0.1
+      version: 9.0.1
+    winston:
+      specifier: ^3.11.0
+      version: 3.17.0
+  tooling:
+    '@eslint/js':
+      specifier: ^9.22.0
+      version: 9.22.0
+    eslint:
+      specifier: ^9.22.0
+      version: 9.22.0
+    globals:
+      specifier: ^16.0.0
+      version: 16.0.0
+    jest:
+      specifier: ^29.7.0
+      version: 29.7.0
+    prettier:
+      specifier: ^3.5.3
+      version: 3.5.3
+    ts-jest:
+      specifier: ^29.2.6
+      version: 29.2.6
+    typescript:
+      specifier: 5.8.2
+      version: 5.8.2
+    typescript-eslint:
+      specifier: ^8.26.0
+      version: 8.26.0
+
 importers:
 
   .:
     devDependencies:
       husky:
-        specifier: ^9.0.7
+        specifier: 'catalog:'
         version: 9.1.7
       prettier:
-        specifier: ^3.5.3
+        specifier: catalog:tooling
         version: 3.5.3
       turbo:
         specifier: ^2.4.4
@@ -27,19 +208,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/types
       axios:
-        specifier: ^1.8.3
+        specifier: 'catalog:'
         version: 1.8.4(debug@4.4.0)
       body-parser:
         specifier: ^1.20.3
         version: 1.20.3
       cors:
-        specifier: ^2.8.5
+        specifier: 'catalog:'
         version: 2.8.5
       dotenv:
-        specifier: ^16.3.1
+        specifier: 'catalog:'
         version: 16.4.7
       express:
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       express-rate-limit:
         specifier: ^7.1.5
@@ -48,19 +229,19 @@ importers:
         specifier: ^7.0.1
         version: 7.2.1
       helmet:
-        specifier: ^7.1.0
+        specifier: 'catalog:'
         version: 7.2.0
       jsonwebtoken:
-        specifier: ^9.0.2
+        specifier: 'catalog:'
         version: 9.0.2
       mongodb-memory-server:
-        specifier: ^10.1.4
+        specifier: 'catalog:'
         version: 10.1.4(@aws-sdk/credential-providers@3.775.0)(socks@2.8.4)
       mongoose:
-        specifier: ^8.0.3
+        specifier: 'catalog:'
         version: 8.12.1(@aws-sdk/credential-providers@3.775.0)(socks@2.8.4)
       morgan:
-        specifier: ^1.10.0
+        specifier: 'catalog:'
         version: 1.10.0
       socket.io:
         specifier: ^4.7.2
@@ -69,14 +250,14 @@ importers:
         specifier: ^4.8.1
         version: 4.8.1
       uuid:
-        specifier: ^9.0.1
+        specifier: 'catalog:'
         version: 9.0.1
       winston:
-        specifier: ^3.11.0
+        specifier: 'catalog:'
         version: 3.17.0
     devDependencies:
       '@jest/globals':
-        specifier: ^29.7.0
+        specifier: 'catalog:'
         version: 29.7.0
       '@repo/eslint-config':
         specifier: workspace:*
@@ -91,37 +272,37 @@ importers:
         specifier: ^7.12.6
         version: 7.12.6
       '@types/axios':
-        specifier: ^0.9.36
+        specifier: 'catalog:'
         version: 0.9.36
       '@types/body-parser':
         specifier: ^1.19.5
         version: 1.19.5
       '@types/cors':
-        specifier: ^2.8.17
+        specifier: 'catalog:'
         version: 2.8.17
       '@types/express':
-        specifier: 4.17.17
+        specifier: 'catalog:'
         version: 4.17.17
       '@types/jest':
-        specifier: ^29.5.11
+        specifier: 'catalog:'
         version: 29.5.14
       '@types/jsonwebtoken':
-        specifier: ^9.0.9
+        specifier: 'catalog:'
         version: 9.0.9
       '@types/mongoose':
-        specifier: ^5.11.96
+        specifier: 'catalog:'
         version: 5.11.97(@aws-sdk/credential-providers@3.775.0)(socks@2.8.4)
       '@types/morgan':
-        specifier: ^1.9.9
+        specifier: 'catalog:'
         version: 1.9.9
       '@types/node':
-        specifier: ^22.13.9
+        specifier: 'catalog:'
         version: 22.13.9
       '@types/socket.io-client':
         specifier: ^1.4.36
         version: 1.4.36
       '@types/supertest':
-        specifier: ^6.0.2
+        specifier: 'catalog:'
         version: 6.0.2
       '@types/uuid':
         specifier: ^9.0.7
@@ -142,37 +323,37 @@ importers:
         specifier: ^12.0.0
         version: 12.1.0(encoding@0.1.13)
       eslint:
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0(jiti@1.21.7)
       husky:
-        specifier: ^8.0.3
-        version: 8.0.3
+        specifier: 'catalog:'
+        version: 9.1.7
       jest:
-        specifier: ^29.7.0
+        specifier: catalog:tooling
         version: 29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       lint-staged:
-        specifier: ^15.2.0
+        specifier: 'catalog:'
         version: 15.5.0
       nodemon:
         specifier: ^3.0.2
         version: 3.1.9
       prettier:
-        specifier: ^3.1.1
+        specifier: catalog:tooling
         version: 3.5.3
       supertest:
-        specifier: ^7.0.0
+        specifier: 'catalog:'
         version: 7.0.0
       ts-jest:
-        specifier: ^29.1.1
+        specifier: catalog:tooling
         version: 29.2.6(@babel/core@7.26.9)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.9))(esbuild@0.25.0)(jest@29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2)))(typescript@5.8.2)
       ts-node:
-        specifier: ^10.9.2
+        specifier: 'catalog:'
         version: 10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2)
       tsup:
-        specifier: ^8.4.0
+        specifier: 'catalog:'
         version: 8.4.0(@swc/core@1.11.11(@swc/helpers@0.5.15))(jiti@1.21.7)(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
       typescript:
-        specifier: 5.8.2
+        specifier: catalog:tooling
         version: 5.8.2
 
   apps/client:
@@ -193,7 +374,7 @@ importers:
         specifier: ^1.1.0
         version: 1.1.3(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-checkbox':
-        specifier: ^1.1.1
+        specifier: 'catalog:'
         version: 1.1.4(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-collapsible':
         specifier: ^1.1.0
@@ -202,16 +383,16 @@ importers:
         specifier: ^2.2.1
         version: 2.2.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-dialog':
-        specifier: ^1.1.2
+        specifier: 'catalog:'
         version: 1.1.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-dropdown-menu':
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-hover-card':
         specifier: ^1.1.1
         version: 1.1.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-label':
-        specifier: ^2.1.0
+        specifier: 'catalog:'
         version: 2.1.2(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-menubar':
         specifier: ^1.1.1
@@ -232,7 +413,7 @@ importers:
         specifier: ^1.1.0
         version: 1.2.3(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-select':
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-separator':
         specifier: ^1.1.0
@@ -241,16 +422,16 @@ importers:
         specifier: ^1.2.0
         version: 1.2.3(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot':
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.2(@types/react@18.3.18)(react@18.3.1)
       '@radix-ui/react-switch':
         specifier: ^1.1.0
         version: 1.1.3(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-tabs':
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.3(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-toast':
-        specifier: ^1.2.1
+        specifier: 'catalog:'
         version: 1.2.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-toggle':
         specifier: ^1.1.0
@@ -259,7 +440,7 @@ importers:
         specifier: ^1.1.0
         version: 1.1.2(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-tooltip':
-        specifier: ^1.1.4
+        specifier: 'catalog:'
         version: 1.1.8(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@repo/logger':
         specifier: workspace:*
@@ -274,13 +455,13 @@ importers:
         specifier: ^5.56.2
         version: 5.69.0(react@18.3.1)
       axios:
-        specifier: ^1.8.3
+        specifier: 'catalog:'
         version: 1.8.4(debug@4.4.0)
       class-variance-authority:
-        specifier: ^0.7.1
+        specifier: 'catalog:'
         version: 0.7.1
       clsx:
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       cmdk:
         specifier: ^1.0.0
@@ -295,22 +476,22 @@ importers:
         specifier: ^1.2.4
         version: 1.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       lucide-react:
-        specifier: ^0.462.0
+        specifier: 'catalog:'
         version: 0.462.0(react@18.3.1)
       next-themes:
-        specifier: ^0.3.0
+        specifier: 'catalog:'
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-day-picker:
         specifier: ^8.10.1
         version: 8.10.1(date-fns@3.6.0)(react@18.3.1)
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-hook-form:
-        specifier: ^7.53.0
+        specifier: 'catalog:'
         version: 7.54.2(react@18.3.1)
       react-resizable-panels:
         specifier: ^2.1.3
@@ -322,13 +503,13 @@ importers:
         specifier: ^2.12.7
         version: 2.15.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
-        specifier: ^1.5.0
+        specifier: 'catalog:'
         version: 1.7.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.5.2
+        specifier: 'catalog:'
         version: 2.6.0
       tailwindcss-animate:
-        specifier: ^1.0.7
+        specifier: 'catalog:'
         version: 1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2)))
       vaul:
         specifier: ^0.9.3
@@ -338,7 +519,7 @@ importers:
         version: 3.24.2
     devDependencies:
       '@eslint/js':
-        specifier: ^9.9.0
+        specifier: catalog:tooling
         version: 9.22.0
       '@repo/eslint-config':
         specifier: workspace:*
@@ -362,16 +543,16 @@ importers:
         specifier: ^14.5.2
         version: 14.6.1(@testing-library/dom@9.3.4)
       '@types/jest':
-        specifier: ^29.5.12
+        specifier: 'catalog:'
         version: 29.5.14
       '@types/node':
-        specifier: ^22.5.5
+        specifier: 'catalog:'
         version: 22.13.9
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.18
       '@types/react-dom':
-        specifier: ^18.3.5
+        specifier: 'catalog:'
         version: 18.3.5(@types/react@18.3.18)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
@@ -383,25 +564,25 @@ importers:
         specifier: ^10.4.20
         version: 10.4.21(postcss@8.5.3)
       dotenv:
-        specifier: ^16.4.5
+        specifier: 'catalog:'
         version: 16.4.7
       eslint:
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0(jiti@1.21.7)
       eslint-plugin-react-hooks:
-        specifier: ^5.1.0-rc.0
+        specifier: 'catalog:'
         version: 5.2.0(eslint@9.22.0(jiti@1.21.7))
       eslint-plugin-react-refresh:
         specifier: ^0.4.9
         version: 0.4.19(eslint@9.22.0(jiti@1.21.7))
       globals:
-        specifier: ^15.9.0
-        version: 15.15.0
+        specifier: catalog:tooling
+        version: 16.0.0
       jest:
-        specifier: ^29.7.0
+        specifier: catalog:tooling
         version: 29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       jest-environment-jsdom:
-        specifier: ^29.7.0
+        specifier: 'catalog:'
         version: 29.7.0
       lovable-tagger:
         specifier: ^1.1.7
@@ -410,16 +591,16 @@ importers:
         specifier: ^8.4.47
         version: 8.5.3
       tailwindcss:
-        specifier: ^3.4.11
+        specifier: 'catalog:'
         version: 3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       ts-jest:
-        specifier: ^29.1.2
+        specifier: catalog:tooling
         version: 29.2.6(@babel/core@7.26.9)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.9))(esbuild@0.25.0)(jest@29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2)))(typescript@5.8.2)
       typescript:
-        specifier: 5.8.2
+        specifier: catalog:tooling
         version: 5.8.2
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: catalog:tooling
         version: 8.26.0(eslint@9.22.0(jiti@1.21.7))(typescript@5.8.2)
       vite:
         specifier: ^5.4.14
@@ -434,44 +615,44 @@ importers:
         specifier: workspace:*
         version: link:../../packages/types
       axios:
-        specifier: ^1.8.3
+        specifier: 'catalog:'
         version: 1.8.4(debug@4.4.0)
       cors:
-        specifier: ^2.8.5
+        specifier: 'catalog:'
         version: 2.8.5
       dotenv:
-        specifier: ^16.3.1
+        specifier: 'catalog:'
         version: 16.4.7
       express:
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       helmet:
-        specifier: ^7.1.0
+        specifier: 'catalog:'
         version: 7.2.0
       jsonwebtoken:
-        specifier: ^9.0.2
+        specifier: 'catalog:'
         version: 9.0.2
       mongodb:
         specifier: ^6.5.0
         version: 6.15.0(@aws-sdk/credential-providers@3.775.0)(socks@2.8.4)
       mongodb-memory-server:
-        specifier: ^10.1.4
+        specifier: 'catalog:'
         version: 10.1.4(@aws-sdk/credential-providers@3.775.0)(socks@2.8.4)
       mongoose:
-        specifier: ^8.0.3
+        specifier: 'catalog:'
         version: 8.12.1(@aws-sdk/credential-providers@3.775.0)(socks@2.8.4)
       morgan:
-        specifier: ^1.10.0
+        specifier: 'catalog:'
         version: 1.10.0
       uuid:
-        specifier: ^9.0.1
+        specifier: 'catalog:'
         version: 9.0.1
       winston:
-        specifier: ^3.11.0
+        specifier: 'catalog:'
         version: 3.17.0
     devDependencies:
       '@jest/globals':
-        specifier: ^29.7.0
+        specifier: 'catalog:'
         version: 29.7.0
       '@repo/eslint-config':
         specifier: workspace:*
@@ -483,73 +664,73 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
       '@types/axios':
-        specifier: ^0.9.36
+        specifier: 'catalog:'
         version: 0.9.36
       '@types/cors':
-        specifier: ^2.8.17
+        specifier: 'catalog:'
         version: 2.8.17
       '@types/express':
-        specifier: 4.17.17
+        specifier: 'catalog:'
         version: 4.17.17
       '@types/jest':
-        specifier: ^29.5.11
+        specifier: 'catalog:'
         version: 29.5.14
       '@types/jsonwebtoken':
-        specifier: ^9.0.9
+        specifier: 'catalog:'
         version: 9.0.9
       '@types/mongoose':
-        specifier: ^5.11.96
+        specifier: 'catalog:'
         version: 5.11.97(@aws-sdk/credential-providers@3.775.0)(socks@2.8.4)
       '@types/morgan':
-        specifier: ^1.9.9
+        specifier: 'catalog:'
         version: 1.9.9
       '@types/node':
-        specifier: ^22.13.9
+        specifier: 'catalog:'
         version: 22.13.9
       '@types/supertest':
-        specifier: ^6.0.2
+        specifier: 'catalog:'
         version: 6.0.2
       eslint:
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0(jiti@1.21.7)
       husky:
-        specifier: ^8.0.3
-        version: 8.0.3
+        specifier: 'catalog:'
+        version: 9.1.7
       jest:
-        specifier: ^29.7.0
+        specifier: catalog:tooling
         version: 29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       lint-staged:
-        specifier: ^15.2.0
+        specifier: 'catalog:'
         version: 15.5.0
       prettier:
-        specifier: ^3.1.1
+        specifier: catalog:tooling
         version: 3.5.3
       supertest:
-        specifier: ^7.0.0
+        specifier: 'catalog:'
         version: 7.0.0
       ts-jest:
-        specifier: ^29.1.1
+        specifier: catalog:tooling
         version: 29.2.6(@babel/core@7.26.9)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.9))(esbuild@0.25.0)(jest@29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2)))(typescript@5.8.2)
       ts-node:
-        specifier: ^10.9.2
+        specifier: 'catalog:'
         version: 10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2)
       tsup:
-        specifier: ^8.4.0
+        specifier: 'catalog:'
         version: 8.4.0(@swc/core@1.11.11(@swc/helpers@0.5.15))(jiti@1.21.7)(postcss@8.5.3)(typescript@5.8.2)(yaml@2.7.0)
       typescript:
-        specifier: 5.8.2
+        specifier: catalog:tooling
         version: 5.8.2
 
   packages/config-eslint:
     devDependencies:
       '@eslint/js':
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0
       '@next/eslint-plugin-next':
         specifier: ^15.2.1
         version: 15.2.1
       eslint:
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0(jiti@1.21.7)
       eslint-config-prettier:
         specifier: ^10.1.1
@@ -561,19 +742,19 @@ importers:
         specifier: ^7.37.4
         version: 7.37.4(eslint@9.22.0(jiti@1.21.7))
       eslint-plugin-react-hooks:
-        specifier: ^5.2.0
+        specifier: 'catalog:'
         version: 5.2.0(eslint@9.22.0(jiti@1.21.7))
       eslint-plugin-turbo:
         specifier: ^2.4.4
         version: 2.4.4(eslint@9.22.0(jiti@1.21.7))(turbo@2.4.4)
       globals:
-        specifier: ^16.0.0
+        specifier: catalog:tooling
         version: 16.0.0
       typescript:
-        specifier: ^5.8.2
+        specifier: catalog:tooling
         version: 5.8.2
       typescript-eslint:
-        specifier: ^8.26.0
+        specifier: catalog:tooling
         version: 8.26.0(eslint@9.22.0(jiti@1.21.7))(typescript@5.8.2)
 
   packages/config-typescript: {}
@@ -581,20 +762,20 @@ importers:
   packages/jest-presets:
     dependencies:
       jest:
-        specifier: ^29.7.0
+        specifier: catalog:tooling
         version: 29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       ts-jest:
-        specifier: ^29.2.6
+        specifier: catalog:tooling
         version: 29.2.6(@babel/core@7.26.9)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.9))(jest@29.7.0)(typescript@5.8.2)
     devDependencies:
       jest-environment-jsdom:
-        specifier: ^29.7.0
+        specifier: 'catalog:'
         version: 29.7.0
 
   packages/logger:
     devDependencies:
       '@jest/globals':
-        specifier: ^29.7.0
+        specifier: 'catalog:'
         version: 29.7.0
       '@repo/eslint-config':
         specifier: workspace:*
@@ -606,25 +787,25 @@ importers:
         specifier: workspace:*
         version: link:../config-typescript
       '@types/node':
-        specifier: ^22.13.9
+        specifier: 'catalog:'
         version: 22.13.9
       bunchee:
-        specifier: ^6.4.0
+        specifier: 'catalog:'
         version: 6.4.0(typescript@5.8.2)
       eslint:
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0(jiti@1.21.7)
       jest:
-        specifier: ^29.7.0
+        specifier: catalog:tooling
         version: 29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       typescript:
-        specifier: 5.8.2
+        specifier: catalog:tooling
         version: 5.8.2
 
   packages/test-utils:
     devDependencies:
       '@jest/globals':
-        specifier: ^29.7.0
+        specifier: 'catalog:'
         version: 29.7.0
       '@repo/eslint-config':
         specifier: workspace:*
@@ -636,19 +817,19 @@ importers:
         specifier: workspace:*
         version: link:../config-typescript
       '@types/node':
-        specifier: ^22.13.9
+        specifier: 'catalog:'
         version: 22.13.9
       bunchee:
-        specifier: ^6.4.0
+        specifier: 'catalog:'
         version: 6.4.0(typescript@5.8.2)
       eslint:
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0(jiti@1.21.7)
       jest:
-        specifier: ^29.7.0
+        specifier: catalog:tooling
         version: 29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       typescript:
-        specifier: 5.8.2
+        specifier: catalog:tooling
         version: 5.8.2
 
   packages/types: {}
@@ -656,31 +837,31 @@ importers:
   packages/ui:
     dependencies:
       '@radix-ui/react-checkbox':
-        specifier: ^1.1.1
+        specifier: 'catalog:'
         version: 1.1.4(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-dialog':
-        specifier: ^1.1.2
+        specifier: 'catalog:'
         version: 1.1.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-dropdown-menu':
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-label':
-        specifier: ^2.1.0
+        specifier: 'catalog:'
         version: 2.1.2(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-select':
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot':
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.2(@types/react@18.3.18)(react@18.3.1)
       '@radix-ui/react-tabs':
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.3(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-toast':
-        specifier: ^1.2.1
+        specifier: 'catalog:'
         version: 1.2.6(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-tooltip':
-        specifier: ^1.1.4
+        specifier: 'catalog:'
         version: 1.1.8(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: '>=18'
@@ -689,16 +870,16 @@ importers:
         specifier: '>=18'
         version: 18.3.5(@types/react@18.3.18)
       class-variance-authority:
-        specifier: ^0.7.1
+        specifier: 'catalog:'
         version: 0.7.1
       clsx:
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       lucide-react:
-        specifier: ^0.462.0
+        specifier: 'catalog:'
         version: 0.462.0(react@18.3.1)
       next-themes:
-        specifier: ^0.3.0
+        specifier: 'catalog:'
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: '>=18'
@@ -707,23 +888,23 @@ importers:
         specifier: '>=18'
         version: 18.3.1(react@18.3.1)
       react-hook-form:
-        specifier: ^7.53.0
+        specifier: 'catalog:'
         version: 7.54.2(react@18.3.1)
       sonner:
-        specifier: ^1.5.0
+        specifier: 'catalog:'
         version: 1.7.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.5.2
+        specifier: 'catalog:'
         version: 2.6.0
       tailwindcss:
-        specifier: ^3.4.11
+        specifier: 'catalog:'
         version: 3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       tailwindcss-animate:
-        specifier: ^1.0.7
+        specifier: 'catalog:'
         version: 1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2)))
     devDependencies:
       '@jest/globals':
-        specifier: ^29.7.0
+        specifier: 'catalog:'
         version: 29.7.0
       '@repo/eslint-config':
         specifier: workspace:*
@@ -735,19 +916,19 @@ importers:
         specifier: workspace:*
         version: link:../config-typescript
       '@types/node':
-        specifier: ^22.13.9
+        specifier: 'catalog:'
         version: 22.13.9
       bunchee:
-        specifier: ^6.4.0
+        specifier: 'catalog:'
         version: 6.4.0(typescript@5.8.2)
       eslint:
-        specifier: ^9.22.0
+        specifier: catalog:tooling
         version: 9.22.0(jiti@1.21.7)
       jest:
-        specifier: ^29.7.0
+        specifier: catalog:tooling
         version: 29.7.0(@types/node@22.13.9)(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))
       typescript:
-        specifier: 5.8.2
+        specifier: catalog:tooling
         version: 5.8.2
 
 packages:
@@ -3148,20 +3329,8 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
-  '@swc/core-darwin-arm64@1.11.5':
-    resolution: {integrity: sha512-GEd1hzEx0mSGkJYMFMGLnrGgjL2rOsOsuYWyjyiA3WLmhD7o+n/EWBDo6mzD/9aeF8dzSPC0TnW216gJbvrNzA==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [darwin]
-
   '@swc/core-darwin-x64@1.11.11':
     resolution: {integrity: sha512-/N4dGdqEYvD48mCF3QBSycAbbQd3yoZ2YHSzYesQf8usNc2YpIhYqEH3sql02UsxTjEFOJSf1bxZABDdhbSl6A==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [darwin]
-
-  '@swc/core-darwin-x64@1.11.5':
-    resolution: {integrity: sha512-toz04z9wAClVvQSEY3xzrgyyeWBAfMWcKG4K0ugNvO56h/wczi2ZHRlnAXZW1tghKBk3z6MXqa/srfXgNhffKw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [darwin]
@@ -3172,20 +3341,8 @@ packages:
     cpu: [arm]
     os: [linux]
 
-  '@swc/core-linux-arm-gnueabihf@1.11.5':
-    resolution: {integrity: sha512-5SjmKxXdwbBpsYGTpgeXOXMIjS563/ntRGn8Zc12H/c4VfPrRLGhgbJ/48z2XVFyBLcw7BCHZyFuVX1+ZI3W0Q==}
-    engines: {node: '>=10'}
-    cpu: [arm]
-    os: [linux]
-
   '@swc/core-linux-arm64-gnu@1.11.11':
     resolution: {integrity: sha512-YOCdxsqbnn/HMPCNM6nrXUpSndLXMUssGTtzT7ffXqr7WuzRg2e170FVDVQFIkb08E7Ku5uOnnUVAChAJQbMOQ==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@swc/core-linux-arm64-gnu@1.11.5':
-    resolution: {integrity: sha512-pydIlInHRzRIwB0NHblz3Dx58H/bsi0I5F2deLf9iOmwPNuOGcEEZF1Qatc7YIjP5DFbXK+Dcz+pMUZb2cc2MQ==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
@@ -3196,20 +3353,8 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-  '@swc/core-linux-arm64-musl@1.11.5':
-    resolution: {integrity: sha512-LhBHKjkZq5tJF1Lh0NJFpx7ROnCWLckrlIAIdSt9XfOV+zuEXJQOj+NFcM1eNk17GFfFyUMOZyGZxzYq5dveEQ==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [linux]
-
   '@swc/core-linux-x64-gnu@1.11.11':
     resolution: {integrity: sha512-b4gBp5HA9xNWNC5gsYbdzGBJWx4vKSGybGMGOVWWuF+ynx10+0sA/o4XJGuNHm8TEDuNh9YLKf6QkIO8+GPJ1g==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [linux]
-
-  '@swc/core-linux-x64-gnu@1.11.5':
-    resolution: {integrity: sha512-dCi4xkxXlsk5sQYb3i413Cfh7+wMJeBYTvBZTD5xh+/DgRtIcIJLYJ2tNjWC4/C2i5fj+Ze9bKNSdd8weRWZ3A==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
@@ -3220,20 +3365,8 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@swc/core-linux-x64-musl@1.11.5':
-    resolution: {integrity: sha512-K0AC4TreM5Oo/tXNXnE/Gf5+5y/HwUdd7xvUjOpZddcX/RlsbYOKWLgOtA3fdFIuta7XC+vrGKmIhm5l70DSVQ==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [linux]
-
   '@swc/core-win32-arm64-msvc@1.11.11':
     resolution: {integrity: sha512-aZNZznem9WRnw2FbTqVpnclvl8Q2apOBW2B316gZK+qxbe+ktjOUnYaMhdCG3+BYggyIBDOnaJeQrXbKIMmNdw==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [win32]
-
-  '@swc/core-win32-arm64-msvc@1.11.5':
-    resolution: {integrity: sha512-wzum8sYUsvPY7kgUfuqVYTgIPYmBC8KPksoNM1fz5UfhudU0ciQuYvUBD47GIGOevaoxhLkjPH4CB95vh1mJ9w==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [win32]
@@ -3244,35 +3377,14 @@ packages:
     cpu: [ia32]
     os: [win32]
 
-  '@swc/core-win32-ia32-msvc@1.11.5':
-    resolution: {integrity: sha512-lco7mw0TPRTpVPR6NwggJpjdUkAboGRkLrDHjIsUaR+Y5+0m5FMMkHOMxWXAbrBS5c4ph7QErp4Lma4r9Mn5og==}
-    engines: {node: '>=10'}
-    cpu: [ia32]
-    os: [win32]
-
   '@swc/core-win32-x64-msvc@1.11.11':
     resolution: {integrity: sha512-Gp/SLoeMtsU4n0uRoKDOlGrRC6wCfifq7bqLwSlAG8u8MyJYJCcwjg7ggm0rhLdC2vbiZ+lLVl3kkETp+JUvKg==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [win32]
 
-  '@swc/core-win32-x64-msvc@1.11.5':
-    resolution: {integrity: sha512-E+DApLSC6JRK8VkDa4bNsBdD7Qoomx1HvKVZpOXl9v94hUZI5GMExl4vU5isvb+hPWL7rZ0NeI7ITnVLgLJRbA==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [win32]
-
   '@swc/core@1.11.11':
     resolution: {integrity: sha512-pCVY2Wn6dV/labNvssk9b3Owi4WOYsapcbWm90XkIj4xH/56Z6gzja9fsU+4MdPuEfC2Smw835nZHcdCFGyX6A==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      '@swc/helpers': '*'
-    peerDependenciesMeta:
-      '@swc/helpers':
-        optional: true
-
-  '@swc/core@1.11.5':
-    resolution: {integrity: sha512-EVY7zfpehxhTZXOfy508gb3D78ihoGGmvyiTWtlBPjgIaidP1Xw0naHMD78CWiFlZmeDjKXJufGtsEGOnZdmNA==}
     engines: {node: '>=10'}
     peerDependencies:
       '@swc/helpers': '*'
@@ -3792,6 +3904,7 @@ packages:
 
   abab@2.0.6:
     resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}
+    deprecated: Use your platform's native atob() and btoa() methods instead
 
   abbrev@2.0.0:
     resolution: {integrity: sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==}
@@ -5218,6 +5331,7 @@ packages:
   domexception@4.0.0:
     resolution: {integrity: sha512-A2is4PLG+eeSfoTMA95/s4pvAoSo2mKtiM5jlHkAVewmiO8ISFTFKZjH7UAM1Atli/OT/7JHOrJRJiMKUZKYBw==}
     engines: {node: '>=12'}
+    deprecated: Use your platform's native DOMException instead
 
   domhandler@5.0.3:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
@@ -5983,10 +6097,12 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-dirs@3.0.1:
     resolution: {integrity: sha512-NBcGGFbBA9s1VzD41QXDG+3++t9Mn5t1FpLdhESY6oKY4gYTFpX4wO3sqGUa0Srjtbfj3szX0RnemmrVRUdULA==}
@@ -5998,10 +6114,6 @@ packages:
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
-    engines: {node: '>=18'}
-
-  globals@15.15.0:
-    resolution: {integrity: sha512-7ACyT3wmyp3I61S4fG682L0VA2RGD9otkqGJIwNUMF1SWUombIIk+af1unuDYgMm082aHYwD+mzJvv9Iu8dsgg==}
     engines: {node: '>=18'}
 
   globals@16.0.0:
@@ -6217,11 +6329,6 @@ packages:
   humanize-ms@1.2.1:
     resolution: {integrity: sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==}
 
-  husky@8.0.3:
-    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
-    engines: {node: '>=14'}
-    hasBin: true
-
   husky@9.1.7:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
     engines: {node: '>=18'}
@@ -6292,6 +6399,7 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.3:
     resolution: {integrity: sha512-x00IRNXNy63jwGkJmzPigoySHbaqpNuzKbBOmzK+g2OdZpQ9w+sxCN+VSB3ja7IAge2OP2qpfxTjeNcyjmW1uw==}
@@ -8930,6 +9038,7 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+    deprecated: The work that was done in this beta branch won't be included in future versions
 
   sourcemap-codec@1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
@@ -9169,10 +9278,12 @@ packages:
   superagent@9.0.2:
     resolution: {integrity: sha512-xuW7dzkUpcJq7QnhOsnNUgtYp3xRwpt2F7abdRYIpCsAt0hhUqia0EdxyXZQQpNmGtsCzYHryaKSV3q3GJnq7w==}
     engines: {node: '>=14.18.0'}
+    deprecated: Please upgrade to superagent v10.2.2+, see release notes at https://github.com/forwardemail/superagent/releases/tag/v10.2.2 - maintenance is supported by Forward Email @ https://forwardemail.net
 
   supertest@7.0.0:
     resolution: {integrity: sha512-qlsr7fIC0lSddmA3tzojvzubYxvlGtzumcdHgPwbFWMISQwL22MhM2Y3LNt+6w9Yyx7559VW5ab70dgphm8qQA==}
     engines: {node: '>=14.18.0'}
+    deprecated: Please upgrade to supertest v7.1.3+, see release notes at https://github.com/forwardemail/supertest/releases/tag/v7.1.3 - maintenance is supported by Forward Email @ https://forwardemail.net
 
   supports-color@2.0.0:
     resolution: {integrity: sha512-KKNVtd6pCYgPIKU4cp2733HWYCpplQhddZLBUryaAHou723x+FRzQ5Df824Fj+IyyuiQTRoub4SnIFfIcrp70g==}
@@ -9861,6 +9972,7 @@ packages:
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
@@ -13238,61 +13350,31 @@ snapshots:
   '@swc/core-darwin-arm64@1.11.11':
     optional: true
 
-  '@swc/core-darwin-arm64@1.11.5':
-    optional: true
-
   '@swc/core-darwin-x64@1.11.11':
-    optional: true
-
-  '@swc/core-darwin-x64@1.11.5':
     optional: true
 
   '@swc/core-linux-arm-gnueabihf@1.11.11':
     optional: true
 
-  '@swc/core-linux-arm-gnueabihf@1.11.5':
-    optional: true
-
   '@swc/core-linux-arm64-gnu@1.11.11':
-    optional: true
-
-  '@swc/core-linux-arm64-gnu@1.11.5':
     optional: true
 
   '@swc/core-linux-arm64-musl@1.11.11':
     optional: true
 
-  '@swc/core-linux-arm64-musl@1.11.5':
-    optional: true
-
   '@swc/core-linux-x64-gnu@1.11.11':
-    optional: true
-
-  '@swc/core-linux-x64-gnu@1.11.5':
     optional: true
 
   '@swc/core-linux-x64-musl@1.11.11':
     optional: true
 
-  '@swc/core-linux-x64-musl@1.11.5':
-    optional: true
-
   '@swc/core-win32-arm64-msvc@1.11.11':
-    optional: true
-
-  '@swc/core-win32-arm64-msvc@1.11.5':
     optional: true
 
   '@swc/core-win32-ia32-msvc@1.11.11':
     optional: true
 
-  '@swc/core-win32-ia32-msvc@1.11.5':
-    optional: true
-
   '@swc/core-win32-x64-msvc@1.11.11':
-    optional: true
-
-  '@swc/core-win32-x64-msvc@1.11.5':
     optional: true
 
   '@swc/core@1.11.11(@swc/helpers@0.5.15)':
@@ -13310,23 +13392,6 @@ snapshots:
       '@swc/core-win32-arm64-msvc': 1.11.11
       '@swc/core-win32-ia32-msvc': 1.11.11
       '@swc/core-win32-x64-msvc': 1.11.11
-      '@swc/helpers': 0.5.15
-
-  '@swc/core@1.11.5(@swc/helpers@0.5.15)':
-    dependencies:
-      '@swc/counter': 0.1.3
-      '@swc/types': 0.1.19
-    optionalDependencies:
-      '@swc/core-darwin-arm64': 1.11.5
-      '@swc/core-darwin-x64': 1.11.5
-      '@swc/core-linux-arm-gnueabihf': 1.11.5
-      '@swc/core-linux-arm64-gnu': 1.11.5
-      '@swc/core-linux-arm64-musl': 1.11.5
-      '@swc/core-linux-x64-gnu': 1.11.5
-      '@swc/core-linux-x64-musl': 1.11.5
-      '@swc/core-win32-arm64-msvc': 1.11.5
-      '@swc/core-win32-ia32-msvc': 1.11.5
-      '@swc/core-win32-x64-msvc': 1.11.5
       '@swc/helpers': 0.5.15
 
   '@swc/counter@0.1.3': {}
@@ -14908,7 +14973,7 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.34.9)
       '@rollup/plugin-wasm': 6.2.2(rollup@4.34.9)
       '@rollup/pluginutils': 5.1.4(rollup@4.34.9)
-      '@swc/core': 1.11.5(@swc/helpers@0.5.15)
+      '@swc/core': 1.11.11(@swc/helpers@0.5.15)
       '@swc/helpers': 0.5.15
       clean-css: 5.3.3
       fast-glob: 3.3.3
@@ -14918,7 +14983,7 @@ snapshots:
       pretty-bytes: 5.6.0
       rollup: 4.34.9
       rollup-plugin-dts: 6.1.1(rollup@4.34.9)(typescript@5.8.2)
-      rollup-plugin-swc3: 0.11.2(@swc/core@1.11.5(@swc/helpers@0.5.15))(rollup@4.34.9)
+      rollup-plugin-swc3: 0.11.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(rollup@4.34.9)
       rollup-preserve-directives: 1.1.3(rollup@4.34.9)
       tslib: 2.8.1
       yargs: 17.7.2
@@ -16951,8 +17016,6 @@ snapshots:
 
   globals@14.0.0: {}
 
-  globals@15.15.0: {}
-
   globals@16.0.0: {}
 
   globalthis@1.0.4:
@@ -17192,8 +17255,6 @@ snapshots:
   humanize-ms@1.2.1:
     dependencies:
       ms: 2.1.3
-
-  husky@8.0.3: {}
 
   husky@9.1.7: {}
 
@@ -19962,11 +20023,11 @@ snapshots:
     optionalDependencies:
       '@babel/code-frame': 7.26.2
 
-  rollup-plugin-swc3@0.11.2(@swc/core@1.11.5(@swc/helpers@0.5.15))(rollup@4.34.9):
+  rollup-plugin-swc3@0.11.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(rollup@4.34.9):
     dependencies:
       '@fastify/deepmerge': 1.3.0
       '@rollup/pluginutils': 5.1.4(rollup@4.34.9)
-      '@swc/core': 1.11.5(@swc/helpers@0.5.15)
+      '@swc/core': 1.11.11(@swc/helpers@0.5.15)
       get-tsconfig: 4.10.0
       rollup: 4.34.9
       rollup-preserve-directives: 1.1.3(rollup@4.34.9)
