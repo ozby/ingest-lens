@@ -2,7 +2,8 @@
   "extends": "../packages/config-typescript/base.json",
   "compilerOptions": {
     "moduleResolution": "bundler",
-    "noEmit": true
+    "noEmit": true,
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"]
 }

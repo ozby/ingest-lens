@@ -803,6 +803,9 @@ importers:
         specifier: ^0.9.0
         version: 0.9.0(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.9)(typescript@5.8.2))(typescript@5.8.2)
     devDependencies:
+      "@types/node":
+        specifier: "catalog:"
+        version: 22.13.9
       "@typescript/native-preview":
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2

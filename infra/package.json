@@ -16,6 +16,7 @@
     "@pulumiverse/doppler": "^0.9.0"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "vitest": "catalog:tooling"
   }

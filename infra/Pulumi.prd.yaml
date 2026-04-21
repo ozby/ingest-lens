@@ -1,0 +1,5 @@
+config:
+  node-pubsub:domain: ozby.dev
+  # Set these via: pulumi config set --secret <key> <value> --stack prd
+  # node-pubsub:cloudflareAccountId: <your CF account ID>
+  # node-pubsub:cloudflareZoneId: <CF zone ID for ozby.dev>

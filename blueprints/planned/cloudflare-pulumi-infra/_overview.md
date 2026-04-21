@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: L
 created: "2026-04-21"
 last_updated: "2026-04-22"
-progress: "0% (drafted)"
+progress: "100%"
 depends_on:
   - doppler-secrets
   - workers-hono-port
