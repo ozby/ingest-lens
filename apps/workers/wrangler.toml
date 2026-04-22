@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "placeholder-hyperdrive-id"
-localConnectionString = "postgresql://localhost:5432/pubsub"
+localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
 
 [[queues.producers]]
 binding = "DELIVERY_QUEUE"
@@ -36,7 +36,7 @@ class_name = "TopicRoom"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["TopicRoom"]
+new_sqlite_classes = ["TopicRoom"]
 
 [vars]
 NODE_ENV = "development"

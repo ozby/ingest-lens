@@ -11,38 +11,23 @@ function makeRequest(method: string, path: string, body?: unknown): Request {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.unstubAllGlobals();
 });
 
 describe("TopicRoom", () => {
   describe("GET /ws", () => {
-    it("calls acceptWebSocket and returns 101 status", async () => {
-      const mockServer = {} as WebSocket;
-      const mockClient = {} as WebSocket;
+    it("calls acceptWebSocket with a real WebSocket and returns 101 status", async () => {
       const mockCtx = {
         acceptWebSocket: vi.fn(),
         getWebSockets: vi.fn().mockReturnValue([]),
       };
 
-      vi.stubGlobal("WebSocketPair", function () {
-        return { 0: mockClient, 1: mockServer };
-      });
-      // Node's Response rejects status 101 (CF Workers-only); stub to allow it
-      vi.stubGlobal(
-        "Response",
-        class {
-          status: number;
-          constructor(_body: null, init?: { status?: number }) {
-            this.status = init?.status ?? 200;
-          }
-        },
-      );
-
+      // No WebSocketPair stub needed — real CF Workers runtime provides it
       const room = new TopicRoom(mockCtx as unknown as DurableObjectState);
       const res = await room.fetch(makeRequest("GET", "/ws"));
 
       expect(mockCtx.acceptWebSocket).toHaveBeenCalledOnce();
-      expect(mockCtx.acceptWebSocket).toHaveBeenCalledWith(mockServer);
+      const [socket] = mockCtx.acceptWebSocket.mock.calls[0] as [WebSocket];
+      expect(socket).toBeInstanceOf(WebSocket);
       expect(res.status).toBe(101);
     });
   });

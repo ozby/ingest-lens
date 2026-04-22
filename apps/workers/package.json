@@ -1,7 +1,7 @@
 {
   "name": "@repo/workers",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "wrangler dev",
     "build": "wrangler deploy --dry-run",
@@ -10,11 +10,12 @@
     "lint": "oxlint src"
   },
   "dependencies": {
-    "hono": "catalog:workers",
     "drizzle-orm": "catalog:workers",
+    "hono": "catalog:workers",
     "postgres": "catalog:workers"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "catalog:workers",
     "@cloudflare/workers-types": "catalog:workers",
     "@typescript/native-preview": "catalog:tooling",
     "drizzle-kit": "catalog:workers",
