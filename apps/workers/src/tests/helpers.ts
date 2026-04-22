@@ -16,6 +16,7 @@ function deepFreeze<T extends object>(obj: T): Readonly<T> {
 export function createMockEnv(
   deliveryQueue?: { send: ReturnType<typeof vi.fn> },
   rateLimiter?: { limit: ReturnType<typeof vi.fn> },
+  analytics?: { writeDataPoint: ReturnType<typeof vi.fn> },
 ): Env {
   return {
     HYPERDRIVE: null as unknown as Env["HYPERDRIVE"],
@@ -25,6 +26,7 @@ export function createMockEnv(
     RATE_LIMITER: (rateLimiter ?? {
       limit: vi.fn().mockResolvedValue({ success: true }),
     }) as unknown as Env["RATE_LIMITER"],
+    ANALYTICS: (analytics ?? { writeDataPoint: vi.fn() }) as unknown as Env["ANALYTICS"],
   };
 }
 

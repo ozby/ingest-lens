@@ -38,8 +38,6 @@ function setupCreateDb(selectRows: unknown[]) {
   return chain;
 }
 
-const baseEnv = createMockEnv();
-
 const basePayload: DeliveryPayload = {
   messageId: "msg-1",
   queueId: "queue-1",
@@ -58,6 +56,8 @@ describe("handleDeliveryBatch", () => {
     setupCreateDb([mockRow]);
     const ack = vi.fn();
     const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const env = createMockEnv(undefined, undefined, { writeDataPoint });
     const msg = makeMsg(basePayload, ack, retry);
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
@@ -70,16 +70,25 @@ describe("handleDeliveryBatch", () => {
       metadata: null,
     } as unknown as MessageBatch<DeliveryPayload>;
 
-    await handleDeliveryBatch(batch, baseEnv);
+    await handleDeliveryBatch(batch, env);
 
     expect(ack).toHaveBeenCalledOnce();
     expect(retry).not.toHaveBeenCalled();
+    expect(writeDataPoint).toHaveBeenCalledOnce();
+    expect(writeDataPoint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blobs: expect.arrayContaining(["queue-1", "msg-1", "ack"]),
+        indexes: ["queue-1"],
+      }),
+    );
   });
 
   it("retries with backoff when DB row found and response is 5xx", async () => {
     setupCreateDb([mockRow]);
     const ack = vi.fn();
     const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const env = createMockEnv(undefined, undefined, { writeDataPoint });
     const msg = makeMsg(basePayload, ack, retry);
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500 }));
@@ -92,17 +101,26 @@ describe("handleDeliveryBatch", () => {
       metadata: null,
     } as unknown as MessageBatch<DeliveryPayload>;
 
-    await handleDeliveryBatch(batch, baseEnv);
+    await handleDeliveryBatch(batch, env);
 
     expect(retry).toHaveBeenCalledOnce();
     expect(retry).toHaveBeenCalledWith({ delaySeconds: 5 });
     expect(ack).not.toHaveBeenCalled();
+    expect(writeDataPoint).toHaveBeenCalledOnce();
+    expect(writeDataPoint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blobs: expect.arrayContaining(["queue-1", "msg-1", "retry"]),
+        indexes: ["queue-1"],
+      }),
+    );
   });
 
   it("retries with backoff when fetch throws a network error", async () => {
     setupCreateDb([mockRow]);
     const ack = vi.fn();
     const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const env = createMockEnv(undefined, undefined, { writeDataPoint });
     const msg = makeMsg(basePayload, ack, retry);
 
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network failure")));
@@ -115,17 +133,26 @@ describe("handleDeliveryBatch", () => {
       metadata: null,
     } as unknown as MessageBatch<DeliveryPayload>;
 
-    await handleDeliveryBatch(batch, baseEnv);
+    await handleDeliveryBatch(batch, env);
 
     expect(retry).toHaveBeenCalledOnce();
     expect(retry).toHaveBeenCalledWith({ delaySeconds: 5 });
     expect(ack).not.toHaveBeenCalled();
+    expect(writeDataPoint).toHaveBeenCalledOnce();
+    expect(writeDataPoint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blobs: expect.arrayContaining(["queue-1", "msg-1", "retry"]),
+        indexes: ["queue-1"],
+      }),
+    );
   });
 
   it("acks when DB row is missing (nothing to deliver)", async () => {
     setupCreateDb([]);
     const ack = vi.fn();
     const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const env = createMockEnv(undefined, undefined, { writeDataPoint });
     const msg = makeMsg(basePayload, ack, retry);
 
     const fetchMock = vi.fn();
@@ -139,16 +166,23 @@ describe("handleDeliveryBatch", () => {
       metadata: null,
     } as unknown as MessageBatch<DeliveryPayload>;
 
-    await handleDeliveryBatch(batch, baseEnv);
+    await handleDeliveryBatch(batch, env);
 
     expect(ack).toHaveBeenCalledOnce();
     expect(retry).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(writeDataPoint).toHaveBeenCalledOnce();
+    expect(writeDataPoint).toHaveBeenCalledWith(
+      expect.objectContaining({
+        blobs: expect.arrayContaining(["queue-1", "msg-1", "dropped"]),
+        indexes: ["queue-1"],
+      }),
+    );
   });
 
   it("handles each message independently in a batch", async () => {
     // First message: DB found + 2xx → ack
-    // Second message: DB missing → ack
+    // Second message: DB missing → ack (dropped)
     // Third message: DB found + 5xx → retry
     const limitMockImpl = vi
       .fn()
@@ -167,6 +201,8 @@ describe("handleDeliveryBatch", () => {
     const retry2 = vi.fn();
     const ack3 = vi.fn();
     const retry3 = vi.fn();
+    const writeDataPoint = vi.fn();
+    const env = createMockEnv(undefined, undefined, { writeDataPoint });
 
     const msg1 = makeMsg({ ...basePayload, messageId: "msg-1" }, ack1, retry1);
     const msg2 = makeMsg({ ...basePayload, messageId: "msg-2" }, ack2, retry2);
@@ -188,7 +224,7 @@ describe("handleDeliveryBatch", () => {
       metadata: null,
     } as unknown as MessageBatch<DeliveryPayload>;
 
-    await handleDeliveryBatch(batch, baseEnv);
+    await handleDeliveryBatch(batch, env);
 
     expect(ack1).toHaveBeenCalledOnce();
     expect(retry1).not.toHaveBeenCalled();
@@ -197,12 +233,15 @@ describe("handleDeliveryBatch", () => {
     expect(retry3).toHaveBeenCalledOnce();
     expect(retry3).toHaveBeenCalledWith({ delaySeconds: 5 });
     expect(ack3).not.toHaveBeenCalled();
+    expect(writeDataPoint).toHaveBeenCalledTimes(3);
   });
 
   it("uses correct backoff for higher attempt counts", async () => {
     setupCreateDb([mockRow]);
     const ack = vi.fn();
     const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const env = createMockEnv(undefined, undefined, { writeDataPoint });
     const msg = makeMsg({ ...basePayload, attempt: 3 }, ack, retry);
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 502 }));
@@ -215,7 +254,7 @@ describe("handleDeliveryBatch", () => {
       metadata: null,
     } as unknown as MessageBatch<DeliveryPayload>;
 
-    await handleDeliveryBatch(batch, baseEnv);
+    await handleDeliveryBatch(batch, env);
 
     expect(retry).toHaveBeenCalledWith({ delaySeconds: 40 });
   });

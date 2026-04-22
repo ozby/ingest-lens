@@ -26,5 +26,9 @@ name = "RATE_LIMITER"
 namespace_id = "<cloudflare-rate-limit-namespace-id>"
 simple = { limit = 100, period = 60 }
 
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "delivery_events"
+
 [vars]
 NODE_ENV = "development"

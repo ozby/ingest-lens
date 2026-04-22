@@ -17,6 +17,7 @@ export type Env = {
   NODE_ENV?: string;
   DELIVERY_QUEUE: Queue<DeliveryPayload>;
   RATE_LIMITER: RateLimit;
+  ANALYTICS: AnalyticsEngineDataset;
 };
 
 export function createDb(env: Env) {
