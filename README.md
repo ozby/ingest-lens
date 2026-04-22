@@ -97,16 +97,16 @@ packages/
   @repo/logger         Shared structured logger (Winston)
   @repo/types          Shared TypeScript types
   @repo/ui             Shared React component library
-  @repo/config-eslint  Shared ESLint config
   @repo/config-typescript  Shared tsconfig bases
-  @repo/jest-presets   Shared Jest/Vitest presets
+  @repo/test-utils     Shared test helpers
+  @repo/db             Database client
 ```
 
 ## Commit conventions
 
 All commits follow [Conventional Commits](https://www.conventionalcommits.org/).
 The `commit-msg` hook validates format and rejects non-conforming subjects.
-`lint-staged` runs oxlint + prettier on staged files at pre-commit.
+`vp staged` runs `vp check --fix` + `vp fmt` on staged files at pre-commit.
 
 ```
 feat(api-server): add HMAC-signed delivery receipts
