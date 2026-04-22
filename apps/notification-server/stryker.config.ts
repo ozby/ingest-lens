@@ -1,5 +1,5 @@
 export default {
-  testRunner: "jest",
+  testRunner: "vitest",
   checkers: ["typescript"],
   tsconfigFile: "tsconfig.json",
   mutate: ["src/**/*.ts", "!src/**/*.test.ts", "!src/**/*.spec.ts"],

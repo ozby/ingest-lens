@@ -1,11 +1,11 @@
 {
   "name": "@repo/logger",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
   "files": [
     "dist"
   ],
+  "type": "module",
   "main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
   "types": "./dist/es/index.d.ts",
@@ -32,10 +32,10 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@stryker-mutator/core": "catalog:",
-    "@stryker-mutator/jest-runner": "catalog:",
     "@stryker-mutator/typescript-checker": "catalog:",
-    "@typescript/native-preview": "catalog:tooling",
+    "@stryker-mutator/vitest-runner": "catalog:",
     "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:tooling",
     "bunchee": "catalog:",
     "vitest": "catalog:tooling"
   }
