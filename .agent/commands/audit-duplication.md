@@ -1,0 +1,30 @@
+# /audit-duplication
+
+Run duplication analysis using jscpd and provide recommendations.
+
+## Steps
+
+1. Execute `just analysis-duplication` (or your repo's equivalent runner) to run jscpd
+2. Parse the console output or JSON report
+3. Identify top duplication clusters
+4. Provide specific recommendations for each cluster
+
+## Output Format
+
+- Summary of total duplication percentage
+- Top 5 duplication clusters with file locations
+- Specific recommendations for remediation
+- Suggested canonical packages for shared code
+
+## Example Usage
+
+```bash
+/audit-duplication
+```
+
+## Implementation Notes
+
+- Uses jscpd (JavaScript Code Plagiarism Detector)
+- Minimum 10 lines and 50 tokens for detection
+- Reports both syntactic and semantic duplicates
+- Suggests extraction to your repo's shared utility or types packages

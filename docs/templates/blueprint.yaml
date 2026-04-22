@@ -1,0 +1,110 @@
+name: blueprint
+description: Blueprint template for features/initiatives
+
+notes:
+  - "This file describes the current preferred blueprint structure, not an immutable final schema."
+  - "Repo-wide validity is determined by the live blueprint parser/audit rules, not by requiring every optional section below."
+
+frontmatter:
+  required:
+    type:
+      value: blueprint
+      description: Must be exactly "blueprint"
+    status:
+      enum: [draft, planned, parked, in-progress, completed, archived]
+      description: Current plan status (must match folder placement)
+    complexity:
+      enum: [XS, S, M, L, XL]
+      description: Estimated complexity
+    last_updated:
+      type: date
+      format: YYYY-MM-DD
+      description: Last modification date
+  optional:
+    parent:
+      type: string
+      description: Path to parent epic (e.g., ../README.md)
+    depends_on:
+      type: array
+      description: Dependencies on other plans
+
+sections:
+  required: []
+  optional:
+    - name: Planning Summary
+      pattern: "^## Planning Summary"
+      description: Execution framing, repo-specific constraints, and output path
+    - name: Problem Statement
+      pattern: "^## Problem Statement"
+      description: Current repo reality and the gap this blueprint closes
+    - name: Fact-Checked Findings
+      pattern: "^## Fact-Checked Findings"
+      description: Verified claims tied to concrete repo evidence
+    - name: Evidence Base
+      pattern: "^## Evidence Base"
+      description: File paths and source anchors that support the plan
+    - name: Architecture Overview
+      pattern: "^## Architecture Overview"
+      description: System boundary or flow diagram before task execution
+    - name: Key Decisions
+      pattern: "^## Key Decisions"
+      description: Decision log with rationale
+    - name: Quick Reference (Execution Waves)
+      pattern: '^## Quick Reference \\(Execution Waves\\)'
+      description: Parallel waves, dependencies, and effort sizing
+    - name: Verification Gates
+      pattern: "^## Verification Gates"
+      description: Canonical commands and success criteria
+    - name: Cross-Plan References
+      pattern: "^## Cross-Plan References"
+      description: Upstream/downstream blueprint relationships
+    - name: Edge Cases and Error Handling
+      pattern: "^## Edge Cases and Error Handling"
+      description: Known edge cases and mitigation owners
+    - name: Alternatives Considered
+      pattern: "^## Alternatives Considered"
+    - name: Risks
+      pattern: "^## Risks"
+    - name: Non-Goals
+      pattern: "^## Non-Goals"
+    - name: Technology Choices
+      pattern: "^## Technology Choices"
+      description: Versioned implementation choices and rationale
+    - name: Completion Summary
+      pattern: "^## Completion Summary"
+      description: Required for completed blueprints
+    - name: Retrospective
+      pattern: "^## Retrospective"
+
+location:
+  patterns:
+    - "blueprints/*/_overview.md"
+    - "blueprints/*/*/_overview.md"
+    - "blueprints/*/*/*/_overview.md"
+    - "blueprints/completed/*/_overview.md"
+    - "blueprints/planned/*/_overview.md"
+    - "blueprints/parked/*/_overview.md"
+    - "blueprints/in-progress/*/_overview.md"
+    - "blueprints/draft/*/_overview.md"
+  exclude:
+    - "blueprints/draft/*.md" # Standalone draft trackers such as deferred backlog
+
+naming:
+  pattern: "_overview.md"
+  case: exact
+  notes: "Use _overview.md for high-level summary. Detailed phases go in phase-N-name.md files."
+
+task_format:
+  heading:
+    canonical:
+      - "#### [lane] Task X.Y: Title"
+      - "#### Task X.Y: Title"
+    notes:
+      - "These are the current accepted task-heading forms enforced by the validator."
+      - "Lane prefix is optional but recommended. Common lanes: [schema], [backend], [ui], [infra], [docs], [qa]."
+  required_metadata:
+    - "**Status:** todo|in_progress|blocked|done"
+  notes:
+    - "Task metadata rules here reflect the current validator contract."
+    - "Acceptance checkboxes are evidence, not the lifecycle source of truth."
+    - "Blocked tasks must include a non-empty **Blocked:** reason."

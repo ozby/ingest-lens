@@ -1,0 +1,28 @@
+name: core-doc
+description: Core documentation files at docs/ root
+
+frontmatter:
+  required:
+    type:
+      enum: [core, guide, reference]
+      description: Documentation type
+    last_updated:
+      type: date
+      format: YYYY-MM-DD
+      description: Last modification date
+  optional: {}
+
+sections:
+  required: []
+  optional: []
+
+location:
+  patterns:
+    - "docs/*.md"
+  exclude:
+    - "docs/README.md"
+
+naming:
+  pattern: "[A-Z_-]+\\.md"
+  case: upper
+  description: UPPER_CASE or kebab-case with capitals
