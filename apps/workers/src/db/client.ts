@@ -16,6 +16,7 @@ export type Env = {
   JWT_SECRET: string;
   NODE_ENV?: string;
   DELIVERY_QUEUE: Queue<DeliveryPayload>;
+  RATE_LIMITER: RateLimit;
 };
 
 export function createDb(env: Env) {

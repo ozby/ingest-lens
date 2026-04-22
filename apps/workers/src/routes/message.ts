@@ -3,6 +3,7 @@ import { eq, and, sql } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { queues, messages, queueMetrics } from "../db/schema";
 import { authenticate } from "../middleware/auth";
+import { rateLimiter } from "../middleware/rateLimiter";
 
 const DEFAULT_MAX_MESSAGES = 10;
 const DEFAULT_VISIBILITY_TIMEOUT = 30;
@@ -17,6 +18,7 @@ export const messageRoutes = new Hono<{
 }>();
 
 messageRoutes.use("*", authenticate);
+messageRoutes.use("*", rateLimiter);
 
 // POST /api/messages/:queueId — send message
 messageRoutes.post("/:queueId", async (c) => {

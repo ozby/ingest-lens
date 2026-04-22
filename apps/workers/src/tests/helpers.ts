@@ -13,12 +13,18 @@ function deepFreeze<T extends object>(obj: T): Readonly<T> {
   return obj as Readonly<T>;
 }
 
-export function createMockEnv(deliveryQueue?: { send: ReturnType<typeof vi.fn> }): Env {
+export function createMockEnv(
+  deliveryQueue?: { send: ReturnType<typeof vi.fn> },
+  rateLimiter?: { limit: ReturnType<typeof vi.fn> },
+): Env {
   return {
     HYPERDRIVE: null as unknown as Env["HYPERDRIVE"],
     DATABASE_URL: "postgresql://localhost/test",
     JWT_SECRET: "test-secret",
     DELIVERY_QUEUE: (deliveryQueue ?? { send: vi.fn() }) as unknown as Env["DELIVERY_QUEUE"],
+    RATE_LIMITER: (rateLimiter ?? {
+      limit: vi.fn().mockResolvedValue({ success: true }),
+    }) as unknown as Env["RATE_LIMITER"],
   };
 }
 

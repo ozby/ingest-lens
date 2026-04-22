@@ -3,6 +3,7 @@ import { eq, count } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { queues, messages, serverMetrics, queueMetrics } from "../db/schema";
 import { authenticate } from "../middleware/auth";
+import { rateLimiter } from "../middleware/rateLimiter";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -14,6 +15,7 @@ export const dashboardRoutes = new Hono<{
 }>();
 
 dashboardRoutes.use("*", authenticate);
+dashboardRoutes.use("*", rateLimiter);
 
 // GET /api/dashboard/server — server-level metrics
 dashboardRoutes.get("/server", async (c) => {
@@ -34,12 +36,8 @@ dashboardRoutes.get("/server", async (c) => {
       .returning();
   }
 
-  const [{ totalQueues }] = await db
-    .select({ totalQueues: count() })
-    .from(queues);
-  const [{ totalMessages }] = await db
-    .select({ totalMessages: count() })
-    .from(messages);
+  const [{ totalQueues }] = await db.select({ totalQueues: count() }).from(queues);
+  const [{ totalMessages }] = await db.select({ totalMessages: count() }).from(messages);
   const [{ activeMessages }] = await db
     .select({ activeMessages: count() })
     .from(messages)
@@ -77,11 +75,7 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, queueId))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
   if (!queue) {
     return c.json({ status: "error", message: "Queue not found" }, 404);
   }
@@ -139,9 +133,7 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
       stats: {
         totalMessages,
         activeMessages,
-        oldestMessageAge: oldestMessage
-          ? Date.now() - oldestMessage.createdAt.getTime()
-          : 0,
+        oldestMessageAge: oldestMessage ? Date.now() - oldestMessage.createdAt.getTime() : 0,
       },
     },
   });
