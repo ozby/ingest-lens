@@ -4,7 +4,7 @@ status: completed
 complexity: M
 created: "2026-04-21"
 last_updated: "2026-04-22"
-progress: "0% (refined and fact-checked dataset blueprint)"
+progress: "~78% (dataset core landed; missing: candidate-events.jsonl, ashby/greenhouse/lever-job-postings.jsonl)"
 depends_on: []
 tags:
   - ai
@@ -213,13 +213,7 @@ This is the core gold task shape:
     "employment_type": "FullTime",
     "locations": ["Berlin"]
   },
-  "target_fields": [
-    "name",
-    "post_url",
-    "department",
-    "employment_type",
-    "location"
-  ],
+  "target_fields": ["name", "post_url", "department", "employment_type", "location"],
   "expected_mapping": {
     "name": "title",
     "post_url": "apply_url",
@@ -260,13 +254,7 @@ The eval set should score:
     "department": "Engineering",
     "location": "Berlin"
   },
-  "target_fields": [
-    "name",
-    "post_url",
-    "employment_type",
-    "department",
-    "location"
-  ],
+  "target_fields": ["name", "post_url", "employment_type", "department", "location"],
   "expected_mapping": {
     "name": "name",
     "post_url": "post_url",
@@ -294,13 +282,7 @@ The eval set should score:
     "department": "Engineering",
     "locations": ["Remote"]
   },
-  "target_fields": [
-    "name",
-    "post_url",
-    "employment_type",
-    "department",
-    "location"
-  ],
+  "target_fields": ["name", "post_url", "employment_type", "department", "location"],
   "expected_mapping": {
     "name": "title",
     "post_url": "apply_url",
@@ -337,9 +319,7 @@ The eval set should score:
   },
   "missing_fields": [],
   "ambiguous_fields": [],
-  "notes": [
-    "Uses alias mapping from remote field name to unified custom-field key"
-  ]
+  "notes": ["Uses alias mapping from remote field name to unified custom-field key"]
 }
 ```
 
@@ -357,12 +337,7 @@ The eval set should score:
     "last_name": "Ng",
     "email_addresses": ["jules@example.com"]
   },
-  "target_fields": [
-    "first_name",
-    "last_name",
-    "primary_email",
-    "stable_progression_reference"
-  ],
+  "target_fields": ["first_name", "last_name", "primary_email", "stable_progression_reference"],
   "expected_mapping": {
     "first_name": "first_name",
     "last_name": "last_name",
@@ -424,9 +399,7 @@ The eval set should score:
   "expected_mapping": {},
   "missing_fields": ["custom_fields.tax_id", "custom_fields.cost_center"],
   "ambiguous_fields": ["custom_fields['T-Shirt Size']"],
-  "notes": [
-    "Correct behavior is to abstain rather than hallucinate a semantic mapping"
-  ]
+  "notes": ["Correct behavior is to abstain rather than hallucinate a semantic mapping"]
 }
 ```
 
@@ -470,7 +443,7 @@ The eval set should score:
 
 #### [research] Task 1.1: Freeze vendor schema/mapping source extracts
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -499,7 +472,7 @@ Capture the exact vendor docs needed for the mapper dataset: custom fields, crea
 
 #### [research] Task 1.2: Freeze public ATS realism source
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -525,7 +498,7 @@ Create a small, pinned working subset from `open-apply-jobs` rather than couplin
 
 #### [research] Task 1.3: Define mapper guardrails and non-goals
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -552,7 +525,7 @@ Write the explicit guardrails for the LLM mapper so it remains suggestion-only, 
 
 #### [schema] Task 2.1: Implement the exact dataset schemas
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3
 
@@ -587,7 +560,7 @@ This must be machine-readable and strict enough that examples and future code ca
 
 #### [data] Task 2.2: Create the first gold mapping-task pack
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 2.1
 
@@ -614,7 +587,7 @@ Create a first gold mapping-task pack with exact expected mappings, missing-fiel
 
 #### [data] Task 2.3: Create a synthetic HRIS payload subset
 
-**Status:** pending
+**Status:** partial — missing: candidate-events.jsonl
 
 **Depends:** Task 1.1, Task 2.1
 
@@ -642,7 +615,7 @@ Because public ATS data is not enough for the employee/custom-field mapping stor
 
 #### [qa] Task 3.1: Build a mapper evaluation harness contract
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 2.2, Task 2.3
 
@@ -811,7 +784,7 @@ Run the final refinement audit on the dataset blueprint output itself:
 Findings:
 
 - All `Files:` paths resolve against the repo root (`data/payload-mapper/` is intentionally created by Task 1.1).
-- Product-wedge anchor: **the AI capstone surface** in `VISION.md` + first-consumer file `apps/api-server/src/platform/services/payloadMapper.ts` (future file referenced by blueprint — acceptable since blueprint explicitly creates it).
+- Product-wedge anchor: **the AI capstone surface** in `VISION.md`. Note: `apps/api-server/` was deleted in the `workers-hono-port` hard-cut; future mapper implementation lives in `apps/workers/`.
 - Cross-plan references point to `deep-interview-*` which does not exist under `blueprints/`; marked as _upstream conversational context_, not a blueprint dependency.
 
 Fixes applied in this pass:
