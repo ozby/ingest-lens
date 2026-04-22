@@ -61,19 +61,13 @@ Invoke `$plan-refine <slug>`. The skill will:
 
 ## Active blueprints
 
-| Slug                                 | Status  | Theme                                            |
-| ------------------------------------ | ------- | ------------------------------------------------ |
-| `integration-payload-mapper-dataset` | planned | AI dataset + eval pack for payload mapping       |
-| `vite-plus-migration`                | planned | Replace Turbo with Vite Plus (`vp`)              |
-| `pnpm-catalogs-adoption`             | planned | Centralize versions via `pnpm-workspace` catalog |
-| `cloudflare-pulumi-infra`            | planned | Pulumi-managed Cloudflare Workers + Hyperdrive   |
-| `doppler-secrets`                    | planned | Doppler config inheritance model                 |
-| `stryker-mutation-guardrails`        | planned | Mutation-score thresholds per package            |
-| `ci-hardening`                       | planned | GitHub Actions matrix, caching, required gates   |
-| `commit-hooks-guardrails`            | planned | Husky + lint-staged + commitlint + secretlint    |
-| `agents-md-principal-rewrite`        | planned | Principal-level AGENTS.md + lore protocol        |
-| `adr-lore-commit-protocol`           | planned | ADR system with commit trailer vocabulary        |
-| `workers-hono-port`                  | planned | Hard-cut Express/Node → Hono on CF Workers       |
+| Slug                         | Status  | Complexity | Theme                                               | Depends on                |
+| ---------------------------- | ------- | ---------- | --------------------------------------------------- | ------------------------- |
+| `cf-rate-limiting`           | planned | XS         | Edge rate limiting via CF binding (per-userId)      | —                         |
+| `cf-queues-delivery`         | planned | M          | Replace fire-and-forget push with CF Queues + DLQ   | —                         |
+| `analytics-engine-telemetry` | planned | S          | Delivery metrics via CF Analytics Engine            | `cf-queues-delivery`      |
+| `durable-objects-fan-out`    | planned | L          | TopicRoom DO for WebSocket fan-out + hibernation    | `cf-queues-delivery`      |
+| `message-replay-cursor`      | planned | M          | Sequence numbers + cursor-based replay on reconnect | `durable-objects-fan-out` |
 
 ## Validation
 
