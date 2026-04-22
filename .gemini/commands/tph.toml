@@ -105,9 +105,9 @@ just audit-tph-e2e
 
    ```typescript
    // BAD — CRITICAL
-   vi.mock('~/services/blueprint/local') // Service layer
-   vi.mock('../../lib/task-graph') // Business logic
-   vi.mock('../database') // Data layer
+   vi.mock("~/services/blueprint/local"); // Service layer
+   vi.mock("../../lib/task-graph"); // Business logic
+   vi.mock("../database"); // Data layer
    ```
 
 2. **Integration Test Named as Unit Test**
@@ -115,16 +115,16 @@ just audit-tph-e2e
    ```typescript
    // BAD — CRITICAL: Uses services but named .test.ts
    // <package>/src/commands/exec.test.ts
-   vi.mock('~/services/blueprint/local') // Integration, not unit!
+   vi.mock("~/services/blueprint/local"); // Integration, not unit!
    ```
 
 3. **Zero Real Dependencies**
 
    ```typescript
    // BAD — CRITICAL: Everything mocked, tests nothing
-   vi.mock('~/services/blueprint/local')
-   vi.mock('../../lib/task-graph')
-   vi.mock('../../lib/parser')
+   vi.mock("~/services/blueprint/local");
+   vi.mock("../../lib/task-graph");
+   vi.mock("../../lib/parser");
    // = Testing mocks, not code
    ```
 
@@ -132,10 +132,10 @@ just audit-tph-e2e
 
    ```typescript
    // BAD — CRITICAL: Only routing test, no actual execution
-   it('should recognize new command', async () => {
-     await actionFn('new', ['test'], { 'dry-run': true })
-     expect(exitSpy).not.toHaveBeenCalled()
-   })
+   it("should recognize new command", async () => {
+     await actionFn("new", ["test"], { "dry-run": true });
+     expect(exitSpy).not.toHaveBeenCalled();
+   });
    // Missing: Test that actually creates files!
    ```
 
@@ -143,7 +143,7 @@ just audit-tph-e2e
 
    ```typescript
    // BAD — CRITICAL: Not testing real behavior
-   await executeRun('test', { dryRun: true })
+   await executeRun("test", { dryRun: true });
    // Should: await executeRun('test', {}) and verify files created
    ```
 
@@ -151,12 +151,12 @@ just audit-tph-e2e
 
    ```typescript
    // BAD — CRITICAL: Inline YAML string literals
-   const yaml = `entity: tasks\\nfields:\\n  - name: id\\n    type: uuid`
-   writeFileSync(join(dir, 'tasks.yaml'), yaml)
+   const yaml = `entity: tasks\\nfields:\\n  - name: id\\n    type: uuid`;
+   writeFileSync(join(dir, "tasks.yaml"), yaml);
 
    // GOOD: Use __fixtures__ YAML files
-   const FIXTURES_DIR = join(import.meta.dirname, '__fixtures__')
-   cpSync(join(FIXTURES_DIR, 'tasks.yaml'), join(dir, 'tasks.yaml'))
+   const FIXTURES_DIR = join(import.meta.dirname, "__fixtures__");
+   cpSync(join(FIXTURES_DIR, "tasks.yaml"), join(dir, "tasks.yaml"));
    ```
 
    **Exception**: Intentionally malformed YAML (1-2 lines) for error-handling tests is OK.
@@ -168,41 +168,41 @@ just audit-tph-e2e
 
    ```typescript
    // BAD — Weak: Allows equivalent mutants
-   expect(result).toBeTruthy()
-   expect(result).toBeDefined()
-   expect(array).toHaveLength(3) // Without checking contents
+   expect(result).toBeTruthy();
+   expect(result).toBeDefined();
+   expect(array).toHaveLength(3); // Without checking contents
 
    // BAD — Weak: toHaveBeenCalled() workarounds
-   expect(spy.mock.calls.length).toBeGreaterThan(0)
-   expect(spy.mock.calls).toHaveLength(1)
+   expect(spy.mock.calls.length).toBeGreaterThan(0);
+   expect(spy.mock.calls).toHaveLength(1);
 
    // GOOD — Strong: Verify actual values
-   expect(result).toBe(true)
-   expect(result).toMatchObject({ status: 'success', count: 3 })
-   expect(array).toEqual(['item1', 'item2', 'item3'])
+   expect(result).toBe(true);
+   expect(result).toMatchObject({ status: "success", count: 3 });
+   expect(array).toEqual(["item1", "item2", "item3"]);
 
    // GOOD — Strong: Verify actual call arguments
-   expect(spy).toHaveBeenCalledWith('expected', 'args')
-   expect(spy).toHaveBeenCalledTimes(1)
-   const output = spy.mock.calls.map((c) => c[0]).join('\\n')
-   expect(output).toContain('expected content')
+   expect(spy).toHaveBeenCalledWith("expected", "args");
+   expect(spy).toHaveBeenCalledTimes(1);
+   const output = spy.mock.calls.map((c) => c[0]).join("\\n");
+   expect(output).toContain("expected content");
    ```
 
 2. **Too Many Mocks (>3)**
 
    ```typescript
    // WARNING: Convert to integration test
-   vi.mock('./service1')
-   vi.mock('./service2')
-   vi.mock('./service3')
-   vi.mock('./service4')
+   vi.mock("./service1");
+   vi.mock("./service2");
+   vi.mock("./service3");
+   vi.mock("./service4");
    // 4+ mocks = integration in disguise
    ```
 
 3. **Testing Implementation**
    ```typescript
    // WARNING: Breaks on refactoring
-   expect(spy).toHaveBeenCalledWith(mockInput)
+   expect(spy).toHaveBeenCalledWith(mockInput);
    ```
 
 ### INFO Violations (Consider Fixing)
@@ -225,7 +225,7 @@ just audit-tph-e2e
 
    ```typescript
    // INFO: Unit test expects throw, but no E2E for graceful degradation
-   await expect(service.listItems()).rejects.toThrow('Invalid item')
+   await expect(service.listItems()).rejects.toThrow("Invalid item");
 
    // Missing E2E test: "should show valid items when some are invalid"
    ```
@@ -284,33 +284,33 @@ Test quality: FAILING
 
 ```typescript
 // exec.test.ts
-vi.mock('~/services/blueprint/local', () => ({
+vi.mock("~/services/blueprint/local", () => ({
   BlueprintService: class {
-    getBlueprint = mockGetBlueprint
+    getBlueprint = mockGetBlueprint;
   },
-}))
+}));
 
-it('should show metrics', async () => {
-  mockGetBlueprint.mockResolvedValue(mockData)
-  const result = await executeExec('test', {})
-  expect(result).toBeTruthy()
-})
+it("should show metrics", async () => {
+  mockGetBlueprint.mockResolvedValue(mockData);
+  const result = await executeExec("test", {});
+  expect(result).toBeTruthy();
+});
 ```
 
 **After:**
 
 ```typescript
 // exec.integration.test.ts
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, rm, writeFile } from "node:fs/promises";
 
-const tempDir = path.join(os.tmpdir(), `exec-test-${Date.now()}`)
-const blueprintsDir = path.join(tempDir, 'blueprints')
+const tempDir = path.join(os.tmpdir(), `exec-test-${Date.now()}`);
+const blueprintsDir = path.join(tempDir, "blueprints");
 
 beforeEach(() => {
-  process.cwd = () => tempDir
-})
+  process.cwd = () => tempDir;
+});
 
-it('should calculate metrics from real blueprint', async () => {
+it("should calculate metrics from real blueprint", async () => {
   // Create REAL blueprint file
   const blueprint = `---
 type: blueprint
@@ -321,22 +321,22 @@ status: in-progress
 
 #### Task 1.1: First
 - [ ] Work
-`
+`;
 
-  const planPath = path.join(blueprintsDir, 'test', '_overview.md')
-  await mkdir(path.dirname(planPath), { recursive: true })
-  await writeFile(planPath, blueprint, 'utf8')
+  const planPath = path.join(blueprintsDir, "test", "_overview.md");
+  await mkdir(path.dirname(planPath), { recursive: true });
+  await writeFile(planPath, blueprint, "utf8");
 
   // Uses REAL BlueprintService, REAL parser
-  const result = await executeExec('test', {})
+  const result = await executeExec("test", {});
 
-  expect(result.totalTasks).toBe(1)
-  expect(result.waveCount).toBeGreaterThan(0)
-})
+  expect(result.totalTasks).toBe(1);
+  expect(result.waveCount).toBeGreaterThan(0);
+});
 
 afterEach(async () => {
-  await rm(tempDir, { recursive: true })
-})
+  await rm(tempDir, { recursive: true });
+});
 ```
 
 ## Integration with Workflow

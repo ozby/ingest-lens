@@ -126,22 +126,22 @@ If the model would diverge between the two surfaces, fix the contract instead of
 
 ## Concurrency Guidance
 
-| Scope | Guidance |
-| --- | --- |
-| Default | Use only as much parallelism as the current runtime and task mix safely support |
-| Test-heavy work | Reduce parallelism to avoid exhausting Vitest/CPU/memory |
-| Build-heavy work | Reduce parallelism to avoid CPU/memory spikes |
-| Mixed doc + code work | Run lightweight doc/admin work beside one heavier lane when safe |
+| Scope                 | Guidance                                                                        |
+| --------------------- | ------------------------------------------------------------------------------- |
+| Default               | Use only as much parallelism as the current runtime and task mix safely support |
+| Test-heavy work       | Reduce parallelism to avoid exhausting Vitest/CPU/memory                        |
+| Build-heavy work      | Reduce parallelism to avoid CPU/memory spikes                                   |
+| Mixed doc + code work | Run lightweight doc/admin work beside one heavier lane when safe                |
 
 ## Failure Handling
 
-| Event | Action |
-| --- | --- |
-| Task fails | Mark blocked with reason; do not mark complete |
-| Lifecycle mutation fails | Stop immediately rather than continuing with stale plan state |
-| Dependency cycle detected | Reject the run and ask for plan cleanup |
-| No ready tasks remain | Report blockers and the tasks they are waiting on |
-| File-scope conflict suspected | Serialize the conflicting tasks or merge them into one lane |
+| Event                         | Action                                                        |
+| ----------------------------- | ------------------------------------------------------------- |
+| Task fails                    | Mark blocked with reason; do not mark complete                |
+| Lifecycle mutation fails      | Stop immediately rather than continuing with stale plan state |
+| Dependency cycle detected     | Reject the run and ask for plan cleanup                       |
+| No ready tasks remain         | Report blockers and the tasks they are waiting on             |
+| File-scope conflict suspected | Serialize the conflicting tasks or merge them into one lane   |
 
 ## Examples
 

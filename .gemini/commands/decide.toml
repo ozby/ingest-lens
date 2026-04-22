@@ -17,16 +17,16 @@ Decision framework command for structured decision-making using DRR (Decision Ra
 
 **Actions:**
 
-| Action | Description |
-|--------|-------------|
-| `init <topic>` | Start a new decision session |
+| Action                 | Description                                  |
+| ---------------------- | -------------------------------------------- |
+| `init <topic>`         | Start a new decision session                 |
 | `propose <hypothesis>` | Add hypothesis to current session (L0/L1/L2) |
-| `verify [id]` | Promote L0 → L1 with logical evidence |
-| `validate [id]` | Promote L1 → L2 with empirical evidence |
-| `audit` | Calculate R_eff scores |
-| `decide` | Make final decision and generate DRR |
-| `status` | Show current session status |
-| `list` | List decision sessions |
+| `verify [id]`          | Promote L0 → L1 with logical evidence        |
+| `validate [id]`        | Promote L1 → L2 with empirical evidence      |
+| `audit`                | Calculate R_eff scores                       |
+| `decide`               | Make final decision and generate DRR         |
+| `status`               | Show current session status                  |
+| `list`                 | List decision sessions                       |
 
 ---
 

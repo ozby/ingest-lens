@@ -142,9 +142,9 @@ importers:
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: ^9.3.0
         version: 9.3.4
-      '@webpresso/agentkit':
-        specifier: file:/tmp/webpresso-agentkit-0.1.0.tgz
-        version: file:../../../../../tmp/webpresso-agentkit-0.1.0.tgz
+      '@webpresso/agent-kit':
+        specifier: file:/Users/ozby/.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz
+        version: file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz
       husky:
         specifier: 'catalog:'
         version: 9.1.7
@@ -3917,8 +3917,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webpresso/agentkit@file:../../../../../tmp/webpresso-agentkit-0.1.0.tgz':
-    resolution: {integrity: sha512-/mbQyiD0Ic5t8sQ8Dkkw1aGl/73ocBJKSUNk+S+JRDagqxAUr72utPuHRRDIwoHdHl+7hFRbb8KYQBU4Q9e2IA==, tarball: file:../../../../../tmp/webpresso-agentkit-0.1.0.tgz}
+  '@webpresso/agent-kit@file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz':
+    resolution: {integrity: sha512-9VGlcSqXcomWjq7yeEh0GKnEITcUhMVmw8SprmHoSr2FM/BttwbkZQZaGx+PGEhWy96mlAW8wzMVHZXpvJMiTw==, tarball: file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz}
     version: 0.1.0
     engines: {node: '>=20'}
     hasBin: true
@@ -9767,7 +9767,7 @@ snapshots:
   '@voidzero-dev/vite-plus-win32-x64-msvc@0.1.19':
     optional: true
 
-  '@webpresso/agentkit@file:../../../../../tmp/webpresso-agentkit-0.1.0.tgz':
+  '@webpresso/agent-kit@file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz':
     dependencies:
       cac: 6.7.14
       gray-matter: 4.0.3
