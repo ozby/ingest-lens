@@ -1,11 +1,12 @@
-import { describe, it, expect, jest } from "@jest/globals";
+import { describe, it, expect, vi } from "vitest";
 import { log } from "..";
-
-jest.spyOn(global.console, "log");
 
 describe("@repo/logger", () => {
   it("prints a message", () => {
+    const consoleLogSpy = vi.spyOn(global.console, "log");
+
     log("hello");
-    expect(console.log).toBeCalledWith("LOGGER: ", "hello");
+
+    expect(consoleLogSpy).toHaveBeenCalledWith("LOGGER: ", "hello");
   });
 });

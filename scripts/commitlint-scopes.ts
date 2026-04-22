@@ -12,7 +12,6 @@ export const SCOPES = [
   "ui",
   "config-eslint",
   "config-typescript",
-  "jest-presets",
   // cross-cutting
   "deps",
   "dx",
