@@ -5,7 +5,7 @@ complexity: XS
 created: "2026-04-22"
 last_updated: "2026-04-22"
 progress: "0% (refined)"
-depends_on: []
+depends_on: [workers-hono-port]
 tags:
   - cloudflare-workers
   - rate-limiting
