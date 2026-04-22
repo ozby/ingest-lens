@@ -4,7 +4,7 @@ status: completed
 complexity: XL
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "100%"
+progress: "100% (all phases complete including Phase 5 hard-cut)"
 depends_on:
   - doppler-secrets
   - pnpm-catalogs-adoption
@@ -42,27 +42,45 @@ resulting runtime is a single `apps/workers/` workspace that deploys via
 ## Architecture Overview
 
 ```text
-before:                                   after:
-  apps/api-server/      (Express, mongoose)  apps/workers/
-  apps/notification-server/ (Express, WS)      src/
-                                               index.ts        # Hono app + wrangler fetch export
-                                               routes/
-                                                 api.ts        # all REST routes
-                                                 events.ts     # SSE / WebSocket push
-                                               db/
-                                                 schema.ts     # Drizzle schema (replaces mongoose models)
-                                                 client.ts     # Hyperdrive-aware postgres-js client
-                                               platform/
-                                                 eventPlatformService.ts  (ported)
-                                                 deliveryDispatcher.ts    (ported)
-                                               middleware/
-                                                 auth.ts
-                                                 signing.ts
-                                             wrangler.toml
-                                             package.json
-                                             tsconfig.json
-                                             vitest.config.ts
+before:                              after (as shipped):
+  apps/api-server/  (Express, mongoose)  apps/workers/
+  apps/notification-server/ (Express, WS)  drizzle.config.ts
+                                           wrangler.toml
+                                           package.json
+                                           tsconfig.json
+                                           vitest.config.ts
+                                           src/
+                                             index.ts           # exports { fetch, queue }
+                                             db/
+                                               client.ts        # Hyperdrive-aware postgres-js client
+                                               schema.ts        # Drizzle schema
+                                               migrations/      # drizzle-kit migration files
+                                             routes/
+                                               auth.ts          # register, login, profile
+                                               queue.ts         # queue CRUD
+                                               message.ts       # send / receive / ack
+                                               topic.ts         # topics, publish, subscribe
+                                               dashboard.ts     # operator metrics
+                                             middleware/
+                                               auth.ts          # JWT auth
+                                             consumers/
+                                               deliveryConsumer.ts  # CF Queues handler (cf-queues-delivery)
+                                             tests/
+                                               health.test.ts
+                                               auth.test.ts
+                                               queue.test.ts
+                                               topic.test.ts
+                                               deliveryConsumer.test.ts
 ```
+
+**Architectural deviations from plan:**
+
+- `routes/api.ts` (monolithic) → split into 5 separate route files
+- `routes/events.ts` (SSE/WebSocket) → deferred to `durable-objects-fan-out` blueprint
+- `platform/` directory never created; service logic dissolved into route handlers
+- `middleware/signing.ts` → not created (out of scope for this port)
+- `consumers/deliveryConsumer.ts` added by `cf-queues-delivery` blueprint
+- `drizzle.config.ts` + `db/migrations/` added during Phase 2 bootstrap
 
 ## Fact-Checked Findings
 
@@ -76,9 +94,7 @@ before:                                   after:
 
 ## Evidence Base
 
-- `apps/api-server/src/platform/services/eventPlatformService.ts` — source for route + service logic.
-- `apps/api-server/src/platform/services/deliveryDispatcher.ts` — delivery fan-out logic.
-- `apps/api-server/package.json` — current deps including `mongoose`, `express`.
+- `apps/api-server/` (deleted in Phase 5 hard-cut) — was source for route logic, delivery fan-out, and Express/mongoose deps.
 - reference repo pattern: `[reference repo]` for Hono + Hyperdrive reference.
 
 ## Task Pool
@@ -187,7 +203,7 @@ Drizzle table definitions.
 
 #### [delete] Task 5.1: Remove `apps/api-server/` and `apps/notification-server/`
 
-**Status:** pending **Depends:** Task 4.1
+**Status:** done **Depends:** Task 4.1
 
 **Files:**
 
