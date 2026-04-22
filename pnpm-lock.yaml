@@ -3918,7 +3918,7 @@ packages:
     os: [win32]
 
   '@webpresso/agentkit@file:../../../../../tmp/webpresso-agentkit-0.1.0.tgz':
-    resolution: {integrity: sha512-8WE61NGnuz9qsz4MsxKCsfqMZrp6yoblryV1I/B6jK/nzlep3elDopQyCkMK+YILp3jk4cZ0co2k2SA3UlL9PA==, tarball: file:../../../../../tmp/webpresso-agentkit-0.1.0.tgz}
+    resolution: {integrity: sha512-/mbQyiD0Ic5t8sQ8Dkkw1aGl/73ocBJKSUNk+S+JRDagqxAUr72utPuHRRDIwoHdHl+7hFRbb8KYQBU4Q9e2IA==, tarball: file:../../../../../tmp/webpresso-agentkit-0.1.0.tgz}
     version: 0.1.0
     engines: {node: '>=20'}
     hasBin: true
