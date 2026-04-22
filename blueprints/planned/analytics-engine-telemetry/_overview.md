@@ -4,7 +4,7 @@ status: planned
 complexity: S
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "0%"
+progress: "0% (refined)"
 depends_on:
   - cf-queues-delivery
 tags:
@@ -17,52 +17,86 @@ tags:
 # Analytics Engine telemetry
 
 **Goal:** Instrument the delivery queue consumer to write one data point per
-delivery attempt to Cloudflare Analytics Engine, enabling per-topic and
-per-queue delivery metrics (success rate, latency, retry counts) queryable
-via the Analytics Engine SQL API with zero additional infrastructure.
+delivery attempt to Cloudflare Analytics Engine, enabling per-queue delivery
+metrics without adding a separate metrics service.
 
 ## Planning Summary
 
-- **Why now:** Once `cf-queues-delivery` lands, every delivery attempt passes
-  through a single consumer function. That is the ideal instrumentation point.
-  Adding Analytics Engine here costs one `writeDataPoint` call per message —
-  non-blocking, fire-and-forget.
-- **Scope:** One `[[analytics_engine_datasets]]` binding in `wrangler.toml`;
-  one `writeDataPoint` call in `deliveryConsumer.ts` on ack and on retry;
-  a thin `telemetry.ts` module wrapping the call.
-- **Out of scope:** Dashboard UI over the data. Analytics Engine SQL API query
-  layer. Long-term archival (handled by Pipelines → R2).
+- **Why now:** Once `cf-queues-delivery` lands, every outbound delivery attempt
+  passes through one chokepoint: the queue consumer.
+- **Scope:** One Analytics Engine binding, one small telemetry helper, and one
+  consumer integration.
+- **Out of scope:** Dashboards, SQL query APIs, Pipelines, and archival.
+
+## Refinement Summary
+
+- Removed the accidental dependency on `topicId` even though this blueprint
+  only depends on `cf-queues-delivery`. `topicId` is optional telemetry, not a
+  hard requirement.
+- Dropped the “Pipelines later” recommendation from the blueprint body. That is
+  a valid later product decision, but not part of this plan.
+- Tightened the schema around delivery outcomes the repo actually has today:
+  queue, message, status, latency, and attempt.
+
+## Pre-execution audit (2026-04-22)
+
+**Readiness:** blocked-by-upstream
+
+**What is already true**
+
+- `@cloudflare/workers-types` in the current workspace already exposes
+  `AnalyticsEngineDataset`.
+- `apps/workers/wrangler.toml` is the right place to bind the dataset once the
+  consumer exists.
+
+**Blocking gaps**
+
+- This blueprint depends on `cf-queues-delivery`, but the queue consumer file
+  does not exist yet. There is no stable instrumentation chokepoint until that
+  upstream blueprint lands.
+- Current tests do not cover delivery outcomes such as ack / retry / dropped,
+  so telemetry assertions would be premature before the consumer path exists.
+
+**First-build notes**
+
+- Treat `topicId` as optional telemetry because direct queue sends do not need
+  topic fan-out metadata.
+- Keep telemetry best-effort and side-effect free: delivery correctness must
+  not depend on Analytics Engine writes succeeding.
 
 ## Architecture Overview
 
 ```text
-Queue consumer (deliveryConsumer.ts):
+deliveryConsumer.ts
   → fetch(pushEndpoint)
-  → ack / retry
-  → env.ANALYTICS.writeDataPoint({         ← non-blocking
-      blobs: [topicId, queueId, status],    // "ack" | "retry" | "dlq"
-      doubles: [latencyMs, attempt],
-      indexes: [topicId],
+  → ack / retry decision
+  → recordDelivery(env, {
+      queueId,
+      messageId,
+      topicId?,
+      status,      // ack | retry | dropped
+      latencyMs,
+      attempt,
     })
+  → env.ANALYTICS.writeDataPoint(...)
 ```
 
 ## Fact-Checked Findings
 
-| ID  | Severity | Claim                                                                           | Source                                                                                          |
-| --- | -------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| F1  | HIGH     | Analytics Engine is GA and available on Workers Free plan                       | CF docs: "Available on all plans"                                                               |
-| F2  | HIGH     | `writeDataPoint` is non-blocking (fire-and-forget)                              | CF docs: "Add instrumentation to frequently called code paths, without impacting performance"   |
-| F3  | MEDIUM   | Analytics Engine supports unlimited-cardinality writes                          | CF docs: "unlimited-cardinality analytics at scale"                                             |
-| F4  | MEDIUM   | Data is queryable via SQL API using the Cloudflare API                          | CF docs: "SQL API to query that data"                                                           |
-| F5  | LOW      | Analytics Engine is used internally by Cloudflare for D1/R2 per-product metrics | CF docs: "Cloudflare uses Analytics Engine internally to store and product per-product metrics" |
+| ID  | Severity | Claim                                                                                                                    | Source                                                |
+| --- | -------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| F1  | HIGH     | Analytics Engine is available on all plans.                                                                              | Cloudflare Analytics Engine docs, fetched 2026-04-22. |
+| F2  | HIGH     | Analytics Engine is designed for high-cardinality writes from Workers.                                                   | Cloudflare Analytics Engine docs, fetched 2026-04-22. |
+| F3  | MEDIUM   | Analytics Engine data is queryable via SQL API.                                                                          | Cloudflare Analytics Engine docs, fetched 2026-04-22. |
+| F4  | MEDIUM   | Consumer-side instrumentation is the right place because it captures the real delivery outcome, not just enqueue intent. | Repo-aware synthesis, 2026-04-22.                     |
 
 ## Key Decisions
 
-| Decision              | Choice                                                                               | Rationale                                       |
-| --------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| Instrumentation point | `deliveryConsumer.ts` after ack/retry decision                                       | Single chokepoint; covers all delivery outcomes |
-| Schema                | `blobs[topicId, queueId, status]`, `doubles[latencyMs, attempt]`, `indexes[topicId]` | Minimal; queryable by topic                     |
-| Non-blocking          | Yes — `writeDataPoint` is not awaited                                                | Delivery latency must not be affected           |
+| Decision              | Choice                                                                       | Rationale                                                    |
+| --------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Instrumentation point | `apps/workers/src/consumers/deliveryConsumer.ts`                             | Single source of truth for delivery outcomes                 |
+| Minimal schema        | `queueId`, `messageId`, optional `topicId`, `status`, `latencyMs`, `attempt` | Enough to answer operational questions without over-modeling |
+| Failure behavior      | Best-effort telemetry only                                                   | Delivery must not fail because metrics writeback had issues  |
 
 ## Quick Reference (Execution Waves)
 
@@ -74,15 +108,15 @@ Queue consumer (deliveryConsumer.ts):
 
 ---
 
-### Phase 1: Binding, telemetry module, and consumer hook [Complexity: S]
+### Phase 1: Binding, helper, and consumer integration [Complexity: S]
 
-#### [config] Task 1.1: Wrangler binding + Env type
+#### [config] Task 1.1: Add Analytics Engine binding + Env type
 
 **Status:** pending
 
 **Depends:** None
 
-Add `[[analytics_engine_datasets]]` to `wrangler.toml` and extend `Env`.
+Add an Analytics Engine dataset binding and extend the Worker `Env` type.
 
 **Files:**
 
@@ -97,26 +131,24 @@ Add `[[analytics_engine_datasets]]` to `wrangler.toml` and extend `Env`.
    binding = "ANALYTICS"
    dataset = "delivery_events"
    ```
-2. Add `ANALYTICS: AnalyticsEngineDataset` to the `Env` type in
-   `apps/workers/src/db/client.ts`.
-3. Run: `pnpm --filter @repo/workers check-types` — PASS.
+2. Add `ANALYTICS: AnalyticsEngineDataset` to the `Env` type.
+3. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
 
 **Acceptance:**
 
-- [ ] `wrangler.toml` has `[[analytics_engine_datasets]]` block.
-- [ ] `Env` includes `ANALYTICS: AnalyticsEngineDataset`.
-- [ ] `pnpm --filter @repo/workers check-types` passes.
+- [ ] `wrangler.toml` declares `ANALYTICS`
+- [ ] `Env` includes `ANALYTICS: AnalyticsEngineDataset`
+- [ ] `pnpm --filter @repo/workers check-types` passes
 
 ---
 
-#### [telemetry] Task 1.2: `telemetry.ts` write helper
+#### [helper] Task 1.2: Create `recordDelivery` helper
 
 **Status:** pending
 
 **Depends:** None
 
-Create a thin module with a single function that wraps `writeDataPoint`. Keeps
-the consumer readable and makes the call mockable in tests.
+Create a tiny helper that wraps `writeDataPoint` and is easy to mock in tests.
 
 **Files:**
 
@@ -125,51 +157,32 @@ the consumer readable and makes the call mockable in tests.
 
 **Steps (TDD):**
 
-1. Write `telemetry.test.ts` verifying `recordDelivery` calls
-   `env.ANALYTICS.writeDataPoint` with the correct blobs/doubles/indexes.
-2. Run: `pnpm --filter @repo/workers test` — FAIL.
-3. Implement `telemetry.ts`:
-
-   ```ts
-   import type { Env } from "./db/client";
-
-   export function recordDelivery(
-     env: Env,
-     opts: {
-       topicId: string;
-       queueId: string;
-       status: "ack" | "retry" | "dlq";
-       latencyMs: number;
-       attempt: number;
-     },
-   ): void {
-     env.ANALYTICS.writeDataPoint({
-       blobs: [opts.topicId, opts.queueId, opts.status],
-       doubles: [opts.latencyMs, opts.attempt],
-       indexes: [opts.topicId],
-     });
-   }
-   ```
-
-4. Run: `pnpm --filter @repo/workers test` — PASS.
-5. Run: `pnpm --filter @repo/workers lint` — PASS.
+1. Write `telemetry.test.ts` to assert `recordDelivery()` calls
+   `env.ANALYTICS.writeDataPoint()` with the expected schema.
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. Implement `recordDelivery()` using a schema like:
+   - `blobs: [queueId, messageId, status, topicId ?? ""]`
+   - `doubles: [latencyMs, attempt]`
+   - `indexes: [queueId]`
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+5. Run: `pnpm --filter @repo/workers lint` — verify PASS.
 
 **Acceptance:**
 
-- [ ] `recordDelivery` calls `writeDataPoint` (not `await`ed).
-- [ ] Test mocks `env.ANALYTICS` and asserts correct schema.
-- [ ] `pnpm --filter @repo/workers test` green.
+- [ ] `recordDelivery()` is isolated in `telemetry.ts`
+- [ ] `topicId` is optional, not required
+- [ ] `pnpm --filter @repo/workers test` is green
 
 ---
 
-#### [wire] Task 1.3: Hook `recordDelivery` into consumer
+#### [wire] Task 1.3: Hook telemetry into the delivery consumer
 
 **Status:** pending
 
 **Depends:** Task 1.1, Task 1.2
 
-Call `recordDelivery` after every ack and retry decision in
-`deliveryConsumer.ts`.
+Call `recordDelivery()` from `deliveryConsumer.ts` after every terminal
+consumer decision.
 
 **Files:**
 
@@ -178,31 +191,20 @@ Call `recordDelivery` after every ack and retry decision in
 
 **Steps (TDD):**
 
-1. Add assertions to `deliveryConsumer.test.ts` that `recordDelivery` is called
-   with `status: "ack"` on success and `status: "retry"` on failure.
-2. Run: `pnpm --filter @repo/workers test` — FAIL.
-3. In `deliveryConsumer.ts`, after `msg.ack()`:
-   ```ts
-   recordDelivery(env, {
-     topicId: msg.body.topicId,
-     queueId: msg.body.queueId,
-     status: "ack",
-     latencyMs: Date.now() - start,
-     attempt: msg.body.attempt,
-   });
-   ```
-   And after `msg.retry()`:
-   ```ts
-   recordDelivery(env, { …, status: "retry", … });
-   ```
-4. Run: `pnpm --filter @repo/workers test` — PASS.
-5. Run: `pnpm --filter @repo/workers check-types` — zero errors.
+1. Update `deliveryConsumer.test.ts` to assert telemetry is recorded for:
+   - `ack`
+   - `retry`
+   - `dropped` (missing DB row)
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. Call `recordDelivery()` with `latencyMs` and `attempt` after each outcome.
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+5. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
 
 **Acceptance:**
 
-- [ ] `recordDelivery` called on every delivery outcome (ack and retry).
-- [ ] `latencyMs` captured from start of fetch to decision.
-- [ ] Full test suite green.
+- [ ] Every consumer outcome records telemetry
+- [ ] `latencyMs` is measured from before fetch to outcome decision
+- [ ] Full targeted tests pass
 
 ---
 
@@ -219,29 +221,30 @@ Call `recordDelivery` after every ack and retry decision in
 
 | Type     | Blueprint            | Relationship                                              |
 | -------- | -------------------- | --------------------------------------------------------- |
-| Upstream | `cf-queues-delivery` | Consumer from that blueprint is the instrumentation point |
+| Upstream | `cf-queues-delivery` | The consumer introduced there is the telemetry hook point |
 
 ## Edge Cases and Error Handling
 
-| Edge Case                               | Risk   | Solution                                                                            | Task |
-| --------------------------------------- | ------ | ----------------------------------------------------------------------------------- | ---- |
-| `writeDataPoint` throws                 | Low    | It's documented as non-blocking and does not throw synchronously                    | 1.2  |
-| `topicId` absent from `DeliveryPayload` | Medium | `durable-objects-fan-out` adds `topicId` to payload; this blueprint depends on that | 1.3  |
+| Edge Case                                  | Risk   | Solution                                                               | Task |
+| ------------------------------------------ | ------ | ---------------------------------------------------------------------- | ---- |
+| `topicId` is absent for direct queue sends | Low    | Record an empty string / optional value rather than blocking telemetry | 1.2  |
+| Metrics writeback throws                   | Medium | Swallow telemetry failure after logging; do not fail delivery behavior | 1.3  |
 
 ## Non-goals
 
-- Dashboard UI over Analytics Engine data.
-- Querying the SQL API (out of scope for this blueprint).
-- Long-term archival to R2 (separate Pipelines blueprint if needed later).
+- Dashboard UI
+- SQL query endpoints
+- Pipelines
+- Long-term archival
 
 ## Risks
 
-| Risk                                                   | Impact | Mitigation                                                                   |
-| ------------------------------------------------------ | ------ | ---------------------------------------------------------------------------- |
-| Analytics Engine dataset not provisioned automatically | Low    | CF creates the dataset on first `writeDataPoint` — no Pulumi resource needed |
+| Risk                                     | Impact | Mitigation                                                          |
+| ---------------------------------------- | ------ | ------------------------------------------------------------------- |
+| Over-modeling the event schema too early | Low    | Keep the first schema intentionally small and operationally focused |
 
 ## Technology Choices
 
-| Component     | Technology          | Version | Why                                                   |
-| ------------- | ------------------- | ------- | ----------------------------------------------------- |
-| Metrics store | CF Analytics Engine | GA      | Unlimited cardinality, zero infra, free plan eligible |
+| Component          | Technology                  | Version     | Why                                                                    |
+| ------------------ | --------------------------- | ----------- | ---------------------------------------------------------------------- |
+| Delivery telemetry | Cloudflare Analytics Engine | CF platform | Native Worker-side metrics ingestion without additional infrastructure |

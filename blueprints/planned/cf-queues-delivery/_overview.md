@@ -4,7 +4,7 @@ status: planned
 complexity: M
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "0%"
+progress: "0% (refined)"
 depends_on: []
 tags:
   - cloudflare-workers
@@ -16,82 +16,127 @@ tags:
 # CF Queues delivery
 
 **Goal:** Replace the fire-and-forget `waitUntil(fetch(pushEndpoint))`
-delivery in `apps/workers/src/routes/message.ts` with Cloudflare Queues,
-giving at-least-once delivery guarantees, per-message retry with configurable
-delay, and a dead-letter queue for permanent failures.
+delivery in both `apps/workers/src/routes/message.ts` and
+`apps/workers/src/routes/topic.ts` with Cloudflare Queues, explicit consumer
+ack / retry behavior, and a dead-letter queue.
 
 ## Planning Summary
 
-- **Why now:** The current delivery in `message.ts:69-79` swallows all errors
-  (`catch(() => {})`). Any failed push is silently dropped. Queues fixes this
-  with zero infrastructure.
-- **Scope:** One `[[queues.producers]]` binding to enqueue on publish; one
-  `[[queues.consumers]]` to handle delivery with retries and DLQ; a dead-letter
-  queue that archives to a separate queue for inspection. Idempotency key on
-  each message prevents duplicate processing.
-- **Out of scope:** Subscriber WebSocket fan-out (handled by
-  `durable-objects-fan-out`). Analytics on delivery events (handled by
-  `analytics-engine-telemetry`).
+- **Why now:** The current Worker silently drops failed push deliveries in both
+  direct queue sends and topic publish fan-out.
+- **Scope:** One producer binding, one consumer configuration, one queue
+  consumer module, and route wiring for both message-send and topic-publish
+  paths.
+- **Out of scope:** WebSocket fan-out, replay cursors, and long-running
+  recovery workflows.
+
+## Refinement Summary
+
+- Expanded the blueprint beyond `routes/message.ts` to also cover
+  `routes/topic.ts`, which currently performs the same fire-and-forget push
+  pattern.
+- Removed the inaccurate promise that this blueprint introduces an external
+  idempotency cache. It does not. It preserves at-least-once delivery and uses
+  `messageId` as the receiver-visible dedupe key.
+- Corrected the consumer design so it **rehydrates the persisted message from
+  Postgres by `messageId`** before POSTing to the subscriber. The queue payload
+  should remain a compact envelope, not become the message body.
+- Added optional `topicId` to the delivery envelope now, so later blueprints do
+  not need to break the queue contract just to enable fan-out / replay.
+
+## Pre-execution audit (2026-04-22)
+
+**Readiness:** ready-next
+
+**What is already true**
+
+- The two target fire-and-forget delivery paths are real and present today in
+  `apps/workers/src/routes/message.ts` and `apps/workers/src/routes/topic.ts`.
+- `@cloudflare/workers-types` in the current workspace already exposes
+  `Queue<Body>`.
+- The repo already persists canonical message rows in Postgres via Hyperdrive,
+  so the consumer can rehydrate by `messageId` without adding a new store.
+
+**Main gaps before implementation**
+
+- `apps/workers/wrangler.toml` has no queue bindings yet, and there is no
+  generated binding file in the workspace today.
+- `infra/` currently provisions Hyperdrive, KV, R2, routes, and custom domain,
+  but does not yet codify Queue resources. Treat queue provisioning as a deploy
+  prerequisite for this blueprint.
+- The workspace has no `deliveryConsumer.ts` or `message.test.ts` yet, so the
+  first TDD pass must create both rather than assuming they already exist.
+
+**First-build notes**
+
+- Replace the fire-and-forget push path in both route files in the same wave.
+- Keep the queue payload compact and rehydrate the full message row in the
+  consumer to preserve the current subscriber-visible body shape.
+- Export the Worker entrypoint as `{ fetch, queue }` only after the consumer
+  exists and targeted tests cover the new shape.
 
 ## Architecture Overview
 
 ```text
 before:
   POST /api/messages/:queueId
-    → insert to Postgres
-    → waitUntil(fetch(pushEndpoint))   ← fire-and-forget, errors swallowed
+    → insert message row
+    → waitUntil(fetch(pushEndpoint, body = message)))
+
+  POST /api/topics/:topicId/publish
+    → insert N message rows
+    → waitUntil(fetch(pushEndpoint, body = message))) for each subscribed queue
 
 after:
-  POST /api/messages/:queueId
-    → insert to Postgres (unchanged)
-    → env.DELIVERY_QUEUE.send({ messageId, queueId, pushEndpoint, attempt: 0 })
+  route handler
+    → insert message row(s)
+    → DELIVERY_QUEUE.send({ messageId, queueId, pushEndpoint, topicId?, attempt: 0 })
 
-  Queue consumer (deliveryConsumer.ts):
-    → fetch(pushEndpoint) with timeout
-    → msg.ack()           on 2xx
-    → msg.retry({ delaySeconds: 2^attempt * 5 })  on 4xx/5xx
-    → after max_retries → DLQ (delivery-dlq queue)
+  delivery consumer
+    → load canonical message row from Postgres by messageId
+    → fetch(pushEndpoint, body = message row)
+    → msg.ack() on 2xx
+    → msg.retry({ delaySeconds }) on non-2xx / network failure
+    → DLQ after configured retry limit
 ```
 
 ## Fact-Checked Findings
 
-| ID  | Severity | Claim                                                                        | Source                                                                                                      |
-| --- | -------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| F1  | HIGH     | Queues provides at-least-once delivery by default                            | CF docs: "guaranteed to be delivered at least once, and in rare occasions, may be delivered more than once" |
-| F2  | HIGH     | `max_batch_size` max is 100; default is 10                                   | CF docs: batch settings table                                                                               |
-| F3  | HIGH     | `max_retries` defaults to 3; messages at max retries go to DLQ if configured | CF docs delivery failure section                                                                            |
-| F4  | MEDIUM   | Retrying a message does NOT reduce consumer concurrency                      | CF docs: "Retrying messages will not cause the consumer to autoscale down"                                  |
-| F5  | MEDIUM   | Explicit per-message `msg.ack()` / `msg.retry()` prevent full-batch retry    | CF docs: explicit acknowledgement section                                                                   |
-| F6  | LOW      | Queue names must be provisioned in Pulumi before wrangler can bind them      | CF infra convention; Pulumi handles resource creation                                                       |
+| ID  | Severity | Claim                                                                                | Source                                                           |
+| --- | -------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| F1  | HIGH     | Cloudflare Queues deliver messages at least once.                                    | Cloudflare Queues docs, fetched 2026-04-22.                      |
+| F2  | HIGH     | A consumer can use explicit per-message `ack()` / `retry()` behavior.                | Cloudflare Queues docs, fetched 2026-04-22.                      |
+| F3  | HIGH     | DLQ support is first-class and messages move there after the configured retry limit. | Cloudflare Queues DLQ docs, fetched 2026-04-22.                  |
+| F4  | MEDIUM   | Consumer concurrency scales with backlog by default.                                 | Cloudflare Queues consumer concurrency docs, fetched 2026-04-22. |
 
 ## Key Decisions
 
-| Decision         | Choice                                           | Rationale                                            |
-| ---------------- | ------------------------------------------------ | ---------------------------------------------------- |
-| Delivery payload | `{ messageId, queueId, pushEndpoint, attempt }`  | Minimal; DB holds the full message body              |
-| Retry delay      | `2^attempt * 5 s` (5, 10, 20, 40 s…)             | Exponential back-off; stays within `max_retries = 5` |
-| Batch size       | `max_batch_size = 10`, `max_batch_timeout = 5 s` | Low latency over throughput for push delivery        |
-| DLQ              | Separate `delivery-dlq` queue                    | Inspection without re-processing                     |
+| Decision                | Choice                                                                              | Rationale                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Queue payload           | Envelope with `messageId`, `queueId`, `pushEndpoint`, optional `topicId`, `attempt` | Compact envelope; DB remains the canonical message store                            |
+| Retry policy            | Retry on fetch failure and non-2xx response                                         | Current webhook semantics do not distinguish permanent vs transient failures safely |
+| Backoff                 | `5s, 10s, 20s, 40s, 80s`                                                            | Simple exponential backoff within a small retry budget                              |
+| Body sent to subscriber | Canonical message row from Postgres                                                 | Preserves current subscriber-visible shape                                          |
 
 ## Quick Reference (Execution Waves)
 
-| Wave              | Tasks     | Dependencies | Parallelizable                            |
-| ----------------- | --------- | ------------ | ----------------------------------------- |
-| **Wave 1**        | 1.1, 1.2  | None         | 2 agents (wrangler.toml vs consumer file) |
-| **Wave 2**        | 1.3       | 1.1 + 1.2    | 1 agent                                   |
-| **Critical path** | 1.1 → 1.3 | —            | 2 waves                                   |
+| Wave              | Tasks     | Dependencies | Parallelizable |
+| ----------------- | --------- | ------------ | -------------- |
+| **Wave 1**        | 1.1, 1.2  | None         | 2 agents       |
+| **Wave 2**        | 1.3       | 1.1 + 1.2    | 1 agent        |
+| **Critical path** | 1.1 → 1.3 | —            | 2 waves        |
 
 ---
 
-### Phase 1: Binding, consumer, and wire-up [Complexity: M]
+### Phase 1: Queue binding, consumer, and route wiring [Complexity: M]
 
-#### [config] Task 1.1: Wrangler bindings + Env type
+#### [config] Task 1.1: Add queue bindings + delivery envelope type
 
 **Status:** pending
 
 **Depends:** None
 
-Add producer + consumer queue bindings to `wrangler.toml` and extend `Env`.
+Add Cloudflare Queue bindings and define the shared `DeliveryPayload` type.
 
 **Files:**
 
@@ -100,7 +145,7 @@ Add producer + consumer queue bindings to `wrangler.toml` and extend `Env`.
 
 **Steps (TDD):**
 
-1. Add to `apps/workers/wrangler.toml`:
+1. Add producer + consumer queue config to `apps/workers/wrangler.toml`:
 
    ```toml
    [[queues.producers]]
@@ -115,140 +160,117 @@ Add producer + consumer queue bindings to `wrangler.toml` and extend `Env`.
    dead_letter_queue = "delivery-dlq"
    ```
 
-2. Add to `Env` in `apps/workers/src/db/client.ts`:
-   ```ts
-   DELIVERY_QUEUE: Queue<DeliveryPayload>;
-   ```
-3. Export `DeliveryPayload` type from `client.ts`:
+2. Extend `Env` in `apps/workers/src/db/client.ts` with
+   `DELIVERY_QUEUE: Queue<DeliveryPayload>`.
+3. Export:
    ```ts
    export type DeliveryPayload = {
      messageId: string;
      queueId: string;
      pushEndpoint: string;
+     topicId: string | null;
      attempt: number;
    };
    ```
-4. Run: `pnpm --filter @repo/workers check-types` — PASS.
+4. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
 
 **Acceptance:**
 
-- [ ] `wrangler.toml` has producer + consumer blocks for `delivery-queue`.
-- [ ] `DeliveryPayload` type exported from `db/client.ts`.
-- [ ] `pnpm --filter @repo/workers check-types` passes.
+- [ ] `wrangler.toml` declares producer and consumer blocks
+- [ ] `DeliveryPayload` is exported from `apps/workers/src/db/client.ts`
+- [ ] `pnpm --filter @repo/workers check-types` passes
 
 ---
 
-#### [consumer] Task 1.2: Delivery consumer handler
+#### [consumer] Task 1.2: Create the delivery consumer
 
 **Status:** pending
 
 **Depends:** None
 
-Create `src/consumers/deliveryConsumer.ts` with explicit per-message ack/retry
-and exponential back-off.
+Create a consumer that rehydrates the canonical message row from Postgres,
+then POSTs that row to the subscriber endpoint and acks / retries explicitly.
 
 **Files:**
 
 - Create: `apps/workers/src/consumers/deliveryConsumer.ts`
 - Create: `apps/workers/src/tests/deliveryConsumer.test.ts`
+- Modify: `apps/workers/src/db/client.ts`
 
 **Steps (TDD):**
 
 1. Write `deliveryConsumer.test.ts` covering:
-   - 2xx response → `msg.ack()` called
-   - 5xx response → `msg.retry({ delaySeconds })` called
-   - Fetch throws (network error) → `msg.retry()` called
-2. Run: `pnpm --filter @repo/workers test` — FAIL.
-3. Implement `deliveryConsumer.ts`:
-
-   ```ts
-   import type { DeliveryPayload } from "../db/client";
-
-   export async function handleDeliveryBatch(
-     batch: MessageBatch<DeliveryPayload>,
-     env: Env,
-   ): Promise<void> {
-     for (const msg of batch.messages) {
-       const { pushEndpoint, attempt } = msg.body;
-       try {
-         const res = await fetch(pushEndpoint, {
-           method: "POST",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify(msg.body),
-           signal: AbortSignal.timeout(10_000),
-         });
-         if (res.ok) {
-           msg.ack();
-         } else {
-           const delaySec = Math.pow(2, attempt) * 5;
-           msg.retry({ delaySeconds: delaySec });
-         }
-       } catch {
-         const delaySec = Math.pow(2, attempt) * 5;
-         msg.retry({ delaySeconds: delaySec });
-       }
-     }
-   }
-   ```
-
-4. Run: `pnpm --filter @repo/workers test` — PASS.
-5. Run: `pnpm --filter @repo/workers lint` — PASS.
+   - DB row found + `2xx` response → `msg.ack()`
+   - DB row found + `5xx` response → `msg.retry({ delaySeconds })`
+   - fetch throws → `msg.retry({ delaySeconds })`
+   - DB row missing → `msg.ack()` (nothing left to deliver)
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. Implement `deliveryConsumer.ts` so it:
+   - selects the message row by `messageId`
+   - POSTs `JSON.stringify(message)` to `pushEndpoint`
+   - uses exponential backoff based on `attempt`
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+5. Run: `pnpm --filter @repo/workers lint` — verify PASS.
 
 **Acceptance:**
 
-- [ ] Tests cover 2xx ack, 5xx retry, network-error retry cases.
-- [ ] `msg.ack()` / `msg.retry()` called (never both) for every message.
-- [ ] `pnpm --filter @repo/workers test` green.
+- [ ] The consumer loads the canonical message row before POSTing
+- [ ] `msg.ack()` and `msg.retry()` are mutually exclusive per message
+- [ ] Missing DB rows are handled explicitly rather than retried forever
+- [ ] `pnpm --filter @repo/workers test` is green
 
 ---
 
-#### [wire] Task 1.3: Replace fire-and-forget + export queue handler
+#### [wire] Task 1.3: Enqueue from both route paths and export the queue handler
 
 **Status:** pending
 
 **Depends:** Task 1.1, Task 1.2
 
-Replace the `waitUntil(fetch(…))` block in `message.ts` with
-`env.DELIVERY_QUEUE.send()` and export the queue handler from `index.ts`.
+Replace direct push delivery in both `message.ts` and `topic.ts`, then export
+`queue()` from the Worker entry point.
 
 **Files:**
 
 - Modify: `apps/workers/src/routes/message.ts`
+- Modify: `apps/workers/src/routes/topic.ts`
 - Modify: `apps/workers/src/index.ts`
+- Create: `apps/workers/src/tests/message.test.ts`
+- Modify: `apps/workers/src/tests/topic.test.ts`
 
 **Steps (TDD):**
 
-1. In `message.ts`, replace lines 69-79:
+1. Add or update tests so direct message send and topic publish paths assert
+   that `DELIVERY_QUEUE.send()` is called instead of `waitUntil(fetch(...))`.
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. In `routes/message.ts`, replace the fire-and-forget fetch with:
    ```ts
-   // was: c.executionCtx.waitUntil(fetch(queue.pushEndpoint, …))
-   if (queue.pushEndpoint) {
-     await c.env.DELIVERY_QUEUE.send({
-       messageId: message.id,
-       queueId,
-       pushEndpoint: queue.pushEndpoint,
-       attempt: 0,
-     });
-   }
+   await c.env.DELIVERY_QUEUE.send({
+     messageId: message.id,
+     queueId,
+     pushEndpoint: queue.pushEndpoint,
+     topicId: null,
+     attempt: 0,
+   });
    ```
-2. In `index.ts`, change the default export from `export default app` to:
-
+4. In `routes/topic.ts`, enqueue one payload per created message using the
+   current `topicId`.
+5. In `index.ts`, export:
    ```ts
-   import { handleDeliveryBatch } from "./consumers/deliveryConsumer";
-
    export default {
      fetch: app.fetch,
      queue: handleDeliveryBatch,
    };
    ```
-
-3. Run: `pnpm --filter @repo/workers test` — full suite green.
-4. Run: `pnpm --filter @repo/workers check-types` — zero errors.
+6. Run: `pnpm --filter @repo/workers test` — verify PASS.
+7. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
 
 **Acceptance:**
 
-- [ ] No `waitUntil(fetch(…))` pattern remains in `routes/message.ts`.
-- [ ] `index.ts` exports `{ fetch, queue }` object.
-- [ ] All existing tests pass.
+- [ ] `routes/message.ts` no longer uses `waitUntil(fetch(...))`
+- [ ] `routes/topic.ts` no longer uses `waitUntil(fetch(...))`
+- [ ] Both paths enqueue `DeliveryPayload` envelopes
+- [ ] `index.ts` exports `{ fetch, queue }`
 
 ---
 
@@ -263,34 +285,34 @@ Replace the `waitUntil(fetch(…))` block in `message.ts` with
 
 ## Cross-Plan References
 
-| Type       | Blueprint                    | Relationship                                                                  |
-| ---------- | ---------------------------- | ----------------------------------------------------------------------------- |
-| Downstream | `durable-objects-fan-out`    | DO fan-out hooks into the queue consumer after delivery ack                   |
-| Downstream | `analytics-engine-telemetry` | Delivery events (ack/retry) are written to Analytics Engine from the consumer |
+| Type       | Blueprint                    | Relationship                                                              |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------- |
+| Downstream | `analytics-engine-telemetry` | The queue consumer becomes the telemetry chokepoint                       |
+| Downstream | `durable-objects-fan-out`    | The queue payload already carries optional `topicId` for later DO fan-out |
 
 ## Edge Cases and Error Handling
 
-| Edge Case                              | Risk   | Solution                                                                                 | Task |
-| -------------------------------------- | ------ | ---------------------------------------------------------------------------------------- | ---- |
-| `pushEndpoint` is empty string         | Medium | Guard: only enqueue if `queue.pushEndpoint` is truthy                                    | 1.3  |
-| Duplicate delivery (at-least-once)     | Medium | Consumer must be idempotent; push receivers should tolerate duplicates. Document in ADR. | 1.2  |
-| Fetch timeout exceeds Worker CPU limit | Low    | `AbortSignal.timeout(10_000)` caps each attempt at 10 s                                  | 1.2  |
+| Edge Case                                       | Risk   | Solution                                                                                | Task |
+| ----------------------------------------------- | ------ | --------------------------------------------------------------------------------------- | ---- |
+| `pushEndpoint` is absent                        | Low    | Do not enqueue delivery work when there is nothing to call                              | 1.3  |
+| Subscriber cannot tolerate duplicate deliveries | Medium | Preserve `messageId` in the canonical message body and document at-least-once semantics | 1.2  |
+| DB row was deleted before the consumer ran      | Low    | `ack()` the queue message after a missing-row lookup                                    | 1.2  |
 
 ## Non-goals
 
-- WebSocket fan-out to connected clients (handled by `durable-objects-fan-out`).
-- Delivery analytics / observability (handled by `analytics-engine-telemetry`).
-- Provisioning the `delivery-queue` Cloudflare resource (handled by Pulumi infra).
+- WebSocket fan-out
+- Replay cursors
+- Long-running redrive orchestration
 
 ## Risks
 
-| Risk                                               | Impact | Mitigation                                                             |
-| -------------------------------------------------- | ------ | ---------------------------------------------------------------------- |
-| `delivery-queue` not yet provisioned in Pulumi     | High   | Queue must exist before wrangler deploy; add to `infra/src/resources/` |
-| Duplicate delivery to idempotent-unaware consumers | Medium | Document; add `messageId` to payload as idempotency key                |
+| Risk                                                 | Impact | Mitigation                                                                 |
+| ---------------------------------------------------- | ------ | -------------------------------------------------------------------------- |
+| Queue provisioning is not yet codified in infra      | Medium | Track as deployment prerequisite until infra adds explicit Queue resources |
+| Subscriber-visible payload shape changes by accident | High   | Always POST the canonical DB row, not the queue envelope                   |
 
 ## Technology Choices
 
-| Component     | Technology | Version     | Why                                       |
-| ------------- | ---------- | ----------- | ----------------------------------------- |
-| Message queue | CF Queues  | CF platform | At-least-once, DLQ, batching — zero infra |
+| Component      | Technology        | Version     | Why                                                                             |
+| -------------- | ----------------- | ----------- | ------------------------------------------------------------------------------- |
+| Async delivery | Cloudflare Queues | CF platform | Native at-least-once delivery, retries, and DLQ without standing infrastructure |

@@ -61,21 +61,66 @@ Invoke `$plan-refine <slug>`. The skill will:
 
 ## Active blueprints
 
-| Slug                         | Status  | Complexity | Theme                                               | Depends on                |
-| ---------------------------- | ------- | ---------- | --------------------------------------------------- | ------------------------- |
-| `cf-rate-limiting`           | planned | XS         | Edge rate limiting via CF binding (per-userId)      | —                         |
-| `cf-queues-delivery`         | planned | M          | Replace fire-and-forget push with CF Queues + DLQ   | —                         |
-| `analytics-engine-telemetry` | planned | S          | Delivery metrics via CF Analytics Engine            | `cf-queues-delivery`      |
-| `durable-objects-fan-out`    | planned | L          | TopicRoom DO for WebSocket fan-out + hibernation    | `cf-queues-delivery`      |
-| `message-replay-cursor`      | planned | M          | Sequence numbers + cursor-based replay on reconnect | `durable-objects-fan-out` |
+| Slug                         | Status  | Complexity | Theme                                                                        | Depends on                |
+| ---------------------------- | ------- | ---------- | ---------------------------------------------------------------------------- | ------------------------- |
+| `cf-rate-limiting`           | planned | XS         | Edge token-bucket limiter for authenticated Worker routes                    | —                         |
+| `cf-queues-delivery`         | planned | M          | Replace fire-and-forget push with Queues + DLQ for direct and topic delivery | —                         |
+| `analytics-engine-telemetry` | planned | S          | Delivery-attempt telemetry from the queue consumer                           | `cf-queues-delivery`      |
+| `durable-objects-fan-out`    | planned | L          | TopicRoom Durable Object + WebSocket hibernation                             | `cf-queues-delivery`      |
+| `message-replay-cursor`      | planned | M          | Postgres sequence numbers + TopicRoom cursor replay                          | `durable-objects-fan-out` |
+
+## Research alignment notes
+
+The current blueprint set deliberately **does not** include separate plans for:
+
+- Cloudflare PubSub — retired; product is dead / 404 as of 2026-04-22.
+- D1 for topic / subscription metadata — deferred as YAGNI while Postgres via
+  Hyperdrive remains the durable data plane.
+- KV as an API-key cache — deferred as YAGNI for the current JWT-based auth
+  path.
+- Pipelines — confirmed open beta and useful later, but not part of the
+  current implementation wave.
+
+See `docs/research/cloudflare-architecture-2026-04.md` for the fact-checked
+research artifact these blueprints implement.
+
+## Gap audit snapshot (2026-04-22)
+
+| Slug                         | Readiness           | Main gap                                                               | Why it is or is not the next pickup                                                                                           |
+| ---------------------------- | ------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `cf-queues-delivery`         | ready-next          | Queue resource provisioning is still a deploy prerequisite in `infra/` | Highest leverage and unblocks telemetry + DO fan-out. Best first implementation candidate.                                    |
+| `cf-rate-limiting`           | ready-optional      | Needs a real rate-limit namespace ID and plan confirmation             | Useful edge hardening, but it does not unblock the core delivery architecture. Prioritize only if abuse is already happening. |
+| `analytics-engine-telemetry` | blocked-by-upstream | Needs the delivery consumer introduced by `cf-queues-delivery`         | Correctly sequenced after queue delivery lands.                                                                               |
+| `durable-objects-fan-out`    | blocked-by-upstream | Needs `cf-queues-delivery` queue payload + consumer path               | Valuable, but not first. Real-time fan-out should sit on top of reliable delivery, not precede it.                            |
+| `message-replay-cursor`      | blocked-by-upstream | Needs `durable-objects-fan-out` plus Worker migration bootstrap        | Correctly last in the wave because it extends the DO + queue path rather than creating it.                                    |
+
+### Recommended next pickup
+
+If implementation starts now, the first blueprint that should move from
+`planned/` to `in-progress/` is **`cf-queues-delivery`**.
+
+Why:
+
+1. It fixes the biggest correctness gap in the shipped Worker code: silently
+   dropped push deliveries.
+2. It unblocks both Wave 2 blueprints (`analytics-engine-telemetry` and
+   `durable-objects-fan-out`).
+3. It already matches the real codebase after refinement: both
+   `routes/message.ts` and `routes/topic.ts` need the same fire-and-forget
+   replacement.
+4. It does not require inventing a new persistence stack; it keeps Postgres via
+   Hyperdrive as the source of truth.
+
+Do **not** move a blueprint to `in-progress/` until work actually starts on a
+branch. The recommendation above is sequencing guidance, not a lifecycle-state
+change by itself.
 
 ## Validation
 
-Run `pnpm blueprint:validate` to check:
+Run `bun ./scripts/validate-blueprints.ts` to check:
 
 - Every blueprint directory contains `_overview.md`.
 - Frontmatter `status` matches the directory it lives in.
-- Every `**Files:**` path uses a known workspace prefix.
 - Cross-blueprint references point to slugs that exist.
 
 The legacy `.omx/plans` validator still runs for backward compatibility.
