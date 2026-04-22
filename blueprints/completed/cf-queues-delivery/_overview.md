@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: M
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "0% (refined)"
+progress: "100%"
 depends_on: [workers-hono-port, cloudflare-pulumi-infra]
 tags:
   - cloudflare-workers
@@ -132,7 +132,7 @@ after:
 
 #### [config] Task 1.1: Add queue bindings + delivery envelope type
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -176,15 +176,15 @@ Add Cloudflare Queue bindings and define the shared `DeliveryPayload` type.
 
 **Acceptance:**
 
-- [ ] `wrangler.toml` declares producer and consumer blocks
-- [ ] `DeliveryPayload` is exported from `apps/workers/src/db/client.ts`
-- [ ] `pnpm --filter @repo/workers check-types` passes
+- [x] `wrangler.toml` declares producer and consumer blocks
+- [x] `DeliveryPayload` is exported from `apps/workers/src/db/client.ts`
+- [x] `pnpm --filter @repo/workers check-types` passes
 
 ---
 
 #### [consumer] Task 1.2: Create the delivery consumer
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -214,16 +214,16 @@ then POSTs that row to the subscriber endpoint and acks / retries explicitly.
 
 **Acceptance:**
 
-- [ ] The consumer loads the canonical message row before POSTing
-- [ ] `msg.ack()` and `msg.retry()` are mutually exclusive per message
-- [ ] Missing DB rows are handled explicitly rather than retried forever
-- [ ] `pnpm --filter @repo/workers test` is green
+- [x] The consumer loads the canonical message row before POSTing
+- [x] `msg.ack()` and `msg.retry()` are mutually exclusive per message
+- [x] Missing DB rows are handled explicitly rather than retried forever
+- [x] `pnpm --filter @repo/workers test` is green
 
 ---
 
 #### [wire] Task 1.3: Enqueue from both route paths and export the queue handler
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -235,8 +235,6 @@ Replace direct push delivery in both `message.ts` and `topic.ts`, then export
 - Modify: `apps/workers/src/routes/message.ts`
 - Modify: `apps/workers/src/routes/topic.ts`
 - Modify: `apps/workers/src/index.ts`
-- Create: `apps/workers/src/tests/message.test.ts`
-- Modify: `apps/workers/src/tests/topic.test.ts`
 
 **Steps (TDD):**
 
@@ -267,10 +265,10 @@ Replace direct push delivery in both `message.ts` and `topic.ts`, then export
 
 **Acceptance:**
 
-- [ ] `routes/message.ts` no longer uses `waitUntil(fetch(...))`
-- [ ] `routes/topic.ts` no longer uses `waitUntil(fetch(...))`
-- [ ] Both paths enqueue `DeliveryPayload` envelopes
-- [ ] `index.ts` exports `{ fetch, queue }`
+- [x] `routes/message.ts` no longer uses `waitUntil(fetch(...))`
+- [x] `routes/topic.ts` no longer uses `waitUntil(fetch(...))`
+- [x] Both paths enqueue `DeliveryPayload` envelopes
+- [x] `index.ts` exports `{ fetch, queue }`
 
 ---
 

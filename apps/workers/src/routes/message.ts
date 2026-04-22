@@ -25,19 +25,12 @@ messageRoutes.post("/:queueId", async (c) => {
   const { data } = body;
 
   if (!data || typeof data !== "object") {
-    return c.json(
-      { status: "error", message: "Message data must be an object" },
-      400,
-    );
+    return c.json({ status: "error", message: "Message data must be an object" }, 400);
   }
 
   const db = createDb(c.env);
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, queueId))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
   if (!queue) {
     return c.json({ status: "error", message: "Queue not found" }, 404);
   }
@@ -65,17 +58,15 @@ messageRoutes.post("/:queueId", async (c) => {
     })
     .where(eq(queueMetrics.queueId, queueId));
 
-  // Fan-out to push endpoint if configured (fire-and-forget via waitUntil)
+  // Enqueue delivery via Cloudflare Queues for reliable ack/retry
   if (queue.pushEndpoint) {
-    c.executionCtx.waitUntil(
-      fetch(queue.pushEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
-      }).catch(() => {
-        // swallow push errors
-      }),
-    );
+    await c.env.DELIVERY_QUEUE.send({
+      messageId: message.id,
+      queueId,
+      pushEndpoint: queue.pushEndpoint,
+      topicId: null,
+      attempt: 0,
+    });
   }
 
   return c.json({ status: "success", data: { message } }, 201);
@@ -84,10 +75,7 @@ messageRoutes.post("/:queueId", async (c) => {
 // GET /api/messages/:queueId — receive messages
 messageRoutes.get("/:queueId", async (c) => {
   const queueId = c.req.param("queueId");
-  const maxMessages = parseInt(
-    c.req.query("maxMessages") ?? String(DEFAULT_MAX_MESSAGES),
-    10,
-  );
+  const maxMessages = parseInt(c.req.query("maxMessages") ?? String(DEFAULT_MAX_MESSAGES), 10);
   const visibilityTimeout = parseInt(
     c.req.query("visibilityTimeout") ?? String(DEFAULT_VISIBILITY_TIMEOUT),
     10,
@@ -95,11 +83,7 @@ messageRoutes.get("/:queueId", async (c) => {
 
   const db = createDb(c.env);
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, queueId))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
   if (!queue) {
     return c.json({ status: "error", message: "Queue not found" }, 404);
   }
@@ -173,11 +157,7 @@ messageRoutes.delete("/:queueId/:messageId", async (c) => {
   const messageId = c.req.param("messageId");
   const db = createDb(c.env);
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, queueId))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
   if (!queue) {
     return c.json({ status: "error", message: "Queue not found" }, 404);
   }
@@ -192,9 +172,7 @@ messageRoutes.delete("/:queueId/:messageId", async (c) => {
     return c.json({ status: "error", message: "Message not found" }, 404);
   }
 
-  await db
-    .delete(messages)
-    .where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)));
+  await db.delete(messages).where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)));
 
   return c.json({ status: "success", data: null }, 200);
 });

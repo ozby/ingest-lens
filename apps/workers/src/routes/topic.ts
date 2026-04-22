@@ -40,10 +40,7 @@ topicRoutes.get("/", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const result = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.ownerId, ownerId));
+  const result = await db.select().from(topics).where(eq(topics.ownerId, ownerId));
 
   return c.json({
     status: "success",
@@ -58,21 +55,14 @@ topicRoutes.get("/:id", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.id, id))
-    .limit(1);
+  const [topic] = await db.select().from(topics).where(eq(topics.id, id)).limit(1);
 
   if (!topic) {
     return c.json({ status: "error", message: "Topic not found" }, 404);
   }
 
   if (topic.ownerId !== ownerId) {
-    return c.json(
-      { status: "error", message: "Not authorized to access this topic" },
-      403,
-    );
+    return c.json({ status: "error", message: "Not authorized to access this topic" }, 403);
   }
 
   return c.json({ status: "success", data: { topic } });
@@ -84,24 +74,14 @@ topicRoutes.delete("/:id", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.id, id))
-    .limit(1);
+  const [topic] = await db.select().from(topics).where(eq(topics.id, id)).limit(1);
 
   if (!topic) {
-    return c.json(
-      { status: "error", message: `Topic not found with ID: ${id}` },
-      404,
-    );
+    return c.json({ status: "error", message: `Topic not found with ID: ${id}` }, 404);
   }
 
   if (topic.ownerId !== ownerId) {
-    return c.json(
-      { status: "error", message: "Not authorized to delete this topic" },
-      403,
-    );
+    return c.json({ status: "error", message: "Not authorized to delete this topic" }, 403);
   }
 
   await db.delete(topics).where(eq(topics.id, id));
@@ -122,36 +102,22 @@ topicRoutes.post("/:topicId/subscribe", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.id, topicId))
-    .limit(1);
+  const [topic] = await db.select().from(topics).where(eq(topics.id, topicId)).limit(1);
   if (!topic) {
     return c.json({ status: "error", message: "Topic not found" }, 404);
   }
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, queueId))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
   if (!queue) {
     return c.json({ status: "error", message: "Queue not found" }, 404);
   }
 
   if (topic.ownerId !== ownerId) {
-    return c.json(
-      { status: "error", message: "Not authorized to modify this topic" },
-      403,
-    );
+    return c.json({ status: "error", message: "Not authorized to modify this topic" }, 403);
   }
 
   if (topic.subscribedQueues.includes(queueId)) {
-    return c.json(
-      { status: "error", message: "Queue is already subscribed to this topic" },
-      400,
-    );
+    return c.json({ status: "error", message: "Queue is already subscribed to this topic" }, 400);
   }
 
   const [updated] = await db
@@ -170,36 +136,23 @@ topicRoutes.post("/:topicId/publish", async (c) => {
   const { data } = body;
 
   if (!data || typeof data !== "object") {
-    return c.json(
-      { status: "error", message: "Message data must be an object" },
-      400,
-    );
+    return c.json({ status: "error", message: "Message data must be an object" }, 400);
   }
 
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.id, topicId))
-    .limit(1);
+  const [topic] = await db.select().from(topics).where(eq(topics.id, topicId)).limit(1);
   if (!topic) {
     return c.json({ status: "error", message: "Topic not found" }, 404);
   }
 
   if (topic.ownerId !== ownerId) {
-    return c.json(
-      { status: "error", message: "Not authorized to publish to this topic" },
-      403,
-    );
+    return c.json({ status: "error", message: "Not authorized to publish to this topic" }, 403);
   }
 
   if (topic.subscribedQueues.length === 0) {
-    return c.json(
-      { status: "error", message: "Topic has no subscribers" },
-      400,
-    );
+    return c.json({ status: "error", message: "Topic has no subscribers" }, 400);
   }
 
   const subscribedQueues = await db
@@ -225,15 +178,15 @@ topicRoutes.post("/:topicId/publish", async (c) => {
 
     createdMessages.push(message);
 
-    // Fan-out push notification
+    // Enqueue delivery via Cloudflare Queues for reliable ack/retry
     if (queue.pushEndpoint) {
-      c.executionCtx.waitUntil(
-        fetch(queue.pushEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(message),
-        }).catch(() => {}),
-      );
+      await c.env.DELIVERY_QUEUE.send({
+        messageId: message.id,
+        queueId: queue.id,
+        pushEndpoint: queue.pushEndpoint,
+        topicId,
+        attempt: 0,
+      });
     }
   }
 

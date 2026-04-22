@@ -7,6 +7,7 @@ import { queueRoutes } from "./routes/queue";
 import { messageRoutes } from "./routes/message";
 import { topicRoutes } from "./routes/topic";
 import { dashboardRoutes } from "./routes/dashboard";
+import { handleDeliveryBatch } from "./consumers/deliveryConsumer";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -21,4 +22,7 @@ app.route("/api/messages", messageRoutes);
 app.route("/api/topics", topicRoutes);
 app.route("/api/dashboard", dashboardRoutes);
 
-export default app;
+export default {
+  fetch: app.fetch,
+  queue: handleDeliveryBatch,
+};

@@ -2,11 +2,20 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
+export type DeliveryPayload = {
+  messageId: string;
+  queueId: string;
+  pushEndpoint: string;
+  topicId: string | null;
+  attempt: number;
+};
+
 export type Env = {
   HYPERDRIVE: Hyperdrive;
   DATABASE_URL?: string; // local dev fallback
   JWT_SECRET: string;
   NODE_ENV?: string;
+  DELIVERY_QUEUE: Queue<DeliveryPayload>;
 };
 
 export function createDb(env: Env) {

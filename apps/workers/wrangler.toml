@@ -10,5 +10,16 @@ binding = "HYPERDRIVE"
 id = "placeholder-hyperdrive-id"
 localConnectionString = "postgresql://localhost:5432/pubsub"
 
+[[queues.producers]]
+binding = "DELIVERY_QUEUE"
+queue = "delivery-queue"
+
+[[queues.consumers]]
+queue = "delivery-queue"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 5
+dead_letter_queue = "delivery-dlq"
+
 [vars]
 NODE_ENV = "development"
