@@ -54,14 +54,14 @@ The `pnpm-workspace.yaml` had no catalog block at all before this blueprint.
 | ------------------- | ------------------------------------------------------------------------------ | ------------------- |
 | typescript          | api-server, notification-server, client, logger, test-utils, ui, config-eslint | 5.8.2 / ^5.8.2      |
 | eslint              | api-server, notification-server, client, logger, test-utils, ui, config-eslint | ^9.22.0             |
-| jest                | api-server, notification-server, client, logger, test-utils, ui, jest-presets  | ^29.7.0             |
-| @jest/globals       | api-server, notification-server, logger, test-utils, ui                        | ^29.7.0             |
+| legacy test runner  | api-server, notification-server, client, logger, test-utils, ui, test presets  | ^29.7.0             |
+| legacy test globals | api-server, notification-server, logger, test-utils, ui                        | ^29.7.0             |
 | @types/node         | api-server, notification-server, client, logger, test-utils, ui                | ^22.13.9 / ^22.5.5  |
 | @types/cors         | api-server, notification-server                                                | ^2.8.17             |
 | @types/express      | api-server, notification-server                                                | 4.17.17             |
 | @types/morgan       | api-server, notification-server                                                | ^1.9.9              |
 | @types/supertest    | api-server, notification-server                                                | ^6.0.2              |
-| @types/jest         | api-server, notification-server, client                                        | ^29.5.11 / ^29.5.12 |
+| legacy test types   | api-server, notification-server, client                                        | ^29.5.11 / ^29.5.12 |
 | @types/axios        | api-server, notification-server                                                | ^0.9.36             |
 | @types/jsonwebtoken | api-server, notification-server                                                | ^9.0.9              |
 | @types/mongoose     | api-server, notification-server                                                | ^5.11.96            |
@@ -69,7 +69,7 @@ The `pnpm-workspace.yaml` had no catalog block at all before this blueprint.
 | @types/react-dom    | client, packages/ui (peerDep)                                                  | ^18.3.5             |
 | supertest           | api-server, notification-server                                                | ^7.0.0              |
 | tsup                | api-server, notification-server                                                | ^8.4.0              |
-| ts-jest             | api-server, notification-server, client, jest-presets                          | ^29.1.1 / ^29.2.6   |
+| legacy test bridge  | api-server, notification-server, client, test presets                          | ^29.1.1 / ^29.2.6   |
 | ts-node             | api-server, notification-server                                                | ^10.9.2             |
 | prettier            | api-server, notification-server, client (also root)                            | ^3.1.1 / ^3.5.3     |
 | husky               | api-server, notification-server (also root)                                    | ^8.0.3 / ^9.0.7     |
