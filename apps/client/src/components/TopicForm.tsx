@@ -1,8 +1,8 @@
-import React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { Button } from '@repo/ui/components';
+import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@repo/ui/components";
 import {
   Form,
   FormControl,
@@ -11,9 +11,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@repo/ui/components';
-import { Input } from '@repo/ui/components';
-import { CreateTopicRequest } from '@repo/types';
+} from "@repo/ui/components";
+import { Input } from "@repo/ui/components";
+import { CreateTopicRequest } from "@repo/types";
 import {
   Dialog,
   DialogContent,
@@ -22,17 +22,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  } from '@repo/ui/components';
-import { PlusCircle, Users } from 'lucide-react';
-import { Checkbox } from '@repo/ui/components';
+} from "@repo/ui/components";
+import { PlusCircle, Users } from "lucide-react";
+import { Checkbox } from "@repo/ui/components";
 
 // Updated schema to include subscribers
 const topicFormSchema = z.object({
   name: z.string().min(3, {
-    message: 'Topic name must be at least 3 characters.',
+    message: "Topic name must be at least 3 characters.",
   }),
   subscribers: z.array(z.string()).min(1, {
-    message: 'At least one subscriber queue is required.',
+    message: "At least one subscriber queue is required.",
   }),
 });
 
@@ -46,8 +46,8 @@ interface TopicFormProps {
   availableQueues?: { id: string; name: string }[];
 }
 
-const TopicForm: React.FC<TopicFormProps> = ({ 
-  onSubmit, 
+const TopicForm: React.FC<TopicFormProps> = ({
+  onSubmit,
   isLoading = false,
   trigger = (
     <Button>
@@ -55,14 +55,14 @@ const TopicForm: React.FC<TopicFormProps> = ({
       Create Topic
     </Button>
   ),
-  availableQueues = []
+  availableQueues = [],
 }) => {
   const [open, setOpen] = React.useState(false);
-  
+
   const form = useForm<TopicFormValues>({
     resolver: zodResolver(topicFormSchema),
     defaultValues: {
-      name: '',
+      name: "",
       subscribers: [],
     },
   });
@@ -72,10 +72,10 @@ const TopicForm: React.FC<TopicFormProps> = ({
     const topicRequest: CreateTopicRequest = {
       name: values.name,
     };
-    
+
     // Pass both the topic request and subscribers to the parent component
     onSubmit(topicRequest, values.subscribers);
-    
+
     if (!isLoading) {
       setOpen(false);
       form.reset();
@@ -84,9 +84,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Topic</DialogTitle>
@@ -94,7 +92,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
             Enter a name for your new publish/subscribe topic and select subscriber queues.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
@@ -106,9 +104,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
                   <FormControl>
                     <Input placeholder="my-topic" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    A unique name for your message topic.
-                  </FormDescription>
+                  <FormDescription>A unique name for your message topic.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -128,7 +124,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
                       Select at least one queue to subscribe to this topic.
                     </FormDescription>
                   </div>
-                  
+
                   {availableQueues.length === 0 ? (
                     <div className="text-sm text-muted-foreground border border-dashed border-muted-foreground/50 rounded-md p-4 text-center">
                       No queues available. Create a queue first.
@@ -157,9 +153,7 @@ const TopicForm: React.FC<TopicFormProps> = ({
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="font-normal">
-                                  {queue.name}
-                                </FormLabel>
+                                <FormLabel className="font-normal">{queue.name}</FormLabel>
                               </FormItem>
                             );
                           }}
@@ -173,19 +167,16 @@ const TopicForm: React.FC<TopicFormProps> = ({
             />
 
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading || availableQueues.length === 0}
-              >
-                {isLoading ? 'Creating...' : 'Create Topic'}
+              <Button type="submit" disabled={isLoading || availableQueues.length === 0}>
+                {isLoading ? "Creating..." : "Create Topic"}
               </Button>
             </DialogFooter>
           </form>

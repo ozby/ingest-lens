@@ -1,9 +1,8 @@
-
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { IUser } from '@repo/types';
-import apiService from '../services/api';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { IUser } from "@repo/types";
+import apiService from "../services/api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: IUser | null;
@@ -32,13 +31,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem("authToken");
       if (token) {
         try {
           const user = await apiService.getCurrentUser();
           setUser(user);
         } catch (error) {
-          console.error('Failed to fetch user', error);
+          console.error("Failed to fetch user", error);
           apiService.clearToken();
         }
       }
@@ -53,10 +52,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { user } = await apiService.login({ username, password });
       setUser(user);
-      toast.success('Login successful');
-      navigate('/dashboard');
+      toast.success("Login successful");
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Login failed', error);
+      console.error("Login failed", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -68,10 +67,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { user } = await apiService.register({ username, password, email });
       setUser(user);
-      toast.success('Registration successful');
-      navigate('/dashboard');
+      toast.success("Registration successful");
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Registration failed', error);
+      console.error("Registration failed", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -81,8 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     apiService.clearToken();
     setUser(null);
-    navigate('/');
-    toast.success('Logged out successfully');
+    navigate("/");
+    toast.success("Logged out successfully");
   };
 
   return (
@@ -108,7 +107,7 @@ export const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate('/');
+      navigate("/");
     }
   }, [isAuthenticated, isLoading, navigate]);
 

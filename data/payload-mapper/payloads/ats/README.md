@@ -5,9 +5,9 @@ This directory contains a pinned working subset of ATS job posting payloads deri
 
 ## Files
 
-| File | Source | Records | Purpose |
-|------|--------|---------|---------|
-| `open-apply-sample.jsonl` | open-apply-jobs (Ashby, Greenhouse, Lever) | 8 | Source payloads for mapping-task generation |
+| File                      | Source                                     | Records | Purpose                                     |
+| ------------------------- | ------------------------------------------ | ------- | ------------------------------------------- |
+| `open-apply-sample.jsonl` | open-apply-jobs (Ashby, Greenhouse, Lever) | 8       | Source payloads for mapping-task generation |
 
 ## Design choices
 

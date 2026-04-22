@@ -13,10 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-);
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const agentSkills = path.join(repoRoot, ".agent", "skills");
 const claudeDir = path.join(repoRoot, ".claude");
 const claudeSkills = path.join(claudeDir, "skills");
@@ -25,14 +22,7 @@ const codexSkills = path.join(repoRoot, ".codex", "skills");
 type LogKind = "ok" | "skip" | "link" | "warn";
 
 function log(kind: LogKind, message: string): void {
-  const tag =
-    kind === "ok"
-      ? " ok "
-      : kind === "skip"
-        ? "skip"
-        : kind === "link"
-          ? "link"
-          : "warn";
+  const tag = kind === "ok" ? " ok " : kind === "skip" ? "skip" : kind === "link" ? "link" : "warn";
   console.log(`[${tag}] ${message}`);
 }
 
@@ -80,9 +70,7 @@ function linkDir(from: string, toRelative: string): void {
 
 function main(): void {
   if (!fs.existsSync(agentSkills)) {
-    console.error(
-      `source of truth missing: ${path.relative(repoRoot, agentSkills)}`,
-    );
+    console.error(`source of truth missing: ${path.relative(repoRoot, agentSkills)}`);
     process.exit(1);
   }
 

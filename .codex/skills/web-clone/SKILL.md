@@ -144,9 +144,7 @@ Capture the target page's structure, styles, interactions, and visual baseline.
            el.childNodes.length === 1 && el.childNodes[0].nodeType === 3
              ? el.textContent?.trim().slice(0, 100)
              : undefined,
-         children: [...el.children]
-           .map((c) => walk(c, depth + 1))
-           .filter(Boolean),
+         children: [...el.children].map((c) => walk(c, depth + 1)).filter(Boolean),
        };
      };
      return walk(document.body);
@@ -289,10 +287,7 @@ Compare the clone against the original across three dimensions.
     "extra": []
   },
   "overall_verdict": "revise",
-  "priority_fixes": [
-    "Fix dropdown toggle interaction",
-    "Increase header nav spacing"
-  ]
+  "priority_fixes": ["Fix dropdown toggle interaction", "Increase header nav spacing"]
 }
 ```
 

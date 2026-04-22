@@ -4,10 +4,10 @@ This directory contains the evaluation contract, rubric, and metrics spec for th
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `rubric.md` | Human-readable scoring rubric with guardrails, dimensions, and pass thresholds |
-| `metrics.json` | Machine-readable metric definitions with formulas, weights, and thresholds |
+| File                 | Purpose                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| `rubric.md`          | Human-readable scoring rubric with guardrails, dimensions, and pass thresholds      |
+| `metrics.json`       | Machine-readable metric definitions with formulas, weights, and thresholds          |
 | `eval-contract.json` | Executable contract: input/output format + scoring rules for mapper implementations |
 
 ## How to use
@@ -21,11 +21,11 @@ This directory contains the evaluation contract, rubric, and metrics spec for th
 
 ## Pass gates
 
-| Gate | Threshold | Hard? |
-|------|-----------|-------|
-| `eval.jsonl` weighted score | ≥0.75 | Yes |
-| `adversarial.jsonl` weighted score | ≥0.60 | Yes |
-| Non-hallucination rate | ≥0.75 | Hard gate — must pass independently |
+| Gate                               | Threshold | Hard?                               |
+| ---------------------------------- | --------- | ----------------------------------- |
+| `eval.jsonl` weighted score        | ≥0.75     | Yes                                 |
+| `adversarial.jsonl` weighted score | ≥0.60     | Yes                                 |
+| Non-hallucination rate             | ≥0.75     | Hard gate — must pass independently |
 
 ## Design principles
 

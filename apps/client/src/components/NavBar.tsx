@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Bell, Menu, User } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Bell, Menu, User } from "lucide-react";
 import {
   Button,
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/ui/components';
+} from "@repo/ui/components";
 
 interface NavBarProps {
   toggleSidebar: () => void;
@@ -23,12 +23,7 @@ const NavBar: React.FC<NavBarProps> = ({ toggleSidebar }) => {
     <header className="fixed top-0 left-0 right-0 z-10 bg-white/80 dark:bg-black/30 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 h-16">
       <div className="flex items-center justify-between px-4 h-full">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar}
-            className="lg:hidden"
-          >
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden">
             <Menu className="h-5 w-5" />
           </Button>
           <Link to="/dashboard" className="flex items-center gap-2">

@@ -11,13 +11,7 @@ const omxLifecycleDir = path.join(cwd, ".omx", "state", "lifecycle");
 
 // Blueprint surface — see blueprints/README.md.
 const blueprintsDir = path.join(cwd, "blueprints");
-const lifecycleStates = [
-  "planned",
-  "in-progress",
-  "parked",
-  "completed",
-  "archived",
-] as const;
+const lifecycleStates = ["planned", "in-progress", "parked", "completed", "archived"] as const;
 
 const failures: string[] = [];
 
@@ -29,9 +23,7 @@ function readIfExists(file: string): string | null {
   return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
 }
 
-function parseFrontmatter(
-  markdown: string | null,
-): Record<string, string> | null {
+function parseFrontmatter(markdown: string | null): Record<string, string> | null {
   if (!markdown?.startsWith("---\n")) return null;
   const end = markdown.indexOf("\n---\n", 4);
   if (end === -1) return null;
@@ -55,10 +47,7 @@ if (fs.existsSync(blueprintsDir)) {
       if (!entry.isDirectory()) continue;
       const slug = entry.name;
       const overviewPath = path.join(dir, slug, "_overview.md");
-      assert(
-        fs.existsSync(overviewPath),
-        `Blueprint ${lifecycle}/${slug} is missing _overview.md`,
-      );
+      assert(fs.existsSync(overviewPath), `Blueprint ${lifecycle}/${slug} is missing _overview.md`);
       const content = readIfExists(overviewPath);
       if (!content) continue;
       const fm = parseFrontmatter(content);
@@ -82,26 +71,18 @@ if (fs.existsSync(blueprintsDir)) {
 // --- legacy .omx surface -------------------------------------------------
 
 const hasLegacySurface =
-  fs.existsSync(planDir) ||
-  fs.existsSync(contractDir) ||
-  fs.existsSync(omxLifecycleDir);
+  fs.existsSync(planDir) || fs.existsSync(contractDir) || fs.existsSync(omxLifecycleDir);
 
 if (hasLegacySurface) {
   assert(fs.existsSync(planDir), "Missing .omx/plans directory");
   assert(fs.existsSync(contractDir), "Missing .omx/contracts directory");
-  assert(
-    fs.existsSync(omxLifecycleDir),
-    "Missing .omx/state/lifecycle directory",
-  );
+  assert(fs.existsSync(omxLifecycleDir), "Missing .omx/state/lifecycle directory");
 
   const contractPath = path.join(contractDir, "workspace-boundary-contract.md");
   const contractContent = readIfExists(contractPath);
   assert(contractContent, "Missing workspace boundary contract");
   if (contractContent) {
-    for (const marker of [
-      "# Workspace boundary contract",
-      "## Workspace classifications",
-    ]) {
+    for (const marker of ["# Workspace boundary contract", "## Workspace classifications"]) {
       assert(
         contractContent.includes(marker),
         `workspace-boundary-contract.md is missing required marker: ${marker}`,
@@ -119,14 +100,8 @@ if (hasLegacySurface) {
     ? fs.readdirSync(omxLifecycleDir).filter((file) => file.endsWith(".json"))
     : [];
 
-  assert(
-    prdFiles.length > 0,
-    "Missing at least one PRD artifact under .omx/plans",
-  );
-  assert(
-    testSpecFiles.length > 0,
-    "Missing at least one test spec artifact under .omx/plans",
-  );
+  assert(prdFiles.length > 0, "Missing at least one PRD artifact under .omx/plans");
+  assert(testSpecFiles.length > 0, "Missing at least one test spec artifact under .omx/plans");
   assert(
     lifecycleFiles.length > 0,
     "Missing at least one lifecycle artifact under .omx/state/lifecycle",
@@ -139,10 +114,7 @@ if (hasLegacySurface) {
 
   for (const file of testSpecFiles) {
     const content = readIfExists(path.join(planDir, file));
-    assert(
-      content?.includes("# Test Spec:"),
-      `${file} is missing a test spec heading`,
-    );
+    assert(content?.includes("# Test Spec:"), `${file} is missing a test spec heading`);
   }
 
   for (const file of lifecycleFiles) {

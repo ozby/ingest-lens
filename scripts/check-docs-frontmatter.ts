@@ -83,8 +83,7 @@ function main(): void {
       violations.push({ file: rel, message: "missing frontmatter" });
       continue;
     }
-    if (!fm.type)
-      violations.push({ file: rel, message: "frontmatter missing `type`" });
+    if (!fm.type) violations.push({ file: rel, message: "frontmatter missing `type`" });
     if (!fm.last_updated)
       violations.push({
         file: rel,

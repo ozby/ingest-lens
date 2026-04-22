@@ -7,7 +7,14 @@
     "description": "Mapper input: source payload + target field list",
     "schema": {
       "type": "object",
-      "required": ["source_system", "source_model", "target_model", "target_contract_version", "source_payload", "target_fields"],
+      "required": [
+        "source_system",
+        "source_model",
+        "target_model",
+        "target_contract_version",
+        "source_payload",
+        "target_fields"
+      ],
       "properties": {
         "source_system": { "type": "string" },
         "source_model": { "type": "string" },

@@ -66,4 +66,4 @@ export interface MessageReceiveParams {
 export interface MessageActionParams {
   queueId: string;
   messageId: string;
-} 
+}

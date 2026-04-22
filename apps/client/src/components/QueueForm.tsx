@@ -1,8 +1,8 @@
-import React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { Button } from '@repo/ui/components';
+import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@repo/ui/components";
 import {
   Form,
   FormControl,
@@ -11,10 +11,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@repo/ui/components';
-import { Input } from '@repo/ui/components';
-import { Textarea } from '@repo/ui/components';
-import { CreateQueueRequest } from '@repo/types';
+} from "@repo/ui/components";
+import { Input } from "@repo/ui/components";
+import { Textarea } from "@repo/ui/components";
+import { CreateQueueRequest } from "@repo/types";
 import {
   Dialog,
   DialogContent,
@@ -23,16 +23,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@repo/ui/components';
-import { PlusCircle } from 'lucide-react';
+} from "@repo/ui/components";
+import { PlusCircle } from "lucide-react";
 
 const queueFormSchema = z.object({
   name: z.string().min(3, {
-    message: 'Queue name must be at least 3 characters.',
+    message: "Queue name must be at least 3 characters.",
   }),
   retentionPeriod: z.coerce.number().int().positive().default(14),
   schema: z.string().optional(),
-  pushEndpoint: z.string().url().optional().or(z.literal('')),
+  pushEndpoint: z.string().url().optional().or(z.literal("")),
 });
 
 type QueueFormValues = z.infer<typeof queueFormSchema>;
@@ -43,25 +43,25 @@ interface QueueFormProps {
   trigger?: React.ReactNode;
 }
 
-const QueueForm: React.FC<QueueFormProps> = ({ 
-  onSubmit, 
+const QueueForm: React.FC<QueueFormProps> = ({
+  onSubmit,
   isLoading = false,
   trigger = (
     <Button>
       <PlusCircle className="mr-2 h-4 w-4" />
       Create Queue
     </Button>
-  )
+  ),
 }) => {
   const [open, setOpen] = React.useState(false);
-  
+
   const form = useForm<QueueFormValues>({
     resolver: zodResolver(queueFormSchema),
     defaultValues: {
-      name: '',
+      name: "",
       retentionPeriod: 14,
-      schema: '',
-      pushEndpoint: '',
+      schema: "",
+      pushEndpoint: "",
     },
   });
 
@@ -72,9 +72,9 @@ const QueueForm: React.FC<QueueFormProps> = ({
         schemaObj = JSON.parse(values.schema);
       } catch (error) {
         console.error(error);
-        form.setError('schema', {
-          type: 'manual',
-          message: 'Invalid JSON format',
+        form.setError("schema", {
+          type: "manual",
+          message: "Invalid JSON format",
         });
         return;
       }
@@ -96,17 +96,13 @@ const QueueForm: React.FC<QueueFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Queue</DialogTitle>
-          <DialogDescription>
-            Enter details for your new message queue.
-          </DialogDescription>
+          <DialogDescription>Enter details for your new message queue.</DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
@@ -118,9 +114,7 @@ const QueueForm: React.FC<QueueFormProps> = ({
                   <FormControl>
                     <Input placeholder="my-queue" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    A unique name for your message queue.
-                  </FormDescription>
+                  <FormDescription>A unique name for your message queue.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -182,16 +176,16 @@ const QueueForm: React.FC<QueueFormProps> = ({
             />
 
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={isLoading}
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Creating...' : 'Create Queue'}
+                {isLoading ? "Creating..." : "Create Queue"}
               </Button>
             </DialogFooter>
           </form>

@@ -1,12 +1,11 @@
-
-import { useState, useEffect } from 'react';
-import { Activity } from 'lucide-react';
-import apiService from '@/services/api';
-import { IServerMetrics } from '@repo/types';
-import NavBar from '@/components/NavBar';
-import Sidebar from '@/components/Sidebar';
-import ServerMetricsComponent from '@/components/ServerMetrics';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { Activity } from "lucide-react";
+import apiService from "@/services/api";
+import { IServerMetrics } from "@repo/types";
+import NavBar from "@/components/NavBar";
+import Sidebar from "@/components/Sidebar";
+import ServerMetricsComponent from "@/components/ServerMetrics";
+import { toast } from "sonner";
 
 const Metrics = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,8 +19,8 @@ const Metrics = () => {
         const serverMetricsData = await apiService.getServerMetrics();
         setServerMetrics(serverMetricsData);
       } catch (error) {
-        console.error('Failed to fetch metrics data', error);
-        toast.error('Failed to load metrics data');
+        console.error("Failed to fetch metrics data", error);
+        toast.error("Failed to load metrics data");
       } finally {
         setIsLoading(false);
       }
@@ -37,7 +36,7 @@ const Metrics = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <NavBar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
-      
+
       <main className="pt-16 lg:pl-64">
         <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">

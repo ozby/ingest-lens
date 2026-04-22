@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
-  "sideEffects": false,
   "files": [
     "dist/**",
     "dist"
   ],
+  "sideEffects": false,
   "exports": {
     "./components": {
       "import": {
@@ -47,11 +47,11 @@
     "@radix-ui/react-tabs": "catalog:",
     "@radix-ui/react-toast": "catalog:",
     "@radix-ui/react-tooltip": "catalog:",
-    "react-hook-form": "catalog:",
     "class-variance-authority": "catalog:",
-    "lucide-react": "catalog:",
     "clsx": "catalog:",
+    "lucide-react": "catalog:",
     "next-themes": "catalog:",
+    "react-hook-form": "catalog:",
     "sonner": "catalog:",
     "tailwind-merge": "catalog:",
     "tailwindcss": "catalog:",
@@ -59,8 +59,8 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@typescript/native-preview": "catalog:tooling",
     "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:tooling",
     "bunchee": "catalog:",
     "vitest": "catalog:tooling"
   },

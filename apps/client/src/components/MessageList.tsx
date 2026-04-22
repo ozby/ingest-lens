@@ -1,15 +1,10 @@
-import React from 'react';
-import { IMessage } from '@repo/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components';
-import { formatDistanceToNow } from 'date-fns';
-import { Eye, EyeOff, Trash2 } from 'lucide-react';
-import { Button } from '@repo/ui/components';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@repo/ui/components';
+import React from "react";
+import { IMessage } from "@repo/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components";
+import { formatDistanceToNow } from "date-fns";
+import { Eye, EyeOff, Trash2 } from "lucide-react";
+import { Button } from "@repo/ui/components";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ui/components";
 
 interface MessageListProps {
   messages: IMessage[];
@@ -17,11 +12,7 @@ interface MessageListProps {
   isLoading?: boolean;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ 
-  messages, 
-  onDelete,
-  isLoading = false
-}) => {
+const MessageList: React.FC<MessageListProps> = ({ messages, onDelete, isLoading = false }) => {
   if (isLoading) {
     return (
       <Card>
@@ -116,11 +107,11 @@ const MessageList: React.FC<MessageListProps> = ({
 
               <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
                 <div>
-                  <span className="text-muted-foreground">Received count:</span>{' '}
+                  <span className="text-muted-foreground">Received count:</span>{" "}
                   <span className="font-medium">{message.receivedCount}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Expires:</span>{' '}
+                  <span className="text-muted-foreground">Expires:</span>{" "}
                   <span className="font-medium">
                     {formatDistanceToNow(new Date(message.expiresAt), { addSuffix: true })}
                   </span>

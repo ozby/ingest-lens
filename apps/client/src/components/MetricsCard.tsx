@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@repo/ui/components';
-import { cn } from '@repo/ui/lib';
-import { LucideIcon } from 'lucide-react';
+import React from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
+import { LucideIcon } from "lucide-react";
 
 interface MetricsCardProps {
   title: string;
@@ -30,7 +29,12 @@ const MetricsCard: React.FC<MetricsCardProps> = ({
     <Card className={cn("transition-all-300 hover:shadow-md overflow-hidden", className)}>
       <CardHeader className="p-4 pb-2 flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className={cn("p-2 rounded-full bg-primary/10", iconColor.replace('text-', 'bg-') + '/10')}>
+        <div
+          className={cn(
+            "p-2 rounded-full bg-primary/10",
+            iconColor.replace("text-", "bg-") + "/10",
+          )}
+        >
           <Icon className={cn("h-4 w-4", iconColor)} />
         </div>
       </CardHeader>
@@ -43,7 +47,7 @@ const MetricsCard: React.FC<MetricsCardProps> = ({
           <div
             className={cn(
               "text-xs font-medium flex items-center",
-              trend.isPositive ? "text-green-500" : "text-red-500"
+              trend.isPositive ? "text-green-500" : "text-red-500",
             )}
           >
             {trend.isPositive ? (

@@ -88,20 +88,12 @@ function parseCatalogNames(yamlText: string): Set<string> {
 
     if (inCatalogs) {
       // Named catalog header, e.g. `  tooling:` or `  workers:`
-      if (
-        indent === currentIndent + 2 &&
-        trimmed.endsWith(":") &&
-        !trimmed.includes('"')
-      ) {
+      if (indent === currentIndent + 2 && trimmed.endsWith(":") && !trimmed.includes('"')) {
         inNamedCatalog = true;
         continue;
       }
       if (inNamedCatalog) {
-        if (
-          indent <= currentIndent + 2 &&
-          trimmed.match(/^\S/) &&
-          !trimmed.endsWith(":")
-        ) {
+        if (indent <= currentIndent + 2 && trimmed.match(/^\S/) && !trimmed.endsWith(":")) {
           // Back to catalog-name level or higher
           inNamedCatalog = false;
           continue;
@@ -122,10 +114,7 @@ function parseCatalogNames(yamlText: string): Set<string> {
 // ---------------------------------------------------------------------------
 
 function discoverWorkspacePackages(root: string): string[] {
-  const workspaceYaml = readFileSync(
-    join(root, "pnpm-workspace.yaml"),
-    "utf-8",
-  );
+  const workspaceYaml = readFileSync(join(root, "pnpm-workspace.yaml"), "utf-8");
   const globs: string[] = [];
   for (const line of workspaceYaml.split("\n")) {
     const m = line.match(/^\s+-\s+["']?(.+?)["']?\s*$/);
@@ -142,10 +131,7 @@ function discoverWorkspacePackages(root: string): string[] {
     if (!existsSync(dir)) continue;
     for (const entry of readdirSync(dir)) {
       const full = join(dir, entry);
-      if (
-        statSync(full).isDirectory() &&
-        existsSync(join(full, "package.json"))
-      ) {
+      if (statSync(full).isDirectory() && existsSync(join(full, "package.json"))) {
         packages.push(full);
       }
     }
@@ -158,10 +144,7 @@ function discoverWorkspacePackages(root: string): string[] {
 // ---------------------------------------------------------------------------
 
 const ROOT = resolve(process.cwd());
-const workspaceYamlText = readFileSync(
-  join(ROOT, "pnpm-workspace.yaml"),
-  "utf-8",
-);
+const workspaceYamlText = readFileSync(join(ROOT, "pnpm-workspace.yaml"), "utf-8");
 const catalogNames = parseCatalogNames(workspaceYamlText);
 
 const workspacePaths = discoverWorkspacePackages(ROOT);
@@ -181,9 +164,7 @@ for (const wsPath of workspacePaths) {
     if (!deps) continue;
     for (const [name, version] of Object.entries(deps)) {
       if (!depUsage.has(name)) depUsage.set(name, []);
-      depUsage
-        .get(name)!
-        .push({ workspacePath: wsPath, depName: name, depType, version });
+      depUsage.get(name)!.push({ workspacePath: wsPath, depName: name, depType, version });
     }
   }
 }
@@ -195,8 +176,7 @@ for (const [depName, entries] of depUsage.entries()) {
   if (entries.length < 2) continue;
   // Check if any entry has an explicit version (not catalog:)
   const nonCatalog = entries.filter(
-    (e) =>
-      !e.version.startsWith("catalog:") && !e.version.startsWith("workspace:"),
+    (e) => !e.version.startsWith("catalog:") && !e.version.startsWith("workspace:"),
   );
   if (nonCatalog.length === 0) continue;
 
@@ -206,9 +186,7 @@ for (const [depName, entries] of depUsage.entries()) {
 }
 
 if (driftEntries.length === 0) {
-  console.log(
-    "✓ No catalog drift detected. All shared deps use catalog: references.",
-  );
+  console.log("✓ No catalog drift detected. All shared deps use catalog: references.");
   process.exit(0);
 }
 
@@ -218,9 +196,7 @@ console.error(
 
 for (const { depName, entries } of driftEntries) {
   const inCatalog = catalogNames.has(depName);
-  const catalogHint = inCatalog
-    ? "(already in catalog)"
-    : "(ADD to catalog first)";
+  const catalogHint = inCatalog ? "(already in catalog)" : "(ADD to catalog first)";
   console.error(`  ${depName} ${catalogHint}`);
   for (const e of entries) {
     const shortPath = e.workspacePath.replace(ROOT + "/", "");

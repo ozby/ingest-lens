@@ -1,4 +1,4 @@
-import { IUser } from './Entities';
+import { IUser } from "./Entities";
 
 export interface AuthResponse {
   token: string;
@@ -8,4 +8,4 @@ export interface AuthResponse {
 export interface ApiResponse<T> {
   status: string;
   data: T;
-} 
+}

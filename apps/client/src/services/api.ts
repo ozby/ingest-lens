@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig } from "axios";
 import {
   AuthResponse,
   CreateQueueRequest,
@@ -15,9 +15,9 @@ import {
   ReceiveMessagesQuery,
   RegisterCredentials,
   SendMessageRequest,
-  SubscribeTopicRequest
-} from '@repo/types';
-import { toast } from 'sonner';
+  SubscribeTopicRequest,
+} from "@repo/types";
+import { toast } from "sonner";
 
 // Define types for API responses
 interface ApiResponse<T> {
@@ -31,11 +31,11 @@ class ApiService {
 
   constructor() {
     const apiUrl = import.meta.env.API_URL;
-    console.log('apiUrl', apiUrl);
+    console.log("apiUrl", apiUrl);
     this.api = axios.create({
       baseURL: apiUrl,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -46,75 +46,84 @@ class ApiService {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     this.api.interceptors.response.use(
       (response) => response,
       (error) => {
-        const errorMessage = error.response?.data?.message || 'An error occurred';
+        const errorMessage = error.response?.data?.message || "An error occurred";
         toast.error(errorMessage);
         return Promise.reject(error);
-      }
+      },
     );
 
-    this.token = localStorage.getItem('authToken');
+    this.token = localStorage.getItem("authToken");
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<ApiResponse<AuthResponse>>('/api/auth/login', credentials);
+    const response = await this.api.post<ApiResponse<AuthResponse>>("/api/auth/login", credentials);
     this.setToken(response.data.data.token);
     return response.data.data;
   }
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<ApiResponse<AuthResponse>>('/api/auth/register', credentials);
+    const response = await this.api.post<ApiResponse<AuthResponse>>(
+      "/api/auth/register",
+      credentials,
+    );
     this.setToken(response.data.data.token);
     return response.data.data;
   }
 
   async getCurrentUser(): Promise<IUser> {
-    const response = await this.api.get<ApiResponse<{ user: IUser }>>('/api/auth/me');
+    const response = await this.api.get<ApiResponse<{ user: IUser }>>("/api/auth/me");
     return response.data.data.user;
   }
 
   setToken(token: string): void {
     this.token = token;
-    localStorage.setItem('authToken', token);
+    localStorage.setItem("authToken", token);
   }
 
   clearToken(): void {
     this.token = null;
-    localStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
   }
 
   async getServerMetrics(): Promise<IServerMetrics> {
-    const response = await this.api.get<ApiResponse<{ serverMetrics: IServerMetrics }>>('/api/dashboard/server');
+    const response =
+      await this.api.get<ApiResponse<{ serverMetrics: IServerMetrics }>>("/api/dashboard/server");
     return response.data.data.serverMetrics;
   }
 
   async getServerActivityHistory(): Promise<IActivityDataPoint[]> {
-    const response = await this.api.get<ApiResponse<{ activityHistory: IActivityDataPoint[] }>>('/api/dashboard/server/activity');
+    const response = await this.api.get<ApiResponse<{ activityHistory: IActivityDataPoint[] }>>(
+      "/api/dashboard/server/activity",
+    );
     return response.data.data.activityHistory;
   }
 
   async getAllQueueMetrics(): Promise<IQueueMetrics[]> {
-    const response = await this.api.get<ApiResponse<{ queueMetrics: IQueueMetrics[] }>>('/api/dashboard/queues');
+    const response =
+      await this.api.get<ApiResponse<{ queueMetrics: IQueueMetrics[] }>>("/api/dashboard/queues");
     return response.data.data.queueMetrics;
   }
 
   async getQueueMetrics(queueId: string): Promise<IQueueMetrics> {
-    const response = await this.api.get<ApiResponse<{ queueMetric: IQueueMetrics }>>(`/api/dashboard/queues/${queueId}`);
+    const response = await this.api.get<ApiResponse<{ queueMetric: IQueueMetrics }>>(
+      `/api/dashboard/queues/${queueId}`,
+    );
     return response.data.data.queueMetric;
   }
 
   async createQueue(queue: CreateQueueRequest): Promise<IQueue> {
-    const response = await this.api.post<ApiResponse<{ queue: IQueue }>>('/api/queues', queue);
+    const response = await this.api.post<ApiResponse<{ queue: IQueue }>>("/api/queues", queue);
     return response.data.data.queue;
   }
 
   async getQueues(): Promise<IQueue[]> {
-    const response = await this.api.get<ApiResponse<{ queues: IQueue[] }>>('/api/queues');
+    const response = await this.api.get<ApiResponse<{ queues: IQueue[] }>>("/api/queues");
     return response.data.data.queues;
   }
 
@@ -128,12 +137,12 @@ class ApiService {
   }
 
   async createTopic(topic: CreateTopicRequest): Promise<ITopic> {
-    const response = await this.api.post<ApiResponse<{ topic: ITopic }>>('/api/topics', topic);
+    const response = await this.api.post<ApiResponse<{ topic: ITopic }>>("/api/topics", topic);
     return response.data.data.topic;
   }
 
   async getTopics(): Promise<ITopic[]> {
-    const response = await this.api.get<ApiResponse<{ topics: ITopic[] }>>('/api/topics');
+    const response = await this.api.get<ApiResponse<{ topics: ITopic[] }>>("/api/topics");
     return response.data.data.topics;
   }
 
@@ -147,7 +156,10 @@ class ApiService {
   }
 
   async subscribeTopic(topicId: string, request: SubscribeTopicRequest): Promise<ITopic> {
-    const response = await this.api.post<ApiResponse<{ topic: ITopic }>>(`/api/topics/${topicId}/subscribe`, request);
+    const response = await this.api.post<ApiResponse<{ topic: ITopic }>>(
+      `/api/topics/${topicId}/subscribe`,
+      request,
+    );
     return response.data.data.topic;
   }
 
@@ -156,7 +168,10 @@ class ApiService {
   }
 
   async sendMessage(queueId: string, request: SendMessageRequest): Promise<IMessage> {
-    const response = await this.api.post<ApiResponse<{ message: IMessage }>>(`/api/messages/${queueId}`, request);
+    const response = await this.api.post<ApiResponse<{ message: IMessage }>>(
+      `/api/messages/${queueId}`,
+      request,
+    );
     return response.data.data.message;
   }
 
@@ -165,12 +180,17 @@ class ApiService {
     if (query) {
       config.params = query;
     }
-    const response = await this.api.get<ApiResponse<{ messages: IMessage[] }>>(`/api/messages/${queueId}`, config);
+    const response = await this.api.get<ApiResponse<{ messages: IMessage[] }>>(
+      `/api/messages/${queueId}`,
+      config,
+    );
     return response.data.data.messages;
   }
 
   async getMessage(queueId: string, messageId: string): Promise<IMessage> {
-    const response = await this.api.get<ApiResponse<{ message: IMessage }>>(`/api/messages/${queueId}/${messageId}`);
+    const response = await this.api.get<ApiResponse<{ message: IMessage }>>(
+      `/api/messages/${queueId}/${messageId}`,
+    );
     return response.data.data.message;
   }
 

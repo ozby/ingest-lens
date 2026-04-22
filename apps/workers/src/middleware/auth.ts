@@ -81,10 +81,7 @@ export const authenticate = createMiddleware<{
 
 function base64UrlDecode(str: string): Uint8Array {
   const base64 = str.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64.padEnd(
-    base64.length + ((4 - (base64.length % 4)) % 4),
-    "=",
-  );
+  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
   const binary = atob(padded);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -101,9 +98,7 @@ export function generateToken(
 ): Promise<string> {
   return (async () => {
     const encoder = new TextEncoder();
-    const header = base64UrlEncode(
-      JSON.stringify({ alg: "HS256", typ: "JWT" }),
-    );
+    const header = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
     const payload = base64UrlEncode(
       JSON.stringify({
         userId,
@@ -128,9 +123,7 @@ export function generateToken(
       cryptoKey,
       encoder.encode(signingInput),
     );
-    const signature = base64UrlEncode(
-      String.fromCharCode(...new Uint8Array(signatureBuffer)),
-    );
+    const signature = base64UrlEncode(String.fromCharCode(...new Uint8Array(signatureBuffer)));
 
     return `${header}.${payload}.${signature}`;
   })();

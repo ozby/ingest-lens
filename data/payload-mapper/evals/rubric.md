@@ -21,13 +21,13 @@ transform engine; it surfaces suggestions, ambiguities, and missing fields for o
 
 Score the fraction of target fields where the suggested source path exactly matches the gold mapping.
 
-| Condition | Points |
-|-----------|--------|
-| Exact match on all mapped fields | 40 |
-| ≥90% of mapped fields exactly correct | 36 |
-| ≥75% of mapped fields exactly correct | 28 |
-| ≥50% of mapped fields exactly correct | 20 |
-| <50% correct | 0 |
+| Condition                             | Points |
+| ------------------------------------- | ------ |
+| Exact match on all mapped fields      | 40     |
+| ≥90% of mapped fields exactly correct | 36     |
+| ≥75% of mapped fields exactly correct | 28     |
+| ≥50% of mapped fields exactly correct | 20     |
+| <50% correct                          | 0      |
 
 Exact match means the `expected_mapping` field value (source path expression) is identical to the gold label.
 
@@ -35,54 +35,54 @@ Exact match means the `expected_mapping` field value (source path expression) is
 
 Score whether the mapper correctly identifies target fields that cannot be populated from the source.
 
-| Condition | Points |
-|-----------|--------|
-| All missing fields correctly identified, no false positives | 20 |
-| All missing fields identified, ≤1 false positive | 16 |
-| ≥50% of missing fields identified | 8 |
-| Missing fields not reported or all false positives | 0 |
+| Condition                                                   | Points |
+| ----------------------------------------------------------- | ------ |
+| All missing fields correctly identified, no false positives | 20     |
+| All missing fields identified, ≤1 false positive            | 16     |
+| ≥50% of missing fields identified                           | 8      |
+| Missing fields not reported or all false positives          | 0      |
 
 ### 3. Ambiguity Detection (0–20 pts)
 
 Score whether the mapper correctly flags uncertain or multi-interpretation mappings.
 
-| Condition | Points |
-|-----------|--------|
-| All ambiguous fields flagged, no false flags on clear mappings | 20 |
-| All ambiguous fields flagged, ≤1 false flag | 16 |
-| ≥50% of ambiguous fields flagged | 8 |
-| No ambiguity detection or excessive false flags | 0 |
+| Condition                                                      | Points |
+| -------------------------------------------------------------- | ------ |
+| All ambiguous fields flagged, no false flags on clear mappings | 20     |
+| All ambiguous fields flagged, ≤1 false flag                    | 16     |
+| ≥50% of ambiguous fields flagged                               | 8      |
+| No ambiguity detection or excessive false flags                | 0      |
 
 ### 4. Non-Hallucination / Abstention (0–20 pts)
 
 Score whether the mapper abstains correctly when no confident mapping exists and avoids fabricating source paths.
 
-| Condition | Points |
-|-----------|--------|
-| Correct abstention on all adversarial/unknown cases; zero hallucinated paths | 20 |
-| Correct abstention on ≥75% of adversarial cases; ≤1 hallucinated path | 15 |
-| Correct abstention on ≥50% of adversarial cases | 8 |
-| Mapper hallucinated paths or mapped unknown fields with false confidence | 0 |
+| Condition                                                                    | Points |
+| ---------------------------------------------------------------------------- | ------ |
+| Correct abstention on all adversarial/unknown cases; zero hallucinated paths | 20     |
+| Correct abstention on ≥75% of adversarial cases; ≤1 hallucinated path        | 15     |
+| Correct abstention on ≥50% of adversarial cases                              | 8      |
+| Mapper hallucinated paths or mapped unknown fields with false confidence     | 0      |
 
 ### 5. Reasoning Summary Quality (0–10 pts, qualitative)
 
 Score the quality of the mapper's reasoning/explanation output.
 
-| Condition | Points |
-|-----------|--------|
-| Clear reasoning for each mapping decision; caveats noted for type conversions and ambiguities | 10 |
-| Partial reasoning; major decisions explained | 6 |
-| Minimal or absent reasoning | 0 |
+| Condition                                                                                     | Points |
+| --------------------------------------------------------------------------------------------- | ------ |
+| Clear reasoning for each mapping decision; caveats noted for type conversions and ambiguities | 10     |
+| Partial reasoning; major decisions explained                                                  | 6      |
+| Minimal or absent reasoning                                                                   | 0      |
 
 **Total: 110 points maximum (100 weighted + 10 qualitative bonus)**
 
 ## Pass Thresholds
 
-| Evaluation Set | Minimum Score | Gate |
-|----------------|---------------|------|
-| `eval.jsonl` (standard) | ≥75/100 | Required for merge |
-| `adversarial.jsonl` | ≥60/100 | Required for merge |
-| Non-hallucination dimension | ≥15/20 | Hard gate; must pass independently |
+| Evaluation Set              | Minimum Score | Gate                               |
+| --------------------------- | ------------- | ---------------------------------- |
+| `eval.jsonl` (standard)     | ≥75/100       | Required for merge                 |
+| `adversarial.jsonl`         | ≥60/100       | Required for merge                 |
+| Non-hallucination dimension | ≥15/20        | Hard gate; must pass independently |
 
 ## Adversarial Scoring Rules
 

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { IServerMetrics } from '@repo/types';
-import { Activity, Clock, MailCheck, Server, XCircle } from 'lucide-react';
-import MetricsCard from './MetricsCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components';
-import { formatDistanceToNow } from 'date-fns';
+import React, { useState, useEffect } from "react";
+import { IServerMetrics } from "@repo/types";
+import { Activity, Clock, MailCheck, Server, XCircle } from "lucide-react";
+import MetricsCard from "./MetricsCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components";
+import { formatDistanceToNow } from "date-fns";
 import {
   AreaChart,
   Area,
@@ -12,10 +12,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts';
-import apiService from '@/services/api';
-import { toast } from 'sonner';
-import { IActivityDataPoint } from '@repo/types';
+} from "recharts";
+import apiService from "@/services/api";
+import { toast } from "sonner";
+import { IActivityDataPoint } from "@repo/types";
 
 interface ServerMetricsComponentProps {
   metrics: IServerMetrics;
@@ -38,8 +38,8 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
           setActivityData(historyData || []);
         }
       } catch (error) {
-        console.error('Failed to fetch activity data', error);
-        toast.error('Failed to load system activity data');
+        console.error("Failed to fetch activity data", error);
+        toast.error("Failed to load system activity data");
         // Fallback to empty array if fetch fails
         setActivityData([]);
       } finally {
@@ -53,25 +53,25 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
   // Generate placeholder data if no real data is available
   const placeholderData = React.useMemo(() => {
     if (activityData && activityData.length > 0) return activityData;
-    
+
     const data = [];
     const now = new Date();
-    
+
     for (let i = 11; i >= 0; i--) {
       const time = new Date(now);
       time.setHours(now.getHours() - i);
-      
+
       data.push({
-        time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         requests: 0,
         messages: 0,
         errors: 0,
       });
     }
-    
+
     return data;
   }, [activityData]);
-  
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -124,10 +124,37 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
                   <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                   <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip contentStyle={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                  <Area type="monotone" dataKey="requests" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                  <Area type="monotone" dataKey="messages" stackId="2" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                  <Area type="monotone" dataKey="errors" stackId="3" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="requests"
+                    stackId="1"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
+                    fillOpacity={0.6}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="messages"
+                    stackId="2"
+                    stroke="#10b981"
+                    fill="#10b981"
+                    fillOpacity={0.6}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="errors"
+                    stackId="3"
+                    stroke="#ef4444"
+                    fill="#ef4444"
+                    fillOpacity={0.6}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -167,7 +194,7 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
               <div className="pt-4 border-t">
                 <div className="text-sm font-medium mb-2">System Health</div>
                 <div className="w-full bg-slate-100 rounded-full h-2.5">
-                  <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '92%' }}></div>
+                  <div className="bg-green-500 h-2.5 rounded-full" style={{ width: "92%" }}></div>
                 </div>
                 <div className="flex justify-between mt-1">
                   <span className="text-xs text-slate-500">0%</span>

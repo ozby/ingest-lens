@@ -1,19 +1,33 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { CreateTopicRequest, SubscribeTopicRequest } from '@repo/types';
-import { ITopic, IQueue } from '@repo/types';
-import apiService from '@/services/api';
-import NavBar from '@/components/NavBar';
-import Sidebar from '@/components/Sidebar';
-import { Button } from '@repo/ui/components';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@repo/ui/components';
-import { Input } from '@repo/ui/components';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@repo/ui/components';
-import { Hash, PlusCircle, Search, Share2, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { toast } from 'sonner';
-import { Badge } from '@repo/ui/components';
-import TopicForm from '@/components/TopicForm';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { CreateTopicRequest, SubscribeTopicRequest } from "@repo/types";
+import { ITopic, IQueue } from "@repo/types";
+import apiService from "@/services/api";
+import NavBar from "@/components/NavBar";
+import Sidebar from "@/components/Sidebar";
+import { Button } from "@repo/ui/components";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/components";
+import { Input } from "@repo/ui/components";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/ui/components";
+import { Hash, PlusCircle, Search, Share2, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { Badge } from "@repo/ui/components";
+import TopicForm from "@/components/TopicForm";
 
 const Topics = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,7 +35,7 @@ const Topics = () => {
   const [queues, setQueues] = useState<IQueue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [topicToDelete, setTopicToDelete] = useState<ITopic | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -36,8 +50,8 @@ const Topics = () => {
         setTopics(topicsData);
         setQueues(queuesData);
       } catch (error) {
-        console.error('Failed to fetch data', error);
-        toast.error('Failed to load topics and queues');
+        console.error("Failed to fetch data", error);
+        toast.error("Failed to load topics and queues");
       } finally {
         setIsLoading(false);
       }
@@ -50,21 +64,21 @@ const Topics = () => {
     try {
       setIsCreating(true);
       const newTopic = await apiService.createTopic(values);
-      
-      const subscribePromises = subscribers.map(queueId => {
+
+      const subscribePromises = subscribers.map((queueId) => {
         const subscribeRequest: SubscribeTopicRequest = { queueId };
         return apiService.subscribeTopic(newTopic.id, subscribeRequest);
       });
-      
+
       await Promise.all(subscribePromises);
-      
+
       const updatedTopics = await apiService.getTopics();
       setTopics(updatedTopics);
-      
+
       toast.success(`Topic "${values.name}" created with ${subscribers.length} subscribers`);
     } catch (error) {
-      console.error('Failed to create topic or subscribe queues', error);
-      toast.error('Failed to create topic or add subscribers');
+      console.error("Failed to create topic or subscribe queues", error);
+      toast.error("Failed to create topic or add subscribers");
     } finally {
       setIsCreating(false);
     }
@@ -73,47 +87,45 @@ const Topics = () => {
   // Add the missing handleDeleteTopic function
   const handleDeleteTopic = async () => {
     if (!topicToDelete) return;
-    
+
     try {
       setIsDeleting(true);
       await apiService.deleteTopic(topicToDelete.id);
-      
+
       // Update the topics list after deletion
       const updatedTopics = await apiService.getTopics();
       setTopics(updatedTopics);
-      
+
       toast.success(`Topic "${topicToDelete.name}" deleted successfully`);
       setTopicToDelete(null);
     } catch (error) {
-      console.error('Failed to delete topic', error);
-      toast.error('Failed to delete topic');
+      console.error("Failed to delete topic", error);
+      toast.error("Failed to delete topic");
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const filteredTopics = topics.filter(topic => 
-    topic.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTopics = topics.filter((topic) =>
+    topic.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <NavBar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
-      
+
       <main className="pt-16 lg:pl-64">
         <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
               <h1 className="text-3xl font-bold mb-1">Topics</h1>
-              <p className="text-muted-foreground">
-                Manage your publish/subscribe topics
-              </p>
+              <p className="text-muted-foreground">Manage your publish/subscribe topics</p>
             </div>
-            <TopicForm 
-              onSubmit={handleCreateTopic} 
+            <TopicForm
+              onSubmit={handleCreateTopic}
               isLoading={isCreating}
-              availableQueues={queues.map(q => ({ id: q.id, name: q.name }))}
+              availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
               trigger={
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />
@@ -135,7 +147,7 @@ const Topics = () => {
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map(i => (
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <Card key={i} className="animate-pulse">
                   <CardHeader className="pb-2">
                     <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-1/2 mb-2"></div>
@@ -163,7 +175,7 @@ const Topics = () => {
                     <p className="text-muted-foreground text-center mb-4">
                       No topics found matching "{searchTerm}"
                     </p>
-                    <Button variant="outline" onClick={() => setSearchTerm('')}>
+                    <Button variant="outline" onClick={() => setSearchTerm("")}>
                       Clear search
                     </Button>
                   </>
@@ -173,13 +185,11 @@ const Topics = () => {
                     <p className="text-muted-foreground text-center mb-4">
                       You haven't created any pub/sub topics yet
                     </p>
-                    <TopicForm 
-                      onSubmit={handleCreateTopic} 
+                    <TopicForm
+                      onSubmit={handleCreateTopic}
                       isLoading={isCreating}
-                      availableQueues={queues.map(q => ({ id: q.id, name: q.name }))}
-                      trigger={
-                        <Button>Create your first topic</Button>
-                      }
+                      availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
+                      trigger={<Button>Create your first topic</Button>}
                     />
                   </>
                 )}
@@ -187,12 +197,12 @@ const Topics = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTopics.map(topic => (
+              {filteredTopics.map((topic) => (
                 <Card key={topic.id} className="transition-all-200 hover:shadow-md">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{topic.name}</CardTitle>
                     <CardDescription>
-                      Created on {format(new Date(topic.createdAt), 'MMM d, yyyy')}
+                      Created on {format(new Date(topic.createdAt), "MMM d, yyyy")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -201,17 +211,25 @@ const Topics = () => {
                         <span className="text-sm text-muted-foreground">Subscribed Queues:</span>
                         <Badge variant="secondary">{topic.subscribedQueues.length}</Badge>
                       </div>
-                      
+
                       {topic.subscribedQueues.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {topic.subscribedQueues.slice(0, 3).map((queueId, index) => (
-                            <Badge key={index} variant="outline" className="flex items-center gap-1">
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="flex items-center gap-1"
+                            >
                               <Share2 className="h-3 w-3" />
-                              <span className="truncate max-w-[100px]">{queueId.substring(0, 8)}...</span>
+                              <span className="truncate max-w-[100px]">
+                                {queueId.substring(0, 8)}...
+                              </span>
                             </Badge>
                           ))}
                           {topic.subscribedQueues.length > 3 && (
-                            <Badge variant="outline">+{topic.subscribedQueues.length - 3} more</Badge>
+                            <Badge variant="outline">
+                              +{topic.subscribedQueues.length - 3} more
+                            </Badge>
                           )}
                         </div>
                       )}
@@ -226,11 +244,7 @@ const Topics = () => {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    <Button
-                      asChild
-                      variant="default"
-                      size="sm"
-                    >
+                    <Button asChild variant="default" size="sm">
                       <Link to={`/topics/${topic.id}`}>View Details</Link>
                     </Button>
                   </CardFooter>
@@ -246,23 +260,16 @@ const Topics = () => {
           <DialogHeader>
             <DialogTitle>Delete Topic</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the topic "{topicToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to delete the topic "{topicToDelete?.name}"? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setTopicToDelete(null)}
-              disabled={isDeleting}
-            >
+            <Button variant="outline" onClick={() => setTopicToDelete(null)} disabled={isDeleting}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteTopic}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+            <Button variant="destructive" onClick={handleDeleteTopic} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

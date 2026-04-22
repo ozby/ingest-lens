@@ -1,23 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, ArrowRight, Hash, List, SendHorizontal } from 'lucide-react';
-import apiService from '@/services/api';
-import { CreateQueueRequest, CreateTopicRequest, SubscribeTopicRequest } from '@repo/types';
-import {
-  IQueue,
-  IQueueMetrics,
-  IServerMetrics,
-  ITopic,
-} from '@repo/types';
-import NavBar from '@/components/NavBar';
-import Sidebar from '@/components/Sidebar';
-import MetricsCard from '@/components/MetricsCard';
-import ServerMetricsComponent from '@/components/ServerMetrics';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/components';
-import { Button } from '@repo/ui/components';
-import { Link } from 'react-router-dom';
-import { toast } from 'sonner';
-import QueueForm from '@/components/QueueForm';
-import TopicForm from '@/components/TopicForm';
+import React, { useState, useEffect } from "react";
+import { Activity, ArrowRight, Hash, List, SendHorizontal } from "lucide-react";
+import apiService from "@/services/api";
+import { CreateQueueRequest, CreateTopicRequest, SubscribeTopicRequest } from "@repo/types";
+import { IQueue, IQueueMetrics, IServerMetrics, ITopic } from "@repo/types";
+import NavBar from "@/components/NavBar";
+import Sidebar from "@/components/Sidebar";
+import MetricsCard from "@/components/MetricsCard";
+import ServerMetricsComponent from "@/components/ServerMetrics";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components";
+import { Button } from "@repo/ui/components";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import QueueForm from "@/components/QueueForm";
+import TopicForm from "@/components/TopicForm";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,8 +40,8 @@ const Dashboard = () => {
         setQueueMetrics(queueMetricsData);
         setServerMetrics(serverMetricsData);
       } catch (error) {
-        console.error('Failed to fetch dashboard data', error);
-        toast.error('Failed to load dashboard data');
+        console.error("Failed to fetch dashboard data", error);
+        toast.error("Failed to load dashboard data");
       } finally {
         setIsLoading(false);
       }
@@ -65,8 +60,8 @@ const Dashboard = () => {
       setQueues([...queues, newQueue]);
       toast.success(`Queue "${values.name}" created successfully`);
     } catch (error) {
-      console.error('Failed to create queue', error);
-      toast.error('Failed to create queue');
+      console.error("Failed to create queue", error);
+      toast.error("Failed to create queue");
     } finally {
       setIsCreatingQueue(false);
     }
@@ -77,7 +72,7 @@ const Dashboard = () => {
       setIsCreatingTopic(true);
       const newTopic = await apiService.createTopic(values);
 
-      const subscribePromises = subscribers.map(queueId => {
+      const subscribePromises = subscribers.map((queueId) => {
         const subscribeRequest: SubscribeTopicRequest = { queueId };
         return apiService.subscribeTopic(newTopic.id, subscribeRequest);
       });
@@ -89,8 +84,8 @@ const Dashboard = () => {
 
       toast.success(`Topic "${values.name}" created with ${subscribers.length} subscribers`);
     } catch (error) {
-      console.error('Failed to create topic or subscribe queues', error);
-      toast.error('Failed to create topic or add subscribers');
+      console.error("Failed to create topic or subscribe queues", error);
+      toast.error("Failed to create topic or add subscribers");
     } finally {
       setIsCreatingTopic(false);
     }
@@ -99,10 +94,11 @@ const Dashboard = () => {
   const totalMessages = queueMetrics.reduce((sum, metric) => sum + metric.messageCount, 0);
   const totalSent = queueMetrics.reduce((sum, metric) => sum + metric.messagesSent, 0);
   const totalReceived = queueMetrics.reduce((sum, metric) => sum + metric.messagesReceived, 0);
-  
-  const avgWaitTime = queueMetrics.length > 0
-  ? queueMetrics.reduce((sum, metric) => sum + metric.avgWaitTime, 0) / queueMetrics.length
-  : 0;
+
+  const avgWaitTime =
+    queueMetrics.length > 0
+      ? queueMetrics.reduce((sum, metric) => sum + metric.avgWaitTime, 0) / queueMetrics.length
+      : 0;
   console.log(totalMessages, totalSent, totalReceived, avgWaitTime);
 
   return (
@@ -115,9 +111,7 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
               <h1 className="text-3xl font-bold mb-1">Dashboard</h1>
-              <p className="text-muted-foreground">
-                Overview of your message queuing system
-              </p>
+              <p className="text-muted-foreground">Overview of your message queuing system</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <QueueForm
@@ -133,7 +127,7 @@ const Dashboard = () => {
               <TopicForm
                 onSubmit={handleCreateTopic}
                 isLoading={isCreatingTopic}
-                availableQueues={queues.map(q => ({ id: q.id, name: q.name }))}
+                availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
                 trigger={
                   <Button>
                     <Hash className="mr-2 h-4 w-4" />
@@ -286,7 +280,7 @@ const Dashboard = () => {
                     <TopicForm
                       onSubmit={handleCreateTopic}
                       isLoading={isCreatingTopic}
-                      availableQueues={queues.map(q => ({ id: q.id, name: q.name }))}
+                      availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
                       trigger={
                         <Button variant="outline" className="mt-4">
                           Create your first topic

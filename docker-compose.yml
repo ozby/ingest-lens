@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongo1:
@@ -21,7 +21,7 @@ services:
 
   mongo-express:
     image: mongo-express:latest
-    platform: linux/arm64/v8  # Specific for M2 Mac
+    platform: linux/arm64/v8 # Specific for M2 Mac
     environment:
       - ME_CONFIG_MONGODB_SERVER=mongo1
       - ME_CONFIG_BASICAUTH_USERNAME=admin

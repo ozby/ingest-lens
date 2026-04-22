@@ -17,9 +17,7 @@ import fs from "node:fs";
 
 const msgPath = process.argv[2];
 if (!msgPath) {
-  console.error(
-    "usage: bun ./scripts/check-commit-msg.ts <path-to-commit-msg>",
-  );
+  console.error("usage: bun ./scripts/check-commit-msg.ts <path-to-commit-msg>");
   process.exit(2);
 }
 
@@ -27,9 +25,7 @@ const raw = fs.readFileSync(msgPath, "utf8");
 const lines = raw.split("\n");
 
 // Git merge/revert/squash commits use non-conventional subjects — skip validation.
-const firstRealCheck = lines.find(
-  (l: string) => l.trim() !== "" && !l.startsWith("#"),
-);
+const firstRealCheck = lines.find((l: string) => l.trim() !== "" && !l.startsWith("#"));
 if (firstRealCheck && /^(Merge |Revert |Squash merge )/.test(firstRealCheck)) {
   console.log("commit-msg OK (merge/revert exempt)");
   process.exit(0);

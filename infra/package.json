@@ -1,7 +1,7 @@
 {
   "name": "@repo/infra",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "preview": "doppler run --project ozby-shell --config dev -- pulumi preview",
     "up:dev": "doppler run --project ozby-shell --config dev -- pulumi up --yes",
@@ -11,8 +11,8 @@
     "check-types": "tsgo --noEmit"
   },
   "dependencies": {
-    "@pulumi/pulumi": "^3.220.0",
     "@pulumi/cloudflare": "^6.1.0",
+    "@pulumi/pulumi": "^3.220.0",
     "@pulumiverse/doppler": "^0.9.0"
   },
   "devDependencies": {

@@ -11,7 +11,7 @@ import QueueDetail from "./pages/QueueDetail";
 import Topics from "./pages/Topics";
 import TopicDetail from "./pages/TopicDetail";
 import NotFound from "./pages/NotFound";
-import Metrics from './pages/Metrics';
+import Metrics from "./pages/Metrics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,7 +31,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            
+
             <Route
               path="/dashboard"
               element={
@@ -40,7 +40,7 @@ const App = () => (
                 </RequireAuth>
               }
             />
-            
+
             <Route
               path="/metrics"
               element={
@@ -49,7 +49,7 @@ const App = () => (
                 </RequireAuth>
               }
             />
-            
+
             <Route
               path="/queues"
               element={
@@ -58,7 +58,7 @@ const App = () => (
                 </RequireAuth>
               }
             />
-            
+
             <Route
               path="/queues/:id"
               element={
@@ -67,7 +67,7 @@ const App = () => (
                 </RequireAuth>
               }
             />
-            
+
             <Route
               path="/topics"
               element={
@@ -76,7 +76,7 @@ const App = () => (
                 </RequireAuth>
               }
             />
-            
+
             <Route
               path="/topics/:id"
               element={
@@ -85,7 +85,7 @@ const App = () => (
                 </RequireAuth>
               }
             />
-            
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -30,7 +30,9 @@ export function createMockEnv(
     ANALYTICS: (analytics ?? { writeDataPoint: vi.fn() }) as unknown as Env["ANALYTICS"],
     TOPIC_ROOMS: (topicRooms ?? {
       idFromName: vi.fn().mockReturnValue("stub-id"),
-      get: vi.fn().mockReturnValue({ fetch: vi.fn().mockResolvedValue(new Response(null, { status: 200 })) }),
+      get: vi
+        .fn()
+        .mockReturnValue({ fetch: vi.fn().mockResolvedValue(new Response(null, { status: 200 })) }),
     }) as unknown as Env["TOPIC_ROOMS"],
   };
 }

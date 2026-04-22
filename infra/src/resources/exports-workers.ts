@@ -1,10 +1,5 @@
 import * as cf from "@pulumi/cloudflare";
-import {
-  cloudflareAccountId,
-  cloudflareZoneId,
-  domain,
-  workerName,
-} from "./config";
+import { cloudflareAccountId, cloudflareZoneId, domain, workerName } from "./config";
 
 // Worker script route — wrangler handles the actual code deploy;
 // Pulumi registers the route so traffic reaches the right Worker.

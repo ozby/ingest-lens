@@ -71,4 +71,4 @@ export interface IDecodedToken {
   username: string;
   iat: number;
   exp: number;
-} 
+}

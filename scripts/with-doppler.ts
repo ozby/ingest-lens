@@ -19,9 +19,7 @@ if (!config || cmd.length === 0) {
 try {
   execSync("doppler --version", { stdio: "ignore" });
 } catch {
-  console.error(
-    "\n❌  doppler CLI not found. Run: brew install dopplerhq/cli/doppler\n",
-  );
+  console.error("\n❌  doppler CLI not found. Run: brew install dopplerhq/cli/doppler\n");
   process.exit(1);
 }
 
