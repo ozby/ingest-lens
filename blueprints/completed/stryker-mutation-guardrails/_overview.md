@@ -4,7 +4,7 @@ status: completed
 complexity: M
 created: "2026-04-21"
 last_updated: "2026-04-22"
-progress: "0% (drafted)"
+progress: "100% (all phases complete)"
 depends_on: []
 tags:
   - quality
@@ -69,7 +69,7 @@ per-package:
 
 #### [qa] Task 1.1: Pilot on one leaf package
 
-**Status:** pending **Depends:** None
+**Status:** done **Depends:** None
 
 **Files:**
 
@@ -78,14 +78,14 @@ per-package:
 
 **Acceptance:**
 
-- [ ] `pnpm --filter <first-pilot> mutation` runs end-to-end.
-- [ ] Baseline score recorded in the PR description.
+- [x] `pnpm --filter <first-pilot> mutation` runs end-to-end.
+- [x] Baseline score recorded in the PR description.
 
 ### Phase 2: Fan out [Complexity: M]
 
 #### [qa] Task 2.1: Add configs to every workspace with tests
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done **Depends:** Task 1.1
 
 **Files:**
 
@@ -95,13 +95,13 @@ per-package:
 
 **Acceptance:**
 
-- [ ] Every workspace with a test suite has a stryker config and a recorded baseline.
+- [x] Every workspace with a test suite has a stryker config and a recorded baseline.
 
 ### Phase 3: CI gate [Complexity: M]
 
 #### [ci] Task 3.1: Add mutation job that blocks below `break` threshold
 
-**Status:** pending **Depends:** Task 2.1
+**Status:** done **Depends:** Task 2.1
 
 **Files:**
 
@@ -110,9 +110,9 @@ per-package:
 
 **Acceptance:**
 
-- [ ] CI job only runs mutation for packages changed in the diff.
-- [ ] Job fails when any package's score drops below its `break` threshold.
-- [ ] HTML report uploaded as a workflow artifact.
+- [x] CI job only runs mutation for packages changed in the diff.
+- [x] Job fails when any package's score drops below its `break` threshold.
+- [x] HTML report uploaded as a workflow artifact.
 
 ## Verification Gates
 
