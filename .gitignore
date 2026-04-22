@@ -32,6 +32,27 @@ Thumbs.db
 # MCP / tool session artifacts
 .playwright-mcp/
 .omx/
+.codex/.tmp/
+.codex/cache/
+.codex/log/
+.codex/memories/
+.codex/sessions/
+.codex/shell_snapshots/
+.codex/tmp/
+.codex/.personality_migration
+.codex/auth.json
+.codex/history.jsonl
+.codex/hooks.json
+.codex/installation_id
+.codex/logs_2.sqlite*
+.codex/models_cache.json
+.codex/state_5.sqlite*
+.codex/version.json
+.claude/logs/
+.claude/projects/
+.claude/settings.json
+.claude/tmp/
+.claude/*.local.*
 
 # Stryker incremental cache
 .stryker-incremental.json
