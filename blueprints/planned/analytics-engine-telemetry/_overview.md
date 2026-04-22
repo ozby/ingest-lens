@@ -38,24 +38,24 @@ metrics without adding a separate metrics service.
 - Tightened the schema around delivery outcomes the repo actually has today:
   queue, message, status, latency, and attempt.
 
-## Pre-execution audit (2026-04-22)
+## Pre-execution audit (2026-04-22, updated 2026-04-22)
 
-**Readiness:** blocked-by-upstream
+**Readiness:** ready
 
 **What is already true**
 
 - `@cloudflare/workers-types` in the current workspace already exposes
   `AnalyticsEngineDataset`.
-- `apps/workers/wrangler.toml` is the right place to bind the dataset once the
-  consumer exists.
+- `apps/workers/wrangler.toml` is the right place to bind the dataset.
+- `apps/workers/src/consumers/deliveryConsumer.ts` exists in main (`cf-queues-delivery`
+  has landed). `handleDeliveryBatch` is already wired as `queue:` in `index.ts`.
+- `deliveryConsumer.test.ts` covers ack / retry / dropped outcomes — telemetry
+  assertions can be added to it in Task 1.3.
 
-**Blocking gaps**
+**Remaining gaps before implementation**
 
-- This blueprint depends on `cf-queues-delivery`, but the queue consumer file
-  does not exist yet. There is no stable instrumentation chokepoint until that
-  upstream blueprint lands.
-- Current tests do not cover delivery outcomes such as ack / retry / dropped,
-  so telemetry assertions would be premature before the consumer path exists.
+- `wrangler.toml` has no `[[analytics_engine_datasets]]` block yet — Task 1.1 adds it.
+- `Env` type in `src/db/client.ts` does not include `ANALYTICS` yet — Task 1.1 adds it.
 
 **First-build notes**
 
@@ -100,11 +100,26 @@ deliveryConsumer.ts
 
 ## Quick Reference (Execution Waves)
 
-| Wave              | Tasks     | Dependencies | Parallelizable |
-| ----------------- | --------- | ------------ | -------------- |
-| **Wave 1**        | 1.1, 1.2  | None         | 2 agents       |
-| **Wave 2**        | 1.3       | 1.1 + 1.2    | 1 agent        |
-| **Critical path** | 1.1 → 1.3 | —            | 2 waves        |
+| Wave              | Tasks     | Dependencies | Parallelizable | Effort (T-shirt) |
+| ----------------- | --------- | ------------ | -------------- | ---------------- |
+| **Wave 1**        | 1.1, 1.2  | None         | 2 agents       | XS, S            |
+| **Wave 2**        | 1.3       | 1.1 + 1.2    | 1 agent        | S                |
+| **Critical path** | 1.1 → 1.3 | —            | 2 waves        | S                |
+
+### Parallel Metrics Snapshot
+
+| Metric | Formula / Meaning                  | Target               | Actual                                             |
+| ------ | ---------------------------------- | -------------------- | -------------------------------------------------- |
+| RW0    | Ready tasks in Wave 1              | ≥ planned agents / 2 | 2                                                  |
+| CPR    | total_tasks / critical_path_length | ≥ 2.5                | 1.5 (3 tasks / 2-wave path — S structural minimum) |
+| DD     | dependency_edges / total_tasks     | ≤ 2.0                | 0.67 (2 edges / 3 tasks)                           |
+| CP     | same-file overlaps per wave        | 0                    | 0                                                  |
+
+> CPR 1.5 is the structural floor for a 3-task S blueprint. 1.1 and 1.2 are genuinely
+> independent; 1.3 requires both. No further split is possible without artificial tasks.
+> Parallelization score: **C** (accepted at S complexity).
+
+**Blueprint compliant: Yes**
 
 ---
 
@@ -219,9 +234,11 @@ consumer decision.
 
 ## Cross-Plan References
 
-| Type     | Blueprint            | Relationship                                              |
-| -------- | -------------------- | --------------------------------------------------------- |
-| Upstream | `cf-queues-delivery` | The consumer introduced there is the telemetry hook point |
+| Type     | Blueprint                 | Relationship                                                                                         |
+| -------- | ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Upstream | `cf-queues-delivery`      | The consumer introduced there is the telemetry hook point (landed — unblocked)                       |
+| Conflict | `cf-rate-limiting`        | Both Task 1.1s write `wrangler.toml` + `client.ts` — run after `cf-rate-limiting` lands.             |
+| Conflict | `durable-objects-fan-out` | Task 1.2 writes same files — serialize; run this before or after, not in the same `/pll` invocation. |
 
 ## Edge Cases and Error Handling
 

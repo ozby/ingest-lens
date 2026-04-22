@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { Mock } from "vitest";
 import { handleDeliveryBatch } from "../consumers/deliveryConsumer";
-import type { DeliveryPayload, Env } from "../db/client";
+import type { DeliveryPayload } from "../db/client";
+import { createDb } from "../db/client";
+import { buildSelectChain, createMockEnv } from "./helpers";
+
+vi.mock("../db/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../db/client")>();
+  return { ...actual, createDb: vi.fn() };
+});
 
 const mockRow = {
   id: "msg-1",
@@ -13,44 +21,24 @@ const mockRow = {
   receivedAt: null,
 };
 
-function makeMsg(body: DeliveryPayload, ack = vi.fn(), retry = vi.fn()): Message<DeliveryPayload> {
+function makeMsg(body: DeliveryPayload, ack: Mock, retry: Mock): Message<DeliveryPayload> {
   return {
     body,
     ack,
     retry,
     id: "cf-msg-id",
-    timestamp: new Date(),
+    timestamp: new Date("2026-01-01"),
     attempts: body.attempt + 1,
   } as unknown as Message<DeliveryPayload>;
 }
 
-// We need to mock the db/client module so createDb returns our mock
-vi.mock("../db/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/client")>();
-  return {
-    ...actual,
-    createDb: vi.fn(),
-  };
-});
-
-import { createDb } from "../db/client";
-
 function setupCreateDb(selectRows: unknown[]) {
-  const limitMock = vi.fn().mockResolvedValue(selectRows);
-  const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
-  const fromMock = vi.fn().mockReturnValue({ where: whereMock });
-  const selectMock = vi.fn().mockReturnValue({ from: fromMock });
-
-  vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
-  return { selectMock, fromMock, whereMock, limitMock };
+  const chain = buildSelectChain(selectRows);
+  vi.mocked(createDb).mockReturnValue({ select: chain.selectMock } as any);
+  return chain;
 }
 
-const baseEnv: Env = {
-  HYPERDRIVE: null as any,
-  DATABASE_URL: "postgresql://localhost/test",
-  JWT_SECRET: "test-secret",
-  DELIVERY_QUEUE: null as any,
-};
+const baseEnv = createMockEnv();
 
 const basePayload: DeliveryPayload = {
   messageId: "msg-1",
@@ -204,10 +192,8 @@ describe("handleDeliveryBatch", () => {
 
     expect(ack1).toHaveBeenCalledOnce();
     expect(retry1).not.toHaveBeenCalled();
-
     expect(ack2).toHaveBeenCalledOnce();
     expect(retry2).not.toHaveBeenCalled();
-
     expect(retry3).toHaveBeenCalledOnce();
     expect(retry3).toHaveBeenCalledWith({ delaySeconds: 5 });
     expect(ack3).not.toHaveBeenCalled();

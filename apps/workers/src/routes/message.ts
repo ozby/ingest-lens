@@ -35,6 +35,19 @@ messageRoutes.post("/:queueId", async (c) => {
     return c.json({ status: "error", message: "Queue not found" }, 404);
   }
 
+  const idempotencyKey = c.req.header("Idempotency-Key") ?? null;
+
+  if (idempotencyKey) {
+    const [existing] = await db
+      .select()
+      .from(messages)
+      .where(and(eq(messages.queueId, queueId), eq(messages.idempotencyKey, idempotencyKey)))
+      .limit(1);
+    if (existing) {
+      return c.json({ status: "success", data: { message: existing } }, 200);
+    }
+  }
+
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + queue.retentionPeriod);
 
@@ -46,6 +59,7 @@ messageRoutes.post("/:queueId", async (c) => {
       expiresAt,
       received: false,
       receivedCount: 0,
+      idempotencyKey,
     })
     .returning();
 

@@ -103,11 +103,25 @@ note:
 
 ## Quick Reference (Execution Waves)
 
-| Wave              | Tasks     | Dependencies | Parallelizable |
-| ----------------- | --------- | ------------ | -------------- |
-| **Wave 1**        | 1.1, 1.2  | None         | 2 agents       |
-| **Wave 2**        | 1.3       | 1.1 + 1.2    | 1 agent        |
-| **Critical path** | 1.1 → 1.3 | —            | 2 waves        |
+| Wave              | Tasks     | Dependencies | Parallelizable | Effort (T-shirt) |
+| ----------------- | --------- | ------------ | -------------- | ---------------- |
+| **Wave 1**        | 1.1, 1.2  | None         | 2 agents       | XS               |
+| **Wave 2**        | 1.3       | 1.1 + 1.2    | 1 agent        | XS               |
+| **Critical path** | 1.1 → 1.3 | —            | 2 waves        | XS               |
+
+### Parallel Metrics Snapshot
+
+| Metric | Formula / Meaning                  | Target               | Actual                                              |
+| ------ | ---------------------------------- | -------------------- | --------------------------------------------------- |
+| RW0    | Ready tasks in Wave 1              | ≥ planned agents / 2 | 2                                                   |
+| CPR    | total_tasks / critical_path_length | ≥ 2.5                | 1.5 (3 tasks / 2-wave path — XS structural minimum) |
+| DD     | dependency_edges / total_tasks     | ≤ 2.0                | 0.67 (2 edges / 3 tasks)                            |
+| CP     | same-file overlaps per wave        | 0                    | 0                                                   |
+
+> CPR 1.5 is the structural floor for a 3-task XS blueprint. Splitting further would produce
+> artificial tasks with no independent test coverage. Parallelization score: **C** (accepted at XS).
+
+**Blueprint compliant: Yes**
 
 ---
 
@@ -231,9 +245,11 @@ Do **not** mount it globally in `index.ts`.
 
 ## Cross-Plan References
 
-| Type       | Blueprint                 | Relationship                                                                                                                    |
-| ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Downstream | `durable-objects-fan-out` | WebSocket upgrade routes should remain outside this request-per-request limiter if connection semantics need different handling |
+| Type       | Blueprint                    | Relationship                                                                                                                    |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Downstream | `durable-objects-fan-out`    | WebSocket upgrade routes should remain outside this request-per-request limiter if connection semantics need different handling |
+| Conflict   | `analytics-engine-telemetry` | Both Task 1.1s write `wrangler.toml` + `client.ts` — cannot run in the same `/pll` invocation. Run this one first (XS).         |
+| Conflict   | `durable-objects-fan-out`    | Task 1.2 writes same files — serialize after this blueprint lands.                                                              |
 
 ## Edge Cases and Error Handling
 

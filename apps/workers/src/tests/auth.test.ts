@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import app from "../index";
+import { createMockEnv, post, get } from "./helpers";
 
-// Mock database calls so tests run without a real Postgres connection
 vi.mock("../db/client", () => ({
   createDb: vi.fn(() => ({
     select: vi.fn().mockReturnValue({
@@ -26,65 +26,49 @@ vi.mock("../db/client", () => ({
   })),
 }));
 
-const mockEnv = {
-  HYPERDRIVE: null as any,
-  DATABASE_URL: "postgresql://localhost/test",
-  JWT_SECRET: "test-secret-for-unit-tests",
-};
+const mockEnv = createMockEnv();
 
 describe("Auth routes", () => {
   describe("POST /api/auth/register", () => {
     it("returns 400 when username is missing", async () => {
-      const req = new Request("http://localhost/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "a@b.com", password: "password123" }),
-      });
-      const res = await app.fetch(req, mockEnv);
+      const res = await app.fetch(
+        post("/api/auth/register", { email: "a@b.com", password: "password123" }),
+        mockEnv,
+      );
       expect(res.status).toBe(400);
     });
 
     it("returns 400 when email is invalid", async () => {
-      const req = new Request("http://localhost/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await app.fetch(
+        post("/api/auth/register", {
           username: "testuser",
           email: "not-an-email",
           password: "password123",
         }),
-      });
-      const res = await app.fetch(req, mockEnv);
+        mockEnv,
+      );
       expect(res.status).toBe(400);
     });
 
     it("returns 400 when password is too short", async () => {
-      const req = new Request("http://localhost/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "testuser",
-          email: "a@b.com",
-          password: "abc",
-        }),
-      });
-      const res = await app.fetch(req, mockEnv);
+      const res = await app.fetch(
+        post("/api/auth/register", { username: "testuser", email: "a@b.com", password: "abc" }),
+        mockEnv,
+      );
       expect(res.status).toBe(400);
     });
 
     it("returns 201 with valid data", async () => {
-      const req = new Request("http://localhost/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await app.fetch(
+        post("/api/auth/register", {
           username: "testuser",
           email: "test@example.com",
           password: "password123",
         }),
-      });
-      const res = await app.fetch(req, mockEnv);
+        mockEnv,
+      );
       expect(res.status).toBe(201);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as { status: string; data: { token: string } };
       expect(body.status).toBe("success");
       expect(body.data.token).toBeDefined();
     });
@@ -92,28 +76,22 @@ describe("Auth routes", () => {
 
   describe("POST /api/auth/login", () => {
     it("returns 400 when credentials are missing", async () => {
-      const req = new Request("http://localhost/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: "testuser" }),
-      });
-      const res = await app.fetch(req, mockEnv);
+      const res = await app.fetch(post("/api/auth/login", { username: "testuser" }), mockEnv);
       expect(res.status).toBe(400);
     });
   });
 
   describe("GET /api/auth/me", () => {
     it("returns 401 without auth header", async () => {
-      const req = new Request("http://localhost/api/auth/me");
-      const res = await app.fetch(req, mockEnv);
+      const res = await app.fetch(get("/api/auth/me"), mockEnv);
       expect(res.status).toBe(401);
     });
 
     it("returns 401 with invalid token", async () => {
-      const req = new Request("http://localhost/api/auth/me", {
-        headers: { Authorization: "Bearer invalid.token.here" },
-      });
-      const res = await app.fetch(req, mockEnv);
+      const res = await app.fetch(
+        get("/api/auth/me", { Authorization: "Bearer invalid.token.here" }),
+        mockEnv,
+      );
       expect(res.status).toBe(401);
     });
   });

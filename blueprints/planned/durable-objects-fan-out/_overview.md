@@ -41,10 +41,13 @@ hibernation.
   generic `/:id` route in `routes/topic.ts`.
 - Removed the assumption that a new test dependency is required. Use plain
   Vitest with lightweight stubs for the DO state surface.
+- (Fx: wave-fix-1.5) Moved Task 1.5 from Wave 3 to Wave 2: the DO export in
+  `index.ts` depends only on 1.1 + 1.2 (class + binding), not on the route
+  (1.3). Wave table and critical path updated accordingly: 1.1 → 1.3 → 1.4.
 
-## Pre-execution audit (2026-04-22)
+## Pre-execution audit (2026-04-22, updated 2026-04-22)
 
-**Readiness:** blocked-by-upstream
+**Readiness:** ready
 
 **What is already true**
 
@@ -52,16 +55,19 @@ hibernation.
   endpoint.
 - `@cloudflare/workers-types` in the current workspace already exposes Durable
   Object namespace types.
-- The blueprint correctly depends on `cf-queues-delivery`, which is the future
-  notify chokepoint.
+- `apps/workers/src/consumers/deliveryConsumer.ts` exists in main (`cf-queues-delivery`
+  has landed). `handleDeliveryBatch` is the correct notify chokepoint.
+- `index.ts` already exports `{ fetch: app.fetch, queue: handleDeliveryBatch }` —
+  Task 1.5 adds the `TopicRoom` named export without breaking this shape.
 
-**Blocking gaps**
+**Remaining gaps before implementation**
 
-- The queue consumer that should notify the DO does not exist yet.
-- `topicRoutes` currently has a generic `GET /:id` matcher before any WebSocket
-  route, so route order must be corrected during implementation.
-- The Vitest environment is `node`, not a Workers runtime. DO behavior will
-  need stub-based tests first and build validation second.
+- `topicRoutes` in `routes/topic.ts` (line 52) has a generic `GET /:id` matcher
+  before any WebSocket route — Task 1.3 must insert `/:topicId/ws` before it.
+- `wrangler.toml` has no `[[durable_objects.bindings]]` or `[[migrations]]` block
+  yet — Task 1.2 adds them.
+- The Vitest environment is `node`, not a Workers runtime. DO behavior needs
+  stub-based tests first and `build` validation second (Task 1.1).
 
 **First-build notes**
 
@@ -104,12 +110,28 @@ queue consumer
 
 ## Quick Reference (Execution Waves)
 
-| Wave              | Tasks           | Dependencies | Parallelizable |
-| ----------------- | --------------- | ------------ | -------------- |
-| **Wave 1**        | 1.1, 1.2        | None         | 2 agents       |
-| **Wave 2**        | 1.3             | 1.1 + 1.2    | 1 agent        |
-| **Wave 3**        | 1.4, 1.5        | 1.3          | 2 agents       |
-| **Critical path** | 1.1 → 1.3 → 1.5 | —            | 3 waves        |
+| Wave              | Tasks           | Dependencies | Parallelizable | Effort (T-shirt) |
+| ----------------- | --------------- | ------------ | -------------- | ---------------- |
+| **Wave 1**        | 1.1, 1.2        | None         | 2 agents       | M, XS            |
+| **Wave 2**        | 1.3, 1.5        | 1.1 + 1.2    | 2 agents       | S, XS            |
+| **Wave 3**        | 1.4             | 1.3          | 1 agent        | S                |
+| **Critical path** | 1.1 → 1.3 → 1.4 | —            | 3 waves        | L                |
+
+### Parallel Metrics Snapshot
+
+| Metric | Formula / Meaning                  | Target               | Actual                                               |
+| ------ | ---------------------------------- | -------------------- | ---------------------------------------------------- |
+| RW0    | Ready tasks in Wave 1              | ≥ planned agents / 2 | 2                                                    |
+| CPR    | total_tasks / critical_path_length | ≥ 2.5                | 1.67 (5 tasks / 3-wave path — L structural limit)    |
+| DD     | dependency_edges / total_tasks     | ≤ 2.0                | 1.0 (5 edges / 5 tasks)                              |
+| CP     | same-file overlaps per wave        | 0                    | 0 (verified: Wave 1 and Wave 2 have no file overlap) |
+
+> CPR 1.67 is the structural floor for this 5-task L blueprint given the sequential
+> 1.3 → 1.4 chain. Task 1.5 moved from Wave 3 to Wave 2 (Fx: wave-fix-1.5) — it only
+> needs 1.1 + 1.2, not 1.3, recovering one wave of parallelism.
+> Parallelization score: **C** (accepted at L complexity with inherent DO sequencing).
+
+**Blueprint compliant: Yes**
 
 ---
 
@@ -288,10 +310,12 @@ entry point shape required by `cf-queues-delivery`.
 
 ## Cross-Plan References
 
-| Type       | Blueprint               | Relationship                                              |
-| ---------- | ----------------------- | --------------------------------------------------------- |
-| Upstream   | `cf-queues-delivery`    | Uses the queue payload and consumer introduced there      |
-| Downstream | `message-replay-cursor` | Extends the same `TopicRoom` DO with durable replay state |
+| Type       | Blueprint                    | Relationship                                                                                   |
+| ---------- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Upstream   | `cf-queues-delivery`         | Uses the queue payload and consumer introduced there (landed — unblocked)                      |
+| Downstream | `message-replay-cursor`      | Extends the same `TopicRoom` DO with durable replay state                                      |
+| Conflict   | `cf-rate-limiting`           | Task 1.2 writes `wrangler.toml` + `client.ts` — cannot run in the same `/pll` invocation.      |
+| Conflict   | `analytics-engine-telemetry` | Task 1.1 writes same files — serialize; run last in the sequence (L complexity, runs longest). |
 
 ## Edge Cases and Error Handling
 

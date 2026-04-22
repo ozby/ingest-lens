@@ -6,6 +6,7 @@ import {
   timestamp,
   jsonb,
   real,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -42,19 +43,29 @@ export const queues = pgTable("queues", {
 // ---------------------------------------------------------------------------
 // Messages
 // ---------------------------------------------------------------------------
-export const messages = pgTable("messages", {
-  id: text("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  data: jsonb("data").notNull(),
-  queueId: text("queue_id").notNull(),
-  received: boolean("received").notNull().default(false),
-  receivedAt: timestamp("received_at"),
-  expiresAt: timestamp("expires_at").notNull(),
-  receivedCount: integer("received_count").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const messages = pgTable(
+  "messages",
+  {
+    id: text("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    data: jsonb("data").notNull(),
+    queueId: text("queue_id").notNull(),
+    idempotencyKey: text("idempotency_key"),
+    received: boolean("received").notNull().default(false),
+    receivedAt: timestamp("received_at"),
+    expiresAt: timestamp("expires_at").notNull(),
+    receivedCount: integer("received_count").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    queueIdempotencyUnique: uniqueIndex("messages_queue_idempotency_idx").on(
+      table.queueId,
+      table.idempotencyKey,
+    ),
+  }),
+);
 
 // ---------------------------------------------------------------------------
 // Topics
