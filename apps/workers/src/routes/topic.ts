@@ -51,6 +51,14 @@ topicRoutes.get("/", async (c) => {
   });
 });
 
+// GET /api/topics/:topicId/ws — WebSocket upgrade via TopicRoom DO (must be before /:id)
+topicRoutes.get("/:topicId/ws", async (c) => {
+  const topicId = c.req.param("topicId");
+  const id = c.env.TOPIC_ROOMS.idFromName(topicId);
+  const stub = c.env.TOPIC_ROOMS.get(id);
+  return stub.fetch(c.req.raw);
+});
+
 // GET /api/topics/:id — get single topic
 topicRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");

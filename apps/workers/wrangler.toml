@@ -30,5 +30,13 @@ simple = { limit = 100, period = 60 }
 binding = "ANALYTICS"
 dataset = "delivery_events"
 
+[[durable_objects.bindings]]
+name = "TOPIC_ROOMS"
+class_name = "TopicRoom"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["TopicRoom"]
+
 [vars]
 NODE_ENV = "development"

@@ -17,6 +17,7 @@ export function createMockEnv(
   deliveryQueue?: { send: ReturnType<typeof vi.fn> },
   rateLimiter?: { limit: ReturnType<typeof vi.fn> },
   analytics?: { writeDataPoint: ReturnType<typeof vi.fn> },
+  topicRooms?: { idFromName: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> },
 ): Env {
   return {
     HYPERDRIVE: null as unknown as Env["HYPERDRIVE"],
@@ -27,6 +28,10 @@ export function createMockEnv(
       limit: vi.fn().mockResolvedValue({ success: true }),
     }) as unknown as Env["RATE_LIMITER"],
     ANALYTICS: (analytics ?? { writeDataPoint: vi.fn() }) as unknown as Env["ANALYTICS"],
+    TOPIC_ROOMS: (topicRooms ?? {
+      idFromName: vi.fn().mockReturnValue("stub-id"),
+      get: vi.fn().mockReturnValue({ fetch: vi.fn().mockResolvedValue(new Response(null, { status: 200 })) }),
+    }) as unknown as Env["TOPIC_ROOMS"],
   };
 }
 

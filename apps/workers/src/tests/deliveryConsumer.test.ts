@@ -236,6 +236,65 @@ describe("handleDeliveryBatch", () => {
     expect(writeDataPoint).toHaveBeenCalledTimes(3);
   });
 
+  it("calls TOPIC_ROOMS notify after ack when topicId is non-null", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const mockFetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+    const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
+    const mockIdFromName = vi.fn().mockReturnValue("stub-id");
+    const mockTopicRooms = { idFromName: mockIdFromName, get: mockGet };
+    const env = createMockEnv(undefined, undefined, { writeDataPoint }, mockTopicRooms);
+    const msg = makeMsg({ ...basePayload, topicId: "topic-1" }, ack, retry);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(ack).toHaveBeenCalledOnce();
+    expect(mockIdFromName).toHaveBeenCalledWith("topic-1");
+    expect(mockGet).toHaveBeenCalledWith("stub-id");
+    expect(mockFetch).toHaveBeenCalledOnce();
+  });
+
+  it("does not call TOPIC_ROOMS notify after ack when topicId is null", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const mockFetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+    const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
+    const mockIdFromName = vi.fn().mockReturnValue("stub-id");
+    const mockTopicRooms = { idFromName: mockIdFromName, get: mockGet };
+    const env = createMockEnv(undefined, undefined, { writeDataPoint }, mockTopicRooms);
+    const msg = makeMsg({ ...basePayload, topicId: null }, ack, retry);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(ack).toHaveBeenCalledOnce();
+    expect(mockIdFromName).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
   it("uses correct backoff for higher attempt counts", async () => {
     setupCreateDb([mockRow]);
     const ack = vi.fn();

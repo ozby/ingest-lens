@@ -43,6 +43,21 @@ export async function handleDeliveryBatch(
       if (res.ok) {
         msg.ack();
         recordDelivery(env, { queueId, messageId, topicId, status: "ack", latencyMs, attempt });
+        if (topicId !== null) {
+          try {
+            const doId = env.TOPIC_ROOMS.idFromName(topicId);
+            const stub = env.TOPIC_ROOMS.get(doId);
+            await stub.fetch(
+              new Request("https://do-internal/notify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messageId, queueId, topicId }),
+              }),
+            );
+          } catch {
+            // best-effort — swallow error
+          }
+        }
       } else {
         const delaySeconds = BACKOFF_SECONDS[Math.min(attempt, BACKOFF_SECONDS.length - 1)];
         msg.retry({ delaySeconds });

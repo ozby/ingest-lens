@@ -18,6 +18,7 @@ export type Env = {
   DELIVERY_QUEUE: Queue<DeliveryPayload>;
   RATE_LIMITER: RateLimit;
   ANALYTICS: AnalyticsEngineDataset;
+  TOPIC_ROOMS: DurableObjectNamespace;
 };
 
 export function createDb(env: Env) {
