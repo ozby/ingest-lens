@@ -11,6 +11,7 @@ function makeRequest(method: string, path: string, body?: unknown): Request {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("TopicRoom", () => {
@@ -26,6 +27,16 @@ describe("TopicRoom", () => {
       vi.stubGlobal("WebSocketPair", function () {
         return { 0: mockClient, 1: mockServer };
       });
+      // Node's Response rejects status 101 (CF Workers-only); stub to allow it
+      vi.stubGlobal(
+        "Response",
+        class {
+          status: number;
+          constructor(_body: null, init?: { status?: number }) {
+            this.status = init?.status ?? 200;
+          }
+        },
+      );
 
       const room = new TopicRoom(mockCtx as unknown as DurableObjectState);
       const res = await room.fetch(makeRequest("GET", "/ws"));
