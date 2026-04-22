@@ -3,6 +3,7 @@ import { eq, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { topics, queues, messages } from "../db/schema";
 import { authenticate } from "../middleware/auth";
+import { rateLimiter } from "../middleware/rateLimiter";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -14,6 +15,7 @@ export const topicRoutes = new Hono<{
 }>();
 
 topicRoutes.use("*", authenticate);
+topicRoutes.use("*", rateLimiter);
 
 // POST /api/topics — create topic
 topicRoutes.post("/", async (c) => {

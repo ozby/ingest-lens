@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import app from "../index";
+import { createMockEnv } from "./helpers";
 
 // Mock database calls so tests run without a real Postgres connection
 vi.mock("../db/client", () => ({
@@ -26,11 +27,7 @@ vi.mock("../db/client", () => ({
   })),
 }));
 
-const mockEnv = {
-  HYPERDRIVE: null as any,
-  DATABASE_URL: "postgresql://localhost/test",
-  JWT_SECRET: "test-secret-for-unit-tests",
-};
+const mockEnv = createMockEnv();
 
 describe("Auth routes", () => {
   describe("POST /api/auth/register", () => {

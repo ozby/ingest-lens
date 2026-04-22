@@ -46,10 +46,11 @@ function setupCreateDb(selectRows: unknown[]) {
 }
 
 const baseEnv: Env = {
-  HYPERDRIVE: null as any,
+  HYPERDRIVE: null as unknown as Hyperdrive,
   DATABASE_URL: "postgresql://localhost/test",
   JWT_SECRET: "test-secret",
-  DELIVERY_QUEUE: null as any,
+  DELIVERY_QUEUE: null as unknown as Queue<DeliveryPayload>,
+  RATE_LIMITER: null as unknown as RateLimit,
 };
 
 const basePayload: DeliveryPayload = {

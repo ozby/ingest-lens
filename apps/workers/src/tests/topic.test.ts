@@ -1,15 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import app from "../index";
+import { createMockEnv } from "./helpers";
 
 vi.mock("../db/client", () => ({
   createDb: vi.fn(() => ({})),
 }));
 
-const mockEnv = {
-  HYPERDRIVE: null as any,
-  DATABASE_URL: "postgresql://localhost/test",
-  JWT_SECRET: "test-secret",
-};
+const mockEnv = createMockEnv();
 
 describe("Topic routes", () => {
   describe("GET /api/topics", () => {

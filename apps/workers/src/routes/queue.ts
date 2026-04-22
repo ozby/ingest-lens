@@ -3,6 +3,7 @@ import { eq, and } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { queues, queueMetrics } from "../db/schema";
 import { authenticate } from "../middleware/auth";
+import { rateLimiter } from "../middleware/rateLimiter";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -14,6 +15,7 @@ export const queueRoutes = new Hono<{
 }>();
 
 queueRoutes.use("*", authenticate);
+queueRoutes.use("*", rateLimiter);
 
 // POST /api/queues — create queue
 queueRoutes.post("/", async (c) => {
@@ -84,17 +86,10 @@ queueRoutes.get("/:id", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, id))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, id)).limit(1);
 
   if (!queue) {
-    return c.json(
-      { status: "error", message: `Queue not found with ID: ${id}` },
-      404,
-    );
+    return c.json({ status: "error", message: `Queue not found with ID: ${id}` }, 404);
   }
 
   if (queue.ownerId !== ownerId) {
@@ -116,17 +111,10 @@ queueRoutes.delete("/:id", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, id))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, id)).limit(1);
 
   if (!queue) {
-    return c.json(
-      { status: "error", message: `Queue not found with ID: ${id}` },
-      404,
-    );
+    return c.json({ status: "error", message: `Queue not found with ID: ${id}` }, 404);
   }
 
   if (queue.ownerId !== ownerId) {
