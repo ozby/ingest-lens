@@ -61,6 +61,10 @@ Invoke `$plan-refine <slug>`. The skill will:
 
 ## Active blueprints
 
+- [`showcase-hardening-100`](./planned/showcase-hardening-100/_overview.md) — close critical audit blockers before any brand or AI polish: authz, contracts, typecheck, CI, tests, audit, and real metrics.
+- [`rebrand-ingestlens`](./planned/rebrand-ingestlens/_overview.md) — replace public `node-pubsub` surfaces with the IngestLens IntegrationOps story.
+- [`ai-payload-intake-mapper`](./planned/ai-payload-intake-mapper/_overview.md) — add a Workers AI suggestion-only payload mapping flow with validation and approval.
+- [`public-dataset-demo-ingestion`](./planned/public-dataset-demo-ingestion/_overview.md) — package the demo around public `open-apply-jobs` ATS fixtures and optional allowlisted live fetches.
 - [`client-route-code-splitting`](./planned/client-route-code-splitting/_overview.md) — split the client SPA at route boundaries to remove the Vite large-chunk warning and add a dependency-free bundle budget gate.
 
 ## Execution roadmap
