@@ -85,12 +85,12 @@ this task with only this text + the codebase + repo commands. Never rely on
 
 ## Verification Gates
 
-| Gate        | Command                              | Success Criteria     |
-| ----------- | ------------------------------------ | -------------------- |
-| Type safety | `pnpm check-types`                   | Zero errors          |
-| Lint        | `pnpm lint`                          | Zero violations      |
-| Tests       | `pnpm test`                          | Relevant suites pass |
-| Docs format | `pnpm exec prettier --check <paths>` | All pass             |
+| Gate        | Command                                         | Success Criteria     |
+| ----------- | ----------------------------------------------- | -------------------- |
+| Type safety | `pnpm check-types`                              | Zero errors          |
+| Lint        | `pnpm lint`                                     | Zero violations      |
+| Tests       | `pnpm test`                                     | Relevant suites pass |
+| Docs format | `pnpm format:check` or `vp fmt --check <paths>` | All pass             |
 
 ## Cross-Plan References
 

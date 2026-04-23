@@ -377,7 +377,7 @@ file from the failed task and re-run the gate before marking this task done.
    - no HTML-eager JS asset exceeds `262144` bytes;
    - HTML-eager JS total is at or below `393216` bytes.
 7. Run root verification appropriate to this small client change:
-   `pnpm format:check`, `pnpm lint:repo`, and `bun ./scripts/validate-blueprints.ts`.
+   `pnpm format:check`, `pnpm lint:repo`, and `pnpm blueprints:check`.
 
 **Acceptance:**
 
@@ -402,7 +402,7 @@ file from the failed task and re-run the gate before marking this task done.
 | Bundle budget        | `pnpm client:bundle:check`             | Chunk size and HTML-eager budgets pass                            |
 | Repo format          | `pnpm format:check`                    | Formatting check passes                                           |
 | Repo lint            | `pnpm lint:repo`                       | Repository static lint passes                                     |
-| Blueprint validation | `bun ./scripts/validate-blueprints.ts` | Blueprint lifecycle/frontmatter validation passes                 |
+| Blueprint validation | `pnpm blueprints:check`                | Blueprint lifecycle/frontmatter validation passes                 |
 | Workspace typecheck  | `pnpm -r --if-present check-types`     | All workspaces pass (run if final owner wants full repo proof)    |
 | Workspace test       | `pnpm -r --if-present test`            | All test scripts pass (run if final owner wants full repo proof)  |
 | Workspace build      | `pnpm -r --if-present build`           | All build scripts pass (run if final owner wants full repo proof) |

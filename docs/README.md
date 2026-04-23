@@ -75,7 +75,7 @@ Run via `pnpm lint:docs`:
 
 - **markdownlint-cli2** — `.markdownlint.json` at repo root. Installed as a devDependency.
 - **lychee** — `lychee.toml` at repo root. `lychee` is a Rust binary, not an npm package. Install locally with `brew install lychee` (macOS) or from a CI action; `pnpm docs:links` invokes it directly from `$PATH` and will no-op with a warning if the binary is missing.
-- **prettier** — `pnpm format:check` covers markdown formatting.
+- **Vite+ formatter** — `pnpm format:check` runs `vp fmt --check` for markdown and code formatting.
 - **frontmatter check** — `pnpm docs:check` enforces rules 1–3 above.
 
 ## Key entry points

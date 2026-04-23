@@ -103,9 +103,6 @@ catalogs:
     oxlint:
       specifier: ^1.61.0
       version: 1.61.0
-    prettier:
-      specifier: ^3.8.3
-      version: 3.8.3
     vitest:
       specifier: ^4.1.5
       version: 4.1.5
@@ -163,9 +160,6 @@ importers:
       oxlint:
         specifier: catalog:tooling
         version: 1.61.0(oxlint-tsgolint@0.21.1)
-      prettier:
-        specifier: catalog:tooling
-        version: 3.8.3
       secretlint:
         specifier: ^9.3.0
         version: 9.3.4
@@ -4205,7 +4199,7 @@ packages:
     os: [win32]
 
   '@webpresso/agent-kit@file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz':
-    resolution: {integrity: sha512-Flhc+b8RlJYc4z2B7M9YiBrHaG+5O8oIS2ZfTVMu0wPbczFixIVpLcn7MLSHI1g7b8/mHPU0ZoX2Hle9V5plVA==, tarball: file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz}
+    resolution: {integrity: sha512-CiJFqxFguvYOj3VJ8XEXOMNv8shMxyzUtJEjUBfp70E6CDdj8d5EunBS4cpp18aXlv6Whdko+rntsZ0n6RBwfA==, tarball: file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz}
     version: 0.1.0
     engines: {node: '>=20'}
     hasBin: true
@@ -4222,7 +4216,7 @@ packages:
     version: 0.1.0
 
   '@webpresso/vitest-config@file:../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz':
-    resolution: {integrity: sha512-i0uw0gJYGXh9Hwl3LxVKjQVdqa7jvKA4QTicsJnK7/u8v64+f+5hrHcKrF+orzPKF8lkd1zQopLUl60k00jPPw==, tarball: file:../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz}
+    resolution: {integrity: sha512-mBewHguPnW6JR9+i2TrvH4M3K528kY+RbI2c6VUZ6W/JYyBFN0zXhr7kbT3XNcf0H8qwRLj18+RCkWlfoiBw4w==, tarball: file:../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz}
     version: 0.0.1
     peerDependencies:
       '@cloudflare/vitest-pool-workers': '>=0.14 <1'
@@ -5804,11 +5798,6 @@ packages:
   postgres@3.4.9:
     resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==}
     engines: {node: '>=12'}
-
-  prettier@3.8.3:
-    resolution: {integrity: sha512-7igPTM53cGHMW8xWuVTydi2KO233VFiTNyF5hLJqpilHfmn8C8gPf+PS7dUT64YcXFbiMGZxS9pCSxL/Dxm/Jw==}
-    engines: {node: '>=14'}
-    hasBin: true
 
   pretty-bytes@5.6.0:
     resolution: {integrity: sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==}
@@ -11412,8 +11401,6 @@ snapshots:
       source-map-js: 1.2.1
 
   postgres@3.4.9: {}
-
-  prettier@3.8.3: {}
 
   pretty-bytes@5.6.0: {}
 

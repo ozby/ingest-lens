@@ -88,10 +88,8 @@ Superseded by [`ROADMAP.md`](../ROADMAP.md). See the roadmap for the current exe
 
 ## Validation
 
-Run `bun ./scripts/validate-blueprints.ts` to check:
+Run `pnpm blueprints:check` to check:
 
 - Every blueprint directory contains `_overview.md`.
 - Frontmatter `status` matches the directory it lives in.
-- Cross-blueprint references point to slugs that exist.
-
-The legacy `.omx/plans` validator still runs for backward compatibility.
+- Legacy `.omx` plan, contract, and lifecycle artifacts remain internally consistent when present.
