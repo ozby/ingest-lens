@@ -80,6 +80,7 @@
     "@vitejs/plugin-react": "catalog:",
     "@webpresso/typescript-config": "file:/Users/ozby/.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
     "@webpresso/vitest-config": "file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
+    "oxlint": "catalog:tooling",
     "tailwindcss": "catalog:",
     "vite": "^8.0.10",
     "vitest": "catalog:tooling"

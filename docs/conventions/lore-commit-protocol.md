@@ -98,7 +98,7 @@ Related: ADR-0001
 ## Validator
 
 The commit-msg hook in `.husky/commit-msg` calls
-`ak audit commit-message --require-lore`. It verifies:
+`ak audit commit-message --require-lore --message-file "$1"`. It verifies:
 
 1. `Confidence:` trailer is present with a valid value
 2. At least one of `Constraint:`, `Rejected:`, or `Directive:` is present

@@ -39,6 +39,7 @@
     "@webpresso/typescript-config": "file:/Users/ozby/.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
     "@webpresso/vitest-config": "file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
     "bunchee": "catalog:",
+    "oxlint": "catalog:tooling",
     "vitest": "catalog:tooling"
   }
 }
