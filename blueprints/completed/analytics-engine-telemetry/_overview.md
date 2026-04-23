@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: S
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "0% (refined)"
+progress: "100%"
 depends_on:
   - cf-queues-delivery
 tags:
@@ -30,6 +30,7 @@ metrics without adding a separate metrics service.
 
 ## Refinement Summary
 
+- Completion audit confirmed the implementation already exists in repo head and passes `pnpm --filter @repo/workers test`, `check-types`, `lint`, and `build`.
 - Removed the accidental dependency on `topicId` even though this blueprint
   only depends on `cf-queues-delivery`. `topicId` is optional telemetry, not a
   hard requirement.
@@ -38,31 +39,33 @@ metrics without adding a separate metrics service.
 - Tightened the schema around delivery outcomes the repo actually has today:
   queue, message, status, latency, and attempt.
 
-## Pre-execution audit (2026-04-22, updated 2026-04-22)
+## Completion audit (2026-04-22)
 
-**Readiness:** ready
+**Status:** implemented in repo head and verified.
 
-**What is already true**
+**What landed**
 
-- `@cloudflare/workers-types` in the current workspace already exposes
-  `AnalyticsEngineDataset`.
-- `apps/workers/wrangler.toml` is the right place to bind the dataset.
-- `apps/workers/src/consumers/deliveryConsumer.ts` exists in main (`cf-queues-delivery`
-  has landed). `handleDeliveryBatch` is already wired as `queue:` in `index.ts`.
-- `deliveryConsumer.test.ts` covers ack / retry / dropped outcomes — telemetry
-  assertions can be added to it in Task 1.3.
+- `apps/workers/wrangler.toml` declares `[[analytics_engine_datasets]]` with
+  the `ANALYTICS` binding.
+- `apps/workers/src/db/client.ts` exports
+  `ANALYTICS: AnalyticsEngineDataset` on `Env`.
+- `apps/workers/src/telemetry.ts` wraps `env.ANALYTICS.writeDataPoint()` as a
+  best-effort helper with targeted tests in `src/tests/telemetry.test.ts`.
+- `apps/workers/src/consumers/deliveryConsumer.ts` records `ack`, `retry`, and
+  `dropped` outcomes without allowing telemetry failure to change delivery
+  behavior.
 
-**Remaining gaps before implementation**
+**Verification evidence**
 
-- `wrangler.toml` has no `[[analytics_engine_datasets]]` block yet — Task 1.1 adds it.
-- `Env` type in `src/db/client.ts` does not include `ANALYTICS` yet — Task 1.1 adds it.
+- `pnpm --filter @repo/workers test` → PASS
+- `pnpm --filter @repo/workers check-types` → PASS
+- `pnpm --filter @repo/workers lint` → PASS
+- `pnpm --filter @repo/workers build` → PASS
 
-**First-build notes**
+**Follow-up notes**
 
-- Treat `topicId` as optional telemetry because direct queue sends do not need
-  topic fan-out metadata.
-- Keep telemetry best-effort and side-effect free: delivery correctness must
-  not depend on Analytics Engine writes succeeding.
+- Query surfaces, dashboards, and archival remain intentionally out of scope;
+  this blueprint only covers write-path instrumentation.
 
 ## Architecture Overview
 
@@ -127,7 +130,7 @@ deliveryConsumer.ts
 
 #### [config] Task 1.1: Add Analytics Engine binding + Env type
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -151,15 +154,15 @@ Add an Analytics Engine dataset binding and extend the Worker `Env` type.
 
 **Acceptance:**
 
-- [ ] `wrangler.toml` declares `ANALYTICS`
-- [ ] `Env` includes `ANALYTICS: AnalyticsEngineDataset`
-- [ ] `pnpm --filter @repo/workers check-types` passes
+- [x] `wrangler.toml` declares `ANALYTICS`
+- [x] `Env` includes `ANALYTICS: AnalyticsEngineDataset`
+- [x] `pnpm --filter @repo/workers check-types` passes
 
 ---
 
 #### [helper] Task 1.2: Create `recordDelivery` helper
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -184,15 +187,15 @@ Create a tiny helper that wraps `writeDataPoint` and is easy to mock in tests.
 
 **Acceptance:**
 
-- [ ] `recordDelivery()` is isolated in `telemetry.ts`
-- [ ] `topicId` is optional, not required
-- [ ] `pnpm --filter @repo/workers test` is green
+- [x] `recordDelivery()` is isolated in `telemetry.ts`
+- [x] `topicId` is optional, not required
+- [x] `pnpm --filter @repo/workers test` is green
 
 ---
 
 #### [wire] Task 1.3: Hook telemetry into the delivery consumer
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -217,9 +220,9 @@ consumer decision.
 
 **Acceptance:**
 
-- [ ] Every consumer outcome records telemetry
-- [ ] `latencyMs` is measured from before fetch to outcome decision
-- [ ] Full targeted tests pass
+- [x] Every consumer outcome records telemetry
+- [x] `latencyMs` is measured from before fetch to outcome decision
+- [x] Full targeted tests pass
 
 ---
 

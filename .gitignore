@@ -62,3 +62,14 @@ Thumbs.db
 
 # Wrangler local dev secrets
 .dev.vars
+.codex/*
+!.codex/agents/
+!.codex/agents/**
+!.codex/skills/
+!.codex/skills/**
+.codex/skills/.system/**
+!.codex/prompts/
+!.codex/prompts/**
+
+# Vitest per-run reports (machine-local)
+.test-reports/

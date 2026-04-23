@@ -6,6 +6,7 @@ category: "{{category}}"
 review_cadence: quarterly
 last_reviewed: "{{date}}"
 created: "{{date}}"
+last_updated: "{{date}}"
 linked_blueprints: []
 affected_modules: []
 ---

@@ -124,6 +124,7 @@ export const mockQueue = deepFreeze({
 
 export const mockMessage = deepFreeze({
   id: "msg-1",
+  seq: 42,
   data: { key: "value" },
   queueId: "queue-1",
   idempotencyKey: null,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Activity, ArrowRight, Hash, List, SendHorizontal } from "lucide-react";
 import apiService from "@/services/api";
 import { CreateQueueRequest, CreateTopicRequest, SubscribeTopicRequest } from "@repo/types";

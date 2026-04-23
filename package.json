@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "vp run build",
-    "catalog:check": "bun ./scripts/check-catalog-drift.ts",
+    "catalog:check": "ak audit catalog-drift",
     "check": "vp check",
     "clean": "vp run clean",
     "dev": "bun ./scripts/with-doppler.ts dev vp run dev",
@@ -16,13 +16,18 @@
     "check-types": "vp run check-types",
     "commitlint": "commitlint",
     "secretlint": "secretlint",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docs:check": "ak audit docs-frontmatter",
+    "blueprints:check": "ak audit blueprint-lifecycle --legacy-omx"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
     "@webpresso/agent-kit": "file:/Users/ozby/.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz",
+    "@webpresso/stryker-config": "file:/Users/ozby/.agent-kit-packs/webpresso-stryker-config-0.0.1.tgz",
+    "@webpresso/typescript-config": "file:/Users/ozby/.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
+    "@webpresso/vitest-config": "file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
     "husky": "catalog:",
     "oxlint": "^1.61.0",
     "prettier": "catalog:tooling",

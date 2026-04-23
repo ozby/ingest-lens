@@ -1,9 +1,10 @@
 {
-  "extends": "../packages/config-typescript/base.json",
+  "extends": "@webpresso/typescript-config/base.json",
   "compilerOptions": {
-    "moduleResolution": "bundler",
+    "types": ["node"],
     "noEmit": true,
-    "types": ["node"]
+    "noUncheckedIndexedAccess": false,
+    "verbatimModuleSyntax": false
   },
   "include": ["src/**/*.ts"]
 }

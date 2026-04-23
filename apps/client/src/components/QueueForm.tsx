@@ -32,10 +32,11 @@ const queueFormSchema = z.object({
   }),
   retentionPeriod: z.coerce.number().int().positive().default(14),
   schema: z.string().optional(),
-  pushEndpoint: z.string().url().optional().or(z.literal("")),
+  pushEndpoint: z.url().optional().or(z.literal("")),
 });
 
-type QueueFormValues = z.infer<typeof queueFormSchema>;
+type QueueFormInput = z.input<typeof queueFormSchema>;
+type QueueFormValues = z.output<typeof queueFormSchema>;
 
 interface QueueFormProps {
   onSubmit: (values: CreateQueueRequest) => void;
@@ -55,7 +56,7 @@ const QueueForm: React.FC<QueueFormProps> = ({
 }) => {
   const [open, setOpen] = React.useState(false);
 
-  const form = useForm<QueueFormValues>({
+  const form = useForm<QueueFormInput, unknown, QueueFormValues>({
     resolver: zodResolver(queueFormSchema),
     defaultValues: {
       name: "",
@@ -127,7 +128,11 @@ const QueueForm: React.FC<QueueFormProps> = ({
                 <FormItem>
                   <FormLabel>Retention Period (days)</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <Input
+                      type="number"
+                      {...field}
+                      value={field.value as number | string | undefined}
+                    />
                   </FormControl>
                   <FormDescription>
                     Number of days to retain messages before automatic deletion.

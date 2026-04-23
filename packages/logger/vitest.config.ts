@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
-export default defineConfig({
-  test: { environment: "node", globals: true },
-});
+import { nodeConfig } from "@webpresso/vitest-config/node";
+import { mergeConfig } from "vite-plus/test/config";
+
+export default mergeConfig(nodeConfig as never, {});

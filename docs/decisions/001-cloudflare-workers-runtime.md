@@ -1,3 +1,8 @@
+---
+type: adr
+last_updated: "2026-04-22"
+---
+
 # ADR 001: Cloudflare Workers as the runtime
 
 **Status:** Accepted

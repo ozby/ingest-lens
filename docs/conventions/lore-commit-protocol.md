@@ -1,17 +1,16 @@
 ---
-type: convention
+type: guide
 last_updated: "2026-04-22"
 ---
 
 # Lore Commit Protocol
 
 A **Lore commit** is a commit that encodes an architectural decision,
-constraint, or deliberate trade-off directly in the git history. It is
-opt-in: mark the commit subject with `[lore]` to activate the trailer
-validator.
+constraint, or deliberate trade-off directly in the git history. The hook enforces the trailer baseline for every commit; `[lore]` remains a useful
+subject marker for commits that are primarily architectural decision records.
 
-Non-`[lore]` commits are completely unaffected — everyday feature commits,
-fixes, and chores do not need trailers.
+Everyday feature commits can keep short bodies, but they still need the minimum
+Lore trailer evidence required by the hook.
 
 ## When to use `[lore]`
 
@@ -31,11 +30,11 @@ Do **not** use `[lore]` for:
 ## Trailer Vocabulary
 
 All trailers follow the `git interpret-trailers` key-colon-space-value
-convention. The `[lore]` validator (see `scripts/check-commit-msg.ts`)
+convention. The `[lore]` validator (see `ak audit commit-message`)
 requires `Confidence:` plus at least one of `Constraint:`, `Rejected:`, or
 `Directive:`.
 
-### Required when `[lore]` is present
+### Required for every commit
 
 | Trailer                           | Description                                                  |
 | --------------------------------- | ------------------------------------------------------------ |
@@ -99,9 +98,9 @@ Related: ADR-0001
 ## Validator
 
 The commit-msg hook in `.husky/commit-msg` calls
-`scripts/check-commit-msg.ts`. For `[lore]`-tagged commits it verifies:
+`ak audit commit-message --require-lore`. It verifies:
 
 1. `Confidence:` trailer is present with a valid value
 2. At least one of `Constraint:`, `Rejected:`, or `Directive:` is present
 
-Non-`[lore]` commits pass through the hook without trailer validation.
+All commits must include the Lore trailers enforced by the hook.

@@ -1,3 +1,8 @@
+---
+type: runbook
+last_updated: "2026-04-22"
+---
+
 # Doppler Secret Management Runbook
 
 This runbook covers the complete setup for the `node-pubsub` Doppler project.

@@ -1,3 +1,8 @@
+---
+type: adr
+last_updated: "2026-04-22"
+---
+
 # ADR 004: Cloudflare Workers Rate Limiting binding (per-PoP)
 
 **Status:** Accepted — with documented limitations

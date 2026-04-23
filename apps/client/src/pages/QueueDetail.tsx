@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import apiService from "@/services/api";
 import { IQueue, IQueueMetrics, IMessage } from "@repo/types";

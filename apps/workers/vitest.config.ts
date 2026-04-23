@@ -1,7 +1,8 @@
 import { cloudflareTest } from "@cloudflare/vitest-pool-workers";
-import { defineConfig } from "vitest/config";
+import { workersConfig } from "@webpresso/vitest-config/workers";
+import { mergeConfig } from "vite-plus/test/config";
 
-export default defineConfig({
+export default mergeConfig(workersConfig as never, {
   test: {
     projects: [
       // Node pool — unit tests with mocked DB, queues, and CF bindings.

@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: XS
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "0% (refined)"
+progress: "100%"
 depends_on: [workers-hono-port]
 tags:
   - cloudflare-workers
@@ -31,6 +31,7 @@ is intentionally **not** a true sliding-window implementation.
 
 ## Refinement Summary
 
+- Completion audit confirmed the implementation already exists in repo head and passes `pnpm --filter @repo/workers test`, `check-types`, `lint`, and `build`.
 - Corrected the terminology from “sliding window” to **token bucket with a
   mandatory 10 s or 60 s window**.
 - Dropped the stale Cloudflare PubSub note from the implementation path; it is
@@ -39,33 +40,32 @@ is intentionally **not** a true sliding-window implementation.
   authenticated routers, because route-local `authenticate` must run first if
   the limiter keys on `userId`.
 
-## Pre-execution audit (2026-04-22)
+## Completion audit (2026-04-22)
 
-**Readiness:** ready-optional
+**Status:** implemented in repo head and verified.
 
-**What is already true**
+**What landed**
 
-- `apps/workers/src/routes/queue.ts`, `message.ts`, `topic.ts`, and
-  `dashboard.ts` already mount `authenticate`, so route-level limiter wiring is
-  realistic.
-- `@cloudflare/workers-types` in the current workspace already exposes
-  `RateLimit`.
+- `apps/workers/wrangler.toml` declares `[[ratelimits]]` with `RATE_LIMITER`
+  and the documented `100 requests / 60 seconds` window.
+- `apps/workers/src/db/client.ts` exports `RATE_LIMITER: RateLimit` on `Env`.
+- `apps/workers/src/middleware/rateLimiter.ts` keys the binding on
+  `c.get("user").userId` and returns `429` with `Retry-After: 60`.
+- `queue.ts`, `message.ts`, `topic.ts`, and `dashboard.ts` all mount
+  `authenticate` before `rateLimiter`.
 
-**Main gaps before implementation**
+**Verification evidence**
 
-- `apps/workers/wrangler.toml` has no rate-limit binding today and there is no
-  generated `wrangler.generated.toml` in the workspace. A real namespace ID is
-  still needed before deploy.
-- Current route tests are mostly unauthenticated `401` smoke tests. To verify
-  limiter behavior, implementation will need an authenticated test helper and a
-  mocked `RATE_LIMITER` binding.
+- `pnpm --filter @repo/workers test` → PASS
+- `pnpm --filter @repo/workers check-types` → PASS
+- `pnpm --filter @repo/workers lint` → PASS
+- `pnpm --filter @repo/workers build` → PASS
 
-**First-build notes**
+**Follow-up notes**
 
-- Keep the limiter mounted on the authenticated routers, not globally in
-  `index.ts`.
-- Start with queue / message / topic / dashboard routes only; leave `/health`
-  and `/api/auth/*` untouched in this wave.
+- `topicRoutes.use("*", rateLimiter)` means the WebSocket upgrade route also
+  consumes the same limiter budget. Keep that behavior unless a later
+  connection-specific throttling blueprint intentionally carves it out.
 
 ## Architecture Overview
 
@@ -129,7 +129,7 @@ note:
 
 #### [config] Task 1.1: Wrangler binding + Env type
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -157,15 +157,15 @@ Add a rate-limit binding to `apps/workers/wrangler.toml` and extend the Worker
 
 **Acceptance:**
 
-- [ ] `wrangler.toml` contains a `[[ratelimits]]` block with `limit = 100` and `period = 60`
-- [ ] `Env` includes `RATE_LIMITER: RateLimit`
-- [ ] `pnpm --filter @repo/workers check-types` passes
+- [x] `wrangler.toml` contains a `[[ratelimits]]` block with `limit = 100` and `period = 60`
+- [x] `Env` includes `RATE_LIMITER: RateLimit`
+- [x] `pnpm --filter @repo/workers check-types` passes
 
 ---
 
 #### [middleware] Task 1.2: Create `rateLimiter` middleware
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -190,15 +190,15 @@ Create a reusable Hono middleware that calls
 
 **Acceptance:**
 
-- [ ] Tests cover allowed + blocked behavior
-- [ ] Blocked requests return `429` with `Retry-After: 60`
-- [ ] `pnpm --filter @repo/workers test` is green
+- [x] Tests cover allowed + blocked behavior
+- [x] Blocked requests return `429` with `Retry-After: 60`
+- [x] `pnpm --filter @repo/workers test` is green
 
 ---
 
 #### [wire] Task 1.3: Mount the limiter on authenticated routers
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -228,9 +228,9 @@ Do **not** mount it globally in `index.ts`.
 
 **Acceptance:**
 
-- [ ] `rateLimiter` is mounted on `queue`, `message`, `topic`, and `dashboard` routers
-- [ ] `/health` and `/api/auth/*` remain out of scope for this blueprint
-- [ ] `pnpm --filter @repo/workers check-types` passes
+- [x] `rateLimiter` is mounted on `queue`, `message`, `topic`, and `dashboard` routers
+- [x] `/health` and `/api/auth/*` remain out of scope for this blueprint
+- [x] `pnpm --filter @repo/workers check-types` passes
 
 ---
 
@@ -245,11 +245,11 @@ Do **not** mount it globally in `index.ts`.
 
 ## Cross-Plan References
 
-| Type       | Blueprint                    | Relationship                                                                                                                    |
-| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Downstream | `durable-objects-fan-out`    | WebSocket upgrade routes should remain outside this request-per-request limiter if connection semantics need different handling |
-| Conflict   | `analytics-engine-telemetry` | Both Task 1.1s write `wrangler.toml` + `client.ts` — cannot run in the same `/pll` invocation. Run this one first (XS).         |
-| Conflict   | `durable-objects-fan-out`    | Task 1.2 writes same files — serialize after this blueprint lands.                                                              |
+| Type       | Blueprint                    | Relationship                                                                                                                                                 |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Downstream | `durable-objects-fan-out`    | Topic WebSocket upgrades currently inherit the router-level limiter; carve that out only if a later blueprint needs connection-specific throttling semantics |
+| Conflict   | `analytics-engine-telemetry` | Both Task 1.1s write `wrangler.toml` + `client.ts` — cannot run in the same `/pll` invocation. Run this one first (XS).                                      |
+| Conflict   | `durable-objects-fan-out`    | Task 1.2 writes same files — serialize after this blueprint lands.                                                                                           |
 
 ## Edge Cases and Error Handling
 

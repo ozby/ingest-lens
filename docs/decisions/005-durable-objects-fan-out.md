@@ -1,6 +1,11 @@
+---
+type: adr
+last_updated: "2026-04-22"
+---
+
 # ADR 005: Cloudflare Durable Objects for WebSocket fan-out
 
-**Status:** Accepted — planned implementation in `durable-objects-fan-out` blueprint
+**Status:** Accepted — implemented via the completed `durable-objects-fan-out` blueprint
 
 ## Context
 
@@ -62,8 +67,9 @@ Route: `GET /api/topics/:topicId/ws` — must be registered before the generic `
   (routing, binding, socket lifecycle) is validated only via `wrangler build` and integration
   tests against a live Cloudflare environment.
 - **Notify adds latency to the delivery hot path**. The delivery consumer makes a subrequest to
-  the DO after acking a message. If the DO subrequest fails, the error is swallowed
-  (best-effort fan-out). The WebSocket client misses the event and has no signal to re-fetch.
+  the DO after acking a message. If the DO subrequest fails, the error is logged but remains
+  best-effort: the queue delivery has already been acked, so the WebSocket client may miss the
+  live event and rely on reconnect replay when available.
 
 ## Scaling beyond one DO per topic
 

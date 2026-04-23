@@ -7,17 +7,19 @@
     "up:dev": "doppler run --project ozby-shell --config dev -- pulumi up --yes",
     "up:prd": "doppler run --project ozby-shell --config production -- pulumi up --yes",
     "destroy": "doppler run --project ozby-shell --config dev -- pulumi destroy --yes",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "check-types": "tsgo --noEmit"
   },
   "dependencies": {
-    "@pulumi/cloudflare": "^6.1.0",
-    "@pulumi/pulumi": "^3.220.0",
+    "@pulumi/cloudflare": "^6.14.0",
+    "@pulumi/pulumi": "^3.232.0",
     "@pulumiverse/doppler": "^0.9.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
+    "@webpresso/typescript-config": "file:/Users/ozby/.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
+    "@webpresso/vitest-config": "file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
     "vitest": "catalog:tooling"
   }
 }

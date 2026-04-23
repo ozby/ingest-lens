@@ -70,16 +70,29 @@ if (fs.existsSync(blueprintsDir)) {
 
 // --- legacy .omx surface -------------------------------------------------
 
+const legacyPrdFiles = fs.existsSync(planDir)
+  ? fs.readdirSync(planDir).filter((file) => /^prd-.*\.md$/.test(file))
+  : [];
+const legacyTestSpecFiles = fs.existsSync(planDir)
+  ? fs.readdirSync(planDir).filter((file) => /^test-spec-.*\.md$/.test(file))
+  : [];
+const legacyLifecycleFiles = fs.existsSync(omxLifecycleDir)
+  ? fs.readdirSync(omxLifecycleDir).filter((file) => file.endsWith(".json"))
+  : [];
+const legacyContractPath = path.join(contractDir, "workspace-boundary-contract.md");
+
 const hasLegacySurface =
-  fs.existsSync(planDir) || fs.existsSync(contractDir) || fs.existsSync(omxLifecycleDir);
+  fs.existsSync(legacyContractPath) ||
+  legacyPrdFiles.length > 0 ||
+  legacyTestSpecFiles.length > 0 ||
+  legacyLifecycleFiles.length > 0;
 
 if (hasLegacySurface) {
   assert(fs.existsSync(planDir), "Missing .omx/plans directory");
   assert(fs.existsSync(contractDir), "Missing .omx/contracts directory");
   assert(fs.existsSync(omxLifecycleDir), "Missing .omx/state/lifecycle directory");
 
-  const contractPath = path.join(contractDir, "workspace-boundary-contract.md");
-  const contractContent = readIfExists(contractPath);
+  const contractContent = readIfExists(legacyContractPath);
   assert(contractContent, "Missing workspace boundary contract");
   if (contractContent) {
     for (const marker of ["# Workspace boundary contract", "## Workspace classifications"]) {
@@ -90,15 +103,9 @@ if (hasLegacySurface) {
     }
   }
 
-  const prdFiles = fs.existsSync(planDir)
-    ? fs.readdirSync(planDir).filter((file) => /^prd-.*\.md$/.test(file))
-    : [];
-  const testSpecFiles = fs.existsSync(planDir)
-    ? fs.readdirSync(planDir).filter((file) => /^test-spec-.*\.md$/.test(file))
-    : [];
-  const lifecycleFiles = fs.existsSync(omxLifecycleDir)
-    ? fs.readdirSync(omxLifecycleDir).filter((file) => file.endsWith(".json"))
-    : [];
+  const prdFiles = legacyPrdFiles;
+  const testSpecFiles = legacyTestSpecFiles;
+  const lifecycleFiles = legacyLifecycleFiles;
 
   assert(prdFiles.length > 0, "Missing at least one PRD artifact under .omx/plans");
   assert(testSpecFiles.length > 0, "Missing at least one test spec artifact under .omx/plans");

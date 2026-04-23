@@ -1,3 +1,8 @@
+---
+type: adr
+last_updated: "2026-04-22"
+---
+
 # ADR 002: Cloudflare Queues for webhook delivery
 
 **Status:** Accepted

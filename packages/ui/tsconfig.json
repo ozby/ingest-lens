@@ -1,9 +1,11 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
+  "extends": "@webpresso/typescript-config/react-library.json",
   "compilerOptions": {
-    "lib": ["dom", "ES2015"],
+    "lib": ["DOM", "ES2015"],
     "sourceMap": true,
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "node"],
+    "noUncheckedIndexedAccess": false,
+    "verbatimModuleSyntax": false
   },
   "include": ["."],
   "exclude": ["dist", "build", "node_modules"]

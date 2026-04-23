@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: L
 created: "2026-04-22"
 last_updated: "2026-04-22"
-progress: "0% (refined)"
+progress: "100%"
 depends_on:
   - cf-queues-delivery
 tags:
@@ -32,6 +32,7 @@ hibernation.
 
 ## Refinement Summary
 
+- Completion audit confirmed the implementation already exists in repo head and passes `pnpm --filter @repo/workers test`, `check-types`, `lint`, and `build`.
 - Removed the stale “eliminate MongoDB change-stream dependency entirely” claim.
   The blueprint now focuses on the Worker-native real-time path it actually
   adds.
@@ -45,36 +46,35 @@ hibernation.
   `index.ts` depends only on 1.1 + 1.2 (class + binding), not on the route
   (1.3). Wave table and critical path updated accordingly: 1.1 → 1.3 → 1.4.
 
-## Pre-execution audit (2026-04-22, updated 2026-04-22)
+## Completion audit (2026-04-22)
 
-**Readiness:** ready
+**Status:** implemented in repo head and verified.
 
-**What is already true**
+**What landed**
 
-- `apps/workers/src/routes/topic.ts` is the correct router for a topic WebSocket
-  endpoint.
-- `@cloudflare/workers-types` in the current workspace already exposes Durable
-  Object namespace types.
-- `apps/workers/src/consumers/deliveryConsumer.ts` exists in main (`cf-queues-delivery`
-  has landed). `handleDeliveryBatch` is the correct notify chokepoint.
-- `index.ts` already exports `{ fetch: app.fetch, queue: handleDeliveryBatch }` —
-  Task 1.5 adds the `TopicRoom` named export without breaking this shape.
+- `apps/workers/src/do/TopicRoom.ts` exists and is exported from
+  `apps/workers/src/index.ts`.
+- `apps/workers/wrangler.toml` declares `TOPIC_ROOMS` and creates the class via
+  `new_sqlite_classes = ["TopicRoom"]`.
+- `apps/workers/src/routes/topic.ts` registers `GET /:topicId/ws` before the
+  generic `/:id` matcher and proxies upgrades to the DO stub.
+- `apps/workers/src/consumers/deliveryConsumer.ts` notifies the DO only for
+  acked queue payloads with a non-null `topicId`.
+- `TopicRoom.test.ts`, `topicWs.test.ts`, and `deliveryConsumer.test.ts` cover
+  the WebSocket upgrade shape, broadcast behavior, and notify/no-notify
+  branches.
 
-**Remaining gaps before implementation**
+**Verification evidence**
 
-- `topicRoutes` in `routes/topic.ts` (line 52) has a generic `GET /:id` matcher
-  before any WebSocket route — Task 1.3 must insert `/:topicId/ws` before it.
-- `wrangler.toml` has no `[[durable_objects.bindings]]` or `[[migrations]]` block
-  yet — Task 1.2 adds them.
-- The Vitest environment is `node`, not a Workers runtime. DO behavior needs
-  stub-based tests first and `build` validation second (Task 1.1).
+- `pnpm --filter @repo/workers test` → PASS
+- `pnpm --filter @repo/workers check-types` → PASS
+- `pnpm --filter @repo/workers lint` → PASS
+- `pnpm --filter @repo/workers build` → PASS
 
-**First-build notes**
+**Follow-up notes**
 
-- Do not add an extra route-level `authenticate` call on the WebSocket route;
-  `topicRoutes.use("*", authenticate)` already covers the router.
-- Only notify the DO for queue payloads that carry a non-null `topicId`.
-- Keep the first version focused on best-effort live fan-out, not replay.
+- Durable replay storage remains intentionally deferred to the
+  `message-replay-cursor` blueprint.
 
 ## Architecture Overview
 
@@ -139,7 +139,7 @@ queue consumer
 
 #### [do] Task 1.1: Implement `TopicRoom`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -165,15 +165,15 @@ notify payloads to connected sockets.
 
 **Acceptance:**
 
-- [ ] `TopicRoom` handles `/ws` and `/notify`
-- [ ] Broadcast logic is covered by tests using lightweight stubs
-- [ ] No new test dependency is introduced
+- [x] `TopicRoom` handles `/ws` and `/notify`
+- [x] Broadcast logic is covered by tests using lightweight stubs
+- [x] No new test dependency is introduced
 
 ---
 
 #### [config] Task 1.2: Add DO binding + SQLite migration
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -203,15 +203,15 @@ Register the DO class in `wrangler.toml` and extend the Worker `Env` type.
 
 **Acceptance:**
 
-- [ ] `wrangler.toml` declares `TOPIC_ROOMS`
-- [ ] Migration uses `new_sqlite_classes`
-- [ ] `Env` includes `TOPIC_ROOMS: DurableObjectNamespace`
+- [x] `wrangler.toml` declares `TOPIC_ROOMS`
+- [x] Migration uses `new_sqlite_classes`
+- [x] `Env` includes `TOPIC_ROOMS: DurableObjectNamespace`
 
 ---
 
 #### [route] Task 1.3: Add the WebSocket upgrade route
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -233,15 +233,15 @@ matcher in `routes/topic.ts`.
 
 **Acceptance:**
 
-- [ ] `/:topicId/ws` is registered before `/:id`
-- [ ] Authenticated requests reach the DO stub
-- [ ] Unauthenticated requests still fail at the auth layer
+- [x] `/:topicId/ws` is registered before `/:id`
+- [x] Authenticated requests reach the DO stub
+- [x] Unauthenticated requests still fail at the auth layer
 
 ---
 
 #### [consumer] Task 1.4: Notify the DO from the queue consumer
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.3
 
@@ -265,15 +265,15 @@ contains a `topicId`.
 
 **Acceptance:**
 
-- [ ] DO notify is conditional on `topicId`
-- [ ] Direct queue sends do not trigger topic fan-out accidentally
-- [ ] Tests cover both branches
+- [x] DO notify is conditional on `topicId`
+- [x] Direct queue sends do not trigger topic fan-out accidentally
+- [x] Tests cover both branches
 
 ---
 
 #### [export] Task 1.5: Export the DO class from the Worker entry point
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -294,8 +294,8 @@ entry point shape required by `cf-queues-delivery`.
 
 **Acceptance:**
 
-- [ ] `TopicRoom` is exported from `index.ts`
-- [ ] The Worker still builds with both `fetch` and `queue` handlers present
+- [x] `TopicRoom` is exported from `index.ts`
+- [x] The Worker still builds with both `fetch` and `queue` handlers present
 
 ---
 

@@ -98,6 +98,7 @@ describe("Topic routes", () => {
       expect(mockDeliveryQueue.send).toHaveBeenCalledOnce();
       expect(mockDeliveryQueue.send).toHaveBeenCalledWith({
         messageId: mockMessage.id,
+        seq: String(mockMessage.seq),
         queueId: mockQueue.id,
         pushEndpoint: mockQueue.pushEndpoint,
         topicId: "topic-1",
@@ -133,7 +134,11 @@ describe("Topic routes", () => {
       expect(res.status).toBe(201);
       expect(mockDeliveryQueue.send).toHaveBeenCalledOnce();
       expect(mockDeliveryQueue.send).toHaveBeenCalledWith(
-        expect.objectContaining({ queueId: "queue-1", pushEndpoint: mockQueue.pushEndpoint }),
+        expect.objectContaining({
+          queueId: "queue-1",
+          pushEndpoint: mockQueue.pushEndpoint,
+          seq: String(mockMessage.seq),
+        }),
       );
     });
 

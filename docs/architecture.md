@@ -1,3 +1,8 @@
+---
+type: system
+last_updated: "2026-04-22"
+---
+
 # Architecture
 
 ## Problem statement
@@ -64,11 +69,16 @@ The delivery guarantee is **at-least-once**. The consumer may deliver the same m
 once if it crashes between a successful POST and calling `msg.ack()`. See
 [delivery-guarantees.md](delivery-guarantees.md) for the full contract including idempotency keys.
 
-### Durable Objects — planned
+### Durable Objects — shipped
 
-The `durable-objects-fan-out` blueprint adds a `TopicRoom` Durable Object per topic. Connected
+The completed `durable-objects-fan-out` blueprint adds a `TopicRoom` Durable Object per topic. Connected
 browser clients subscribe over WebSockets. When the delivery consumer acks a message that carries a
-`topicId`, it notifies the DO, which broadcasts to all connected sockets.
+`topicId`, it notifies the DO, which broadcasts to all connected sockets. The completed
+`message-replay-cursor` blueprint extends the same DO with a short-lived SQLite replay log, so a
+client reconnecting with `GET /api/topics/:topicId/ws?cursor=<cursor>` receives missed messages
+with a Durable-Object-issued replay cursor greater than the one it last observed. Live and replay
+payloads still carry the original Postgres `seq` as an ordering hint, but reconnect correctness is
+anchored to DO emission order rather than DB insertion order.
 
 The DO uses the WebSocket hibernation API: Cloudflare holds the connections at the network edge
 while the DO sleeps between events. This makes long-lived idle WebSocket connections economically
@@ -89,7 +99,7 @@ POST /api/messages/:queueId
       → if present and duplicate: return 200 with existing message
   → INSERT message into Postgres (data, queueId, expiresAt, receivedCount = 0)
   → if queue.pushEndpoint is set:
-      → DELIVERY_QUEUE.send({ messageId, queueId, pushEndpoint, topicId: null, attempt: 0 })
+      → DELIVERY_QUEUE.send({ messageId, seq, queueId, pushEndpoint, topicId: null, attempt: 0 })
   → return 201 Created
 ```
 
@@ -104,7 +114,7 @@ POST /api/topics/:topicId/publish
   → SELECT all subscribed queues (inArray on subscribedQueues column)
   → for each queue:
       → INSERT message
-      → if queue.pushEndpoint: DELIVERY_QUEUE.send({ ..., topicId })
+      → if queue.pushEndpoint: DELIVERY_QUEUE.send({ ..., seq, topicId })
   → return 201 with all created messages
 ```
 
@@ -119,6 +129,7 @@ DELIVERY_QUEUE batch (up to 10 messages)
       → if not found: msg.ack() — continue
       → POST pushEndpoint with message body
       → on 2xx: msg.ack()
+          → if topicId exists: notify TopicRoom with { messageId, seq, queueId, topicId }
       → on 5xx/error: msg.retry({ delaySeconds: backoff[attempt] })
 ```
 
@@ -135,8 +146,9 @@ publish to deduplicate at the storage layer. Receivers must be idempotent regard
 
 - **Not a message broker**: there is no message ordering guarantee, no consumer group management,
   and no offset tracking. If you need Kafka semantics, use Kafka.
-- **Not a browser push service**: the WebSocket fan-out via Durable Objects is planned but not
-  built. There is no client SDK.
+- **Not a full browser messaging platform**: WebSocket fan-out and short reconnect replay now
+  exist, but there is still no client SDK, no durable per-user cursor store, and no long-term
+  event archive.
 - **Not multi-region**: all Postgres data lives in one region. Cloudflare Workers run globally,
   but every query travels to the same database. Latency from geographically distant PoPs is
   real — the Hyperdrive pool helps but does not eliminate it.

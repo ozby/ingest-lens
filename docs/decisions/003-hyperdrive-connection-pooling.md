@@ -1,3 +1,8 @@
+---
+type: adr
+last_updated: "2026-04-22"
+---
+
 # ADR 003: Cloudflare Hyperdrive for Postgres connection pooling
 
 **Status:** Accepted

@@ -4,6 +4,7 @@ import * as schema from "./schema";
 
 export type DeliveryPayload = {
   messageId: string;
+  seq: string;
   queueId: string;
   pushEndpoint: string;
   topicId: string | null;

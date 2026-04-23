@@ -192,6 +192,7 @@ topicRoutes.post("/:topicId/publish", async (c) => {
     if (queue.pushEndpoint) {
       await c.env.DELIVERY_QUEUE.send({
         messageId: message.id,
+        seq: String(message.seq),
         queueId: queue.id,
         pushEndpoint: queue.pushEndpoint,
         topicId,

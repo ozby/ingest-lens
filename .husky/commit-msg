@@ -1,1 +1,1 @@
-bun ./scripts/check-commit-msg.ts "$1"
+ak audit commit-message --require-lore --message-file "$1"

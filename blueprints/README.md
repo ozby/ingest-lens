@@ -61,12 +61,7 @@ Invoke `$plan-refine <slug>`. The skill will:
 
 ## Active blueprints
 
-| Slug                         | Status  | Complexity | Theme                                                     | Depends on                |
-| ---------------------------- | ------- | ---------- | --------------------------------------------------------- | ------------------------- |
-| `cf-rate-limiting`           | planned | XS         | Edge token-bucket limiter for authenticated Worker routes | `workers-hono-port`       |
-| `analytics-engine-telemetry` | planned | S          | Delivery-attempt telemetry from the queue consumer        | `cf-queues-delivery`      |
-| `durable-objects-fan-out`    | planned | L          | TopicRoom Durable Object + WebSocket hibernation          | `cf-queues-delivery`      |
-| `message-replay-cursor`      | planned | M          | Postgres sequence numbers + TopicRoom cursor replay       | `durable-objects-fan-out` |
+- [`client-route-code-splitting`](./planned/client-route-code-splitting/_overview.md) — split the client SPA at route boundaries to remove the Vite large-chunk warning and add a dependency-free bundle budget gate.
 
 ## Execution roadmap
 

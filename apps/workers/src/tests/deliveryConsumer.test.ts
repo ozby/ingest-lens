@@ -12,6 +12,7 @@ vi.mock("../db/client", async (importOriginal) => {
 
 const mockRow = {
   id: "msg-1",
+  seq: 42n,
   data: { hello: "world" },
   queueId: "queue-1",
   expiresAt: new Date("2030-01-01"),
@@ -40,6 +41,7 @@ function setupCreateDb(selectRows: unknown[]) {
 
 const basePayload: DeliveryPayload = {
   messageId: "msg-1",
+  seq: "42",
   queueId: "queue-1",
   pushEndpoint: "https://example.com/webhook",
   topicId: null,
@@ -73,6 +75,10 @@ describe("handleDeliveryBatch", () => {
     await handleDeliveryBatch(batch, env);
 
     expect(ack).toHaveBeenCalledOnce();
+    const pushRequest = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(pushRequest.body as string)).toEqual(
+      expect.objectContaining({ id: "msg-1", seq: "42" }),
+    );
     expect(retry).not.toHaveBeenCalled();
     expect(writeDataPoint).toHaveBeenCalledOnce();
     expect(writeDataPoint).toHaveBeenCalledWith(
@@ -264,6 +270,123 @@ describe("handleDeliveryBatch", () => {
     expect(mockIdFromName).toHaveBeenCalledWith("topic-1");
     expect(mockGet).toHaveBeenCalledWith("stub-id");
     expect(mockFetch).toHaveBeenCalledOnce();
+    const notifyRequest = mockFetch.mock.calls[0][0] as Request;
+    expect(notifyRequest.method).toBe("POST");
+    expect(notifyRequest.headers.get("Content-Type")).toBe("application/json");
+    await expect(notifyRequest.json()).resolves.toEqual({
+      messageId: "msg-1",
+      seq: "42",
+      queueId: "queue-1",
+      topicId: "topic-1",
+    });
+  });
+
+  it("falls back to row.seq when an older queue payload is missing seq", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const mockFetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+    const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
+    const mockIdFromName = vi.fn().mockReturnValue("stub-id");
+    const mockTopicRooms = { idFromName: mockIdFromName, get: mockGet };
+    const env = createMockEnv(undefined, undefined, { writeDataPoint }, mockTopicRooms);
+    const legacyPayload = {
+      messageId: "msg-1",
+      queueId: "queue-1",
+      pushEndpoint: "https://example.com/webhook",
+      topicId: "topic-1",
+      attempt: 0,
+    } as DeliveryPayload;
+    const msg = makeMsg(legacyPayload, ack, retry);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(ack).toHaveBeenCalledOnce();
+    const notifyRequest = mockFetch.mock.calls[0][0] as Request;
+    await expect(notifyRequest.json()).resolves.toEqual({
+      messageId: "msg-1",
+      seq: "42",
+      queueId: "queue-1",
+      topicId: "topic-1",
+    });
+  });
+
+  it("logs a notify failure when TopicRoom returns a non-2xx response", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const mockFetch = vi.fn().mockResolvedValue(new Response("bad", { status: 503 }));
+    const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
+    const mockIdFromName = vi.fn().mockReturnValue("stub-id");
+    const mockTopicRooms = { idFromName: mockIdFromName, get: mockGet };
+    const env = createMockEnv(undefined, undefined, { writeDataPoint }, mockTopicRooms);
+    const msg = makeMsg({ ...basePayload, topicId: "topic-1" }, ack, retry);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(ack).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith("TopicRoom notify failed", {
+      messageId: "msg-1",
+      queueId: "queue-1",
+      topicId: "topic-1",
+      status: 503,
+    });
+  });
+
+  it("logs a notify exception when TopicRoom throws after push ack", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const writeDataPoint = vi.fn();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const mockFetch = vi.fn().mockRejectedValue(new Error("do unavailable"));
+    const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
+    const mockIdFromName = vi.fn().mockReturnValue("stub-id");
+    const mockTopicRooms = { idFromName: mockIdFromName, get: mockGet };
+    const env = createMockEnv(undefined, undefined, { writeDataPoint }, mockTopicRooms);
+    const msg = makeMsg({ ...basePayload, topicId: "topic-1" }, ack, retry);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(ack).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith("TopicRoom notify threw", {
+      messageId: "msg-1",
+      queueId: "queue-1",
+      topicId: "topic-1",
+    });
   });
 
   it("does not call TOPIC_ROOMS notify after ack when topicId is null", async () => {

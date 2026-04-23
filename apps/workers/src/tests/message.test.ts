@@ -66,6 +66,7 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     expect(mockDeliveryQueue.send).toHaveBeenCalledOnce();
     expect(mockDeliveryQueue.send).toHaveBeenCalledWith({
       messageId: mockMessage.id,
+      seq: String(mockMessage.seq),
       queueId: "queue-1",
       pushEndpoint: mockQueue.pushEndpoint,
       topicId: null,

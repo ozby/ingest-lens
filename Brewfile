@@ -4,7 +4,7 @@
 
 # --- Language runtimes ---
 brew "node"           # pinned via .nvmrc; use fnm or nvm to activate
-brew "bun"            # script runner for repo tooling (check-commit-msg, catalog-drift, etc.)
+brew "bun"            # script runner for local wrappers; repo audits run through ak
 
 # --- Package management ---
 brew "pnpm"           # repo uses pnpm@9.15.2 (corepack-pinned via packageManager field)

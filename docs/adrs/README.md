@@ -1,5 +1,5 @@
 ---
-type: index
+type: adr
 last_updated: "2026-04-22"
 ---
 

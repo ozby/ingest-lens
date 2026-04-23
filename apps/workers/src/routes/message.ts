@@ -78,6 +78,7 @@ messageRoutes.post("/:queueId", async (c) => {
   if (queue.pushEndpoint) {
     await c.env.DELIVERY_QUEUE.send({
       messageId: message.id,
+      seq: String(message.seq),
       queueId,
       pushEndpoint: queue.pushEndpoint,
       topicId: null,

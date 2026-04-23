@@ -30,12 +30,14 @@
     "mutation": "stryker run"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/typescript-checker": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
+    "@webpresso/stryker-config": "file:/Users/ozby/.agent-kit-packs/webpresso-stryker-config-0.0.1.tgz",
+    "@webpresso/typescript-config": "file:/Users/ozby/.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
+    "@webpresso/vitest-config": "file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
     "bunchee": "catalog:",
     "vitest": "catalog:tooling"
   }

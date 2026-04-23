@@ -1,3 +1,8 @@
+---
+type: system
+last_updated: "2026-04-22"
+---
+
 # Delivery Guarantees
 
 ## At-least-once delivery

@@ -1,3 +1,8 @@
+---
+type: research
+last_updated: "2026-04-22"
+---
+
 # Scale Considerations
 
 This document is an honest account of where the current design works, where it starts to strain,
@@ -18,7 +23,7 @@ At this scale, the limiting factors are all external services:
 
 ## First bottleneck: single Durable Object per topic
 
-The planned `durable-objects-fan-out` blueprint creates one `TopicRoom` DO per topic. This is a
+The completed `durable-objects-fan-out` blueprint creates one `TopicRoom` DO per topic. This is a
 single-writer object: all WebSocket message broadcasts for a topic are serialized through one
 instance.
 

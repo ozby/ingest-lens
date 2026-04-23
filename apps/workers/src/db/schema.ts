@@ -3,6 +3,7 @@ import {
   text,
   integer,
   boolean,
+  bigserial,
   timestamp,
   jsonb,
   real,
@@ -49,6 +50,7 @@ export const messages = pgTable(
     id: text("id")
       .primaryKey()
       .default(sql`gen_random_uuid()`),
+    seq: bigserial("seq", { mode: "bigint" }).notNull(),
     data: jsonb("data").notNull(),
     queueId: text("queue_id").notNull(),
     idempotencyKey: text("idempotency_key"),

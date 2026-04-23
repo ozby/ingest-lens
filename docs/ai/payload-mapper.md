@@ -1,3 +1,8 @@
+---
+type: research
+last_updated: "2026-04-22"
+---
+
 # Integration Payload Mapper — Dataset and Feature Design
 
 ## What it is
