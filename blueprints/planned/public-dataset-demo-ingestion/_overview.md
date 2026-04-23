@@ -3,7 +3,7 @@ type: blueprint
 status: planned
 complexity: M
 created: "2026-04-23"
-last_updated: "2026-04-23"
+last_updated: "2026-04-24"
 progress: "0% planned; refined against local dataset and intake API paths"
 depends_on:
   - showcase-hardening-100
@@ -17,12 +17,10 @@ tags:
   - ingestlens
 ---
 
-# Public dataset demo ingestion
+# Public job-posting demo lens
 
-**Goal:** Turn the AI mapper into a crisp integration-platform-relevant demo using a public,
-reproducible dataset: ingest pinned `open-apply-jobs` ATS payloads, show
-vendor-shape differences, map them to a unified job schema, publish normalized
-events through IngestLens, and present the observability trail.
+**Goal:** Show the generic intake review flow with pinned public job-posting
+fixtures. ATS is the example lens, not the product boundary.
 
 ## Planning Summary
 
@@ -34,8 +32,8 @@ events through IngestLens, and present the observability trail.
   `apps/client/src/components/MappingSuggestionReview.tsx`; those arrive via
   `ai-payload-intake-mapper` and are the exact surfaces this blueprint extends.
 - Planned demo API surface should stay inside `/api/intake/*`: add fixture
-  catalog endpoints, reuse upstream mapping/approval endpoints, and keep live
-  fetch optional and allowlisted.
+  catalog endpoints and reuse upstream mapping/approval endpoints. Live fetch is
+  deferred from v1.
 - Constraint: deterministic pinned fixtures are the default demo path; no
   private candidate/employee data and no arbitrary public-URL scraping.
 
@@ -46,13 +44,15 @@ Pinned ATS fixtures at data/payload-mapper/payloads/ats/open-apply-sample.jsonl
   -> GET /api/intake/public-fixtures
   -> GET /api/intake/public-fixtures/:fixtureId
   -> existing POST /api/intake/mapping-suggestions
+  -> admin review in /admin/intake
   -> existing POST /api/intake/mapping-suggestions/:id/approve
-  -> ats.job.normalized event + existing delivery/telemetry rails
+  -> deterministic replay + ingest
+  -> ingest.record.normalized event with recordType=job_posting + existing delivery/telemetry rails
 
-Optional later live mode
-  -> POST /api/intake/public-live-fetch (allowlisted vendors/tenants only)
-  -> same mapping suggestion + approval flow
-  -> fallback back to pinned fixtures on fetch/rate-limit failure
+Optional freshness mode
+  -> pre-demo fixture refresh script fetches from allowlisted public sources
+  -> writes pinned fixtures + hashes
+  -> runtime still uses the deterministic fixture catalog
 ```
 
 ## Fact-Checked Findings
@@ -63,42 +63,20 @@ Optional later live mode
 | F2  | High     | This blueprint can invent a parallel demo API.             | Current Worker routes are `auth`, `dashboard`, `message`, `queue`, `topic`; `ai-payload-intake-mapper` is the upstream intake API plan.   | Reuse `apps/workers/src/routes/intake.ts` and extend `/api/intake/*` instead of adding a second route tree. (Fx: api-reuse)                             |
 | F3  | Medium   | Intake UI files already exist in the repo.                 | `apps/client/src/pages/Intake.tsx` and `apps/client/src/components/MappingSuggestionReview.tsx` are not present yet.                      | Make every UI/API task explicitly depend on `ai-payload-intake-mapper` and target those exact upstream files. (Fx: upstream-intake-gate)                |
 | F4  | Medium   | One fixture endpoint is enough.                            | The demo needs small list metadata first, then payload-by-id loading; sending all payloads in the initial list adds unnecessary coupling. | Split catalog and detail endpoints into `GET /api/intake/public-fixtures` and `GET /api/intake/public-fixtures/:fixtureId`. (Fx: fixture-catalog-split) |
-| F5  | High     | Live public fetch can be a default or arbitrary URL fetch. | User constraints and repo direction require a deterministic default demo and safe networking boundaries.                                  | Keep live fetch opt-in, allowlisted, cached, and visibly secondary to pinned fixtures. (Fx: live-fetch-guardrails)                                      |
+| F5  | High     | Live public fetch can be a default or arbitrary URL fetch. | User constraints and repo direction require a deterministic default demo and safe networking boundaries.                                  | Defer live fetch from v1; revisit only after the pinned fixture path is stable. (Fx: live-fetch-guardrails)                                             |
 
 ## Key Decisions
 
-| Decision         | Choice                                                                                                                                                                                                                            | Rationale                                                                      |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Default data     | Pinned `open-apply-jobs` sample at `data/payload-mapper/payloads/ats/open-apply-sample.jsonl` (Fx: dataset-path-verified)                                                                                                         | Public, deterministic, already in repo, and directly relevant to ATS demos.    |
-| Demo API surface | `GET /api/intake/public-fixtures`, `GET /api/intake/public-fixtures/:fixtureId`, existing mapping/approval endpoints, optional `POST /api/intake/public-live-fetch` (Fx: api-reuse, fixture-catalog-split, live-fetch-guardrails) | Extends the upstream intake path instead of fragmenting the API.               |
-| Domain           | Public job postings, not candidates                                                                                                                                                                                               | Avoids PII and private ATS records.                                            |
-| Event type       | `ats.job.normalized`                                                                                                                                                                                                              | Matches the ATS-focused demo story while staying explicit about normalization. |
-| Scope            | Demo ingestion polish, not connector marketplace                                                                                                                                                                                  | Keeps the integration-platform interview slice focused and credible.           |
-
-## Quick Reference (Execution Waves)
-
-| Wave              | Tasks           | Dependencies               | Parallelizable | Effort (T-shirt) |
-| ----------------- | --------------- | -------------------------- | -------------- | ---------------- |
-| **Wave 0**        | 1.1, 1.2        | Blueprint-level gates only | 2 agents       | XS-S             |
-| **Wave 1**        | 2.1, 2.2        | Wave 0                     | 2 agents       | S-M              |
-| **Wave 2**        | 2.3, 3.1        | Wave 1                     | 2 agents       | S                |
-| **Critical path** | 1.2 → 2.2 → 2.3 | —                          | 3 waves        | M                |
-
-### Parallel Metrics Snapshot
-
-| Metric | Formula / Meaning                  | Target               | Actual                        |
-| ------ | ---------------------------------- | -------------------- | ----------------------------- |
-| RW0    | Ready tasks in Wave 0              | ≥ planned agents / 2 | 2 runnable tasks for 2 agents |
-| CPR    | total_tasks / critical_path_length | ≥ 2.5                | 6 / 3 = 2.0                   |
-| DD     | dependency_edges / total_tasks     | ≤ 2.0                | 7 / 6 = 1.17                  |
-| CP     | same-file overlaps per wave        | 0                    | 0                             |
-
-**Parallelization score:** B. CPR is slightly below the generic 2.5 target,
-but the task graph now keeps two useful waves of parallel work and explicitly
-serializes `apps/workers/src/routes/intake.ts` / `apps/client/src/pages/Intake.tsx`
-conflicts into Task 2.3 so same-wave file pressure stays at zero.
-
----
+| Decision                  | Choice                                                                                                                                                                                            | Rationale                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Default data              | Pinned `open-apply-jobs` sample at `data/payload-mapper/payloads/ats/open-apply-sample.jsonl` (Fx: dataset-path-verified)                                                                         | Public, deterministic, already in repo, and directly relevant to ATS demos.    |
+| Demo API surface          | `GET /api/intake/public-fixtures`, `GET /api/intake/public-fixtures/:fixtureId`, existing mapping/approval endpoints (Fx: api-reuse, fixture-catalog-split)                                       | Extends the upstream intake path instead of fragmenting the API.               |
+| Demo lens                 | Public job postings, not candidates                                                                                                                                                               | Avoids PII and private ATS records while keeping the platform generic.         |
+| Event type                | `ingest.record.normalized` with `recordType: "job_posting"`                                                                                                                                       | Matches the generic ingestion architecture while preserving an ATS demo story. |
+| Scope                     | Demo ingestion polish, not connector marketplace                                                                                                                                                  | Keeps the integration-platform interview slice focused and credible.           |
+| Canonical demo entrypoint | `docs/guides/public-dataset-demo.md`; README links only                                                                                                                                           | Prevents competing demo paths and guide drift.                                 |
+| Runtime fixture access    | Generate and commit a small Worker fixture module from the pinned JSONL sample; do not read repo-local files at request time                                                                      | Makes the deployed demo deterministic without adding R2/KV.                    |
+| Demo success proof        | fixture selected, mapping suggested/abstained, validation shown, admin approval recorded, replay+ingest completed, normalized event emitted, `mappingTraceId` visible, delivery telemetry visible | Makes the demo measurable instead of narrative-only.                           |
 
 ### Phase 1: Provenance and fixture catalog [Complexity: S]
 
@@ -140,33 +118,34 @@ Fx: api-reuse)
 
 ---
 
-#### [fixtures] Task 1.2: Add a public fixture catalog API on the intake route
+#### [fixtures] Task 1.2: Bundle and expose demo fixtures on the intake route
 
 **Status:** todo
 
 **Depends:** None
 
-Expose the pinned public fixtures through the planned intake route with a small
-catalog response and a payload-by-id detail response. Do not add a parallel demo
-route tree and do not fetch the dataset over the network at runtime. (Fx: api-reuse,
-Fx: fixture-catalog-split, Fx: upstream-intake-gate)
+Expose a small fixture catalog and fixture-by-id endpoint from committed demo
+fixtures. Keep this runtime path fully deterministic and filesystem-free. Do
+not add a parallel demo route tree. (Fx: api-reuse, Fx: fixture-catalog-split,
+Fx: upstream-intake-gate)
 
 **Files:**
 
-- Create: `apps/workers/src/intake/publicFixtureLoader.ts`
-- Create: `apps/workers/src/intake/publicFixtureLoader.test.ts`
+- Create: `apps/workers/src/intake/demoFixtures.ts`
+- Create: `scripts/generate-demo-fixtures.ts`
+- Create: `apps/workers/src/tests/demoFixtures.test.ts`
 - Modify: `apps/workers/src/routes/intake.ts`
 
 **Steps (TDD):**
 
 1. Write failing Worker tests for fixture listing metadata, load-by-id, unknown
    id, and schema drift from the pinned JSONL envelope.
-2. Run `pnpm --filter @repo/workers test -- publicFixtureLoader` — verify FAIL.
-3. Implement loader logic against
+2. Run `pnpm --filter @repo/workers test -- demoFixtures` — verify FAIL.
+3. Generate the bundled fixture module from
    `data/payload-mapper/payloads/ats/open-apply-sample.jsonl` and wire:
    - `GET /api/intake/public-fixtures`
    - `GET /api/intake/public-fixtures/:fixtureId`
-4. Re-run `pnpm --filter @repo/workers test -- publicFixtureLoader` — verify PASS.
+4. Re-run `pnpm --filter @repo/workers test -- demoFixtures` — verify PASS.
 5. Run `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint`.
 
 **Acceptance:**
@@ -175,51 +154,51 @@ Fx: fixture-catalog-split, Fx: upstream-intake-gate)
       title/name/text summary, source URL, and target schema hint.
 - [ ] Detail endpoint returns one validated payload by fixture id.
 - [ ] No dynamic network fetch is required for the default demo path.
+- [ ] Fixture endpoints work from bundled Worker data and do not depend on runtime filesystem access.
 - [ ] `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint` passes.
 
 ---
 
 ### Phase 2: Deterministic demo flow and optional live mode [Complexity: M]
 
-#### [worker-flow] Task 2.1: Normalize approved fixtures into a shared job event
+#### [coverage] Task 2.1: Extend upstream normalization coverage with public job-posting fixtures
 
 **Status:** todo
 
 **Depends:** Task 1.1, Task 1.2
 
-Convert the approved mapping result for Ashby, Greenhouse, and Lever fixtures
-into one stable `ats.job.normalized` event shape with provenance preserved. Keep
-this in the upstream intake approval flow instead of adding a new demo-only
-publish path. (Fx: api-reuse, Fx: dataset-path-verified)
+Add fixture cases to the upstream intake normalization and evaluation tests
+instead of creating a second normalization implementation task. The generic core
+applies mappings; this blueprint only proves the pinned job-posting lens works
+through that core. (Fx: api-reuse, Fx: dataset-path-verified)
 
 **Files:**
 
-- Create: `apps/workers/src/intake/normalizedJobEvent.ts`
-- Create: `apps/workers/src/intake/normalizedJobEvent.test.ts`
-- Modify: `apps/workers/src/intake/normalizeWithMapping.ts`
-- Modify: `apps/workers/src/routes/intake.ts`
+- Modify: `apps/workers/src/tests/normalizeWithMapping.test.ts`
+- Modify: `apps/workers/src/tests/evaluateMappings.test.ts`
+- Modify: `data/payload-mapper/mapping_tasks/eval.jsonl`
 
 **Steps (TDD):**
 
-1. Write failing Worker tests for one Ashby, one Greenhouse, and one Lever
-   fixture normalizing into the same event contract after approval.
-2. Run `pnpm --filter @repo/workers test -- normalizedJobEvent` — verify FAIL.
-3. Implement the shared normalized-event builder and wire it into the existing
-   approval path so the emitted event includes fixture id, source system,
-   `source_url`, and mapping suggestion id.
-4. Re-run `pnpm --filter @repo/workers test -- normalizedJobEvent` — verify PASS.
+1. Write failing upstream Worker tests for one Ashby, one Greenhouse, and one
+   Lever fixture normalizing into the same generic envelope after approval.
+2. Run `pnpm --filter @repo/workers test -- normalizeWithMapping evaluateMappings` — verify FAIL.
+3. Add only fixture/eval cases and contract data needed by the existing generic
+   normalization path. Do not add job-posting-specific code to core modules.
+4. Re-run `pnpm --filter @repo/workers test -- normalizeWithMapping evaluateMappings` — verify PASS.
 5. Run `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint`.
 
 **Acceptance:**
 
-- [ ] Approved fixtures from all three vendors emit the same top-level event shape.
-- [ ] Event metadata preserves fixture id and provenance.
+- [ ] Pinned fixtures from all three source shapes emit the same top-level event shape through the upstream core.
+- [ ] Event metadata preserves fixture id, source URL, payload hash, schema version, and `mappingTraceId`.
+- [ ] Example-lens fixtures map into the generic normalized envelope without job-posting code in the core blueprint.
 - [ ] No normalized event is published before explicit approval.
 - [ ] `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint` passes.
 
 ---
 
-#### [client-flow] Task 2.2: Polish the Intake page around pinned public fixtures
+#### [client-flow] Task 2.2: Preload the intake UI from demo fixtures
 
 **Status:** todo
 
@@ -227,12 +206,13 @@ publish path. (Fx: api-reuse, Fx: dataset-path-verified)
 
 Use the upstream Intake page and review component as the only client surface:
 load fixture metadata, fetch a selected payload by id, prefill the existing
-mapping-suggestion flow, and show approval/delivery status without inventing a
-second UI path. (Fx: upstream-intake-gate, Fx: fixture-catalog-split)
+mapping-suggestion flow, and show approval, ingest, and delivery status without
+inventing a second UI path. (Fx: upstream-intake-gate, Fx: fixture-catalog-split)
 
 **Files:**
 
 - Modify: `apps/client/src/pages/Intake.tsx`
+- Modify: `apps/client/src/pages/AdminIntake.tsx`
 - Modify: `apps/client/src/components/MappingSuggestionReview.tsx`
 - Modify: `apps/client/src/services/api.ts`
 - Create: `apps/client/src/pages/Intake.test.tsx`
@@ -240,10 +220,10 @@ second UI path. (Fx: upstream-intake-gate, Fx: fixture-catalog-split)
 **Steps (TDD):**
 
 1. Write a failing client test covering: fixture catalog load, fixture selection,
-   mapping suggestion request, approval CTA, and delivery-state rendering.
+   mapping suggestion request, pending admin approval queue, approval CTA, ingest status, and delivery-state rendering.
 2. Run `pnpm --filter client test -- Intake.test.tsx` — verify FAIL.
 3. Add API methods for `GET /api/intake/public-fixtures` and
-   `GET /api/intake/public-fixtures/:fixtureId`, then wire the Intake page to
+   `GET /api/intake/public-fixtures/:fixtureId`, then wire the Intake/AdminIntake pages to
    reuse the upstream `POST /api/intake/mapping-suggestions` and approval flow.
 4. Re-run `pnpm --filter client test -- Intake.test.tsx` — verify PASS.
 5. Run `pnpm --filter client check-types && pnpm --filter client lint`.
@@ -251,103 +231,83 @@ second UI path. (Fx: upstream-intake-gate, Fx: fixture-catalog-split)
 **Acceptance:**
 
 - [ ] User can browse pinned fixtures before any live/network path is shown.
-- [ ] The page reuses the existing mapping suggestion and approval UX.
-- [ ] Delivery status and mapping confidence remain visible after approval.
+- [ ] The pages reuse the existing mapping suggestion and admin approval UX.
+- [ ] Ingest status, delivery status, mapping confidence, and `mappingTraceId` remain visible after approval.
 - [ ] `pnpm --filter client check-types && pnpm --filter client lint` passes.
 
 ---
 
-#### [live-fetch] Task 2.3: Add optional allowlisted live public ATS fetch
+#### [freshness] Optional Task 2.3: Add a pre-demo fixture refresh script
 
-**Status:** todo
+**Status:** optional
 
-**Depends:** Task 2.1, Task 2.2
+**Depends:** shipped deterministic pinned-fixture demo
 
-Add a clearly secondary live-demo mode that fetches public job postings only
-from configured Greenhouse/Lever/Ashby tenants. This task is intentionally
-serialized after the worker and client demo-flow tasks because it touches both
-`apps/workers/src/routes/intake.ts` and `apps/client/src/pages/Intake.tsx`.
-(Fx: live-fetch-guardrails, Fx: api-reuse)
+Do not add runtime live fetch to the v1 Worker route. If source freshness matters
+for the interview, add a local/admin pre-demo refresh script that fetches only
+from allowlisted public sources, writes pinned fixture files, records source
+URLs and hashes, and lets the runtime demo continue using deterministic bundled
+fixtures.
 
 **Files:**
 
-- Create: `apps/workers/src/intake/publicAtsFetch.ts`
-- Create: `apps/workers/src/intake/publicAtsFetch.test.ts`
-- Modify: `apps/workers/src/routes/intake.ts`
-- Modify: `apps/workers/wrangler.toml`
-- Modify: `apps/client/src/pages/Intake.tsx`
+- Create: `scripts/refresh-demo-fixtures.ts`
+- Modify: `data/payload-mapper/payloads/ats/README.md`
 - Modify: `docs/guides/public-dataset-demo.md`
-
-**Steps (TDD):**
-
-1. Write failing Worker tests for allowlist enforcement, timeout/backoff,
-   cache hit, unsupported vendor, and safe fallback to pinned fixtures.
-2. Run `pnpm --filter @repo/workers test -- publicAtsFetch` — verify FAIL.
-3. Implement `POST /api/intake/public-live-fetch` using explicit vendor/tenant
-   config, bounded record counts, caching, and a disabled-by-default UI toggle.
-4. Re-run `pnpm --filter @repo/workers test -- publicAtsFetch` — verify PASS.
-5. Run `pnpm --filter client test -- Intake.test.tsx` to prove the optional
-   toggle stays secondary and clearly labelled.
-6. Run `pnpm --filter @repo/workers check-types && pnpm --filter client check-types`.
 
 **Acceptance:**
 
-- [ ] No arbitrary URL fetch is possible.
-- [ ] Live fetch is disabled by default and clearly secondary to pinned fixtures.
-- [ ] Fetch failures and rate limits fall back to the deterministic fixture path.
-- [ ] `pnpm --filter @repo/workers check-types && pnpm --filter client check-types` passes.
+- [ ] No `POST /api/intake/public-live-fetch` endpoint is required for showcase readiness.
+- [ ] Refresh script is allowlist-only, timeout-bounded, payload-size-bounded, and never part of required CI gates.
+- [ ] Refresh output is committed/pinned with hashes before the demo.
+- [ ] README/demo docs describe runtime live fetch as future-only, not a shipped or required path.
 
 ---
 
 ### Phase 3: Interview packaging [Complexity: S]
 
-#### [demo] Task 3.1: Add a one-command demo runner and rehearsal docs
+#### [demo] Task 3.1: Add a short deterministic demo guide
 
 **Status:** todo
 
 **Depends:** Task 2.1, Task 2.2
 
-Package the deterministic demo so a reviewer can rehearse it quickly without
-paid credentials. Make the runner script the single source of truth for the
-README and interview checklist so the docs cannot drift. (Fx: dataset-path-verified)
+Document the main path and fallback path for the pinned-fixture demo. Add a
+runner script only if docs drift becomes a real problem. (Fx:
+dataset-path-verified)
 
 **Files:**
 
-- Create: `scripts/demo/ingestlens-demo.mjs`
-- Create: `docs/guides/interview-demo-script.md`
+- Modify: `docs/guides/public-dataset-demo.md`
 - Modify: `README.md`
-- Modify: `package.json`
 
 **Steps (TDD):**
 
-1. Run `pnpm demo:ingestlens -- --check` — verify FAIL before the script exists.
-2. Create `scripts/demo/ingestlens-demo.mjs` to print/validate the deterministic
-   setup, fixture-selection path, and fallback steps.
-3. Add `demo:ingestlens` to `package.json`, then document the five-minute main path,
-   two-minute fallback path, and screenshot checklist in the new guide + README.
-4. Re-run `pnpm demo:ingestlens -- --check` — verify PASS.
-5. Run `pnpm docs:check && pnpm format:check`.
+1. Add the guide and README link targets, then run `pnpm docs:check` — verify
+   FAIL until frontmatter/headings exist.
+2. Document the five-minute main path, two-minute fallback path, admin approval
+   path, ingest/delivery proof, and screenshot checklist.
+3. Run `pnpm docs:check && pnpm format:check` — verify PASS.
 
 **Acceptance:**
 
-- [ ] A reviewer can discover and run `pnpm demo:ingestlens` from the README.
-- [ ] The rehearsal guide covers intake, mapping suggestion, approval,
+- [ ] A reviewer can discover the deterministic demo path from the README.
+- [ ] The rehearsal guide covers intake, mapping suggestion, admin approval, ingest,
       delivery telemetry, and a fallback branch.
-- [ ] The scripted path does not require paid SaaS credentials.
+- [ ] The documented path does not require paid SaaS credentials.
 - [ ] `pnpm docs:check && pnpm format:check` passes.
 
 ## Verification Gates
 
-| Gate                   | Command                                                   | Success Criteria                      |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------- |
-| Worker fixture catalog | `pnpm --filter @repo/workers test -- publicFixtureLoader` | Catalog + detail tests pass           |
-| Worker normalization   | `pnpm --filter @repo/workers test -- normalizedJobEvent`  | Shared job-event tests pass           |
-| Worker live fetch      | `pnpm --filter @repo/workers test -- publicAtsFetch`      | Allowlist/fallback tests pass         |
-| Client demo flow       | `pnpm --filter client test -- Intake.test.tsx`            | Fixture-driven Intake UI tests pass   |
-| Type safety            | `pnpm check-types`                                        | Zero workspace type errors            |
-| Build                  | `pnpm build`                                              | Worker/client build succeeds          |
-| Docs + formatting      | `pnpm docs:check && pnpm format:check`                    | Docs valid and formatted              |
-| Blueprint validation   | `pnpm blueprints:check`                                   | Blueprint lifecycle validation passes |
+| Gate                    | Command                                                                     | Success Criteria                      |
+| ----------------------- | --------------------------------------------------------------------------- | ------------------------------------- |
+| Worker fixture catalog  | `pnpm --filter @repo/workers test -- demoFixtures`                          | Catalog + detail tests pass           |
+| Worker fixture coverage | `pnpm --filter @repo/workers test -- normalizeWithMapping evaluateMappings` | Fixture coverage passes               |
+| Client demo flow        | `pnpm --filter client test -- Intake.test.tsx`                              | Fixture-driven Intake UI tests pass   |
+| Type safety             | `pnpm check-types`                                                          | Zero workspace type errors            |
+| Build                   | `pnpm build`                                                                | Worker/client build succeeds          |
+| Docs + formatting       | `pnpm docs:check && pnpm format:check`                                      | Docs valid and formatted              |
+| Blueprint validation    | `pnpm blueprints:check`                                                     | Blueprint lifecycle validation passes |
 
 ## Cross-Plan References
 
@@ -360,14 +320,15 @@ README and interview checklist so the docs cannot drift. (Fx: dataset-path-verif
 
 ## Edge Cases and Error Handling
 
-| Edge Case                                            | Risk                     | Solution                                                                                                                                           | Task               |
-| ---------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| Fixture metadata drifts from the pinned JSONL schema | Broken demo fixture list | Validate list/detail responses against the existing payload envelope before returning them. (Fx: dataset-path-verified, Fx: fixture-catalog-split) | 1.2                |
-| Greenhouse/Ashby/Lever shapes normalize differently  | Inconsistent demo story  | Centralize `ats.job.normalized` building and test all three vendors against one contract. (Fx: api-reuse)                                          | 2.1                |
-| Client eagerly loads all payload bodies up front     | Slow or noisy initial UX | Keep list metadata separate from payload detail fetch by id. (Fx: fixture-catalog-split)                                                           | 1.2, 2.2           |
-| Job text or HTML is unsafe to render directly        | XSS / ugly demo output   | Render escaped/sanitized preview text only in the client flow.                                                                                     | 2.2                |
-| Live endpoint rate-limits or changes response shape  | Demo flakiness           | Apply allowlist, cache, timeout/backoff, and deterministic fixture fallback. (Fx: live-fetch-guardrails)                                           | 2.3                |
-| Upstream intake files are not merged yet             | Execution blocker        | Treat those tasks as blocked until `ai-payload-intake-mapper` lands the agreed file paths. (Fx: upstream-intake-gate)                              | 1.2, 2.1, 2.2, 2.3 |
+| Edge Case                                            | Risk                     | Solution                                                                                                                                           | Task          |
+| ---------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Fixture metadata drifts from the pinned JSONL schema | Broken demo fixture list | Validate list/detail responses against the existing payload envelope before returning them. (Fx: dataset-path-verified, Fx: fixture-catalog-split) | 1.2           |
+| Greenhouse/Ashby/Lever shapes normalize differently  | Inconsistent demo story  | Prove all three source shapes through the upstream generic mapping/envelope tests. (Fx: api-reuse)                                                 | 2.1           |
+| Client eagerly loads all payload bodies up front     | Slow or noisy initial UX | Keep list metadata separate from payload detail fetch by id. (Fx: fixture-catalog-split)                                                           | 1.2, 2.2      |
+| Job text or HTML is unsafe to render directly        | XSS / ugly demo output   | Render escaped/sanitized preview text only in the client flow.                                                                                     | 2.2           |
+| Bundled fixture module drifts from pinned JSONL      | Demo/source mismatch     | Generator test compares module records to `open-apply-sample.jsonl` source ids and hashes.                                                         | 1.2           |
+| Runtime live endpoint distracts from pinned path     | Demo flakiness           | Use a pre-demo refresh script instead; keep runtime future-only. (Fx: live-fetch-guardrails)                                                       | 2.3           |
+| Upstream intake files are not merged yet             | Execution blocker        | Treat those tasks as blocked until `ai-payload-intake-mapper` lands the agreed file paths. (Fx: upstream-intake-gate)                              | 1.2, 2.1, 2.2 |
 
 ## Non-goals
 
@@ -379,12 +340,12 @@ README and interview checklist so the docs cannot drift. (Fx: dataset-path-verif
 
 ## Risks
 
-| Risk                                                                                      | Impact     | Mitigation                                                                                                                                               |
-| ----------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live fetch distracts from the core deterministic demo                                     | Medium     | Keep it optional, disabled by default, and visibly subordinate to pinned fixtures. (Fx: live-fetch-guardrails)                                           |
-| Upstream intake blueprint drifts from these file/path assumptions                         | Medium     | This blueprint names the exact upstream files and reuses the upstream API paths instead of inventing new ones. (Fx: upstream-intake-gate, Fx: api-reuse) |
-| README/demo docs drift from the actual runnable steps                                     | Low-medium | Make `pnpm demo:ingestlens` the source of truth and validate it in the rehearsal task.                                                                   |
-| Public ATS data feels less HRIS-like than unified integration-platform production records | Low-medium | Frame it explicitly as a safe public ATS wedge and keep synthetic/private-record claims out of the demo.                                                 |
+| Risk                                                                               | Impact     | Mitigation                                                                                                                                                        |
+| ---------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime live fetch distracts from the core deterministic demo                      | Medium     | Prefer pre-demo fixture refresh; keep runtime fetch deferred until the pinned-fixture path is shipped and measured. (Fx: live-fetch-guardrails)                   |
+| Upstream intake blueprint drifts from these file/path assumptions                  | Medium     | This blueprint names the exact upstream files and reuses the upstream API paths instead of inventing new ones. (Fx: upstream-intake-gate, Fx: api-reuse)          |
+| README/demo docs drift from the actual runnable steps                              | Low-medium | Keep one guide as the source of truth and validate docs frontmatter/links.                                                                                        |
+| Public job-posting data feels narrower than generic integration production records | Low-medium | Frame it explicitly as a safe public first lens; use synthetic employee-style fixtures only as adversarial/eval inputs until a privacy-safe public source exists. |
 
 ## Technology Choices
 
@@ -393,36 +354,4 @@ README and interview checklist so the docs cannot drift. (Fx: dataset-path-verif
 | Default fixture data | `data/payload-mapper/payloads/ats/open-apply-sample.jsonl`                                                    | Existing pinned file      | Already local, deterministic, and documented in `data/payload-mapper/payloads/ats/README.md`.     |
 | Fixture catalog API  | `GET /api/intake/public-fixtures` + `GET /api/intake/public-fixtures/:fixtureId`                              | Planned in this blueprint | Small metadata-first flow fits the current demo better than shipping every payload body up front. |
 | Mapping API reuse    | Existing upstream `POST /api/intake/mapping-suggestions` + `POST /api/intake/mapping-suggestions/:id/approve` | Planned upstream          | Avoids a parallel demo-only backend path.                                                         |
-| Optional live fetch  | `POST /api/intake/public-live-fetch` with Wrangler-configured allowlist                                       | Planned optional          | Safe, bounded wow-factor after the deterministic path works.                                      |
-| Demo runner          | `pnpm demo:ingestlens` backed by `scripts/demo/ingestlens-demo.mjs`                                           | Planned in this blueprint | Gives the README and interview checklist a single executable source of truth.                     |
-
-## Refinement Summary
-
-| Metric                    | Value                                                                                  |
-| ------------------------- | -------------------------------------------------------------------------------------- |
-| Findings total            | 5                                                                                      |
-| Critical                  | 0                                                                                      |
-| High                      | 3                                                                                      |
-| Medium                    | 2                                                                                      |
-| Low                       | 0                                                                                      |
-| Fixes applied             | 5/5 in blueprint                                                                       |
-| Cross-plans updated       | 0; this pass aligned to upstream blueprints without editing them                       |
-| Edge cases documented     | 6                                                                                      |
-| Risks documented          | 4                                                                                      |
-| **Parallelization score** | B (2 runnable tasks in every wave; same-wave conflict pressure = 0)                    |
-| **Critical path**         | 3 waves                                                                                |
-| **Max parallel agents**   | 2                                                                                      |
-| **Total tasks**           | 6                                                                                      |
-| **Blueprint compliant**   | 6/6 tasks include `Status`, `Depends`, exact files, TDD steps, and acceptance criteria |
-
-**Refinement delta (2026-04-23):** This pass locked the blueprint to the
-verified local ATS sample path, replaced vague demo wiring with exact
-`/api/intake/*` paths, split the fixture API into catalog + detail endpoints,
-serialised the shared Worker/client file edits into Task 2.3 to keep same-wave
-file pressure at zero, converted every task to `**Status:** todo`, and added a
-real demo-runner task so the README/checklist can stay executable instead of
-aspirational.
-
-```
-
-```
+| Demo guide           | `docs/guides/public-dataset-demo.md`                                                                          | Planned in this blueprint | Gives README and interview rehearsal one deterministic source of truth.                           |

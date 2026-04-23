@@ -1,14 +1,14 @@
 ---
 type: research
 title: "integration-platform-oriented AI integration showcase"
-subject: "Rebranding node-pubsub into an AI-assisted integration observability showcase for a integration-platform interview"
+subject: "Rebranding node-pubsub into an AI-assisted integration observability showcase for an integration-platform interview"
 date: "2026-04-23"
 last_updated: "2026-04-23"
 confidence: high
 verdict: trial
 ---
 
-# integration-platform-oriented AI integration showcase
+# Integration-platform-oriented AI integration showcase
 
 > Best reachable showcase: rebrand the project as **IngestLens**, then add a
 > public-dataset-backed AI payload-mapping intake that proves integration

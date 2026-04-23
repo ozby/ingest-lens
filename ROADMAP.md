@@ -1,6 +1,8 @@
 # Execution Roadmap
 
-Current as of: 2026-04-23
+Current as of: 2026-04-24
+
+Vision and public positioning live in [`docs/research/product/VISION.md`](docs/research/product/VISION.md); this file is execution sequencing only.
 
 ## Completed
 
@@ -24,6 +26,8 @@ Current as of: 2026-04-23
 
 ## Wave 1 — Engineering rigor first
 
+Objective: prove the substrate is trustworthy before public polish or AI features.
+
 | Blueprint                                                                                    | Goal                                                                            | Why first                                                                   |
 | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | [`showcase-hardening-100`](blueprints/planned/showcase-hardening-100/_overview.md)           | Close security, contract, typecheck, CI, dependency, test, and metrics blockers | AI/branding polish over broken fundamentals would hurt the interview signal |
@@ -31,20 +35,25 @@ Current as of: 2026-04-23
 
 ## Wave 2 — Public identity
 
+Objective: align public surfaces around IngestLens without overclaiming planned behavior.
+
 | Blueprint                                                                  | Goal                                                   | Depends on               |
 | -------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------ |
 | [`rebrand-ingestlens`](blueprints/planned/rebrand-ingestlens/_overview.md) | Rebrand public surfaces from node-pubsub to IngestLens | `showcase-hardening-100` |
 
-## Wave 3 — integration-platform-relevant AI showcase
+## Wave 3 — Integration-platform AI showcase
 
-| Blueprint                                                                                        | Goal                                                                                                | Depends on                                     |
-| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| [`ai-payload-intake-mapper`](blueprints/planned/ai-payload-intake-mapper/_overview.md)           | Add Workers AI suggestion-only payload mapping with validation and approval                         | `showcase-hardening-100`, `rebrand-ingestlens` |
-| [`public-dataset-demo-ingestion`](blueprints/planned/public-dataset-demo-ingestion/_overview.md) | Package the demo around public `open-apply-jobs` ATS fixtures and optional allowlisted live fetches | `ai-payload-intake-mapper`                     |
+Objective: deliver the intake → mapping → approval → normalized event → observability demo.
+
+| Blueprint                                                                                        | Goal                                                                                  | Depends on                                                               |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [`ai-oss-tooling-adapter`](blueprints/planned/ai-oss-tooling-adapter/_overview.md)               | Adopt the minimal OSS AI/validation stack behind one Worker adapter                   | `showcase-hardening-100`                                                 |
+| [`ai-payload-intake-mapper`](blueprints/planned/ai-payload-intake-mapper/_overview.md)           | Add Workers AI suggestion-only payload mapping with validation and approval           | `showcase-hardening-100`, `rebrand-ingestlens`, `ai-oss-tooling-adapter` |
+| [`public-dataset-demo-ingestion`](blueprints/planned/public-dataset-demo-ingestion/_overview.md) | Package the demo around public ATS fixture data and optional allowlisted live fetches | `ai-payload-intake-mapper`                                               |
 
 ## Key constraints
 
 - Use pinned public fixtures by default; optional live public ATS fetches must be allowlisted, cached, and disabled by default.
 - No paid SaaS dependency and no full connector marketplace.
 - Roll out the generated `messages.seq` migration before enabling reconnect replay broadly on the WebSocket path in production.
-- Treat `docs/research/2026-04-23-integration-platform-ai-showcase.md` as the source for product/research rationale.
+- Treat `docs/research/product/VISION.md` as the product source of truth and `docs/research/2026-04-24-messy-hr-ats-data-demo-sources.md` as the messy-data research source.

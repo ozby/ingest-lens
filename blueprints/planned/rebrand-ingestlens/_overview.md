@@ -18,7 +18,7 @@ tags:
 
 **Goal:** Replace the public `node-pubsub` take-home-assignment identity with
 **IngestLens**, a modern IntegrationOps showcase: AI-assisted payload intake,
-mapping, delivery, and observability for ATS/HRIS-style integration data.
+mapping, delivery, and observability for third-party ingestion data.
 
 ## Planning Summary
 
@@ -43,50 +43,32 @@ Before
 After
   public surfaces say IngestLens
   docs tell a single truth-state-labelled story
-  demo narrative starts from public ATS payload intake
+  demo narrative starts from messy third-party payload intake
   queues/topics are implementation primitives behind integration observability
 ```
 
 ## Fact-Checked Findings
 
-| ID  | Severity | Claim / assumption                                            | Reality / repo evidence                                                                                                                                                                  | Blueprint fix                                                                                                              |
-| --- | -------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| F1  | Medium   | “Run docs checks” and “run client build” are specific enough. | Root `package.json` defines `pnpm docs:check`, `pnpm blueprints:check`, `pnpm format:check`; `apps/client/package.json` defines `pnpm --filter client test`, `build`, and `check-types`. | (Fx1) Replace vague verification steps with exact `pnpm` commands in every task.                                           |
-| F2  | Medium   | `docs/guides/interview-demo.md` already exists.               | Codebase verification shows `docs/guides/interview-demo.md: false`; the demo guide must be created in this blueprint.                                                                    | (Fx2) Make Task 2.1 explicitly create `docs/guides/interview-demo.md` and update README links after creation.              |
-| F3  | Medium   | UI smoke tests from upstream probably already exist.          | `find apps/client -type f \( -name '*test.*' -o -name '*spec.*' \)` returned no committed client tests.                                                                                  | (Fx3) Require first-pass Vitest smoke tests in UI tasks before copy changes ship.                                          |
-| F4  | Low      | Existing task boundaries are safe for parallel execution.     | `README.md` was shared by Tasks 1.1, 1.2, and 2.1; client shell/page files were also bundled too coarsely.                                                                               | (Fx4) Split README/docs, client shell, client page, and hygiene work into serialized or conflict-free tasks so CP stays 0. |
-| F5  | Low      | Cross-plan names might need renaming during refinement.       | `showcase-hardening-100`, `ai-payload-intake-mapper`, and `public-dataset-demo-ingestion` already reference `rebrand-ingestlens` consistently.                                           | (Fx5) Keep blueprint names stable; add a note that `docs/guides/interview-demo.md` is the shared downstream guide path.    |
+| ID  | Severity | Claim / assumption                                            | Reality / repo evidence                                                                                                                                                                                 | Blueprint fix                                                                                                                         |
+| --- | -------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | Medium   | “Run docs checks” and “run client build” are specific enough. | Root `package.json` defines `pnpm docs:check`, `pnpm blueprints:check`, `pnpm format:check`; `apps/client/package.json` defines `pnpm --filter client test`, `build`, and `check-types`.                | (Fx1) Replace vague verification steps with exact `pnpm` commands in every task.                                                      |
+| F2  | Medium   | `docs/guides/public-dataset-demo.md` already exists.          | Codebase verification shows `docs/guides/public-dataset-demo.md: false`; the downstream dataset blueprint owns the guide, while this blueprint only prepares README links/copy for that canonical path. | (Fx2) Make Task 2.1 update README copy/link expectations for `docs/guides/public-dataset-demo.md` without creating a competing guide. |
+| F3  | Medium   | UI smoke tests from upstream probably already exist.          | `find apps/client -type f \( -name '*test.*' -o -name '*spec.*' \)` returned no committed client tests.                                                                                                 | (Fx3) Require first-pass Vitest smoke tests in UI tasks before copy changes ship.                                                     |
+| F4  | Low      | Existing task boundaries are safe for parallel execution.     | `README.md` was shared by Tasks 1.1, 1.2, and 2.1; client shell/page files were also bundled too coarsely.                                                                                              | (Fx4) Split README/docs, client shell, client page, and hygiene work into serialized or conflict-free tasks so CP stays 0.            |
+| F5  | Low      | Cross-plan names might need renaming during refinement.       | `showcase-hardening-100`, `ai-payload-intake-mapper`, and `public-dataset-demo-ingestion` already reference `rebrand-ingestlens` consistently.                                                          | (Fx5) Keep blueprint names stable; add a note that `docs/guides/public-dataset-demo.md` is the shared downstream guide path.          |
 
 ## Key Decisions
 
-| Decision                | Choice                                  | Rationale                                                               |
-| ----------------------- | --------------------------------------- | ----------------------------------------------------------------------- |
-| Public name             | IngestLens                              | Clear, uncommon, integration-observability oriented.                    |
-| Internal package rename | Defer unless easy                       | Public polish matters more than risky workspace churn before interview. |
-| Product wedge           | ATS/HRIS payload intake and mapping     | integration-platform-relevant without building a marketplace.           |
-| Docs truth state        | Shipped / partial / aspirational labels | Prevents old roadmap/docs from overselling incomplete features.         |
-| Verification surface    | Repo-native `pnpm` scripts              | Keeps execution aligned with actual workspace commands.                 |
-
-## Quick Reference (Execution Waves)
-
-| Wave              | Tasks                      | Dependencies                 | Parallelizable | Effort (T-shirt) |
-| ----------------- | -------------------------- | ---------------------------- | -------------- | ---------------- |
-| **Wave 0**        | 1.1, 1.2, 1.3, 1.4         | Blueprint-level gate only    | 4 agents       | XS-S             |
-| **Wave 1**        | 2.1, 2.2, 2.3              | Task-specific Wave 0 outputs | 3 agents       | XS-S             |
-| **Critical path** | 1.1 -> 2.1 (or 1.3 -> 2.2) | --                           | 2 waves        | M                |
-
-## Parallel Metrics Snapshot
-
-| Metric | Formula / Meaning                  | Target              | Actual |
-| ------ | ---------------------------------- | ------------------- | ------ |
-| RW0    | Ready tasks in Wave 0              | >= planned agents/2 | 4      |
-| CPR    | total_tasks / critical_path_length | >= 2.5              | 3.5    |
-| DD     | dependency_edges / total_tasks     | <= 2.0              | 0.71   |
-| CP     | same-file overlaps per wave        | 0                   | 0      |
-
-Refinement delta: (Fx4) merged all README truth-state work into Task 1.1,
-split client shell copy from client page copy, and isolated the demo guide so
-same-wave file conflict pressure is 0.
+| Decision                | Choice                                                                                                          | Rationale                                                               |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Public name             | IngestLens                                                                                                      | Clear, uncommon, integration-observability oriented.                    |
+| Internal package rename | Defer unless easy                                                                                               | Public polish matters more than risky workspace churn before interview. |
+| Product wedge           | generic ingestion review and mapping repair                                                                     | integration-platform-relevant without building a marketplace.           |
+| Docs truth state        | shipped / partial / planned labels                                                                              | Prevents old roadmap/docs from overselling incomplete features.         |
+| Verification surface    | Repo-native `pnpm` scripts                                                                                      | Keeps execution aligned with actual workspace commands.                 |
+| Canonical docs          | VISION = durable narrative; README = landing page; ROADMAP = execution order                                    | Prevents source-of-truth drift between public copy and execution plans. |
+| Naming boundary         | Public docs/UI use IngestLens; internal package/runtime names may remain only with documented deferments        | Avoids risky churn while making public surfaces coherent.               |
+| Demo guide ownership    | `docs/guides/public-dataset-demo.md` is the canonical human demo guide owned by `public-dataset-demo-ingestion` | Avoids competing guide paths and stale scripts.                         |
 
 ### Phase 1: Public identity, docs truth reset, and hygiene [Complexity: M]
 
@@ -242,7 +224,7 @@ do not spread this work across other tasks.
 
 ### Phase 2: Demo narrative and UI story polish [Complexity: S]
 
-#### [demo] Task 2.1: Add the interview demo guide and wire README to it
+#### [demo] Task 2.1: Add README demo entrypoint pointing at the canonical guide
 
 **Status:** todo
 
@@ -250,27 +232,24 @@ do not spread this work across other tasks.
 
 **Effort:** XS
 
-Apply (Fx2, Fx5) by creating the missing shared demo guide path used by the
-rebrand story. Keep README changes limited to linking/summarizing the guide so
-this task stays conflict-free with completed Phase 1 README work.
+Apply (Fx2, Fx5) by making README point at the canonical demo guide path without creating a second guide. The human-readable guide is owned by `public-dataset-demo-ingestion`; this rebrand task only establishes the landing-page entrypoint and truth-state language.
 
 **Files:**
 
-- Create: `docs/guides/interview-demo.md`
 - Modify: `README.md`
 
 **Steps (TDD):**
 
-1. Confirm the creation need with `test ! -f docs/guides/interview-demo.md` and capture current README demo-link state with `rg -n "interview demo|demo guide|five minutes|public dataset" README.md`.
-2. Create `docs/guides/interview-demo.md` with a five-minute path: public payload source, AI mapping proposal, operator decision, normalized event delivery, observability proof, and one safe-abstention failure branch.
-3. Update `README.md` to link to the guide, explain pinned fixtures, and state the no-paid-SaaS / no-marketplace scope.
+1. Capture current README demo-link state with `rg -n "demo guide|five minutes|public dataset|public-dataset-demo" README.md`.
+2. Update `README.md` to link to the planned canonical guide `docs/guides/public-dataset-demo.md`, explain pinned fixtures, and state the no-paid-SaaS / no-marketplace scope.
+3. Label the guide as planned until `public-dataset-demo-ingestion` creates it.
 4. Run `pnpm docs:check && pnpm format:check`.
 
 **Acceptance:**
 
-- [ ] `docs/guides/interview-demo.md` exists and can be rehearsed in under five minutes.
-- [ ] README links to the guide instead of duplicating the full script.
-- [ ] The demo guide includes a resilience/failure branch, not only a happy path.
+- [ ] README points to `docs/guides/public-dataset-demo.md` as the canonical demo guide.
+- [ ] README does not duplicate the full script.
+- [ ] README labels the guide/demo truth state honestly until the guide exists.
 - [ ] `pnpm docs:check` and `pnpm format:check` pass.
 
 #### [ui-landing] Task 2.2: Reframe landing and dashboard pages around intake observability
@@ -350,31 +329,31 @@ rails behind the higher-level integration observability story.
 
 ## Cross-Plan References
 
-| Type       | Blueprint                       | Relationship                                                                         |
-| ---------- | ------------------------------- | ------------------------------------------------------------------------------------ |
-| Upstream   | `showcase-hardening-100`        | Rebrand starts after critical reliability defects are fixed.                         |
-| Downstream | `ai-payload-intake-mapper`      | AI feature uses IngestLens naming and README/UI truth-state language.                |
-| Downstream | `public-dataset-demo-ingestion` | Dataset-demo work should extend the shared interview guide and pinned-fixture story. |
+| Type       | Blueprint                       | Relationship                                                                                            |
+| ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Upstream   | `showcase-hardening-100`        | Rebrand starts after critical reliability defects are fixed.                                            |
+| Downstream | `ai-payload-intake-mapper`      | AI feature uses IngestLens naming and README/UI truth-state language.                                   |
+| Downstream | `public-dataset-demo-ingestion` | Dataset-demo work should create and extend the canonical public dataset guide and pinned-fixture story. |
 
 ### Cross-Plan Notes
 
 - (Fx5) Blueprint names are already consistent across `showcase-hardening-100`,
   `rebrand-ingestlens`, `ai-payload-intake-mapper`, and
   `public-dataset-demo-ingestion`; no rename cascade is needed.
-- (Fx2, Fx5) `docs/guides/interview-demo.md` is the canonical guide path this
-  blueprint creates; downstream demo polish should extend that file or link to
-  it rather than fork the story into a second guide.
+- (Fx2, Fx5) `docs/guides/public-dataset-demo.md` is the canonical guide path owned by
+  `public-dataset-demo-ingestion`; this blueprint should only prepare README
+  copy/link expectations and must not create a second demo guide.
 
 ## Edge Cases and Error Handling
 
-| Edge Case                                           | Risk   | Solution                                                                                         | Task          |
-| --------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------ | ------------- |
-| Brand rename breaks deployed resources              | Medium | Separate public copy rename from worker resource rename and document any deferment. (Fx1)        | 1.2           |
-| README/demo work conflicts with other rebrand edits | Medium | Keep all README truth-state work in 1.1 and only README link wiring in 2.1. (Fx4)                | 1.1, 2.1      |
-| UI copy lands without regression coverage           | Medium | Add first-pass Vitest smoke tests before changing shell/page copy. (Fx3)                         | 1.3, 2.2, 2.3 |
-| Demo guide path drifts from downstream plans        | Medium | Create `docs/guides/interview-demo.md` here and reference it consistently downstream. (Fx2, Fx5) | 2.1           |
-| Overclaiming AI/product scope                       | High   | Keep shipped/partial/planned labels and explicit non-goals in README/demo copy. (Fx1)            | 1.1, 2.1      |
-| Cleanup deletes template artifacts blindly          | Medium | Review each tracked `.new` file before deletion; delete only redundant copies. (Fx4)             | 1.4           |
+| Edge Case                                           | Risk   | Solution                                                                                                   | Task          |
+| --------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- | ------------- |
+| Brand rename breaks deployed resources              | Medium | Separate public copy rename from worker resource rename and document any deferment. (Fx1)                  | 1.2           |
+| README/demo work conflicts with other rebrand edits | Medium | Keep all README truth-state work in 1.1 and only README link wiring in 2.1. (Fx4)                          | 1.1, 2.1      |
+| UI copy lands without regression coverage           | Medium | Add first-pass Vitest smoke tests before changing shell/page copy. (Fx3)                                   | 1.3, 2.2, 2.3 |
+| Demo guide path drifts from downstream plans        | Medium | Reference `docs/guides/public-dataset-demo.md` consistently and avoid a second demo-guide path. (Fx2, Fx5) | 2.1           |
+| Overclaiming AI/product scope                       | High   | Keep shipped/partial/planned labels and explicit non-goals in README/demo copy. (Fx1)                      | 1.1, 2.1      |
+| Cleanup deletes template artifacts blindly          | Medium | Review each tracked `.new` file before deletion; delete only redundant copies. (Fx4)                       | 1.4           |
 
 ## Non-goals
 
@@ -399,28 +378,5 @@ rails behind the higher-level integration observability story.
 | Brand                 | `IngestLens`                                   | N/A      | Clear product wedge; no obvious exact-match collision found.                                             |
 | Verification commands | Root + client `pnpm` scripts                   | Existing | Repo already defines exact audit/build/test commands; blueprint now references them directly. (Fx1)      |
 | UI smoke coverage     | Client Vitest (`apps/client/vitest.config.ts`) | Existing | Test harness exists even though committed test files do not yet; add minimal smoke coverage first. (Fx3) |
-| Demo guide path       | `docs/guides/interview-demo.md`                | New      | Shared path for README linkage and downstream dataset-demo extension. (Fx2, Fx5)                         |
+| Demo guide path       | `docs/guides/public-dataset-demo.md`           | New      | Shared path owned by the public-dataset blueprint for README linkage and demo extension. (Fx2, Fx5)      |
 | Docs rules            | Existing markdown/frontmatter checks           | Existing | Minimal, reviewable rebrand that still respects repo audits.                                             |
-
-## Refinement Summary
-
-| Metric                    | Value                         |
-| ------------------------- | ----------------------------- |
-| Findings total            | 5                             |
-| Critical                  | 0                             |
-| High                      | 0                             |
-| Medium                    | 3                             |
-| Low                       | 2                             |
-| Fixes applied             | 5/5                           |
-| Cross-plans updated       | 0 (notes only; names aligned) |
-| Edge cases documented     | 6                             |
-| Risks documented          | 4                             |
-| **Parallelization score** | **A** (RW0 4, CPR 3.5, CP 0)  |
-| **Critical path**         | **2 waves**                   |
-| **Max parallel agents**   | **4**                         |
-| **Total tasks**           | **7**                         |
-| **Blueprint compliant**   | **7/7**                       |
-
-```
-
-```

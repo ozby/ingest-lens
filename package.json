@@ -1,6 +1,7 @@
 {
   "name": "ozbys-node-pubsub",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "vp run build",
     "catalog:check": "ak audit catalog-drift",

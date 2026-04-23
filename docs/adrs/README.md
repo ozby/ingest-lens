@@ -1,6 +1,6 @@
 ---
 type: adr
-last_updated: "2026-04-22"
+last_updated: "2026-04-24"
 ---
 
 # Architecture Decision Records
@@ -35,11 +35,12 @@ include `Status`, `Context`, `Decision`, `Consequences`, and
 
 ## Index
 
-| ADR                                            | Title                                | Status   |
-| ---------------------------------------------- | ------------------------------------ | -------- |
-| [0001](./0001-event-delivery-signing-model.md) | Event Delivery Signing Model         | accepted |
-| [0002](./0002-pubsub-in-process-vs-durable.md) | Pub/Sub In-Process vs. Durable Queue | accepted |
-| [0003](./0003-auth-story.md)                   | Auth Story (v1 API Keys)             | accepted |
+| ADR                                                 | Title                                | Status   |
+| --------------------------------------------------- | ------------------------------------ | -------- |
+| [0001](./0001-event-delivery-signing-model.md)      | Event Delivery Signing Model         | accepted |
+| [0002](./0002-pubsub-in-process-vs-durable.md)      | Pub/Sub In-Process vs. Durable Queue | accepted |
+| [0003](./0003-auth-story.md)                        | Auth Story (v1 API Keys)             | accepted |
+| [0004](./0004-ingestlens-ai-intake-architecture.md) | IngestLens AI Intake Architecture    | accepted |
 
 ## Lifecycle
 

@@ -3,11 +3,12 @@ type: blueprint
 status: planned
 complexity: L
 created: "2026-04-23"
-last_updated: "2026-04-23"
+last_updated: "2026-04-24"
 progress: "0% planned; refinement pass complete"
 depends_on:
   - showcase-hardening-100
   - rebrand-ingestlens
+  - ai-oss-tooling-adapter
 tags:
   - ai
   - workers-ai
@@ -16,13 +17,12 @@ tags:
   - observability
 ---
 
-# AI payload intake mapper
+# Intake mapping review flow
 
-**Goal:** Add the smallest impressive AI feature: a protected IngestLens intake
-endpoint and UI that take a public ATS/HRIS-style payload, ask Cloudflare Workers
-AI for a suggestion-only field mapping to a unified schema, validate the model's
-JSON output, and publish an auditable normalized event only after explicit
-operator approval.
+**Goal:** Add a protected IngestLens intake flow that accepts an example
+third-party payload, asks Cloudflare Workers AI for a suggestion-only field
+mapping to a target contract, validates the response locally, and ingests only
+after explicit admin approval.
 
 ## Planning Summary
 
@@ -38,6 +38,7 @@ operator approval.
 - Dataset fact-check: the pinned demo/eval assets already exist under
   `data/payload-mapper/` and the design doc already exists at
   `docs/ai/payload-mapper.md`.
+- Architecture decision: [ADR 0004](../../../docs/adrs/0004-ingestlens-ai-intake-architecture.md) fixes the AI boundary, review-retention model, bundled-fixture path, normalized event versioning, and `mappingTraceId` lifecycle.
 - Command fact-check: workspace commands are `pnpm --filter @repo/workers ...`,
   `pnpm --filter client ...`, root verification uses `pnpm check-types`,
   `pnpm build`, `pnpm lint:repo`, and root TS scripts are run via `bun` from
@@ -48,17 +49,31 @@ operator approval.
 ```text
 Client intake page
   -> POST /api/intake/mapping-suggestions
-    -> auth + rate limit + payload/schema validation
+    -> auth + rate limit + payload/schema/contract validation
     -> prompt builder from repo schema records
     -> env.AI.run(model, response_format: json_schema)
     -> strict JSON parse + schema validation + source-path existence checks
     -> persist suggestion attempt + confidence + abstention + delivery target draft
-  -> operator reviews uncertainty and approves
-    -> POST /api/intake/mapping-suggestions/:id/approve
-    -> normalize payload using approved mapping
-    -> publish normalized event through the existing DELIVERY_QUEUE rails
-    -> dashboard shows mapping + delivery telemetry without raw payload leakage
+  -> admin reviews uncertainty in /admin/intake approval panel
+    -> GET /api/intake/mapping-suggestions?status=pending_review
+    -> POST /api/intake/mapping-suggestions/:id/approve or /reject
+    -> approval creates approved mapping revision and replays source payload
+    -> deterministic ingest of eventType ingest.record.normalized + schemaVersion v1 through existing DELIVERY_QUEUE rails
+    -> dashboard shows drift + approved mapping revision + ingest + delivery telemetry without raw payload leakage
 ```
+
+### Simplification constraints from architecture review
+
+This blueprint owns the generic ingestion core only. Job-posting fixtures and vendor-specific assertions belong to
+`public-dataset-demo-ingestion`. Keep the implementation lens-agnostic and
+deterministic:
+
+- inject AI runner, DB facade, queue publisher, telemetry writer, clock, id
+  generator, and payload-hash function in tests;
+- no runtime contract registry, runtime live fetch, LLM-as-judge approval gate,
+  or connector marketplace in v1;
+- deterministic validation must run before any AI call;
+- telemetry tests assert an exact allowlist of emitted fields.
 
 ## Fact-Checked Findings
 
@@ -77,57 +92,43 @@ Client intake page
 
 ## Key Decisions
 
-| Decision         | Choice                                                        | Rationale                                                                              |
-| ---------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| AI provider      | Cloudflare Workers AI                                         | On-stack, no paid external SaaS, aligns with existing Worker runtime.                  |
-| Model behavior   | Adapter-only JSON Mode + strict local validation + abstention | Keeps the model behind one boundary and treats invalid output as failure, not success. |
-| Shared contracts | Flat `packages/types/IntakeMapping.ts` export                 | Matches current `packages/types` layout instead of inventing nested folders.           |
-| Delivery         | Reuse existing `DELIVERY_QUEUE.send(...)` message shape       | Smallest diff that stays aligned with current queue/topic delivery rails.              |
-| Eval runner      | Root `pnpm ai:eval` -> `bun ./scripts/run-mapping-eval.ts`    | Fits the repo's current script-running pattern for TS utilities.                       |
-| UX               | Operator-in-the-loop                                          | Mapping uncertainty is visible product value, not something to hide.                   |
-
-## Quick Reference (Execution Waves)
-
-| Wave              | Tasks                            | Dependencies               | Parallelizable | Effort |
-| ----------------- | -------------------------------- | -------------------------- | -------------- | ------ |
-| **Wave 0**        | 1.1, 1.2, 1.3                    | Blueprint-level gates only | 3 agents       | S-M    |
-| **Wave 1**        | 2.1, 3.2                         | Wave 0                     | 2 agents       | M + S  |
-| **Wave 2**        | 2.2                              | 2.1                        | 1 agent        | M      |
-| **Wave 3**        | 2.3, 3.1                         | 2.2                        | 2 agents       | S + M  |
-| **Critical path** | 1.1/1.2/1.3 -> 2.1 -> 2.2 -> 3.1 | --                         | 4 waves        | L      |
-
-### Parallel Metrics Snapshot
-
-| Metric | Formula / Meaning                  | Target                | Actual                        |
-| ------ | ---------------------------------- | --------------------- | ----------------------------- |
-| RW0    | Ready tasks in Wave 0              | >= planned agents / 2 | 3 runnable tasks for 3 agents |
-| CPR    | total_tasks / critical_path_length | >= 2.0                | 8 / 4 = 2.0                   |
-| DD     | dependency_edges / total_tasks     | <= 2.0                | 13 / 8 = 1.625                |
-| CP     | same-wave file overlaps per wave   | 0                     | 0                             |
-
-**Parallelization score:** B. The plan keeps meaningful width in Waves 0, 1,
-and 3 while forcing file-conflicting work (`apps/workers/src/routes/intake.ts`,
-`apps/workers/src/db/schema.ts`) into serialized waves so same-wave conflict
-pressure stays at zero.
-
----
+| Decision            | Choice                                                                                                                                                                            | Rationale                                                                                           |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| AI provider         | Cloudflare Workers AI                                                                                                                                                             | On-stack, no paid external SaaS, aligns with existing Worker runtime.                               |
+| Model behavior      | Adapter-only JSON Mode + strict local validation + abstention                                                                                                                     | Keeps the model behind one boundary and treats invalid output as failure, not success.              |
+| Shared contracts    | Flat `packages/types/IntakeMapping.ts` export                                                                                                                                     | Matches current `packages/types` layout instead of inventing nested folders.                        |
+| Delivery            | Reuse existing `DELIVERY_QUEUE.send(...)` message shape                                                                                                                           | Smallest diff that stays aligned with current queue/topic delivery rails.                           |
+| Eval runner         | Root `pnpm ai:eval` -> `bun ./scripts/run-mapping-eval.ts`                                                                                                                        | Fits the repo's current script-running pattern for TS utilities.                                    |
+| UX                  | Operator-in-the-loop                                                                                                                                                              | Mapping uncertainty is visible product value, not something to hide.                                |
+| Canonical contracts | `packages/types/IntakeMapping.ts` plus versioned target-contract/eval docs under `data/payload-mapper/`                                                                           | Worker, client, eval runner, and docs need one shared contract/version model.                       |
+| Retention/redaction | Persist attempts, drift category, approved mapping revisions, status, prompt/model metadata, validation errors, and redacted summaries; never write raw payload text to telemetry | Auditability is valuable only if it does not leak sensitive payload content.                        |
+| Failure semantics   | Return abstention for ambiguity, validation failure for bad model output, and retryable runtime errors only for infrastructure failures                                           | Keeps AI uncertainty distinct from platform failure.                                                |
+| Runtime data access | Public fixture serving uses a curated bundled Worker fixture module; larger datasets and optional live cache can use storage later                                                | Checked-in JSONL/schema files are not automatically available to deployed Workers.                  |
+| Trace lifecycle     | Create one `mappingTraceId` per attempt and carry it through suggestion, approval, event metadata, delivery telemetry, and replay                                                 | Observability is the product; disconnected IDs make the demo unverifiable.                          |
+| Raw payload TTL     | Pinned fixtures persist id/hash only; pasted JSON stores owner-scoped review payload with default 24h expiry and redacted long-term metadata                                      | Supports review without turning telemetry into a data leak.                                         |
+| Normalized event    | Approved mappings emit `ingest.record.normalized` with `recordType` and `schemaVersion: "v1"`; the job-posting demo uses `recordType: "job_posting"`                              | Versioned envelopes make downstream delivery/replay explainable while keeping the platform generic. |
+| LLM-as-judge        | Deferred from v1; later offline eval/admin-assist critique only; never production approval or ingest                                                                              | Keeps initial quality gates deterministic and credential-free.                                      |
+| Deterministic deps  | AI runner, DB facade, queue publisher, telemetry writer, clock, id generator, and hash function are injectable in tests                                                           | Prevents route tests from depending on live services, clocks, UUIDs, or network behavior.           |
 
 ### Phase 1: Contracts, prompt, and AI boundary [Complexity: M]
 
-#### [contracts] Task 1.1: Define shared intake and mapping contracts
+#### [contracts] Task 1.1: Define intake suggestion and approval contracts
 
 **Status:** todo
 
 **Depends:** None
 
-Define request/response contracts first, including suggestion results,
-validation failures, abstention, and approval-target shape. Keep the shared type
-surface flat and repo-native. (Fx1, Fx2, Fx8, Fx9)
+Define the minimum shared types for suggestion results, approval/rejection,
+validation errors, trace metadata, approved mapping revisions, and
+review-retention metadata. Keep the type surface small and generic; the
+job-posting dataset is only the initial demo lens.
+(Fx1, Fx2, Fx8, Fx9)
 
 **Files:**
 
 - Create: `packages/types/IntakeMapping.ts`
 - Modify: `packages/types/index.ts`
+- Modify: `apps/workers/package.json`
 - Create: `apps/workers/src/intake/contracts.ts`
 - Create: `apps/workers/src/tests/intakeContracts.test.ts`
 
@@ -139,17 +140,20 @@ surface flat and repo-native. (Fx1, Fx2, Fx8, Fx9)
    approval targets (`queueId` xor `topicId`).
 2. Run the RED step:
    `pnpm --filter @repo/workers test -- src/tests/intakeContracts.test.ts`.
-3. Add `packages/types/IntakeMapping.ts` and export it from
-   `packages/types/index.ts`; implement worker-local validation helpers in
-   `apps/workers/src/intake/contracts.ts`.
+3. Add `packages/types/IntakeMapping.ts`, export it from
+   `packages/types/index.ts`, add the Worker package dependency on `@repo/types`, and implement worker-local validation helpers in
+   `apps/workers/src/intake/contracts.ts`, including target-contract ids, approved-mapping-revision ids, drift categories, quarantine states, ingest states, and deterministic dependency contracts for `clock`, `idGenerator`, and `hashPayload`.
 4. Re-run the focused test until GREEN, then run:
    `pnpm --filter @repo/workers check-types` and `pnpm check-types`.
 
 **Acceptance:**
 
-- [ ] Shared contracts represent accepted, rejected, failed, and abstained suggestions.
+- [ ] Shared contracts represent pending review, approved, rejected, failed, abstained, ingesting, ingested, and ingest-failed states.
+- [ ] `apps/workers/package.json` can consume `@repo/types` for the shared intake contract.
 - [ ] Approval target is explicit and rejects both-or-neither `queueId` / `topicId` input.
-- [ ] Contract metadata includes model name, prompt version, and validation errors.
+- [ ] Contract metadata includes `intakeAttemptId`, `mappingTraceId`, `contractId`, `mappingVersionId`, drift category, model name, prompt version, source hash, raw-payload expiry, and validation errors.
+- [ ] Contracts are lens-agnostic and contain no domain-specific target names.
+- [ ] Tests can inject `clock`, `idGenerator`, and `hashPayload` instead of using ambient time, UUIDs, or runtime crypto directly.
 - [ ] Tests prove nonexistent `sourcePath` values are rejected before publish.
 
 ---
@@ -160,14 +164,14 @@ surface flat and repo-native. (Fx1, Fx2, Fx8, Fx9)
 
 **Depends:** Task 1.1
 
-Wrap Workers AI behind one adapter so tests and local demos stay deterministic,
-and bind AI only where the current repo actually expects runtime bindings.
+Wrap Workers AI behind one adapter (`suggestMapping(input, deps)`) so tests and local demos stay deterministic, and bind AI only where the current repo actually expects runtime bindings. The adapter returns a closed union result; route code never handles raw model output.
 (Fx1, Fx3, Fx9)
 
 **Files:**
 
 - Create: `apps/workers/src/intake/aiMappingAdapter.ts`
 - Create: `apps/workers/src/tests/aiMappingAdapter.test.ts`
+- Modify: `apps/workers/package.json`
 - Modify: `apps/workers/src/db/client.ts`
 - Modify: `apps/workers/src/tests/helpers.ts`
 - Modify: `apps/workers/wrangler.toml`
@@ -181,7 +185,9 @@ and bind AI only where the current repo actually expects runtime bindings.
    `pnpm --filter @repo/workers test -- src/tests/aiMappingAdapter.test.ts`.
 3. Add `[ai] binding = "AI"` to `apps/workers/wrangler.toml`, extend `Env` in
    `apps/workers/src/db/client.ts` with `AI?: Ai`, update test helpers, and
-   implement `apps/workers/src/intake/aiMappingAdapter.ts`.
+   implement `apps/workers/src/intake/aiMappingAdapter.ts`. If using the Vercel
+   AI SDK, add `ai` and `workers-ai-provider` only to `apps/workers` and keep
+   all SDK imports inside the adapter.
 4. Re-run the focused test until GREEN, then run:
    `pnpm --filter @repo/workers check-types` and
    `pnpm --filter @repo/workers lint`.
@@ -189,25 +195,28 @@ and bind AI only where the current repo actually expects runtime bindings.
 **Acceptance:**
 
 - [ ] Production AI calls happen only in `apps/workers/src/intake/aiMappingAdapter.ts`.
+- [ ] If the Vercel AI SDK is used, no file outside `aiMappingAdapter.ts` imports `ai` or `workers-ai-provider`.
+- [ ] Adapter tests run with a fake runner only; no test reads runtime `env.AI` directly.
+- [ ] Adapter returns a closed union for success, abstention, invalid-output, and runtime-failure states.
 - [ ] Local/test fallback is explicit and visibly labelled, never silent fake AI.
 - [ ] JSON Mode failures become safe API failures or abstentions.
 - [ ] No test depends on live Cloudflare credentials.
 
 ---
 
-#### [prompt] Task 1.3: Version the mapping prompt and eval contract together
+#### [prompt] Task 1.3: Keep one prompt contract in sync with deterministic fixture checks
 
 **Status:** todo
 
 **Depends:** Task 1.1
 
-Create a versioned prompt that uses the existing schema/eval assets and teaches
-the model to abstain rather than invent fields. Keep prompt and eval contract in
-lock-step. (Fx1, Fx8, Fx9, Fx10)
+Keep one prompt contract with the AI adapter and one deterministic fixture-based
+contract check. Teach the model to abstain rather than invent fields. Do not add
+LLM-as-judge artifacts in v1. (Fx1, Fx8, Fx9, Fx10)
 
 **Files:**
 
-- Create: `apps/workers/src/intake/prompts/payloadMappingV1.ts`
+- Modify: `apps/workers/src/intake/aiMappingAdapter.ts`
 - Create: `apps/workers/src/tests/payloadMappingPrompt.test.ts`
 - Modify: `docs/ai/payload-mapper.md`
 - Modify: `data/payload-mapper/evals/eval-contract.json`
@@ -220,9 +229,7 @@ lock-step. (Fx1, Fx8, Fx9, Fx10)
    `data/payload-mapper/payloads/ats/open-apply-sample.jsonl`.
 2. Run the RED step:
    `pnpm --filter @repo/workers test -- src/tests/payloadMappingPrompt.test.ts`.
-3. Implement `apps/workers/src/intake/prompts/payloadMappingV1.ts` and update
-   `docs/ai/payload-mapper.md` plus `data/payload-mapper/evals/eval-contract.json`
-   if the prompt/response contract adds persisted fields such as prompt version.
+3. Keep the prompt version and prompt builder in `apps/workers/src/intake/aiMappingAdapter.ts` and update `docs/ai/payload-mapper.md` plus `data/payload-mapper/evals/eval-contract.json` if the prompt/response contract adds persisted fields such as prompt version.
 4. Re-run the focused test until GREEN, then run:
    `pnpm --filter @repo/workers check-types`.
 
@@ -231,7 +238,8 @@ lock-step. (Fx1, Fx8, Fx9, Fx10)
 - [ ] Prompt instructs the model not to map fields that are absent from the payload.
 - [ ] Prompt output shape matches the checked-in eval contract.
 - [ ] Prompt version is carried forward in suggestion records and API responses.
-- [ ] Fixture coverage includes at least three vendor payload shapes already present in-repo.
+- [ ] Core prompt tests use generic payload shapes; downstream demo tests cover at least three example-lens vendor payload shapes already present in-repo.
+- [ ] No LLM-as-judge task is required for the v1 quality gate.
 
 ---
 
@@ -244,27 +252,27 @@ lock-step. (Fx1, Fx8, Fx9, Fx10)
 **Depends:** Task 1.1, Task 1.2, Task 1.3
 
 Add the first authenticated intake endpoint for generating mapping suggestions
-from supplied payloads and target schema identifiers. Keep route wiring and DB
+from supplied payloads, target contract identifiers, and current approved mapping revisions. Keep route wiring and DB
 changes explicit. (Fx1, Fx4, Fx8, Fx9)
 
 **Files:**
 
 - Create: `apps/workers/src/routes/intake.ts`
+- Create: `apps/workers/src/intake/validateIntakeRequest.ts`
 - Create: `apps/workers/src/tests/intake.test.ts`
+- Create: `apps/workers/src/tests/validateIntakeRequest.test.ts`
 - Modify: `apps/workers/src/db/schema.ts`
+- Create: `apps/workers/src/db/migrations/0002_add_intake_attempts.sql`
 - Modify: `apps/workers/src/index.ts`
 
 **Steps (TDD):**
 
 1. Write failing endpoint tests in `apps/workers/src/tests/intake.test.ts` for
    unauthenticated access, rate-limited access, invalid payload,
-   too-large/too-deep payload rejection, valid fixture suggestion, abstention,
-   and validation failure.
+   too-large/too-deep payload rejection before AI, invalid contract id, pasted-payload vs fixture-reference rules, valid generic fixture suggestion, abstention, and validation failure.
 2. Run the RED step:
    `pnpm --filter @repo/workers test -- src/tests/intake.test.ts`.
-3. Add storage shape in `apps/workers/src/db/schema.ts`, implement
-   `apps/workers/src/routes/intake.ts`, and register it in
-   `apps/workers/src/index.ts`.
+3. Add storage shape in `apps/workers/src/db/schema.ts` plus a matching SQL migration, implement pure pre-route validation in `apps/workers/src/intake/validateIntakeRequest.ts`, implement `apps/workers/src/routes/intake.ts`, and register it in `apps/workers/src/index.ts`. Persist `intakeAttemptId`, `mappingTraceId`, `contractId`, `mappingVersionId`, drift category, review-payload expiry, redacted summary, source hash, prompt/model metadata, and validation results.
 4. Re-run the focused test until GREEN, then run:
    `pnpm --filter @repo/workers test`,
    `pnpm --filter @repo/workers check-types`, and
@@ -273,21 +281,20 @@ changes explicit. (Fx1, Fx4, Fx8, Fx9)
 **Acceptance:**
 
 - [ ] `/api/intake/mapping-suggestions` is authenticated and rate-limited.
-- [ ] Invalid or oversized payloads fail before any AI call is attempted.
-- [ ] Suggestion attempts persist owner scope, schema id, prompt version, model name, status, confidence, and validation errors.
+- [ ] Invalid, oversized, too-deep, or unknown-contract payloads fail before any AI call is attempted.
+- [ ] Suggestion attempts persist owner scope, contract id, approved mapping revision id, drift category, `mappingTraceId`, prompt version, model name, status, confidence, source hash, review payload expiry, redacted summary, and validation errors.
 - [ ] `apps/workers/src/index.ts` is the only route-registration touchpoint for the new endpoint.
+- [ ] Expired pasted payloads cannot be approved; pinned fixtures approve by fixture id/hash without raw DB payload persistence.
 
 ---
 
-#### [approval] Task 2.2: Approve a suggestion, normalize it, and publish once
+#### [approval] Task 2.2: Approve or reject a suggestion and ingest once deterministically
 
 **Status:** todo
 
 **Depends:** Task 2.1
 
-Allow operators to approve exactly one suggestion once, normalize the payload,
-and publish it through the existing delivery queue rails without refactoring the
-current queue/topic publisher paths. (Fx2, Fx5, Fx9)
+Allow admins to approve or reject a suggestion. Approval stores the approved mapping revision and performs the first deterministic ingest. Defer manual replay to a later blueprint unless a concrete operator use case appears. (Fx2, Fx5, Fx9)
 
 **Files:**
 
@@ -296,20 +303,19 @@ current queue/topic publisher paths. (Fx2, Fx5, Fx9)
 - Modify: `apps/workers/src/routes/intake.ts`
 - Modify: `apps/workers/src/tests/intake.test.ts`
 - Create: `apps/workers/src/intake/normalizeWithMapping.ts`
+- Create: `apps/workers/src/intake/normalizedEnvelope.ts`
 - Create: `apps/workers/src/tests/normalizeWithMapping.test.ts`
 
 **Steps (TDD):**
 
 1. Extend `apps/workers/src/tests/intake.test.ts` and add
    `apps/workers/src/tests/normalizeWithMapping.test.ts` with failing tests for
-   owner approval, non-owner rejection, repeated approval idempotency,
-   invalid/missing delivery target, normalization output, and downstream publish
-   failure.
+   admin approval, admin rejection, non-owner rejection, repeated approval idempotency,
+   invalid/missing delivery target, generic normalized-envelope output, ingest status, and downstream publish failure.
 2. Run the RED step:
    `pnpm --filter @repo/workers test -- src/tests/intake.test.ts src/tests/normalizeWithMapping.test.ts`.
-3. Implement approval/publish behavior in `apps/workers/src/routes/intake.ts`,
-   add normalization logic in `apps/workers/src/intake/normalizeWithMapping.ts`,
-   and extend schema/contracts only as needed for approval and delivery status.
+3. Implement approval/reject behavior in `apps/workers/src/routes/intake.ts`,
+   add pure mapping application in `apps/workers/src/intake/normalizeWithMapping.ts`, generic envelope creation in `apps/workers/src/intake/normalizedEnvelope.ts`, and extend schema/contracts only as needed for approval, delivery status, `mappingTraceId`, and `ingest.record.normalized` event metadata.
 4. Re-run the focused tests until GREEN, then run:
    `pnpm --filter @repo/workers test`,
    `pnpm --filter @repo/workers check-types`, and
@@ -317,22 +323,25 @@ current queue/topic publisher paths. (Fx2, Fx5, Fx9)
 
 **Acceptance:**
 
-- [ ] No normalized event is published before approval.
-- [ ] Approval is idempotent and owner-scoped.
+- [ ] No normalized event is ingested before admin approval.
+- [ ] Approval and rejection are idempotent and owner-scoped.
 - [ ] Publish uses the existing `DELIVERY_QUEUE.send({ messageId, seq, queueId, pushEndpoint, topicId, attempt })` shape.
-- [ ] Publish failures do not mark suggestions as delivered.
+- [ ] Normalized events include generic envelope fields: `eventType: "ingest.record.normalized"`, `recordType`, `schemaVersion: "v1"`, `contractId`, `mappingVersionId`, `intakeAttemptId`, `mappingTraceId`, source provenance, and payload hash.
+- [ ] Core replay code does not import job-posting-specific normalization; example-lens shaping lives in `public-dataset-demo-ingestion`.
+- [ ] Publish failures do not mark suggestions as ingested.
+- [ ] Approve performs deterministic replay+ingest exactly once; any future manual replay path must never call AI.
 
 ---
 
-#### [telemetry] Task 2.3: Record AI + mapping telemetry without leaking payloads
+#### [telemetry] Task 2.3: Record intake counters and trace ids without payload text
 
 **Status:** todo
 
 **Depends:** Task 2.2
 
-Expose suggestion lifecycle metrics and dashboard aggregates without storing or
-emitting raw ATS/HRIS payload content. Keep telemetry centralized. (Fx6, Fx8,
-Fx9)
+Expose only the counters and trace links needed to prove the flow works without
+storing or emitting raw payload content. Keep telemetry centralized and
+payload-free. (Fx6, Fx8, Fx9)
 
 **Files:**
 
@@ -344,12 +353,11 @@ Fx9)
 **Steps (TDD):**
 
 1. Write failing telemetry tests in
-   `apps/workers/src/tests/mappingTelemetry.test.ts` for payload redaction,
-   suggestion-status aggregation, and approval/publish counters.
+   `apps/workers/src/tests/mappingTelemetry.test.ts` for exact telemetry-field allowlist enforcement, payload redaction, `mappingTraceId` propagation, suggestion-status aggregation, and approval/ingest/publish counters.
 2. Run the RED step:
    `pnpm --filter @repo/workers test -- src/tests/mappingTelemetry.test.ts`.
 3. Extend `apps/workers/src/telemetry.ts`, `apps/workers/src/routes/intake.ts`,
-   and `apps/workers/src/routes/dashboard.ts` with redacted metrics only.
+   and `apps/workers/src/routes/dashboard.ts` with redacted allowlisted metrics only.
 4. Re-run the focused test until GREEN, then run:
    `pnpm --filter @repo/workers test`,
    `pnpm --filter @repo/workers lint`, and
@@ -357,28 +365,30 @@ Fx9)
 
 **Acceptance:**
 
-- [ ] Telemetry never includes raw candidate, employee, or job-description text.
-- [ ] Dashboard can show suggestion success, abstention, validation-failure, approval, and publish counts.
+- [ ] Telemetry never includes raw candidate, employee, job-description, or pasted payload text.
+- [ ] Dashboard can show suggestion success, abstention, validation-failure, approval, rejection, ingest, publish counts, and trace drilldown by `mappingTraceId`.
 - [ ] Redaction is enforced by tests, not comments alone.
+- [ ] Tests assert the exact permitted telemetry field names for every mapping lifecycle event.
 
 ---
 
 ### Phase 3: Client intake UI and measurable quality gate [Complexity: M]
 
-#### [client] Task 3.1: Build the IngestLens intake UI
+#### [client] Task 3.1: Build a minimal intake page and admin review page
 
 **Status:** todo
 
 **Depends:** Task 2.2
 
-Add a focused UI for fixture selection or pasted JSON, suggestion review,
-uncertainty display, and explicit approval. Keep the change isolated to the
-existing client route/nav/service integration points. (Fx2, Fx7)
+Add one operator page and one admin review page using existing client routing,
+nav, and API patterns. Avoid any new client architecture layer. (Fx2, Fx7)
 
 **Files:**
 
 - Create: `apps/client/src/pages/Intake.tsx`
+- Create: `apps/client/src/pages/AdminIntake.tsx`
 - Create: `apps/client/src/pages/Intake.test.tsx`
+- Create: `apps/client/src/pages/AdminIntake.test.tsx`
 - Create: `apps/client/src/components/MappingSuggestionReview.tsx`
 - Modify: `apps/client/src/services/api.ts`
 - Modify: `apps/client/src/App.tsx`
@@ -387,12 +397,10 @@ existing client route/nav/service integration points. (Fx2, Fx7)
 **Steps (TDD):**
 
 1. Write failing client tests in `apps/client/src/pages/Intake.test.tsx` for
-   fixture load, invalid JSON, suggestion rendering, ambiguous-field display,
-   and approve-button behavior.
+   fixture load, invalid JSON, escaped/sanitized payload preview, suggestion rendering, pending admin queue, reject action, approve action, ambiguous-field display, and ingest-status rendering. Delivery-dashboard richness is deferred.
 2. Run the RED step:
    `pnpm --filter client test -- src/pages/Intake.test.tsx`.
-3. Implement the page, review component, API methods, route registration, and
-   sidebar navigation using the existing client patterns.
+3. Implement the intake page, admin approval page, review component, API methods, route registration (`/intake` and `/admin/intake`), and sidebar navigation using the existing client patterns.
 4. Re-run the focused test until GREEN, then run:
    `pnpm --filter client test`,
    `pnpm --filter client check-types`, and
@@ -401,21 +409,21 @@ existing client route/nav/service integration points. (Fx2, Fx7)
 **Acceptance:**
 
 - [ ] Users can paste JSON or load a fixture and receive a validated mapping suggestion.
+- [ ] Payload preview renders escaped/sanitized text and never injects source HTML.
 - [ ] Missing and ambiguous fields are visually distinct from confident mappings.
-- [ ] Approval is explicit and shows resulting delivery status.
+- [ ] Admin approval is explicit and shows ingest status; detailed delivery dashboard drilldown is deferred.
+- [ ] Admin can reject with a reason; manual replay is deferred from v1.
 - [ ] The UI change stays inside the listed files; no new client architecture layer is introduced.
 
 ---
 
-#### [eval] Task 3.2: Add a deterministic mapping eval runner and quality gate
+#### [eval] Task 3.2: Add deterministic fixture checks for mapping quality
 
 **Status:** todo
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3
 
-Make mapping quality measurable with a deterministic runner first, then allow
-opt-in live AI evals. Use a testable helper plus a thin root CLI script so the
-plan remains TDD-compliant. (Fx8, Fx9, Fx10)
+Measure mapping quality with deterministic fixture checks first. Use a testable helper plus a thin root CLI script so the plan remains TDD-compliant and credential-free. Add a rubric shape that an optional advisory judge can use later, but keep the required gate deterministic. (Fx8, Fx9, Fx10)
 
 **Files:**
 
@@ -443,11 +451,54 @@ plan remains TDD-compliant. (Fx8, Fx9, Fx10)
 **Acceptance:**
 
 - [ ] `pnpm ai:eval` passes deterministically without Cloudflare credentials.
-- [ ] Live AI eval is opt-in only (for example via `RUN_LIVE_AI_EVAL=1`).
+- [ ] The eval runner uses no network, no credentials, and no live AI by default.
+- [ ] LLM-as-judge output is not part of the v1 quality gate.
+- [ ] Any judge rubric is advisory and can run with a fake judge runner in tests.
 - [ ] Non-hallucination remains a hard gate in the runner output.
 - [ ] Eval docs explain deterministic vs live modes using the checked-in dataset.
 
 ---
+
+---
+
+#### [judge] Optional Task 3.3: Add advisory LLM critique for admin review
+
+**Status:** optional
+
+**Depends:** Task 2.1, Task 3.2
+
+Add LLM-as-judge only as an admin-assist reviewer after deterministic
+validation exists. The judge reads the source payload summary, target contract,
+validated suggestion, deterministic validation results, and rubric. It returns
+critique, risk flags, and questions for the human admin. It never approves,
+rejects, replays, ingests, or blocks deterministic gates.
+
+**Files:**
+
+- Modify: `apps/workers/src/intake/aiMappingAdapter.ts`
+- Modify: `apps/workers/src/tests/aiMappingAdapter.test.ts`
+- Modify: `apps/client/src/components/MappingSuggestionReview.tsx`
+- Modify: `docs/ai/payload-mapper.md`
+
+**Steps (TDD):**
+
+1. Add failing adapter tests for judge success, judge abstention, malformed judge
+   output, and deterministic fake judge mode.
+2. Run `pnpm --filter @repo/workers test -- src/tests/aiMappingAdapter.test.ts`
+   — verify FAIL.
+3. Add a `critiqueSuggestion(input, deps)` method behind the existing AI adapter
+   boundary and render the critique as advisory copy in the review component.
+4. Re-run focused tests, then `pnpm --filter @repo/workers test`,
+   `pnpm --filter client test`, and `pnpm check-types`.
+
+**Acceptance:**
+
+- [ ] Judge critique is visually labelled advisory in the admin UI.
+- [ ] Judge output cannot change suggestion status, approval state, replay state,
+      ingest state, or deterministic eval score.
+- [ ] Tests use a fake judge runner only; no test depends on live AI.
+- [ ] Invalid judge output fails closed and hides critique rather than blocking
+      approval.
 
 ## Verification Gates
 
@@ -470,21 +521,26 @@ plan remains TDD-compliant. (Fx8, Fx9, Fx10)
 | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------ |
 | Upstream   | `showcase-hardening-100`        | This blueprint should not land before the repo-wide security/type/CI baseline is hardened. |
 | Upstream   | `rebrand-ingestlens`            | Intake route/page copy should use IngestLens naming and navigation language.               |
+| Upstream   | `ai-oss-tooling-adapter`        | Supplies the approved OSS dependency boundary, schema validators, and source-path helper.  |
 | Downstream | `public-dataset-demo-ingestion` | Can add live public dataset ingestion polish after the deterministic intake mapper exists. |
 
 ## Edge Cases and Error Handling
 
-| Edge Case                                                                    | Risk                        | Solution                                                                   | Task     |
-| ---------------------------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------- | -------- |
-| Workers AI returns invalid JSON or `JSON Mode couldn't be met`               | API crash or unsafe mapping | Catch in the adapter, persist failure details, and abstain/fail closed     | 1.2, 2.1 |
-| Suggested `sourcePath` does not exist in the payload                         | Silent data corruption      | Validate every suggested path before persistence or approval               | 1.1, 2.1 |
-| Approval request sends both `queueId` and `topicId`, or neither              | Ambiguous delivery target   | Enforce an xor contract in shared types + route validation                 | 1.1, 2.2 |
-| Downstream queue/topic target does not exist or is not owned by the approver | Cross-tenant publish risk   | Re-check ownership at approval time before any publish call                | 2.2      |
-| Approval is repeated                                                         | Duplicate normalized events | Store approval state/idempotency and short-circuit repeats                 | 2.2      |
-| Payload contains PII                                                         | Telemetry/log leakage       | Redact telemetry and never emit raw payload text                           | 2.3      |
-| Local dev lacks an AI binding                                                | Blocked demos/tests         | Use explicit deterministic fallback path                                   | 1.2      |
-| Nested arrays or optional fields create ambiguous mappings                   | Overconfident suggestions   | Preserve ambiguity/missing-field outputs instead of forcing exact mappings | 1.1, 1.3 |
-| Payload is too large or deeply nested for safe Worker processing             | Latency or memory spikes    | Reject early before prompt construction or AI invocation                   | 2.1      |
+| Edge Case                                                                    | Risk                               | Solution                                                                                             | Task          |
+| ---------------------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------- |
+| Workers AI returns invalid JSON or `JSON Mode couldn't be met`               | API crash or unsafe mapping        | Catch in the adapter, persist failure details, and abstain/fail closed                               | 1.2, 2.1      |
+| Suggested `sourcePath` does not exist in the payload                         | Silent data corruption             | Validate every suggested path before persistence or approval                                         | 1.1, 2.1      |
+| Approval request sends both `queueId` and `topicId`, or neither              | Ambiguous delivery target          | Enforce an xor contract in shared types + route validation                                           | 1.1, 2.2      |
+| Downstream queue/topic target does not exist or is not owned by the approver | Cross-tenant publish risk          | Re-check ownership at approval time before any publish call                                          | 2.2           |
+| Approval is repeated                                                         | Duplicate normalized events        | Store approval state/idempotency and short-circuit repeats                                           | 2.2           |
+| Payload contains PII                                                         | Telemetry/log leakage              | Redact telemetry and never emit raw payload text                                                     | 2.3           |
+| Local dev lacks an AI binding                                                | Blocked demos/tests                | Use explicit deterministic fallback path                                                             | 1.2           |
+| Nested arrays or optional fields create ambiguous mappings                   | Overconfident suggestions          | Preserve ambiguity/missing-field outputs instead of forcing exact mappings                           | 1.1, 1.3      |
+| Payload is too large or deeply nested for safe Worker processing             | Latency or memory spikes           | Reject early before prompt construction or AI invocation                                             | 2.1           |
+| Trace id is missing from publish or replay path                              | Unverifiable demo lifecycle        | Require `mappingTraceId` in API response, DB row, normalized event, delivery metadata, and telemetry | 2.1, 2.2, 2.3 |
+| Pasted review payload expires before approval                                | Confusing operator failure         | Return explicit expired-attempt state; allow rerun from original input, not publish stale data       | 2.1, 2.2      |
+| LLM judge approves or blocks production ingest                               | Unsafe automation                  | Keep LLM judge output offline/advisory; only deterministic validation plus admin action can ingest   | 3.2           |
+| Admin approves the wrong target queue/topic                                  | Cross-tenant or wrong-route ingest | Re-check target ownership and show target details in approval panel before replay+ingest             | 2.2, 3.1      |
 
 ## Non-goals
 
@@ -492,18 +548,18 @@ plan remains TDD-compliant. (Fx8, Fx9, Fx10)
 - No paid external LLM provider.
 - No connector marketplace.
 - No RAG / AI Search assistant in this first AI slice.
-- No scraping of private ATS/HRIS data.
+- No scraping of private source data.
 - No refactor of the existing queue/topic publisher architecture beyond reuse.
 
 ## Risks
 
-| Risk                                                             | Impact | Mitigation                                                                                 |
-| ---------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------ |
-| Workers AI latency is inconsistent                               | Medium | Keep async UX, persist attempt status, and surface telemetry rather than blocking silently |
-| JSON Mode cannot satisfy the schema for some payloads            | High   | Fail closed, abstain, and score the behavior in `pnpm ai:eval`                             |
-| Shared contracts drift between client and worker                 | Medium | Centralize them in `packages/types/IntakeMapping.ts` and gate with `pnpm check-types`      |
-| Approval flow becomes a multi-target publish surface by accident | Medium | Keep xor target semantics and reuse the current queue-send shape only                      |
-| Deterministic eval diverges from live AI behavior over time      | Medium | Keep live eval opt-in and documented; do not let it break CI determinism                   |
+| Risk                                                                                 | Impact | Mitigation                                                                                 |
+| ------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------ |
+| Workers AI latency is inconsistent                                                   | Medium | Keep async UX, persist attempt status, and surface telemetry rather than blocking silently |
+| JSON Mode cannot satisfy the schema for some payloads                                | High   | Fail closed, abstain, and score the behavior in `pnpm ai:eval`                             |
+| Shared contracts/approved-mapping-revision semantics drift between client and worker | Medium | Centralize them in `packages/types/IntakeMapping.ts` and gate with `pnpm check-types`      |
+| Approval flow becomes a multi-target publish surface by accident                     | Medium | Keep xor target semantics and reuse the current queue-send shape only                      |
+| Deterministic eval diverges from live AI behavior over time                          | Medium | Keep live eval opt-in and documented; do not let it break CI determinism                   |
 
 ## Technology Choices
 
@@ -516,31 +572,3 @@ plan remains TDD-compliant. (Fx8, Fx9, Fx10)
 | Delivery          | Existing `DELIVERY_QUEUE.send(...)` rails                    | Existing repo behavior                         | Avoids adding another publisher path                                                                |
 | Telemetry         | `apps/workers/src/telemetry.ts` + dashboard aggregates       | Existing repo behavior                         | Centralized, redacted Analytics Engine writes                                                       |
 | Eval runner       | `bun ./scripts/run-mapping-eval.ts` via `pnpm ai:eval`       | Existing repo script pattern                   | Deterministic root command without new runtime dependencies                                         |
-
-## Refinement Summary
-
-| Metric                    | Value                                                                                  |
-| ------------------------- | -------------------------------------------------------------------------------------- |
-| Findings total            | 10                                                                                     |
-| Critical                  | 0                                                                                      |
-| High                      | 6                                                                                      |
-| Medium                    | 3                                                                                      |
-| Low                       | 1                                                                                      |
-| Fixes applied             | 10/10 in blueprint                                                                     |
-| Cross-plans updated       | 0                                                                                      |
-| Edge cases documented     | 9                                                                                      |
-| Risks documented          | 5                                                                                      |
-| **Parallelization score** | B (useful width in 3 waves; same-wave file conflict pressure = 0)                      |
-| **Critical path**         | 4 waves                                                                                |
-| **Max parallel agents**   | 3                                                                                      |
-| **Total tasks**           | 8                                                                                      |
-| **Blueprint compliant**   | 8/8 tasks include `Status`, `Depends`, exact files, TDD steps, and acceptance criteria |
-
-**Refinement delta (2026-04-23):** The original plan had the right product
-shape, but it mixed guessed file paths with actual repo structure and left
-same-file worker work too parallel to execute safely. This pass hardens the plan
-around the real `apps/workers`, `apps/client`, `packages/types`, and
-`data/payload-mapper` surfaces, moves every task to explicit TDD commands,
-serializes `routes/intake.ts` / `db/schema.ts` edits to keep conflict pressure at
-zero, and adds a deterministic `pnpm ai:eval` lane without changing the feature
-intent.

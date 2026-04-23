@@ -1,178 +1,340 @@
 ---
 type: research
-last_updated: "2026-04-21"
+last_updated: "2026-04-24"
 ---
 
-# node-pubsub Vision
+# IngestLens Vision
 
-This repo is a **portfolio-grade event delivery platform** authored to
-demonstrate principal-level engineering across runtime, infra, AI, and
-guardrail discipline. It is not a product aimed at end users. Its
-audience is a hiring engineering leader evaluating **how a 25-year-senior
-engineer thinks, structures work, and ships**.
+IngestLens is an **ingestion review and replay system**: it takes
+messy third-party payloads, detects schema or semantic drift, proposes safe
+mapping repairs with AI, requires operator approval, promotes an approved
+mapping revision, replays the source payload deterministically, and proves the
+result through telemetry and existing delivery rails.
 
-## What node-pubsub Is
+This file is the canonical product-vision source. `README.md` is the public
+landing page, `ROADMAP.md` is execution sequencing, and individual blueprints are
+the implementation contracts. When those documents disagree, update this file
+first and then make the others conform.
 
-Two layers sit on top of each other in this repo:
+## One-sentence product promise
 
-1. **The enabling layer — a reliability-first event delivery platform.**
-   Hono control plane (`apps/api-server`), signed delivery receiver
-   (`apps/notification-server`), Drizzle/Postgres durable model
-   (`packages/db`), operator dashboard (`apps/client`). Tracks event
-   acceptance, signed delivery, retries, replay, and operator
-   observability.
-2. **The showcase layer — blueprint-driven execution of an ambitious
-   modernization plan.** Every non-trivial change is authored as a
-   fact-checked blueprint, refined against repo reality, then executed
-   through measurable gates (type safety, mutation score, commit hooks,
-   CI). The _process_ is the product here.
+> **Deterministic intake, AI-assisted mapping repair, human approval, replay,
+> delivery, and proof for messy third-party data.**
 
-Long term, the same stack is a credible seed for a unified-API-style
-integration platform — signed deliveries, webhooks, idempotency,
-observability, and an AI-assisted payload mapper that fits a B2B2B shape.
+## Audience
 
-## The Problem
+The primary audience is an engineering hiring panel or senior technical reviewer.
+The repo should demonstrate how an experienced engineer chooses a bounded product
+slice, labels truth state honestly, designs failure boundaries, and verifies work
+before claiming it is ready.
 
-Most portfolio repos signal one of three things:
+The product story should still read like a real operator tool, not like an
+internal process demo. The process is proof; **IngestLens is the public story**.
 
-### 1. Can write code
+## What IngestLens Is
 
-A CRUD app, some tests, shipped to a preview URL. Shows ability to
-produce, not to reason.
+IngestLens has two product layers:
 
-### 2. Can follow a tutorial
+1. **Review-and-replay layer.** A reviewer sees a messy third-party payload, a
+   detected target-contract or mapping drift, an AI-generated repair suggestion,
+   validation failures or confidence signals, an explicit approval step, an
+   approved mapping revision, a replayed normalized record, and the
+   delivery/telemetry trail.
+2. **Runtime substrate.** Hono on Cloudflare Workers, Postgres via Hyperdrive,
+   Cloudflare Queues, Durable Objects, rate limiting, and Analytics Engine
+   provide the reliable delivery rails behind the demo.
 
-A stack pulled from a trending template: Next.js + Drizzle + shadcn.
-Indistinguishable from a thousand other repos.
+Blueprints, TDD steps, CI gates, commit trailers, and docs checks remain
+engineering proof, but they are process evidence rather than a product layer.
+The queue/topic platform is the enabling substrate; it is no longer the headline.
 
-### 3. Can operate at scale
+## Current truth state
 
-Microservices, Kubernetes, traces, dashboards — but no opinion about
-why any of it exists or what invariants it preserves.
+Use these exact truth-state labels across README, roadmap, blueprints, guides,
+and UI copy:
 
-This repo refuses all three. It demonstrates **engineering judgment**:
-blueprints before code; fact-checks before claims; guardrails before
-features; honesty about truth state (shipped vs partial vs aspirational).
+| State       | Meaning                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| **shipped** | Executable on `main` today with local commands and tests.                                     |
+| **partial** | Some real infrastructure exists, but behavior is incomplete, placeholder-backed, or drifting. |
+| **planned** | Captured in a blueprint but not executable yet.                                               |
 
-## Why Now
+### Shipped
 
-The moment makes several things cheap that used to be expensive:
+- Worker-based auth, queues, topics, message delivery, and queue consumer.
+- Postgres-backed users, queues, messages, topics, server metrics, and queue
+  metrics.
+- Delivery-attempt telemetry for ack/retry/drop outcomes.
+- Offline payload-mapper assets: source schemas, mapping tasks, eval contract,
+  and the pinned public ATS fixture sample under `data/payload-mapper/`.
+- Blueprint, docs, formatting, linting, commit, and CI guardrails.
 
-- **AI-assisted implementation** lets a single engineer ship what a team used to. The bottleneck becomes _what to ship and how to verify it_, not keystrokes — so the planning and verification surfaces are what a senior engineer must excel at.
-- **Vite Plus, tsgo, Bun, oxlint, Stryker 9** converge a formerly fragmented toolchain into one fast, honest surface. A 2026 repo that still uses 2024-era tooling is a tell.
-- **Cloudflare + Pulumi + Doppler** gives a single engineer production-shaped infrastructure without a devops team.
-- **Mutation testing** is finally fast enough to be a CI gate, not a weekly chore. Weak tests are now findable.
+### Partial
 
-A repo built in 2026 should look like a 2026 repo.
+- Observability: delivery metrics exist, but dashboard activity/history and some
+  visual health signals are not yet fully sourced from real runtime data.
+- Authorization: some owner checks exist, but message operations, topic queue
+  subscription, and dashboard metrics need a hardening pass before the product
+  can be presented as an ingestion review system.
+- Public identity: the IngestLens vision exists here and in planned blueprints,
+  but README/UI/package/runtime labels are still being reworked by the rebrand
+  blueprint.
 
-## The Core Loop
+### Planned
 
-The lifecycle a change follows in this repo:
+- `/api/intake/*` Worker routes.
+- `/intake` fixture/payload submission UI and `/admin/intake` approval console.
+- Shared intake/mapping contracts in `packages/types` and Worker consumption of
+  those contracts.
+- Cloudflare Workers AI binding, deterministic fallback, prompt/schema boundary,
+  and JSON-output validation.
+- First-class mapping-suggestion persistence, approval state, validation errors,
+  model metadata, and retention/redaction policy.
+- Runtime access to pinned schema/fixture assets via a bundled demo-fixture
+  module.
+- Public fixture catalog and generic `ingest.record.normalized` events with a
+  domain-specific record payload. Live public fetch is future-only.
 
-1. `$plan <slug>` writes a durable blueprint under `blueprints/planned/`.
-2. `$plan-refine <slug>` hardens it against current repo facts.
-3. Execution produces commits that carry **Lore trailers** when they encode a decision.
-4. Pre-commit hooks fail fast on style; pre-push runs `tsgo` typecheck and `oxlint`.
-5. CI gates on types, lint, test, blueprint validation, catalog drift, mutation score, docs lint, and security scans.
-6. Merge moves the blueprint to `completed/` with a referenceable commit.
+## The core demo loop
 
-Every step produces artifacts a reviewer can read independently.
+The canonical demo should prove this end-to-end loop:
 
-## What We Are Building First
+```text
+messy third-party payload
+  -> contract/schema selection
+  -> drift detection + intake validation
+  -> AI mapping repair suggestion (or abstention)
+  -> local schema/path/compatibility validation
+  -> quarantine or pending admin approval
+  -> approved mapping revision
+  -> deterministic replay through approved mapping
+  -> normalized record/event ingested
+  -> queue/topic delivery rails
+  -> observability trail: drift, prompt, validation, approval, replay, delivery
+```
 
-**Stage 1 — the guardrail skeleton.**
+A successful demo is not “the model guessed a mapping.” A successful demo proves
+that the system detects drift, repairs mappings under human control, replays data
+deterministically, and can explain every state transition.
 
-- `.agent/rules` + `.agent/guides` + `docs/` taxonomy + blueprint lifecycle are the operating contract.
-- Commit hooks, blueprint validator, docs frontmatter check are wired.
-- tsgo replaces tsc. Bun executes scripts. Doppler replaces dotenv.
+## Where AI is used
 
-**Stage 2 — the migration wave.**
+AI is intentionally narrow in v1. IngestLens uses Workers AI for **one product
+job**: propose a mapping repair from a messy source payload to a target
+contract, with missing fields, ambiguous fields, drift categories, confidence,
+and caveats.
 
-The ten planned blueprints, in roughly this order:
+AI does **not** own ingestion, authentication, authorization, rate limiting,
+source-path validation, normalization, publishing, telemetry writes, retention,
+redaction, replay, or approval. Those are deterministic platform responsibilities.
 
-1. `pnpm-catalogs-adoption` (expand catalog coverage — catalog already partially adopted)
-2. `vite-plus-migration` (replace Turbo with `vp`; blocked on 1)
-3. `commit-hooks-guardrails` (lint-staged + commitlint + secretlint — minimal hooks already live)
-4. `stryker-mutation-guardrails` (pilot → fan out → CI gate)
-5. `doppler-secrets` (wiring only — dotenv already removed)
-6. `cloudflare-pulumi-infra` (account resources first; Worker runtime target to be decided)
-7. `ci-hardening` (required checks + preview deploys + security scans)
-8. `agents-md-principal-rewrite` (principal-layer operating contract)
-9. `adr-lore-commit-protocol` (decision records + trailer vocabulary)
-10. `integration-payload-mapper-dataset` (AI capstone — dataset + eval pack first; runtime later)
+The AI boundary is:
 
-**Stage 3 — the AI capstone.**
+```text
+source payload + target contract + current approved mapping revision + prompt version
+  -> Workers AI adapter using JSON Mode
+  -> local JSON/schema/source-path/compatibility validation
+  -> persisted suggestion, abstention, or quarantine reason
+```
 
-A suggestion-only LLM payload mapper that fits a unified-API integration
-platform. Ships dataset, gold tasks, evaluation contract, and an
-executable harness. Never autonomous; confidence-aware; abstains when
-ambiguous.
+Cloudflare Workers AI JSON Mode is useful but not trusted as a guarantee. The
+local validator remains the source of truth for whether a suggestion can be shown
+or approved. Tests and CI use deterministic fallback/eval mode; live AI is an
+opt-in demo enhancement.
 
-## The Role of the Event Delivery Platform
+## What counts as realistically messy data
 
-The event delivery platform is real infrastructure, not a demo. It:
+IngestLens is generic; the first public demo lens uses pinned ATS job-posting
+fixtures because they are public, deterministic, and free of private
+candidate/employee records. The platform should also make sense for CRM leads,
+support tickets, catalog feeds, partner webhooks, and vendor exports. The fixture
+set should exercise at least these phenomena:
 
-- accepts events through a signed interface
-- persists state in a Drizzle/Postgres model with honest in-memory fallbacks where the durable path has not yet landed
-- delivers to downstream consumers with retries and replay
-- tracks delivery state visibly enough to debug a failure
+| Messy phenomenon                           | Why it matters for IngestLens                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Rich HTML descriptions and long legal text | Requires safe HTML handling, section extraction, and telemetry that avoids raw leaks. |
+| Vendor-specific field names                | `title`, `text`, `name`, `apply_url`, `applyUrl`, `location`, `locations`, etc.       |
+| Multi-location / remote ambiguity          | A posting may mix city, country, remote, hybrid, timezone, and region restrictions.   |
+| Compensation variance                      | Salary may be absent, range-based, currency-specific, interval-based, or text-only.   |
+| Department/team/office hierarchy drift     | ATS products expose departments, teams, offices, parent IDs, or free-form labels.     |
+| Custom questions and screening fields      | Application forms contain job-specific field sets and branching validation semantics. |
+| Compliance and demographic blocks          | Sensitive data must be separated from evaluation/delivery paths and logged carefully. |
+| Application deep links and source tracking | Apply URLs and source parameters need provenance preservation.                        |
+| Snapshot vs event semantics                | Public datasets are often full snapshots, not webhooks; drift repair must be honest.  |
+| Custom enterprise fields                   | Vendor exports expose tenant-defined fields, aliases, omissions, and type mismatch.   |
 
-But it is **not the headline**. The headline is the engineering discipline
-the repo demonstrates across the delivery platform, the migration wave,
-and the AI capstone.
+Near-term fixtures should stay public-job-posting oriented as the first demo
+lens. Synthetic employee-style updates can remain adversarial/eval fixtures
+until a privacy-safe public source is available. The product category remains
+generic ingestion mapping repair, not HR intake.
 
-## What We Are Not
+## Product principles
 
-- A production SaaS looking for customers.
-- A full reimplementation of a unified-API vendor's product. The integration-mapper blueprint is clearly scoped as _suggestion-only_.
-- A complete Kubernetes/service-mesh showpiece. We pick Cloudflare + Pulumi precisely because a single engineer can own it.
-- A Next.js + generic-template repo.
+1. **Suggestion-only AI.** The model proposes mapping repairs; it never mutates,
+   promotes, replays, or publishes without approval.
+2. **Validate locally.** Every model output is parsed, schema-checked,
+   compatibility-checked, and verified against the source payload paths before
+   persistence or approval.
+3. **Abstention is success.** If the mapping is ambiguous, invalid, or too risky,
+   the system records a safe abstention instead of inventing certainty.
+4. **Human-in-the-loop control.** The admin sees drift category, confidence,
+   validation errors, missing fields, mapping diff, delivery target, and source
+   provenance before approval.
+5. **No raw leakage.** Telemetry and UI summaries should avoid exposing raw
+   payload text unless the specific view is explicitly designed for review.
+6. **Deterministic first.** The default demo uses pinned fixtures and
+   deterministic evals. Live AI is an opt-in demo enhancement; live source
+   refresh should happen before the demo, not inside the runtime happy path.
+7. **Advisory judges only.** LLM-as-judge can critique risk and explanation
+   quality for humans, but it cannot approve, reject, replay, ingest, or replace
+   deterministic validators.
+8. **Truth over polish.** UI copy must label shipped, partial, and planned
+   behavior honestly.
+9. **No marketplace sprawl.** The scope is a focused ingestion-observability
+   demo, not a connector marketplace, warehouse, or full unified API vendor.
 
-## Trust And Control
+## Canonical architecture decisions
 
-Every claim in this repo is labeled by truth state:
+| Decision                   | Choice                                                                                                                                     | Rationale                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Canonical docs             | Vision = durable narrative; README = landing page; ROADMAP = execution order; guides = demos                                               | Prevents source-of-truth drift.                                                           |
+| Truth-state vocabulary     | `shipped`, `partial`, `planned`                                                                                                            | One vocabulary across all public surfaces.                                                |
+| Product category           | Generic ingestion review, mapping repair, and replay                                                                                       | Broader and more valuable than HR-only intake while still demoable.                       |
+| First demo lens            | Public ATS job postings first                                                                                                              | Useful, public, deterministic, and directly demonstrates messy integration normalization. |
+| Default dataset            | Pinned `open-apply-jobs` subset under `data/payload-mapper/payloads/ats/`                                                                  | Avoids flaky demos and private PII.                                                       |
+| Canonical normalized event | `eventType: "ingest.record.normalized"` with `schemaVersion`, `recordType`, and domain payload                                             | Keeps the platform generic while letting the job-posting demo emit a job-posting record.  |
+| Canonical schema ownership | `packages/types/IntakeMapping.ts` plus versioned schema/eval docs under `data/payload-mapper/`                                             | Shared contracts must be usable by Worker, client, eval runner, and docs.                 |
+| AI boundary                | Cloudflare Workers AI behind a single adapter with deterministic fallback                                                                  | On-stack, no paid SaaS dependency, testable without credentials.                          |
+| Demo fixture access        | Bundle the curated public ATS fixture set into Worker code for v1; defer R2/KV until fixture volume justifies it                           | Deployed demo works without repo-local filesystem assumptions or extra storage.           |
+| Mapping persistence        | Store attempts, drift category, validation status, approval state, approved mapping revisions, model/prompt metadata, and redacted summary | Auditability and safe self-healing are the product value.                                 |
+| Telemetry source of truth  | Extend delivery telemetry for mapping lifecycle and expose measured values only                                                            | Fake health/history undermines the portfolio signal.                                      |
+| Live source freshness      | Optional fixture-refresh script; no runtime live-fetch endpoint in v1                                                                      | Shows real public-data provenance without making the demo flaky.                          |
+| Public/internal naming     | Public docs/UI use IngestLens; internal legacy names may remain only with explicit deferments                                              | Avoids risky churn while keeping the public story clean.                                  |
+| AI use                     | AI suggests mapping repairs only; deterministic code validates, admins approve, deterministic replay ingests, and telemetry records        | Keeps probabilistic behavior out of dangerous state transitions.                          |
+| Raw payload retention      | Pinned fixtures are referenced by id/hash; pasted JSON is owner-scoped with short review TTL; telemetry is redacted                        | Makes review possible without turning observability into data leakage.                    |
+| Correlation id             | One `mappingTraceId` spans suggestion, admin decision, replay, ingest, normalized event, delivery, and telemetry                           | Turns the demo into an auditable lifecycle instead of disconnected screens.               |
 
-- **shipped** — executes today on `main`
-- **partial** — architecture is defined; some execution paths are still in-memory or mocked
-- **aspirational** — planned in a blueprint; not yet executable
+## Elegant v1 architecture constraints
 
-A reviewer can scan any doc and know which category it belongs to. Drift
-between label and reality is the single biggest failure mode of showcase
-repos; the `plan-audit-checklist.md` guide exists to prevent it.
+To keep the showcase maintainable, v1 must prefer fewer moving parts over a
+platform-shaped abstraction explosion:
 
-## Internal Validation Levels
+1. **Contracts as code.** Target contracts and demo mappings live in typed repo
+   files for v1; no runtime schema-registry UI or contract CRUD.
+2. **Two persistence concepts.** Store intake attempts and approved mapping
+   versions; do not introduce separate workflow engines, job tables, or catalog
+   services until evidence requires them.
+3. **Pure deterministic core.** Drift detection, source-path validation, mapping
+   application, and normalized-envelope creation are pure functions with focused
+   tests.
+4. **One probabilistic seam.** Workers AI is behind one adapter with a
+   deterministic fallback. Tests never require live AI.
+5. **Replay is the proof.** Approval promotes a approved mapping revision and immediately
+   replays the source payload through deterministic code.
+6. **No v1 runtime live fetch.** Pinned fixtures are the critical path. If
+   freshness is needed, use a pre-demo fixture-refresh script that writes pinned
+   fixtures and hashes.
+7. **LLM-as-judge is a reviewer, not a gate.** It is worthwhile only as an
+   optional admin-assist critique after deterministic validation exists and can
+   be tested with a fake judge runner.
 
-A change graduates through these gates before landing on `main`:
+## Recommended use case
 
-| Level | Gate                                                                                            | Target                 |
-| ----- | ----------------------------------------------------------------------------------------------- | ---------------------- |
-| L0    | Pre-commit: `blueprint:validate`, `docs:check`, staged oxlint/prettier                          | ≤ 3 s P95              |
-| L1    | Commit-msg: conventional-commit + optional Lore trailers                                        | passes                 |
-| L2    | Pre-push: `tsgo --noEmit` + full `oxlint`                                                       | passes                 |
-| L3    | CI: lint + check-types + test + blueprint + catalog-drift + docs + mutation-affected + security | required status checks |
-| L4    | Merge to `main` → blueprint moves to `completed/`, release workflow produces SBOM + provenance  | tagged                 |
+The researched product wedge is **ingestion review and replay**. AI helps repair
+generic integration-data mappings, while a human admin controls approved-mapping-revision
+promotion and deterministic replay. The first demo lens is public job-posting
+data because it is concrete, messy, public, and safe to ship without private
+records. LLM-as-judge is a good showcase addition as an admin-assist risk
+reviewer and offline eval explainer, but it is not the production approver and
+must not gate ingestion. See
+[`docs/research/2026-04-24-self-healing-data-ingestion-architecture.md`](../2026-04-24-self-healing-data-ingestion-architecture.md).
 
-A change that cannot clear all five does not ship.
+## Decided end-to-end flow
 
-## Why This Can Win (as a portfolio)
+[ADR 0004](../../adrs/0004-ingestlens-ai-intake-architecture.md) is the
+canonical flow and contract source. The durable shape is deliberately small:
 
-- The blueprint lifecycle is rare outside large engineering orgs; showing it in a personal repo signals senior-org instincts.
-- Fact-checked findings with cited evidence demonstrate the single most under-valued senior skill: skepticism about your own assumptions.
-- Runtime + infra + AI + guardrails in one coherent repo — with honest truth labels — is what a 25-year-senior repo should look like in 2026.
-- The reviewer can pick any file and see the same rigor: frontmatter, citations, acceptance criteria, non-goals.
+1. Operator selects a bundled fixture or pastes JSON.
+2. Worker authenticates, rate-limits, validates the envelope, and creates
+   `intakeAttemptId` / `mappingTraceId`.
+3. Deterministic code selects the target contract, current approved mapping revision, and
+   drift state.
+4. Workers AI may propose one mapping repair suggestion or abstain; local
+   validators decide whether that suggestion is reviewable.
+5. Admin approval creates an approved mapping revision and immediately replays
+   the source payload through deterministic normalization into
+   `eventType: "ingest.record.normalized"` with `schemaVersion: "v1"`.
+6. Existing queue/topic rails deliver the event, and telemetry uses the same
+   trace id to prove the lifecycle.
 
-## Product Focus Now, Expansion Later
+## Blueprint execution map
 
-### Now
+1. **`showcase-hardening-100`** — make the substrate safe and honest first:
+   object-level authz, contract drift, typecheck, dependency audit, CI gates,
+   tests, and metrics truthfulness.
+2. **`client-route-code-splitting`** — remove bundle-size warnings and add a
+   frontend performance guardrail.
+3. **`rebrand-ingestlens`** — align README/docs/UI with the IngestLens product
+   story while preserving truth-state labels.
+4. **`ai-payload-intake-mapper`** — add the protected generic intake route,
+   shared data contracts, approved-mapping-revision model, AI adapter, drift validation,
+   persistence, approval flow, telemetry, and deterministic eval runner.
+5. **`public-dataset-demo-ingestion`** — package the public fixture catalog,
+   job-posting demo lens, upstream fixture coverage, and one executable demo path.
 
-- Execute the ten planned blueprints in sequence.
-- Keep the event delivery platform's truth state honest.
-- Ship the AI capstone dataset + eval pack.
+## Known gaps that must not be hidden
 
-### Later
+| Gap                                        | Why it matters                                                                                                            | Owning blueprint                   |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Existing authz holes in delivery rails     | Approval/publish cannot be trusted until queue/topic/message ownership is consistent.                                     | `showcase-hardening-100`           |
+| No `/api/intake/*` route yet               | The core IngestLens workflow is planned, not shipped.                                                                     | `ai-payload-intake-mapper`         |
+| No `/intake` client page yet               | Public UI cannot honestly claim end-to-end intake until this exists.                                                      | `ai-payload-intake-mapper`         |
+| No shared intake/target-contract model yet | Worker/client/eval cannot share mapping, drift, and replay semantics.                                                     | `ai-payload-intake-mapper`         |
+| Worker does not yet consume `@repo/types`  | Shared contracts require package wiring, not just a new file.                                                             | `ai-payload-intake-mapper`         |
+| No AI binding or deterministic adapter     | Live AI must be isolated and tests must pass without Cloudflare credentials.                                              | `ai-payload-intake-mapper`         |
+| No mapping persistence tables              | Auditability requires attempts, drift categories, approved mapping revisions, approvals, validation errors, and metadata. | `ai-payload-intake-mapper`         |
+| No runtime fixture access implementation   | The decision is now bundled curated Worker fixtures, but the code does not exist yet.                                     | `public-dataset-demo-ingestion`    |
+| No `mappingTraceId` lifecycle yet          | Suggestion, approval, publish, telemetry, and replay need one correlation id.                                             | `ai-payload-intake-mapper`         |
+| No raw-payload expiry/cleanup yet          | Review payloads need short TTL and redacted long-term metadata.                                                           | `ai-payload-intake-mapper`         |
+| Dashboard has placeholder signals          | Observability must be measured or explicitly labelled synthetic.                                                          | `showcase-hardening-100` / AI work |
+| Demo guide not canonical yet               | There should be one guide, not competing demo docs.                                                                       | `public-dataset-demo-ingestion`    |
 
-- Port runtime to Cloudflare Workers (if the cloudflare-pulumi-infra Q&A lands on "Workers").
-- Add a second AI surface (delivery-failure triage agent).
-- Wire a public demo dashboard.
+## Demo success criteria
 
-That future path matters, but it should not blur the first wave.
+The portfolio demo is ready when a reviewer can run one documented path and see:
+
+1. a pinned fixture selected from the catalog;
+2. a visible messy source payload with provenance;
+3. detected drift or mapping uncertainty;
+4. an AI mapping repair suggestion or explicit abstention;
+5. local validation of source paths, compatibility policy, required fields, and target record shape;
+6. an admin approval step that creates a new approved mapping revision and shows the queue/topic delivery target;
+7. approval replaying the source payload through the approved mapping;
+8. one `ingest.record.normalized` event ingested through existing delivery rails;
+9. delivery telemetry showing accepted, delivered/retried, and replayable state;
+10. deterministic tests/evals passing without paid SaaS credentials.
+
+## Non-goals
+
+- No full connector marketplace.
+- No private candidate or employee ingestion in the public job-posting demo lens.
+- No arbitrary public-URL scraping.
+- No paid LLM SaaS dependency.
+- No autonomous AI writes.
+- No LLM judge as production approver; judge-style critique is advisory admin-assist only.
+- No claims that planned intake/mapping behavior is shipped before the blueprints
+  land.
+
+## Why this can win as a portfolio
+
+- It is a small but realistic ingestion-platform slice rather than a generic
+  CRUD app.
+- It demonstrates judgment under uncertainty: AI is constrained, validated,
+  evaluated, and operator-approved.
+- It uses public data while still surfacing realistic enterprise-integration
+  messiness: custom fields, rich text, locations, salary, compliance, and
+  provider-specific naming, while the architecture remains reusable.
+- It turns existing delivery infrastructure into product proof instead of
+  showing queues/topics as primitives in isolation.
+- It keeps senior-level engineering artifacts visible: blueprints, gates,
+  test philosophy, security posture, and source-linked research.

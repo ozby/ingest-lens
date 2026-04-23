@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-22"
+last_updated: "2026-04-24"
 ---
 
 # Architecture
@@ -87,6 +87,67 @@ viable — you pay for CPU time, not connection duration.
 A single `TopicRoom` DO handles thousands of connections, but broadcasting to all of them is O(n)
 in connected client count. At high message volume the DO becomes the bottleneck.
 See [scale-considerations.md](scale-considerations.md) for the sharding plan.
+
+## IngestLens adaptive ingestion architecture — planned
+
+The queue/topic platform remains the delivery substrate. The IngestLens product
+layer adds a generic, human-approved mapping-repair path on top of it. Public job
+postings are the first demo lens; the architecture is not HR-specific. The
+canonical decision record is
+[ADR 0004](adrs/0004-ingestlens-ai-intake-architecture.md).
+
+AI is used in exactly one production place: mapping repair suggestion. It
+receives a bounded source payload, a target contract, the current approved mapping
+revision, and a prompt version. It returns suggested source paths, drift
+categories, missing fields, ambiguous fields, confidence, and notes.
+Everything after that point is deterministic code: schema validation,
+source-path validation, compatibility checks, approval, approved-mapping-revision
+promotion, normalization, publishing, telemetry, retention, and replay.
+
+Planned v1 keeps the code surface intentionally small:
+
+- contracts as code, not a runtime schema-registry UI;
+- one intake route tree under `/api/intake/*`;
+- one shared type file for attempts, approved mapping revisions and review states;
+- pure functions for drift detection, mapping validation, and mapping
+  application;
+- one admin review UI for approve/reject;
+- deterministic pinned fixtures by default; no live fetch in the critical path.
+
+Planned flow:
+
+```text
+GET /api/intake/public-fixtures
+  -> list bundled fixture metadata for the first demo lens
+
+POST /api/intake/mapping-suggestions
+  -> authenticate + rate-limit
+  -> validate payload envelope and size/depth limits
+  -> select target contract + current approved mapping revision
+  -> detect drift and create intakeAttemptId + mappingTraceId
+  -> call Workers AI adapter or deterministic fallback
+  -> parse JSON, validate schema, validate source paths, check compatibility
+  -> persist redacted attempt metadata and short-lived review payload reference
+
+GET /api/intake/mapping-suggestions?status=pending_review
+  -> admin panel lists suggestions awaiting review
+
+POST /api/intake/mapping-suggestions/:id/approve
+  -> authenticate
+  -> verify attempt owner and queue/topic target ownership
+  -> reject expired review payloads
+  -> create approved mapping revision
+  -> replay source payload through the approved mapping
+  -> normalize with deterministic code into eventType ingest.record.normalized + schemaVersion v1
+  -> insert message and publish through existing DELIVERY_QUEUE rails
+  -> emit telemetry using the same mappingTraceId
+
+Manual replay after approval is deferred from v1; approval itself performs the deterministic replay+ingest path.
+```
+
+The deterministic demo bundles a curated subset of
+`data/payload-mapper/payloads/ats/open-apply-sample.jsonl` into Worker code so
+it works after deployment without runtime filesystem access. Optional live public fetch is a future enhancement, not part of the v1 critical path.
 
 ## Request lifecycle
 
