@@ -26,7 +26,7 @@ mapping, delivery, and observability for ATS/HRIS-style integration data.
 - Tagline: "AI-assisted integration observability for payload intake, mapping,
   and delivery."
 - Why this brand: it names the actual portfolio wedge, avoids `pubsub`, and
-  does not position the repo as a full integration platform competitor.
+  does not position the repo as a full connector-platform competitor.
 - Search caveat: a 2026-04-23 web search found no obvious exact-match product
   for `IngestLens`; this is not trademark clearance.
 - Refinement outcome: README/docs work, client shell copy, client page copy,
@@ -45,7 +45,7 @@ After
   docs tell a single truth-state-labelled story
   demo narrative starts from public ATS payload intake
   queues/topics are implementation primitives behind integration observability
-``
+```
 
 ## Fact-Checked Findings
 
@@ -63,7 +63,7 @@ After
 | ----------------------- | --------------------------------------- | ----------------------------------------------------------------------- |
 | Public name             | IngestLens                              | Clear, uncommon, integration-observability oriented.                    |
 | Internal package rename | Defer unless easy                       | Public polish matters more than risky workspace churn before interview. |
-| Product wedge           | ATS/HRIS payload intake and mapping     | integration platform-relevant without building a marketplace.                          |
+| Product wedge           | ATS/HRIS payload intake and mapping     | integration-platform-relevant without building a marketplace.           |
 | Docs truth state        | Shipped / partial / aspirational labels | Prevents old roadmap/docs from overselling incomplete features.         |
 | Verification surface    | Repo-native `pnpm` scripts              | Keeps execution aligned with actual workspace commands.                 |
 
@@ -420,4 +420,7 @@ rails behind the higher-level integration observability story.
 | **Max parallel agents**   | **4**                         |
 | **Total tasks**           | **7**                         |
 | **Blueprint compliant**   | **7/7**                       |
+
+```
+
 ```

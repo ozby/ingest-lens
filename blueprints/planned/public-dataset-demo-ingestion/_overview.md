@@ -19,7 +19,7 @@ tags:
 
 # Public dataset demo ingestion
 
-**Goal:** Turn the AI mapper into a crisp integration platform-relevant demo using a public,
+**Goal:** Turn the AI mapper into a crisp integration-platform-relevant demo using a public,
 reproducible dataset: ingest pinned `open-apply-jobs` ATS payloads, show
 vendor-shape differences, map them to a unified job schema, publish normalized
 events through IngestLens, and present the observability trail.
@@ -53,7 +53,7 @@ Optional later live mode
   -> POST /api/intake/public-live-fetch (allowlisted vendors/tenants only)
   -> same mapping suggestion + approval flow
   -> fallback back to pinned fixtures on fetch/rate-limit failure
-``
+```
 
 ## Fact-Checked Findings
 
@@ -73,7 +73,7 @@ Optional later live mode
 | Demo API surface | `GET /api/intake/public-fixtures`, `GET /api/intake/public-fixtures/:fixtureId`, existing mapping/approval endpoints, optional `POST /api/intake/public-live-fetch` (Fx: api-reuse, fixture-catalog-split, live-fetch-guardrails) | Extends the upstream intake path instead of fragmenting the API.               |
 | Domain           | Public job postings, not candidates                                                                                                                                                                                               | Avoids PII and private ATS records.                                            |
 | Event type       | `ats.job.normalized`                                                                                                                                                                                                              | Matches the ATS-focused demo story while staying explicit about normalization. |
-| Scope            | Demo ingestion polish, not connector marketplace                                                                                                                                                                                  | Keeps the integration platform interview slice focused and credible.                          |
+| Scope            | Demo ingestion polish, not connector marketplace                                                                                                                                                                                  | Keeps the integration-platform interview slice focused and credible.           |
 
 ## Quick Reference (Execution Waves)
 
@@ -314,7 +314,7 @@ README and interview checklist so the docs cannot drift. (Fx: dataset-path-verif
 **Files:**
 
 - Create: `scripts/demo/ingestlens-demo.mjs`
-- Create: `docs/guides/ingestlens-interview-script.md`
+- Create: `docs/guides/interview-demo-script.md`
 - Modify: `README.md`
 - Modify: `package.json`
 
@@ -379,12 +379,12 @@ README and interview checklist so the docs cannot drift. (Fx: dataset-path-verif
 
 ## Risks
 
-| Risk                                                                    | Impact     | Mitigation                                                                                                                                               |
-| ----------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live fetch distracts from the core deterministic demo                   | Medium     | Keep it optional, disabled by default, and visibly subordinate to pinned fixtures. (Fx: live-fetch-guardrails)                                           |
-| Upstream intake blueprint drifts from these file/path assumptions       | Medium     | This blueprint names the exact upstream files and reuses the upstream API paths instead of inventing new ones. (Fx: upstream-intake-gate, Fx: api-reuse) |
-| README/demo docs drift from the actual runnable steps                   | Low-medium | Make `pnpm demo:ingestlens` the source of truth and validate it in the rehearsal task.                                                                        |
-| Public ATS data feels less HRIS-like than integration platform production integrations | Low-medium | Frame it explicitly as a safe public ATS wedge and keep synthetic/private-record claims out of the demo.                                                 |
+| Risk                                                                                      | Impact     | Mitigation                                                                                                                                               |
+| ----------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live fetch distracts from the core deterministic demo                                     | Medium     | Keep it optional, disabled by default, and visibly subordinate to pinned fixtures. (Fx: live-fetch-guardrails)                                           |
+| Upstream intake blueprint drifts from these file/path assumptions                         | Medium     | This blueprint names the exact upstream files and reuses the upstream API paths instead of inventing new ones. (Fx: upstream-intake-gate, Fx: api-reuse) |
+| README/demo docs drift from the actual runnable steps                                     | Low-medium | Make `pnpm demo:ingestlens` the source of truth and validate it in the rehearsal task.                                                                   |
+| Public ATS data feels less HRIS-like than unified integration-platform production records | Low-medium | Frame it explicitly as a safe public ATS wedge and keep synthetic/private-record claims out of the demo.                                                 |
 
 ## Technology Choices
 
@@ -394,7 +394,7 @@ README and interview checklist so the docs cannot drift. (Fx: dataset-path-verif
 | Fixture catalog API  | `GET /api/intake/public-fixtures` + `GET /api/intake/public-fixtures/:fixtureId`                              | Planned in this blueprint | Small metadata-first flow fits the current demo better than shipping every payload body up front. |
 | Mapping API reuse    | Existing upstream `POST /api/intake/mapping-suggestions` + `POST /api/intake/mapping-suggestions/:id/approve` | Planned upstream          | Avoids a parallel demo-only backend path.                                                         |
 | Optional live fetch  | `POST /api/intake/public-live-fetch` with Wrangler-configured allowlist                                       | Planned optional          | Safe, bounded wow-factor after the deterministic path works.                                      |
-| Demo runner          | `pnpm demo:ingestlens` backed by `scripts/demo/ingestlens-demo.mjs`                                                     | Planned in this blueprint | Gives the README and interview checklist a single executable source of truth.                     |
+| Demo runner          | `pnpm demo:ingestlens` backed by `scripts/demo/ingestlens-demo.mjs`                                           | Planned in this blueprint | Gives the README and interview checklist a single executable source of truth.                     |
 
 ## Refinement Summary
 
@@ -422,4 +422,7 @@ serialised the shared Worker/client file edits into Task 2.3 to keep same-wave
 file pressure at zero, converted every task to `**Status:** todo`, and added a
 real demo-runner task so the README/checklist can stay executable instead of
 aspirational.
+
+```
+
 ```

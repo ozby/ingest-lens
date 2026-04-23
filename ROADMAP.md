@@ -35,7 +35,7 @@ Current as of: 2026-04-23
 | -------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------ |
 | [`rebrand-ingestlens`](blueprints/planned/rebrand-ingestlens/_overview.md) | Rebrand public surfaces from node-pubsub to IngestLens | `showcase-hardening-100` |
 
-## Wave 3 — integration platform-relevant AI showcase
+## Wave 3 — integration-platform-relevant AI showcase
 
 | Blueprint                                                                                        | Goal                                                                                                | Depends on                                     |
 | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
@@ -47,4 +47,4 @@ Current as of: 2026-04-23
 - Use pinned public fixtures by default; optional live public ATS fetches must be allowlisted, cached, and disabled by default.
 - No paid SaaS dependency and no full connector marketplace.
 - Roll out the generated `messages.seq` migration before enabling reconnect replay broadly on the WebSocket path in production.
-- Treat `docs/research/2026-04-23-ingestlens-ai-integration-showcase.md` as the source for product/research rationale.
+- Treat `docs/research/2026-04-23-integration-platform-ai-showcase.md` as the source for product/research rationale.
