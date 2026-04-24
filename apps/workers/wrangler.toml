@@ -2,7 +2,7 @@ name = "node-pubsub"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
-account_id = "e93986039ea9bd9729fa534a29e9e88f"  # ozby account — not a secret; CF account IDs are public identifiers
+account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret; CF account IDs are public identifiers
 
 # NOTE: wrangler environments do NOT inherit `durable_objects`, `queues`, or
 # `analytics_engine_datasets` from the top level — each env must re-declare
@@ -19,9 +19,7 @@ account_id = "e93986039ea9bd9729fa534a29e9e88f"  # ozby account — not a secret
 
 [env.dev]
 workers_dev = false
-routes = [
-  { pattern = "api.dev.ozby.dev", custom_domain = true }
-]
+routes = [{ pattern = "api.dev.ozby.dev", custom_domain = true }]
 
 [env.dev.vars]
 NODE_ENV = "development"
@@ -68,9 +66,7 @@ dataset = "delivery_events_dev"
 
 [env.prd]
 workers_dev = false
-routes = [
-  { pattern = "api.ozby.dev", custom_domain = true }
-]
+routes = [{ pattern = "api.ozby.dev", custom_domain = true }]
 
 [env.prd.vars]
 NODE_ENV = "production"
