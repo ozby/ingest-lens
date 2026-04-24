@@ -4,6 +4,7 @@ import {
   calculatePayloadBytes,
   calculatePayloadDepth,
   classifyDriftCategory,
+  createDeterministicFallbackBatch,
   getFixtureReference,
   getTargetContract,
   sourceKindFromFixtureId,
@@ -73,6 +74,63 @@ describe("intake contracts", () => {
 
   it("classifies ambiguity before missing-field drift", () => {
     expect(classifyDriftCategory(["post_url"], ["location"])).toBe("ambiguous_mapping");
+  });
+
+  it("builds a deterministic fallback batch for job-posting-v1 payloads", () => {
+    const contract = getTargetContract("job-posting-v1");
+    const batch = createDeterministicFallbackBatch({
+      payload: {
+        title: "Staff Software Engineer",
+        status: "published",
+        department: "Engineering",
+        location: "Remote (US)",
+        apply_url: "https://jobs.example.com/apply/123",
+        employment_type: "full_time",
+      },
+      sourceSystem: "ashby",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      promptVersion: "payload-mapper-v1",
+      targetFields: contract.targetFields,
+    });
+
+    if (batch === null) throw new Error("Expected deterministic fallback to produce a batch");
+
+    expect(batch.contractId).toBe("job-posting-v1");
+    expect(batch.contractVersion).toBe("v1");
+    expect(batch.sourceSystem).toBe("ashby");
+    expect(batch.promptVersion).toBe("payload-mapper-v1");
+    expect(batch.overallConfidence).toBe(0.92);
+    expect(batch.missingRequiredFields).toEqual([]);
+    expect(batch.ambiguousTargetFields).toEqual([]);
+    expect(batch.driftCategories).toEqual(["renamed_field"]);
+    expect(batch.suggestions.map((s) => s.targetField).sort()).toEqual([
+      "department",
+      "employment_type",
+      "location",
+      "name",
+      "post_url",
+      "status",
+    ]);
+    for (const suggestion of batch.suggestions) {
+      expect(suggestion.confidence).toBe(0.92);
+      expect(suggestion.reviewStatus).toBe("pending");
+      expect(suggestion.replayStatus).toBe("not_requested");
+      expect(suggestion.deterministicValidation.isValid).toBe(true);
+    }
+  });
+
+  it("returns null from the deterministic fallback when the contract id is unsupported", () => {
+    const batch = createDeterministicFallbackBatch({
+      payload: { first_name: "Ada", last_name: "Lovelace", email: "ada@example.com" },
+      sourceSystem: "workday",
+      contractId: "employee-v1",
+      contractVersion: "v1",
+      promptVersion: "payload-mapper-v1",
+      targetFields: getTargetContract("employee-v1").targetFields,
+    });
+
+    expect(batch).toBeNull();
   });
 
   it("looks up pinned public fixtures by id without storing them in shared types", () => {
