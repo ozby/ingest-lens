@@ -41,13 +41,9 @@ export const INTAKE_ATTEMPT_STATUSES = [
 
 export type IntakeAttemptStatus = (typeof INTAKE_ATTEMPT_STATUSES)[number];
 
-export const INGEST_STATUSES = ["not_started", "pending", "ingested", "failed"] as const;
+export type IngestStatus = "not_started" | "pending" | "ingested" | "failed";
 
-export type IngestStatus = (typeof INGEST_STATUSES)[number];
-
-export const SOURCE_REFERENCE_KINDS = ["inline_payload", "fixture_reference"] as const;
-
-export type SourceReferenceKind = (typeof SOURCE_REFERENCE_KINDS)[number];
+export type SourceReferenceKind = "inline_payload" | "fixture_reference";
 
 export const DRIFT_CATEGORIES = [
   "renamed_field",
