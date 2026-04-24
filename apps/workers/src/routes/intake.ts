@@ -15,7 +15,7 @@ import { DEFAULT_MAPPING_PROMPT_VERSION, suggestMappings } from "../intake/aiMap
 import { validateIntakeRequest, defaultHashPayload } from "../intake/validateIntakeRequest";
 import { createNormalizedEnvelope } from "../intake/normalizedEnvelope";
 import { normalizeWithMapping } from "../intake/normalizeWithMapping";
-import { recordIntakeLifecycle } from "../telemetry";
+import { buildIntakeLifecycleEvent, recordIntakeLifecycle } from "../telemetry";
 import { requireOwnedQueue, requireOwnedTopic } from "./ownership";
 import { getFixtureReference } from "../intake/contracts";
 import { getDemoFixtureById, listDemoFixtures } from "../intake/demoFixtures";
@@ -90,21 +90,24 @@ function createId(): string {
   return crypto.randomUUID();
 }
 
-function getDeliveryTargetInfo(deliveryTarget: { queueId?: string; topicId?: string }): {
-  deliveryTargetId: string;
-  deliveryTargetKind: "queue" | "topic";
-} {
-  if (deliveryTarget.queueId) {
-    return {
-      deliveryTargetId: deliveryTarget.queueId,
-      deliveryTargetKind: "queue",
-    };
+async function loadAttemptForOwner(
+  c: AppContext,
+  attemptId: string,
+): Promise<AttemptRow | Response> {
+  const db = createDb(c.env);
+  const ownerId = c.get("user").userId;
+
+  const [row] = await db
+    .select()
+    .from(intakeAttempts)
+    .where(eq(intakeAttempts.id, attemptId))
+    .limit(1);
+
+  if (!row || row.ownerId !== ownerId) {
+    return c.json({ status: "error", message: "Attempt not found" }, 404);
   }
 
-  return {
-    deliveryTargetId: deliveryTarget.topicId ?? "unknown-target",
-    deliveryTargetKind: "topic",
-  };
+  return row;
 }
 
 async function publishToTarget(
@@ -379,42 +382,21 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
   }
 
   const attempt = toAttemptRecord(row);
-  const deliveryTargetInfo = getDeliveryTargetInfo(attempt.deliveryTarget);
-  recordIntakeLifecycle(c.env, {
-    contractId: attempt.contractId,
-    deliveryTargetId: deliveryTargetInfo.deliveryTargetId,
-    deliveryTargetKind: deliveryTargetInfo.deliveryTargetKind,
-    driftCategory: attempt.driftCategory,
-    event: "suggestion.created",
-    ingestStatus: attempt.ingestStatus,
-    mappingTraceId: attempt.mappingTraceId,
-    modelName: attempt.modelName,
-    overallConfidence: attempt.overallConfidence,
-    promptVersion: attempt.promptVersion,
-    sourceKind: attempt.sourceKind,
-    sourceSystem: attempt.sourceSystem,
-    status: attempt.status,
-    validationErrorCount: attempt.validationErrors.length,
-  });
+  recordIntakeLifecycle(c.env, buildIntakeLifecycleEvent(attempt, "suggestion.created"));
 
   return c.json({ status: "success", data: { attempt } }, 201);
 });
 
 intakeRoutes.post("/mapping-suggestions/:id/reject", async (c) => {
-  const ownerId = c.get("user").userId;
   const attemptId = c.req.param("id");
   const body = await c.req.json<RejectIntakeSuggestionRequest>();
-  const db = createDb(c.env);
 
-  const [existing] = await db
-    .select()
-    .from(intakeAttempts)
-    .where(eq(intakeAttempts.id, attemptId))
-    .limit(1);
-
-  if (!existing || existing.ownerId !== ownerId) {
-    return c.json({ status: "error", message: "Attempt not found" }, 404);
+  const existingOrResponse = await loadAttemptForOwner(c, attemptId);
+  if (existingOrResponse instanceof Response) {
+    return existingOrResponse;
   }
+  const existing = existingOrResponse;
+  const db = createDb(c.env);
 
   if (existing.status === "rejected") {
     return c.json({
@@ -448,17 +430,13 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
   const ownerId = c.get("user").userId;
   const attemptId = c.req.param("id");
   const body = await c.req.json<{ approvedSuggestionIds?: string[] }>();
-  const db = createDb(c.env);
 
-  const [attemptRow] = await db
-    .select()
-    .from(intakeAttempts)
-    .where(eq(intakeAttempts.id, attemptId))
-    .limit(1);
-
-  if (!attemptRow || attemptRow.ownerId !== ownerId) {
-    return c.json({ status: "error", message: "Attempt not found" }, 404);
+  const attemptRowOrResponse = await loadAttemptForOwner(c, attemptId);
+  if (attemptRowOrResponse instanceof Response) {
+    return attemptRowOrResponse;
   }
+  const attemptRow = attemptRowOrResponse;
+  const db = createDb(c.env);
 
   if (attemptRow.mappingVersionId) {
     const [mappingVersionRow] = await db
@@ -599,23 +577,10 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     }
 
     const failedAttempt = toAttemptRecord(failedAttemptRow);
-    const deliveryTargetInfo = getDeliveryTargetInfo(failedAttempt.deliveryTarget);
-    recordIntakeLifecycle(c.env, {
-      contractId: failedAttempt.contractId,
-      deliveryTargetId: deliveryTargetInfo.deliveryTargetId,
-      deliveryTargetKind: deliveryTargetInfo.deliveryTargetKind,
-      driftCategory: failedAttempt.driftCategory,
-      event: "suggestion.ingest_failed",
-      ingestStatus: failedAttempt.ingestStatus,
-      mappingTraceId: failedAttempt.mappingTraceId,
-      modelName: failedAttempt.modelName,
-      overallConfidence: failedAttempt.overallConfidence,
-      promptVersion: failedAttempt.promptVersion,
-      sourceKind: failedAttempt.sourceKind,
-      sourceSystem: failedAttempt.sourceSystem,
-      status: failedAttempt.status,
-      validationErrorCount: failedAttempt.validationErrors.length,
-    });
+    recordIntakeLifecycle(
+      c.env,
+      buildIntakeLifecycleEvent(failedAttempt, "suggestion.ingest_failed"),
+    );
 
     return c.json(
       {
@@ -647,23 +612,7 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
   }
 
   const ingestedAttempt = toAttemptRecord(ingestedAttemptRow);
-  const deliveryTargetInfo = getDeliveryTargetInfo(ingestedAttempt.deliveryTarget);
-  recordIntakeLifecycle(c.env, {
-    contractId: ingestedAttempt.contractId,
-    deliveryTargetId: deliveryTargetInfo.deliveryTargetId,
-    deliveryTargetKind: deliveryTargetInfo.deliveryTargetKind,
-    driftCategory: ingestedAttempt.driftCategory,
-    event: "suggestion.ingested",
-    ingestStatus: ingestedAttempt.ingestStatus,
-    mappingTraceId: ingestedAttempt.mappingTraceId,
-    modelName: ingestedAttempt.modelName,
-    overallConfidence: ingestedAttempt.overallConfidence,
-    promptVersion: ingestedAttempt.promptVersion,
-    sourceKind: ingestedAttempt.sourceKind,
-    sourceSystem: ingestedAttempt.sourceSystem,
-    status: ingestedAttempt.status,
-    validationErrorCount: ingestedAttempt.validationErrors.length,
-  });
+  recordIntakeLifecycle(c.env, buildIntakeLifecycleEvent(ingestedAttempt, "suggestion.ingested"));
 
   return c.json({
     status: "success",

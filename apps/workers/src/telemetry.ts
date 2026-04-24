@@ -2,6 +2,7 @@ import type { Env } from "./db/client";
 import type {
   DriftCategory,
   IngestStatus,
+  IntakeAttemptRecord,
   IntakeAttemptStatus,
   SourceReferenceKind,
 } from "@repo/types";
@@ -44,6 +45,33 @@ export interface IntakeTelemetryEvent {
   sourceSystem: string;
   status: IntakeAttemptStatus;
   validationErrorCount: number;
+}
+
+export function buildIntakeLifecycleEvent(
+  attempt: IntakeAttemptRecord,
+  event: IntakeTelemetryEvent["event"],
+): IntakeTelemetryEvent {
+  const deliveryTargetId = attempt.deliveryTarget.queueId
+    ? attempt.deliveryTarget.queueId
+    : (attempt.deliveryTarget.topicId ?? "unknown-target");
+  const deliveryTargetKind: "queue" | "topic" = attempt.deliveryTarget.queueId ? "queue" : "topic";
+
+  return {
+    contractId: attempt.contractId,
+    deliveryTargetId,
+    deliveryTargetKind,
+    driftCategory: attempt.driftCategory,
+    event,
+    ingestStatus: attempt.ingestStatus,
+    mappingTraceId: attempt.mappingTraceId,
+    modelName: attempt.modelName,
+    overallConfidence: attempt.overallConfidence,
+    promptVersion: attempt.promptVersion,
+    sourceKind: attempt.sourceKind,
+    sourceSystem: attempt.sourceSystem,
+    status: attempt.status,
+    validationErrorCount: attempt.validationErrors.length,
+  };
 }
 
 export function buildIntakeTelemetryFields(
