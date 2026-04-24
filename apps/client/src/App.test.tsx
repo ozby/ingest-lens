@@ -84,8 +84,9 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() =>
-      expect(screen.getByText("Overview of your message queuing system")).toBeTruthy(),
-    );
+    expect(screen.getByText("Loading...")).toBeTruthy();
+    expect(
+      await screen.findByText("Overview of your message queuing system", {}, { timeout: 5000 }),
+    ).toBeTruthy();
   });
 });

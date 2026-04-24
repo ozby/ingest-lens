@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { IUser } from "@repo/types";
-import apiService from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -13,6 +12,10 @@ interface AuthContextType {
   logout: () => void;
 }
 
+type AuthProviderProps = {
+  children: React.ReactNode;
+};
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
@@ -22,9 +25,25 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth(): AuthContextType {
+  return useContext(AuthContext);
+}
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+type ApiService = (typeof import("../services/api"))["default"];
+
+let cachedApiService: ApiService | null = null;
+
+async function loadApiService(): Promise<ApiService> {
+  if (cachedApiService) {
+    return cachedApiService;
+  }
+
+  const { default: apiService } = await import("../services/api");
+  cachedApiService = apiService;
+  return apiService;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -34,10 +53,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const token = localStorage.getItem("authToken");
       if (token) {
         try {
+          const apiService = await loadApiService();
           const user = await apiService.getCurrentUser();
           setUser(user);
         } catch (error) {
           console.error("Failed to fetch user", error);
+          const apiService = await loadApiService();
           apiService.clearToken();
         }
       }
@@ -50,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (username: string, password: string) => {
     try {
       setIsLoading(true);
+      const apiService = await loadApiService();
       const { user } = await apiService.login({ username, password });
       setUser(user);
       toast.success("Login successful");
@@ -65,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (username: string, password: string, email: string) => {
     try {
       setIsLoading(true);
+      const apiService = await loadApiService();
       const { user } = await apiService.register({ username, password, email });
       setUser(user);
       toast.success("Registration successful");
@@ -78,10 +101,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    apiService.clearToken();
+    cachedApiService?.clearToken();
     setUser(null);
     navigate("/");
     toast.success("Logged out successfully");
+    localStorage.removeItem("authToken");
   };
 
   return (
@@ -98,10 +122,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 // Protected route component
-export const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function RequireAuth({ children }: AuthProviderProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -120,4 +144,4 @@ export const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   return isAuthenticated ? <>{children}</> : null;
-};
+}

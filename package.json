@@ -11,6 +11,7 @@
     "catalog:check": "ak audit catalog-drift",
     "check": "vp check",
     "clean": "vp run clean",
+    "client:bundle:check": "ak audit bundle-budget apps/client/dist --max-js-asset-bytes 512000 --max-html-eager-js-asset-bytes 262144 --max-html-eager-js-total-bytes 393216",
     "dev": "bun ./scripts/with-doppler.ts dev vp run dev",
     "dev:no-doppler": "vp run dev",
     "format": "vp fmt",

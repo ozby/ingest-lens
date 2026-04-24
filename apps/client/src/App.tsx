@@ -1,97 +1,95 @@
-import { Toaster, Sonner } from "@repo/ui/components";
-import { TooltipProvider } from "@repo/ui/components";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Suspense, lazy } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 import { AuthProvider, RequireAuth } from "./context/AuthContext";
 
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Queues from "./pages/Queues";
-import QueueDetail from "./pages/QueueDetail";
-import Topics from "./pages/Topics";
-import TopicDetail from "./pages/TopicDetail";
-import NotFound from "./pages/NotFound";
-import Metrics from "./pages/Metrics";
+const Index = lazy(() => import("./pages/Index"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Queues = lazy(() => import("./pages/Queues"));
+const QueueDetail = lazy(() => import("./pages/QueueDetail"));
+const Topics = lazy(() => import("./pages/Topics"));
+const TopicDetail = lazy(() => import("./pages/TopicDetail"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Metrics = lazy(() => import("./pages/Metrics"));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const routeLoadingFallback = <div aria-live="polite">Loading route…</div>;
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+const toasterClassNames = {
+  toast:
+    "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+  description: "group-[.toast]:text-muted-foreground",
+  actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+  cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+} as const;
+
+function App() {
+  return (
+    <>
+      <Toaster
+        theme="system"
+        className="toaster group"
+        toastOptions={{ classNames: toasterClassNames }}
+      />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-
-            <Route
-              path="/dashboard"
-              element={
-                <RequireAuth>
-                  <Dashboard />
-                </RequireAuth>
-              }
-            />
-
-            <Route
-              path="/metrics"
-              element={
-                <RequireAuth>
-                  <Metrics />
-                </RequireAuth>
-              }
-            />
-
-            <Route
-              path="/queues"
-              element={
-                <RequireAuth>
-                  <Queues />
-                </RequireAuth>
-              }
-            />
-
-            <Route
-              path="/queues/:id"
-              element={
-                <RequireAuth>
-                  <QueueDetail />
-                </RequireAuth>
-              }
-            />
-
-            <Route
-              path="/topics"
-              element={
-                <RequireAuth>
-                  <Topics />
-                </RequireAuth>
-              }
-            />
-
-            <Route
-              path="/topics/:id"
-              element={
-                <RequireAuth>
-                  <TopicDetail />
-                </RequireAuth>
-              }
-            />
-
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={routeLoadingFallback}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <RequireAuth>
+                    <Dashboard />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/metrics"
+                element={
+                  <RequireAuth>
+                    <Metrics />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/queues"
+                element={
+                  <RequireAuth>
+                    <Queues />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/queues/:id"
+                element={
+                  <RequireAuth>
+                    <QueueDetail />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/topics"
+                element={
+                  <RequireAuth>
+                    <Topics />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/topics/:id"
+                element={
+                  <RequireAuth>
+                    <TopicDetail />
+                  </RequireAuth>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </AuthProvider>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </>
+  );
+}
 
 export default App;
