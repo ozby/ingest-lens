@@ -3,8 +3,8 @@ type: blueprint
 status: planned
 complexity: S
 created: "2026-04-23"
-last_updated: "2026-04-23"
-progress: "Refined 2026-04-23; 0% implementation"
+last_updated: "2026-04-24"
+progress: "Refined 2026-04-23; reframed 2026-04-24 after Workers Assets decision; 0% implementation"
 depends_on: []
 tags:
   - client
@@ -12,20 +12,39 @@ tags:
   - performance
   - code-splitting
   - bundle-size
+  - ux
 ---
 
 # Client route code splitting
 
-**Goal:** Remove the Vite large-chunk warning by splitting `apps/client` at route
-boundaries, so chart-heavy dashboard code is no longer part of the initial SPA
-entry chunk, and keep that delivery shape enforced by a small dependency-free
+**Goal:** Reduce the SPA's initial browser payload by splitting `apps/client`
+at route boundaries, so chart-heavy dashboard code is no longer shipped on
+first paint, and keep that delivery shape enforced by a small dependency-free
 budget gate.
+
+> **Reframed 2026-04-24.** The original "why now" was the Vite large-chunk
+> warning blocking deploys. That premise no longer holds: the sibling
+> blueprint `client-workers-assets-deploy` adopts CF Workers + Assets for the
+> client, which serves static bundles outside the Worker script-size budget
+> — so the 500 kB Vite warning is **no longer deploy-blocking**. The work
+> is still valuable, now motivated by **browser UX**: smaller initial JS
+> means faster first paint and a smaller hot-path to interactive for every
+> visitor, especially on mobile. The technical approach
+> (`React.lazy(() => import(...))` at route boundaries, dependency-free
+> bundle-budget audit) is unchanged.
 
 ## Planning Summary
 
-- **Why now:** Verification showed the client production build succeeds but emits
-  Vite's large-chunk warning. The current single JS bundle is about `971.7 kB`
-  raw / `276.9 kB` gzip, above Vite's default `500 kB` chunk warning threshold.
+- **Why now (reframed):** The Vite warning is cosmetic once Workers Assets
+  owns delivery, but the underlying UX cost is real: every visitor ships
+  ~277 kB gzip on first request whether they need the charts route or not.
+  Route-level lazy loading cuts the initial payload by roughly half (charts
+  alone are ~60 % of the bundle per the earlier measurement). Ship this
+  any time — it compounds every page view, not just each deploy.
+- **Original measurement (retained for context):** Verification showed the
+  client production build succeeds but emits Vite's large-chunk warning.
+  The single JS bundle was about `971.7 kB` raw / `276.9 kB` gzip, above
+  Vite's default `500 kB` chunk warning threshold.
 - **Scope:** Convert the static page imports in `apps/client/src/App.tsx` to
   top-level `React.lazy(() => import(...))` declarations wrapped by a single
   route-level `Suspense` boundary; consume the Agent Kit Vite bundle-budget
