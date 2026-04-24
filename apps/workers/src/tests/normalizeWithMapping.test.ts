@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getFixtureReference } from "../intake/contracts";
-import { createNormalizedEnvelope } from "../intake/normalizedEnvelope";
-import { normalizeWithMapping } from "../intake/normalizeWithMapping";
+import { createNormalizedEnvelope, normalizeWithMapping } from "../intake/normalize";
 
 describe("normalizeWithMapping", () => {
   it.each([
