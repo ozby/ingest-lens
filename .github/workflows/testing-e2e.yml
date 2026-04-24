@@ -9,6 +9,9 @@ jobs:
   full-suite:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pubsub
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     services:
       postgres:
@@ -25,19 +28,17 @@ jobs:
           --health-timeout=5s
           --health-retries=10
 
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pubsub
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.33.0
+      - name: Enable Corepack pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
 
       - uses: oven-sh/setup-bun@v2
         with:
