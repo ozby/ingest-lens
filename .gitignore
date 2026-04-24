@@ -69,7 +69,8 @@ Thumbs.db
 # Git worktrees (parallel blueprint lanes)
 .worktrees/
 
-# Wrangler local dev secrets
+# Wrangler local dev state and secrets
+.wrangler/
 .dev.vars
 .codex/*
 !.codex/agents/
