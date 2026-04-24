@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      HAS_DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN != '' && '1' || '' }}
+      HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
       HAS_DIRECT_NEON_SECRETS: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' && secrets.NEON_PARENT_BRANCH_ID != '' && '1' || '' }}
 
     steps:
@@ -35,7 +35,7 @@ jobs:
         if: env.HAS_DOPPLER_TOKEN == '1'
         uses: dopplerhq/secrets-fetch-action@v2.0.0
         with:
-          doppler-token: ${{ secrets.DOPPLER_TOKEN }}
+          doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
           inject-env-vars: true
 
       - name: Skip when neither Doppler nor direct Neon credentials are available

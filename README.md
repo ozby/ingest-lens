@@ -114,9 +114,9 @@ Use `--secret-profile <profile>` when you need to override the inferred
 workflow profile explicitly.
 
 On hosted GitHub Actions, the scheduled Neon cleanup workflow now prefers
-`DOPPLER_TOKEN` + `dopplerhq/secrets-fetch-action@v2.0.0` and only falls back
-to direct `NEON_*` repository secrets when a manager token is not configured
-yet.
+`DOPPLER_SERVICE_TOKEN` (falling back to legacy `DOPPLER_TOKEN`) via
+`dopplerhq/secrets-fetch-action@v2.0.0`, and only falls back to direct
+`NEON_*` repository secrets when a manager token is not configured yet.
 
 `pnpm act:e2e` targets the local-host harness workflow
 `.github/workflows/testing-e2e-act.yml`, which is shaped for `act` and expects a

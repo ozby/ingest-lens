@@ -149,15 +149,15 @@ pnpm dev:no-doppler
 1. In the Doppler dashboard, go to `node-pubsub` → **Access** → **Service Tokens**.
 2. Click **+ Generate** → select the config (e.g., `preview_main`) → set an expiry.
 3. Copy the token (shown once).
-4. Add it as a secret in your CI provider (GitHub Actions: `Settings → Secrets → DOPPLER_TOKEN`).
+4. Add it as a secret in your CI provider (GitHub Actions: `Settings → Secrets → DOPPLER_SERVICE_TOKEN`).
 
 In CI, inject secrets via the Doppler CLI:
 
 ```yaml
 - name: Inject secrets
-  run: doppler run --token "$DOPPLER_TOKEN" --config preview_main -- pnpm test
+  run: doppler run --token "$DOPPLER_SERVICE_TOKEN" --config preview_main -- pnpm test
   env:
-    DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+    DOPPLER_SERVICE_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
 ```
 
 Or use the official Doppler secrets fetch action to hydrate subsequent steps:
@@ -165,14 +165,15 @@ Or use the official Doppler secrets fetch action to hydrate subsequent steps:
 ```yaml
 - uses: dopplerhq/secrets-fetch-action@v2.0.0
   with:
-    doppler-token: ${{ secrets.DOPPLER_TOKEN }}
+    doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
     inject-env-vars: true
 ```
 
-The scheduled Neon cleanup workflow prefers this path. When `DOPPLER_TOKEN` is
-present, it hydrates Neon control-plane secrets from Doppler and keeps the
-credential source out of the workflow YAML. Direct `NEON_*` GitHub Secrets
-remain as a fallback for bootstrap or migration periods.
+The scheduled Neon cleanup workflow prefers this path. When
+`DOPPLER_SERVICE_TOKEN` is present (or legacy `DOPPLER_TOKEN` as fallback), it
+hydrates Neon control-plane secrets from Doppler and keeps the credential
+source out of the workflow YAML. Direct `NEON_*` GitHub Secrets remain as a
+fallback for bootstrap or migration periods.
 
 ---
 
@@ -195,7 +196,7 @@ remain as a fallback for bootstrap or migration periods.
 - infers a least-privilege secret profile from the target workflow/job,
 - only contacts Doppler when that profile actually needs managed secrets,
 - filters injected values to the profile allowlist,
-- never forwards `DOPPLER_TOKEN` into the `act` container,
+- never forwards `DOPPLER_SERVICE_TOKEN` or `DOPPLER_TOKEN` into the `act` container,
 - can opt into `GITHUB_PAT` → `GITHUB_TOKEN` mapping with `ACT_MAP_GITHUB_PAT=1`
   for the `github-api` profile,
 - mounts absolute local `file:/...` package sources into the act job container,
