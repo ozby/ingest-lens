@@ -4,10 +4,9 @@ Repo-owned end-to-end surface for `node-pubsub`.
 
 ## Entry points
 
-- `pnpm exec ak e2e --suite foundation`
-- `pnpm exec ak e2e --suite full`
+- `pnpm --dir apps/e2e run e2e:run -- --suite foundation`
+- `pnpm --dir apps/e2e run e2e:run -- --suite full`
 - `pnpm --filter @repo/e2e test:journeys`
-- `pnpm --filter @repo/e2e run e2e:run -- --suite full`
 - `pnpm act:e2e` (local GitHub Actions harness via `.github/workflows/testing-e2e-act.yml`)
 
 The hosted and local workflow harnesses both use `actions/setup-node@v6` plus
@@ -27,14 +26,10 @@ GitHub Actions setup.
   - `journeys/topic-publish-flow.e2e.ts`
   - validates queue send/receive/ack plus topic publish fanout to subscribed queues
 - `full`
-  - runs the full live HTTP journey set above in one `ak e2e` invocation
+  - runs the full live HTTP journey set above in one invocation
 
-All suites use `E2E_BASE_URL` and default to `http://127.0.0.1:8787` via the host adapter.
-
-The host adapter is built from the shared `createCommandE2eHostAdapter()` helper
-exported by `@webpresso/agent-kit/e2e`, so `node-pubsub` and Webpresso share
-the same adapter contract while keeping repo-specific suite manifests and run
-commands local.
+All suites use `E2E_BASE_URL` and default to `http://127.0.0.1:8787` via the
+repo-owned runner.
 
 ## Local worker prerequisites for `auth`, `messaging`, and `full`
 
@@ -51,7 +46,7 @@ pnpm --filter @repo/workers exec wrangler dev --port 8787 --var JWT_SECRET:e2e-t
 Then run:
 
 ```bash
-E2E_BASE_URL=http://127.0.0.1:8787 pnpm exec ak e2e --suite full
+E2E_BASE_URL=http://127.0.0.1:8787 pnpm --dir apps/e2e run e2e:run -- --suite full
 pnpm act:e2e
 ```
 

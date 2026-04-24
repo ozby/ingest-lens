@@ -8,10 +8,10 @@
     "act:e2e": "bun ./scripts/act-with-doppler.ts workflow_dispatch -W .github/workflows/testing-e2e-act.yml -j full-suite-local",
     "act:list": "bun ./scripts/act-with-doppler.ts -l",
     "build": "vp run build",
-    "catalog:check": "ak audit catalog-drift",
+    "catalog:check": "bun ./scripts/check-catalog-drift.ts",
     "check": "vp check",
     "clean": "vp run clean",
-    "client:bundle:check": "ak audit bundle-budget apps/client/dist --max-js-asset-bytes 512000 --max-html-eager-js-asset-bytes 262144 --max-html-eager-js-total-bytes 393216",
+    "client:bundle:check": "bun ./scripts/check-client-bundle-budget.ts apps/client/dist --max-js-asset-bytes 512000 --max-html-eager-js-asset-bytes 262144 --max-html-eager-js-total-bytes 393216",
     "dev": "bun ./scripts/with-doppler.ts dev vp run dev",
     "dev:no-doppler": "vp run dev",
     "format": "vp fmt",
@@ -23,8 +23,8 @@
     "commitlint": "commitlint",
     "secretlint": "secretlint",
     "prepare": "husky",
-    "docs:check": "ak audit docs-frontmatter",
-    "blueprints:check": "ak audit blueprint-lifecycle --legacy-omx",
+    "docs:check": "bun ./scripts/check-docs-frontmatter.ts",
+    "blueprints:check": "bun ./scripts/check-blueprint-lifecycle.ts",
     "ai:eval": "bun ./scripts/run-mapping-eval.ts"
   },
   "devDependencies": {
