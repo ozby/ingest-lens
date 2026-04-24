@@ -86,8 +86,8 @@ pnpm --filter client dev
 
 ## E2E surface
 
-The repo now owns its E2E seam via a root `agent-kit.config.ts`, the `apps/e2e`
-host adapter, and the `packages/neon` branch helpers.
+The repo-owned E2E runner lives in `apps/e2e` and executes live HTTP journeys
+through the package-local CLI.
 
 Current live suites:
 
@@ -97,9 +97,9 @@ Current live suites:
 - `full` — runs the full live HTTP suite in one invocation
 
 ```bash
-pnpm exec ak e2e --suite foundation --print-command
-E2E_BASE_URL=http://127.0.0.1:8787 pnpm exec ak e2e --suite full
-pnpm --filter @repo/e2e db:branch:list
+pnpm --dir apps/e2e run e2e:run -- --suite foundation
+E2E_BASE_URL=http://127.0.0.1:8787 pnpm --dir apps/e2e run e2e:run -- --suite full
+pnpm --dir apps/e2e db:branch:list
 ```
 
 Local `auth`, `messaging`, and `full` runs require a migrated local Postgres

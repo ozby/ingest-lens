@@ -20,7 +20,7 @@ description: Navigate the ozbys-node-pubsub monorepo efficiently. Knows package 
 | `@repo/workers`           | `apps/workers`               | {{TODO: describe}} | {{TODO: common files}} |
 | `client`                  | `apps/client`                | {{TODO: describe}} | {{TODO: common files}} |
 
-<!-- Rendered from pnpm-workspace.yaml / package.json workspaces during `ak init`.
+<!-- Rendered from pnpm-workspace.yaml / package.json workspace metadata.
      Format: | Package | Path | Purpose | Common Files |
      Purpose + Common Files start as {{TODO: describe ...}} placeholders. -->
 

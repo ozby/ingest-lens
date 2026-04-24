@@ -73,13 +73,7 @@ Expected edits commonly include:
 
 ### Step 5: Validate the refined artifact
 
-Run the blueprint parser check:
-
-```bash
-ak blueprint show <slug>
-```
-
-If the refinement changes markdown structure enough to warrant a lint pass, also run your repo's markdown linter against `blueprints/*/<slug>/_overview.md` (for example, `just lint-md` with webpresso's just recipes).
+Validate the refined artifact directly from the repo-owned blueprint file. If the refinement changes markdown structure enough to warrant a lint pass, run the repo's markdown linter against `blueprints/*/<slug>/_overview.md` and, if present, the repo's blueprint parser/validator tests.
 
 ### Step 6: Report the outcome
 

@@ -34,7 +34,7 @@ Not sufficient: "should pass", "looks correct", partial checks, lint-only eviden
 
 Quality commands auto-save logs under `logs/DD-MM-YYYY/HH-MM-SS_*.log` (if your runner supports it). Reuse fresh logs instead of re-running.
 
-> Note: `just <recipe>` commands in this skill assume a [just](https://github.com/casey/just)-based task runner. Substitute your own runner (`make`, `npm run`, `pnpm run`, etc.) where needed. The `ak run` abstraction layer is planned in a later phase.
+> Note: `just <recipe>` commands in this skill assume a [just](https://github.com/casey/just)-based task runner. Substitute your own runner (`make`, `npm run`, `pnpm run`, etc.) where needed.
 
 ---
 
@@ -45,8 +45,8 @@ Quality commands auto-save logs under `logs/DD-MM-YYYY/HH-MM-SS_*.log` (if your 
 3. If target is a blueprint slug:
 
 ```bash
-ak blueprint show <slug>
-ak blueprint audit <slug> --strict
+# Inspect `blueprints/<status>/<slug>/_overview.md` directly
+# Run the repo's blueprint parser/validator checks if they exist
 ```
 
 Record task IDs and acceptance checkboxes that still need proof.
@@ -57,7 +57,7 @@ Run only what applies to the diff:
 
 - Any repo SSOT (schema/config/blueprint) change → your repo's dedicated check
 - Any `docs/**` change → `just docs` (or `just lint-md <paths>` for targeted checks, or your markdown linter)
-- Blueprint slug target → `ak blueprint audit <slug> --strict`
+- Blueprint slug target → lint the blueprint markdown and run any repo-owned blueprint parser/validator checks
 
 Hard stop on any failure.
 
@@ -66,7 +66,6 @@ Hard stop on any failure.
 > Never pass `.md` files to `just test --file` — that command is for TypeScript tests only.
 
 ```bash
-ak blueprint show <slug>
 just lint-md blueprints/<status>/<slug>/_overview.md
 # Parser/validator tests only when modifying blueprint structure logic:
 # <run your blueprint parser/validator tests>
@@ -389,4 +388,4 @@ After implementation:
 1. Run `/verify <target>`.
 2. Fix hard-stop findings.
 3. Re-run `/verify` until clean.
-4. For blueprint targets: `ak blueprint finalize <slug>`.
+4. For blueprint targets: update the blueprint status only after its acceptance and verification gates are genuinely complete.

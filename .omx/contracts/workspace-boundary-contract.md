@@ -6,7 +6,7 @@
 
 - `apps/client` — browser UI and route-level user workflows.
 - `apps/workers` — Cloudflare Worker HTTP/API runtime, auth, queue/topic flows, and intake endpoints.
-- `apps/e2e` — end-to-end journey runner and `agent-kit` host-adapter surface.
+- `apps/e2e` — repo-owned end-to-end journey runner and live HTTP workflow surface.
 
 ### Supporting services
 

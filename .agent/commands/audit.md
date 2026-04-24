@@ -18,7 +18,7 @@ Unified audit command that consolidates code quality, test quality, duplication,
 /audit <type> [target]
 ```
 
-Repo CLI equivalent (with a just-based runner, for example webpresso's just recipes):
+Repo CLI equivalent (using this repository's just-based runner):
 
 ```bash
 just audit <type> [target]

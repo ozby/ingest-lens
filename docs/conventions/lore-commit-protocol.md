@@ -30,9 +30,7 @@ Do **not** use `[lore]` for:
 ## Trailer Vocabulary
 
 All trailers follow the `git interpret-trailers` key-colon-space-value
-convention. The `[lore]` validator (see `ak audit commit-message`)
-requires `Confidence:` plus at least one of `Constraint:`, `Rejected:`, or
-`Directive:`.
+convention. The commit-msg hook requires `Confidence:` plus at least one of `Constraint:`, `Rejected:`, or `Directive:`.
 
 ### Required for every commit
 
@@ -97,8 +95,7 @@ Related: ADR-0001
 
 ## Validator
 
-The commit-msg hook in `.husky/commit-msg` calls
-`ak audit commit-message --require-lore --message-file "$1"`. It verifies:
+The commit-msg hook in `.husky/commit-msg` runs the repo's Lore validator. It verifies:
 
 1. `Confidence:` trailer is present with a valid value
 2. At least one of `Constraint:`, `Rejected:`, or `Directive:` is present

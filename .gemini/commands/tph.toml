@@ -15,7 +15,7 @@ just audit-tph-e2e             # Run TPH E2E audit (internal API calls, mocks, d
 /tph --check                   # Agent: check current changes only (git diff)
 ```
 
-> Note: `just <recipe>` commands assume your repo uses the [just](https://github.com/casey/just) task runner. Substitute your own runner (`make`, `npm run`, etc.) where needed. The `ak run` abstraction layer is planned; until then, the referenced recipes are illustrative.
+> Note: `just <recipe>` commands assume your repo uses the [just](https://github.com/casey/just) task runner. Substitute your own runner (`make`, `npm run`, etc.) where needed.
 
 ## Implementation
 

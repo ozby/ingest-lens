@@ -78,7 +78,7 @@ jobs:
       - name: Run full e2e suite
         env:
           E2E_BASE_URL: http://127.0.0.1:8787
-        run: pnpm exec ak e2e --suite full
+        run: pnpm --dir apps/e2e run e2e:run -- --suite full
 
       - name: Upload worker log on failure
         if: failure()
