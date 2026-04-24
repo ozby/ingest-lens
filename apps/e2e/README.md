@@ -8,6 +8,7 @@ Repo-owned end-to-end surface for `node-pubsub`.
 - `pnpm exec ak e2e --suite full`
 - `pnpm --filter @repo/e2e test:journeys`
 - `pnpm --filter @repo/e2e run e2e:run -- --suite full`
+- `pnpm act:e2e` (local GitHub Actions harness via `.github/workflows/testing-e2e-act.yml`)
 
 ## Current suites
 
@@ -42,6 +43,7 @@ Then run:
 
 ```bash
 E2E_BASE_URL=http://127.0.0.1:8787 pnpm exec ak e2e --suite full
+pnpm act:e2e
 ```
 
 ## Neon helpers

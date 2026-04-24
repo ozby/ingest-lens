@@ -8,10 +8,18 @@
 import { spawnSync, execSync } from "node:child_process";
 import process from "node:process";
 
-const [config, ...cmd] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+let project: string | undefined;
+
+if (argv[0] === "--project") {
+  project = argv[1];
+  argv.splice(0, 2);
+}
+
+const [config, ...cmd] = argv;
 
 if (!config || cmd.length === 0) {
-  console.error("Usage: bun ./scripts/with-doppler.ts <config> <command...>");
+  console.error("Usage: bun ./scripts/with-doppler.ts [--project <name>] <config> <command...>");
   process.exit(1);
 }
 
@@ -23,18 +31,30 @@ try {
   process.exit(1);
 }
 
-// Verify the project is linked
-try {
-  execSync("doppler configure get project --plain", { stdio: "ignore" });
-} catch {
-  console.error(
-    "\n❌  Doppler project not linked. Run: doppler setup\n" +
-      "    See docs/secrets/doppler.md for setup instructions.\n",
-  );
-  process.exit(1);
+if (!project) {
+  try {
+    const linkedProject = execSync("doppler configure get project --plain", {
+      encoding: "utf8",
+    }).trim();
+    if (!linkedProject) {
+      throw new Error("empty project");
+    }
+  } catch {
+    console.error(
+      "\n❌  Doppler project not linked. Run: doppler setup or pass --project <name>\n" +
+        "    See docs/secrets/doppler.md for setup instructions.\n",
+    );
+    process.exit(1);
+  }
 }
 
-const result = spawnSync("doppler", ["run", "--config", config, "--", ...cmd], {
+const dopplerArgs = ["run"];
+if (project) {
+  dopplerArgs.push("--project", project);
+}
+dopplerArgs.push("--config", config, "--", ...cmd);
+
+const result = spawnSync("doppler", dopplerArgs, {
   stdio: "inherit",
   shell: false,
 });

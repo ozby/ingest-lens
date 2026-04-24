@@ -128,6 +128,12 @@ pnpm dev
 # expands to: doppler run --config dev -- turbo run dev
 ```
 
+To run a command against a non-linked project, pass `--project` explicitly:
+
+```bash
+bun ./scripts/with-doppler.ts --project ozby-shell dev pnpm --filter @repo/infra preview
+```
+
 To skip Doppler injection (e.g., CI where secrets are pre-loaded into the environment):
 
 ```bash
@@ -172,9 +178,20 @@ Or use the official [Doppler GitHub Action](https://github.com/DopplerHQ/doppler
 | Link local directory       | `doppler setup`                                   |
 | Run dev with secrets       | `pnpm dev`                                        |
 | Run dev without Doppler    | `pnpm dev:no-doppler`                             |
+| Run local CI workflow      | `pnpm act:ci`                                     |
+| Run local E2E workflow     | `pnpm act:e2e`                                    |
+| Run local cleanup workflow | `pnpm act:cleanup`                                |
 | Print all secrets (dev)    | `doppler secrets --config dev`                    |
 | Set a secret               | `doppler secrets set KEY=value --config dev`      |
 | Download secrets as `.env` | `doppler secrets download --no-file --format env` |
+
+`pnpm act:*` expands through `scripts/act-with-doppler.ts`, which:
+
+- loads secrets from Doppler (`node-pubsub:dev`, `ozby-shell:dev`) when available,
+- falls back to ambient env for common secret keys,
+- can opt into `GITHUB_PAT` → `GITHUB_TOKEN` mapping with `ACT_MAP_GITHUB_PAT=1`,
+- mounts absolute local `file:/...` package sources into the act job container,
+- and injects the result into `act` via a temporary `--secret-file`.
 
 ---
 

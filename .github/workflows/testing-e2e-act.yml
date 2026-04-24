@@ -1,32 +1,15 @@
-name: testing-e2e
+name: testing-e2e-act
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 jobs:
-  full-suite:
+  full-suite-local:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: pubsub
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres -d pubsub"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
+    timeout-minutes: 20
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pubsub
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/pubsub
 
     steps:
       - uses: actions/checkout@v4
@@ -44,10 +27,17 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install postgres client when missing
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y postgresql-client
+          fi
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Migrate local postgres schema
+      - name: Migrate local host postgres schema
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION IF NOT EXISTS pgcrypto;'
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/workers/src/db/migrations/0000_initial_workers_schema.sql

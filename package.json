@@ -3,6 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "act:ci": "bun ./scripts/act-with-doppler.ts push -W .github/workflows/ci.yml",
+    "act:cleanup": "bun ./scripts/act-with-doppler.ts workflow_dispatch -W .github/workflows/cleanup-stale-neon-e2e-branches.yml -j cleanup",
+    "act:e2e": "bun ./scripts/act-with-doppler.ts workflow_dispatch -W .github/workflows/testing-e2e-act.yml -j full-suite-local",
+    "act:list": "bun ./scripts/act-with-doppler.ts -l",
     "build": "vp run build",
     "catalog:check": "ak audit catalog-drift",
     "check": "vp check",

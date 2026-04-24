@@ -1,5 +1,5 @@
 name: Setup monorepo
-description: Checkout, install Node 24 + pnpm 10, restore pnpm store cache
+description: Install Node 24 + pnpm 10 + Bun, then install dependencies
 
 inputs:
   fetch-depth:
@@ -9,18 +9,18 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: ${{ inputs.fetch-depth }}
-
     - uses: pnpm/action-setup@v4
       with:
-        version: 10
+        version: 10.33.0
 
     - uses: actions/setup-node@v4
       with:
         node-version: 24
         cache: pnpm
+
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
 
     - name: Install dependencies
       run: pnpm install --frozen-lockfile

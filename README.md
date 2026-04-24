@@ -85,6 +85,27 @@ schema plus `wrangler dev --var JWT_SECRET:e2e-test-secret`.
 Neon branch commands and the cleanup workflow read `NEON_API_KEY`,
 `NEON_PROJECT_ID`, and `NEON_PARENT_BRANCH_ID` from Doppler-backed shell env.
 
+## Local GitHub Actions testing
+
+Use `act` through the Doppler-backed wrapper so local workflow runs receive the
+same secret surface shape as CI.
+
+```bash
+pnpm act:list
+pnpm act:ci
+pnpm act:e2e
+pnpm act:cleanup
+```
+
+The wrapper loads secrets from Doppler sources (`node-pubsub:dev`,
+`ozby-shell:dev`) when available, falls back to ambient env for common keys,
+mounts absolute local `file:/...` package sources into the act job container,
+and automatically adds `--container-architecture linux/amd64` on Apple Silicon.
+
+`pnpm act:e2e` targets the local-host harness workflow
+`.github/workflows/testing-e2e-act.yml`, which is shaped for `act` and expects a
+local Postgres instance reachable at `host.docker.internal:5432`.
+
 ## Docs
 
 - [Architecture](docs/architecture.md) — system design walk-through

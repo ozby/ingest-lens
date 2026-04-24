@@ -27,6 +27,8 @@ jobs:
             --recursive
             ./
 
+      - uses: ./.github/actions/setup-monorepo
+
       - name: Secretlint
         run: |
           pnpm exec secretlint "**/*"

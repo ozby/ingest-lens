@@ -15,6 +15,9 @@ jobs:
     name: Install
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: ./.github/actions/setup-monorepo
 
   check:
@@ -22,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: ./.github/actions/setup-monorepo
       - run: pnpm check
 
@@ -30,6 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: ./.github/actions/setup-monorepo
       - run: pnpm test
 
@@ -38,6 +47,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: ./.github/actions/setup-monorepo
       - run: pnpm catalog:check
 
@@ -46,8 +58,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: ./.github/actions/setup-monorepo
-      - run: bun ./scripts/validate-blueprints.ts
+      - run: pnpm blueprints:check
 
   mutation:
     name: Mutation (affected)
@@ -55,7 +70,8 @@ jobs:
     needs: [test]
     if: github.event_name == 'pull_request'
     steps:
-      - uses: ./.github/actions/setup-monorepo
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: "0"
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
       - run: bun ./scripts/affected-mutation.ts
