@@ -13,7 +13,7 @@ USE CODEX NATIVE SUBAGENTS FOR INDEPENDENT PARALLEL SUBTASKS WHEN THAT IMPROVES 
 
 `.agent/`, `.claude/`, `.cursor/`, `.windsurf/`, `.opencode/`, `.agents/skills/`,
 and `.gemini/` are scaffolded by
-[`@webpresso/agent-kit`](https://github.com/webpresso/webpresso/tree/main/packages/cli/agent-kit).
+[`@webpresso/agent-kit`](https://github.com/webpresso/agent-kit).
 Three layers, different ownership:
 
 - **`.agent/`** (repo-owned) — the canonical surface. Every slash command,
@@ -49,8 +49,8 @@ Invocation by tool:
 - Amp: `skill: add <path>` or command palette.
 - Gemini CLI: `/name` — reads `.gemini/commands/name.toml`.
 
-See [`@webpresso/agent-kit` architecture](https://github.com/webpresso/webpresso/blob/main/packages/cli/agent-kit/docs/architecture.md)
-for the full three-layer model and [`symlinker.md`](https://github.com/webpresso/webpresso/blob/main/packages/cli/agent-kit/docs/symlinker.md)
+See [`@webpresso/agent-kit` architecture](https://github.com/webpresso/agent-kit/blob/main/docs/architecture.md)
+for the full three-layer model and [`symlinker.md`](https://github.com/webpresso/agent-kit/blob/main/docs/symlinker.md)
 for the consumer mapping + rationale for what's not mapped.
 
 <!-- END AGENT SURFACE -->

@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@repo/neon": "workspace:*",
-    "@webpresso/agent-kit": "file:../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz"
+    "@webpresso/agent-kit": "github:webpresso/agent-kit#e869a333dde35a8a47c179b51e21e8d2079cf3b5"
   },
   "devDependencies": {
     "@types/node": "catalog:",
