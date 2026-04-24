@@ -11,9 +11,14 @@
     "lint": "oxlint src"
   },
   "dependencies": {
+    "@sinclair/typebox": "^0.34.49",
+    "@repo/types": "workspace:*",
+    "ai": "^6.0.168",
+    "ajv": "^8.18.0",
     "drizzle-orm": "catalog:workers",
     "hono": "catalog:workers",
-    "postgres": "catalog:workers"
+    "postgres": "catalog:workers",
+    "workers-ai-provider": "^3.1.12"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:workers",

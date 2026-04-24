@@ -18,11 +18,13 @@ export function createMockEnv(
   rateLimiter?: { limit: ReturnType<typeof vi.fn> },
   analytics?: { writeDataPoint: ReturnType<typeof vi.fn> },
   topicRooms?: { idFromName: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> },
+  ai?: Ai,
 ): Env {
   return {
     HYPERDRIVE: null as unknown as Env["HYPERDRIVE"],
     DATABASE_URL: "postgresql://localhost/test",
     JWT_SECRET: "test-secret",
+    AI: ai,
     DELIVERY_QUEUE: (deliveryQueue ?? { send: vi.fn() }) as unknown as Env["DELIVERY_QUEUE"],
     RATE_LIMITER: (rateLimiter ?? {
       limit: vi.fn().mockResolvedValue({ success: true }),

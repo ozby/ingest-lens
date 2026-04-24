@@ -6,6 +6,9 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
+[ai]
+binding = "AI"
+
 # Production domain: api.ozby.dev
 # Hyperdrive binding ID is injected by infra/src/deploy/wrangler-config.ts after pulumi up
 [[hyperdrive]]

@@ -16,6 +16,7 @@ export type Env = {
   DATABASE_URL?: string; // local dev fallback
   JWT_SECRET: string;
   NODE_ENV?: string;
+  AI?: Ai;
   DELIVERY_QUEUE: Queue<DeliveryPayload>;
   RATE_LIMITER: RateLimit;
   ANALYTICS: AnalyticsEngineDataset;

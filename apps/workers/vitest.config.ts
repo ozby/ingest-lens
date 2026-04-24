@@ -11,7 +11,7 @@ export default mergeConfig(workersConfig as never, {
         test: {
           name: "node",
           environment: "node",
-          include: ["src/tests/**/*.test.ts"],
+          include: ["src/**/*.test.ts"],
           exclude: ["src/tests/TopicRoom.test.ts"],
         },
       },
