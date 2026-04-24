@@ -3,6 +3,9 @@ packages:
   - "packages/*"
   - infra
 
+onlyBuiltDependencies:
+  - "@webpresso/vitest-config"
+
 catalog:
   # Runtime — shared across ≥2 apps
   axios: ^1.15.2
