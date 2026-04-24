@@ -12,6 +12,8 @@ import Topics from "./pages/Topics";
 import TopicDetail from "./pages/TopicDetail";
 import NotFound from "./pages/NotFound";
 import Metrics from "./pages/Metrics";
+import Intake from "./pages/Intake";
+import AdminIntake from "./pages/AdminIntake";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +84,24 @@ const App = () => (
               element={
                 <RequireAuth>
                   <TopicDetail />
+                </RequireAuth>
+              }
+            />
+
+            <Route
+              path="/intake"
+              element={
+                <RequireAuth>
+                  <Intake />
+                </RequireAuth>
+              }
+            />
+
+            <Route
+              path="/admin/intake"
+              element={
+                <RequireAuth>
+                  <AdminIntake />
                 </RequireAuth>
               }
             />

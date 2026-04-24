@@ -1,7 +1,13 @@
 import { Hono } from "hono";
 import { and, count, eq, gt, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
-import { queues, messages, serverMetrics, queueMetrics } from "../db/schema";
+import {
+  intakeAttempts,
+  queues,
+  messages,
+  serverMetrics,
+  queueMetrics,
+} from "../db/schema";
 import { requireOwnedQueue } from "./ownership";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
@@ -202,6 +208,38 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
           ? Date.now() - oldestMessage.createdAt.getTime()
           : 0,
       },
+    },
+  });
+});
+
+// GET /api/dashboard/intake — intake lifecycle counts and attempt list
+dashboardRoutes.get("/intake", async (c) => {
+  const ownerId = c.get("user").userId;
+  const mappingTraceId = c.req.query("mappingTraceId");
+  const db = createDb(c.env);
+
+  const rows = await db
+    .select()
+    .from(intakeAttempts)
+    .where(eq(intakeAttempts.ownerId, ownerId));
+
+  const attempts = rows.filter((row) =>
+    mappingTraceId ? row.mappingTraceId === mappingTraceId : true,
+  );
+
+  const counts = attempts.reduce(
+    (summary, attempt) => {
+      summary[attempt.status] = (summary[attempt.status] ?? 0) + 1;
+      return summary;
+    },
+    {} as Record<string, number>,
+  );
+
+  return c.json({
+    status: "success",
+    data: {
+      counts,
+      attempts,
     },
   });
 });

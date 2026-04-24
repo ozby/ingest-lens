@@ -26,73 +26,112 @@
     }
   },
   "output_format": {
-    "description": "Mapper output: suggested mappings + ambiguities + missing fields + confidence",
+    "description": "Mapper output: structured suggestion batch persisted by the deterministic intake adapter",
     "schema": {
       "type": "object",
-      "required": ["suggested_mapping", "missing_fields", "ambiguous_fields", "confidence"],
+      "required": [
+        "mapping_trace_id",
+        "contract_id",
+        "contract_version",
+        "source_system",
+        "prompt_version",
+        "generated_at",
+        "overall_confidence",
+        "missing_required_fields",
+        "ambiguous_target_fields",
+        "suggestions",
+        "summary"
+      ],
       "properties": {
-        "suggested_mapping": {
-          "type": "object",
-          "description": "Target field -> source field path expression. Empty object means full abstention.",
-          "additionalProperties": { "type": "string" }
+        "mapping_trace_id": { "type": "string" },
+        "contract_id": { "type": "string" },
+        "contract_version": { "type": "string" },
+        "source_system": { "type": "string" },
+        "prompt_version": {
+          "type": "string",
+          "description": "Persisted prompt contract version for eval/debug traceability."
         },
-        "missing_fields": {
+        "generated_at": { "type": "string" },
+        "overall_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "drift_categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "missing_required_fields": {
           "type": "array",
           "items": { "type": "string" },
           "description": "Target fields that cannot be populated from the source payload"
         },
-        "ambiguous_fields": {
+        "ambiguous_target_fields": {
           "type": "array",
           "items": { "type": "string" },
           "description": "Fields where the mapping is uncertain or requires operator review"
         },
-        "confidence": {
-          "type": "object",
-          "required": ["overall", "summary"],
-          "properties": {
-            "overall": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1,
-              "description": "Overall mapping confidence score 0–1"
-            },
-            "per_field": {
-              "type": "object",
-              "description": "Per-target-field confidence scores",
-              "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
-            },
-            "summary": {
-              "type": "string",
-              "description": "Human-readable confidence summary with caveats and reasoning"
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "source_path",
+              "target_field",
+              "transform_kind",
+              "confidence",
+              "deterministic_validation",
+              "review_status",
+              "replay_status"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "source_path": { "type": "string" },
+              "target_field": { "type": "string" },
+              "transform_kind": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "explanation": { "type": "string" },
+              "evidence_sample": { "type": "string" },
+              "deterministic_validation": {
+                "type": "object",
+                "required": ["is_valid", "validated_at", "errors"],
+                "properties": {
+                  "is_valid": { "type": "boolean" },
+                  "validated_at": { "type": "string" },
+                  "errors": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              },
+              "review_status": { "type": "string" },
+              "replay_status": { "type": "string" }
             }
           }
         },
-        "notes": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Optional mapper reasoning notes"
-        }
+        "summary": { "type": "string" }
       }
     }
   },
   "scoring_rules": {
     "exact_match": {
-      "description": "Compare suggested_mapping values to gold expected_mapping values",
-      "method": "string_equality",
+      "description": "Project suggestions into target_field -> source_path pairs and compare them to gold expected_mapping values",
+      "method": "normalized_target_field_source_path_equality",
       "weight": 0.4
     },
     "missing_field_detection": {
-      "description": "Compare missing_fields to gold missing_fields using set operations",
+      "description": "Compare missing_required_fields to gold missing_fields using set operations",
       "method": "set_recall_and_precision",
       "weight": 0.2
     },
     "ambiguity_detection": {
-      "description": "Compare ambiguous_fields to gold ambiguous_fields using set operations",
+      "description": "Compare ambiguous_target_fields to gold ambiguous_fields using set operations",
       "method": "set_recall_and_precision",
       "weight": 0.2
     },
     "non_hallucination": {
-      "description": "Verify every suggested source path expression exists in the source_payload",
+      "description": "Verify every suggested source_path exists in the source_payload after normalizing eval-task path syntax to deterministic pointer syntax",
       "method": "path_existence_check",
       "weight": 0.15,
       "hard_gate": true

@@ -6,11 +6,14 @@ const landingPageCopy =
   "Sign in to inspect delivery rails, monitor observability, and prepare for future intake mapping workflows.";
 const dashboardSummaryCopy =
   "Track delivery rails, queue activity, and observability across your owned queues and topics.";
+const intakeRouteHeading = "Intake mapping";
+const adminIntakeRouteHeading = "Intake admin review";
 
 const apiMocks = vi.hoisted(() => ({
   clearToken: vi.fn(),
   getAllQueueMetrics: vi.fn(),
   getCurrentUser: vi.fn(),
+  getIntakeSuggestions: vi.fn(),
   getQueues: vi.fn(),
   getServerActivityHistory: vi.fn(),
   getServerMetrics: vi.fn(),
@@ -87,5 +90,39 @@ describe("App", () => {
     render(<App />);
 
     await screen.findByText(dashboardSummaryCopy);
+  });
+
+  it("renders the protected intake route after auth bootstrap", async () => {
+    localStorage.setItem("authToken", "token");
+    apiMocks.getCurrentUser.mockResolvedValueOnce({
+      id: "user-1",
+      username: "demo",
+      email: "demo@example.com",
+      createdAt: new Date("2026-04-01T00:00:00Z"),
+      updatedAt: new Date("2026-04-01T00:00:00Z"),
+    });
+    apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
+    window.history.pushState({}, "", "/intake");
+
+    render(<App />);
+
+    await screen.findByText(intakeRouteHeading);
+  });
+
+  it("renders the protected admin intake review route after auth bootstrap", async () => {
+    localStorage.setItem("authToken", "token");
+    apiMocks.getCurrentUser.mockResolvedValueOnce({
+      id: "user-1",
+      username: "demo",
+      email: "demo@example.com",
+      createdAt: new Date("2026-04-01T00:00:00Z"),
+      updatedAt: new Date("2026-04-01T00:00:00Z"),
+    });
+    apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
+    window.history.pushState({}, "", "/admin/intake");
+
+    render(<App />);
+
+    await screen.findByText(adminIntakeRouteHeading);
   });
 });

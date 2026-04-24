@@ -38,6 +38,23 @@ export interface ReceiveMessagesQuery {
   visibilityTimeout?: number;
 }
 
+export interface CreateIntakeSuggestionRequest {
+  sourceSystem: string;
+  contractId: string;
+  payload?: unknown;
+  fixtureId?: string;
+  queueId?: string;
+  topicId?: string;
+}
+
+export interface ApproveIntakeSuggestionRequest {
+  approvedSuggestionIds?: string[];
+}
+
+export interface RejectIntakeSuggestionRequest {
+  reason: string;
+}
+
 // URL Parameters
 export interface QueueParams {
   id: string;
@@ -66,4 +83,8 @@ export interface MessageReceiveParams {
 export interface MessageActionParams {
   queueId: string;
   messageId: string;
+}
+
+export interface IntakeSuggestionParams {
+  id: string;
 }

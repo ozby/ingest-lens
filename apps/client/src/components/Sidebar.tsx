@@ -1,6 +1,15 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Activity, BarChart3, Clock, Hash, Layers, List } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  Clock,
+  FileText,
+  Hash,
+  Layers,
+  List,
+  ShieldCheck,
+} from "lucide-react";
 import { cn } from "@repo/ui/lib";
 
 interface SidebarProps {
@@ -14,6 +23,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
       name: "Dashboard",
       path: "/dashboard",
       icon: <BarChart3 className="h-5 w-5" />,
+    },
+    {
+      name: "AI Intake",
+      path: "/intake",
+      icon: <FileText className="h-5 w-5" />,
+    },
+    {
+      name: "Admin Intake Review",
+      path: "/admin/intake",
+      icon: <ShieldCheck className="h-5 w-5" />,
     },
     { name: "Queues", path: "/queues", icon: <List className="h-5 w-5" /> },
     { name: "Topics", path: "/topics", icon: <Hash className="h-5 w-5" /> },

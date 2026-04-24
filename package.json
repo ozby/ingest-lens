@@ -19,7 +19,8 @@
     "secretlint": "secretlint",
     "prepare": "husky",
     "docs:check": "ak audit docs-frontmatter",
-    "blueprints:check": "ak audit blueprint-lifecycle --legacy-omx"
+    "blueprints:check": "ak audit blueprint-lifecycle --legacy-omx",
+    "ai:eval": "bun ./scripts/run-mapping-eval.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",

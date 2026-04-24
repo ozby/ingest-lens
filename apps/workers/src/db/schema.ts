@@ -10,6 +10,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import type { DeliveryTarget, MappingSuggestionBatch } from "@repo/types";
 
 // ---------------------------------------------------------------------------
 // Users
@@ -118,4 +119,70 @@ export const queueMetrics = pgTable("queue_metrics", {
   avgWaitTime: real("avg_wait_time").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ---------------------------------------------------------------------------
+// Intake Attempts
+// ---------------------------------------------------------------------------
+export const intakeAttempts = pgTable("intake_attempts", {
+  id: text("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  ownerId: text("owner_id").notNull(),
+  mappingTraceId: text("mapping_trace_id").notNull(),
+  contractId: text("contract_id").notNull(),
+  contractVersion: text("contract_version").notNull(),
+  mappingVersionId: text("mapping_version_id"),
+  sourceSystem: text("source_system").notNull(),
+  sourceKind: text("source_kind").notNull(),
+  sourceFixtureId: text("source_fixture_id"),
+  sourceHash: text("source_hash").notNull(),
+  deliveryTarget: jsonb("delivery_target")
+    .$type<DeliveryTarget>()
+    .notNull(),
+  status: text("status").notNull(),
+  ingestStatus: text("ingest_status").notNull(),
+  driftCategory: text("drift_category").notNull(),
+  modelName: text("model_name").notNull(),
+  promptVersion: text("prompt_version").notNull(),
+  overallConfidence: real("overall_confidence").notNull().default(0),
+  redactedSummary: text("redacted_summary").notNull(),
+  validationErrors: jsonb("validation_errors")
+    .$type<string[]>()
+    .notNull()
+    .default(sql`'[]'::jsonb`),
+  suggestionBatch: jsonb("suggestion_batch").$type<MappingSuggestionBatch>(),
+  reviewPayload: jsonb("review_payload"),
+  reviewPayloadExpiresAt: timestamp("review_payload_expires_at"),
+  rejectionReason: text("rejection_reason"),
+  ingestError: text("ingest_error"),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ---------------------------------------------------------------------------
+// Approved Mapping Revisions
+// ---------------------------------------------------------------------------
+export const approvedMappingRevisions = pgTable("approved_mapping_revisions", {
+  id: text("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  ownerId: text("owner_id").notNull(),
+  intakeAttemptId: text("intake_attempt_id").notNull(),
+  mappingTraceId: text("mapping_trace_id").notNull(),
+  contractId: text("contract_id").notNull(),
+  contractVersion: text("contract_version").notNull(),
+  targetRecordType: text("target_record_type").notNull(),
+  approvedSuggestionIds: text("approved_suggestion_ids")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  sourceHash: text("source_hash").notNull(),
+  sourceKind: text("source_kind").notNull(),
+  sourceFixtureId: text("source_fixture_id"),
+  deliveryTarget: jsonb("delivery_target")
+    .$type<DeliveryTarget>()
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

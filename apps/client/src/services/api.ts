@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import {
   ApiResponse,
   AuthResponse,
+  CreateIntakeSuggestionRequest,
   CurrentUserData,
   DeleteMessageData,
   MessageData,
@@ -24,7 +25,12 @@ import {
   ReceiveMessagesQuery,
   RegisterCredentials,
   SendMessageRequest,
+  ApproveIntakeSuggestionRequest,
+  RejectIntakeSuggestionRequest,
   SubscribeTopicRequest,
+  IntakeAttemptData,
+  IntakeAttemptListData,
+  IntakeApprovalData,
 } from "@repo/types";
 import { toast } from "sonner";
 
@@ -226,6 +232,48 @@ class ApiService {
       `/api/messages/${queueId}/${messageId}`,
     );
     return response.data.data.message;
+  }
+
+  async createIntakeSuggestion(
+    request: CreateIntakeSuggestionRequest,
+  ): Promise<IntakeAttemptData["attempt"]> {
+    const response = await this.api.post<ApiResponse<IntakeAttemptData>>(
+      "/api/intake/mapping-suggestions",
+      request,
+    );
+    return response.data.data.attempt;
+  }
+
+  async getIntakeSuggestions(status?: string): Promise<IntakeAttemptData["attempt"][]> {
+    const response = await this.api.get<ApiResponse<IntakeAttemptListData>>(
+      "/api/intake/mapping-suggestions",
+      {
+        params: status ? { status } : undefined,
+      },
+    );
+    return response.data.data.attempts;
+  }
+
+  async approveIntakeSuggestion(
+    attemptId: string,
+    request: ApproveIntakeSuggestionRequest = {},
+  ): Promise<IntakeApprovalData> {
+    const response = await this.api.post<ApiResponse<IntakeApprovalData>>(
+      `/api/intake/mapping-suggestions/${attemptId}/approve`,
+      request,
+    );
+    return response.data.data;
+  }
+
+  async rejectIntakeSuggestion(
+    attemptId: string,
+    request: RejectIntakeSuggestionRequest,
+  ): Promise<IntakeAttemptData["attempt"]> {
+    const response = await this.api.post<ApiResponse<IntakeAttemptData>>(
+      `/api/intake/mapping-suggestions/${attemptId}/reject`,
+      request,
+    );
+    return response.data.data.attempt;
   }
 
   async deleteMessage(queueId: string, messageId: string): Promise<string> {

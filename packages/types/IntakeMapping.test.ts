@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type {
+  ApprovedMappingRevision,
+  IntakeAttemptRecord,
   JudgeAssessment,
   MappingSuggestion,
   MappingSuggestionBatch,
+  NormalizedRecordEnvelope,
   ReplayPlan,
 } from "./IntakeMapping";
 
@@ -156,5 +159,108 @@ describe("Intake mapping contracts", () => {
       "suggestions",
       "summary",
     ]);
+  });
+
+  it("serializes a review attempt and approved mapping revision", () => {
+    const suggestionBatch: MappingSuggestionBatch = {
+      mappingTraceId: "trace-1",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      sourceSystem: "ashby",
+      promptVersion: "payload-mapping-v1",
+      generatedAt: "2026-04-24T00:20:00.000Z",
+      overallConfidence: 0.82,
+      driftCategories: ["renamed_field"],
+      missingRequiredFields: [],
+      ambiguousTargetFields: [],
+      summary: "Ready for deterministic replay.",
+      suggestions: [
+        {
+          id: "suggestion-pending",
+          sourcePath: "/title",
+          targetField: "name",
+          transformKind: "copy",
+          confidence: 0.82,
+          explanation: "The source field is a direct semantic match.",
+          evidenceSample: "Product Designer",
+          deterministicValidation: {
+            isValid: true,
+            validatedAt: "2026-04-24T00:20:00.000Z",
+            errors: [],
+          },
+          reviewStatus: "approved",
+          replayStatus: "pending",
+        },
+      ],
+    };
+
+    const attempt: IntakeAttemptRecord = {
+      intakeAttemptId: "attempt-1",
+      mappingTraceId: "trace-1",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      mappingVersionId: "mapping-v1",
+      sourceSystem: "ashby",
+      sourceKind: "fixture_reference",
+      sourceFixtureId: "ashby-job-001",
+      sourceHash: "sha256:test",
+      reviewPayloadExpiresAt: "2026-04-25T00:00:00.000Z",
+      deliveryTarget: { queueId: "queue-1" },
+      status: "approved",
+      ingestStatus: "ingested",
+      driftCategory: "renamed_field",
+      modelName: "@cf/meta/llama-3.1-8b-instruct",
+      promptVersion: "payload-mapping-v1",
+      overallConfidence: 0.82,
+      redactedSummary: "Ready for deterministic replay.",
+      validationErrors: [],
+      suggestionBatch,
+      createdAt: "2026-04-24T00:20:00.000Z",
+      updatedAt: "2026-04-24T00:25:00.000Z",
+      approvedAt: "2026-04-24T00:25:00.000Z",
+    };
+    const revision: ApprovedMappingRevision = {
+      mappingVersionId: "mapping-v1",
+      intakeAttemptId: "attempt-1",
+      mappingTraceId: "trace-1",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      targetRecordType: "job_posting",
+      approvedSuggestionIds: ["suggestion-pending"],
+      sourceHash: "sha256:test",
+      sourceKind: "fixture_reference",
+      sourceFixtureId: "ashby-job-001",
+      deliveryTarget: { queueId: "queue-1" },
+      createdAt: "2026-04-24T00:25:00.000Z",
+    };
+
+    expect(roundTrip(attempt)).toEqual(attempt);
+    expect(roundTrip(revision)).toEqual(revision);
+  });
+
+  it("serializes a generic normalized record envelope", () => {
+    const envelope: NormalizedRecordEnvelope = {
+      eventType: "ingest.record.normalized",
+      recordType: "job_posting",
+      schemaVersion: "v1",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      mappingVersionId: "mapping-v1",
+      intakeAttemptId: "attempt-1",
+      mappingTraceId: "trace-1",
+      source: {
+        kind: "fixture_reference",
+        fixtureId: "ashby-job-001",
+        sourceHash: "sha256:test",
+        sourceSystem: "ashby",
+        capturedAt: "2026-04-24T00:25:00.000Z",
+      },
+      record: {
+        name: "Product Designer",
+        post_url: "https://jobs.ashbyhq.com/example-co/def456",
+      },
+    };
+
+    expect(roundTrip(envelope)).toEqual(envelope);
   });
 });

@@ -14,6 +14,7 @@ import {
 
 export const DEFAULT_PRIMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 export const DEFAULT_JUDGE_MODEL = "@cf/meta/llama-3.1-8b-instruct";
+export const DEFAULT_MAPPING_PROMPT_VERSION = "payload-mapper-v1";
 export const LOW_CONFIDENCE_THRESHOLD = 0.5;
 const DEFAULT_MODEL_TIMEOUT_MS = 5_000;
 const DEFAULT_PRIMARY_MAX_ATTEMPTS = 2;
@@ -133,7 +134,7 @@ function buildDecisionLog(
   };
 }
 
-function buildMappingPrompt(input: SuggestMappingsInput): string {
+export function buildMappingPrompt(input: SuggestMappingsInput): string {
   return [
     "You are proposing mapping suggestions for a deterministic intake system.",
     "Return JSON only.",

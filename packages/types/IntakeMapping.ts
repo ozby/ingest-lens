@@ -42,6 +42,52 @@ export const JUDGE_RECOMMENDED_ACTIONS = [
 export type JudgeRecommendedAction =
   (typeof JUDGE_RECOMMENDED_ACTIONS)[number];
 
+export const INTAKE_ATTEMPT_STATUSES = [
+  "pending_review",
+  "abstained",
+  "invalid_output",
+  "runtime_failure",
+  "approved",
+  "rejected",
+  "ingested",
+  "ingest_failed",
+] as const;
+
+export type IntakeAttemptStatus = (typeof INTAKE_ATTEMPT_STATUSES)[number];
+
+export const INGEST_STATUSES = [
+  "not_started",
+  "pending",
+  "ingested",
+  "failed",
+] as const;
+
+export type IngestStatus = (typeof INGEST_STATUSES)[number];
+
+export const SOURCE_REFERENCE_KINDS = [
+  "inline_payload",
+  "fixture_reference",
+] as const;
+
+export type SourceReferenceKind = (typeof SOURCE_REFERENCE_KINDS)[number];
+
+export const DRIFT_CATEGORIES = [
+  "renamed_field",
+  "missing_field",
+  "new_field",
+  "type_change",
+  "nested_shape_change",
+  "alias_collision",
+  "ambiguous_mapping",
+] as const;
+
+export type DriftCategory = (typeof DRIFT_CATEGORIES)[number];
+
+export interface DeliveryTarget {
+  queueId?: string;
+  topicId?: string;
+}
+
 export interface DeterministicValidationResult {
   isValid: boolean;
   validatedAt: string;
@@ -89,6 +135,7 @@ export interface ReplayPlan {
   mappingTraceId: string;
   approvedSuggestionIds: string[];
   contractId: string;
+  contractVersion?: string;
   mappingVersionId: string;
   targetRecordType: string;
   idempotencyKey: string;
@@ -97,4 +144,67 @@ export interface ReplayPlan {
   scheduledAt: string;
   replayedAt?: string;
   failureReason?: string;
+}
+
+export interface IntakeAttemptRecord {
+  intakeAttemptId: string;
+  mappingTraceId: string;
+  contractId: string;
+  contractVersion: string;
+  mappingVersionId?: string;
+  sourceSystem: string;
+  sourceKind: SourceReferenceKind;
+  sourceFixtureId?: string;
+  sourceHash: string;
+  reviewPayloadExpiresAt?: string;
+  deliveryTarget: DeliveryTarget;
+  status: IntakeAttemptStatus;
+  ingestStatus: IngestStatus;
+  driftCategory: DriftCategory;
+  modelName: string;
+  promptVersion: string;
+  overallConfidence: number;
+  redactedSummary: string;
+  validationErrors: string[];
+  suggestionBatch?: MappingSuggestionBatch;
+  rejectionReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  approvedAt?: string;
+}
+
+export interface ApprovedMappingRevision {
+  mappingVersionId: string;
+  intakeAttemptId: string;
+  mappingTraceId: string;
+  contractId: string;
+  contractVersion: string;
+  targetRecordType: string;
+  approvedSuggestionIds: string[];
+  sourceHash: string;
+  sourceKind: SourceReferenceKind;
+  sourceFixtureId?: string;
+  deliveryTarget: DeliveryTarget;
+  createdAt: string;
+}
+
+export interface SourceProvenance {
+  kind: SourceReferenceKind;
+  fixtureId?: string;
+  sourceHash: string;
+  sourceSystem: string;
+  capturedAt: string;
+}
+
+export interface NormalizedRecordEnvelope {
+  eventType: "ingest.record.normalized";
+  recordType: string;
+  schemaVersion: "v1";
+  contractId: string;
+  contractVersion: string;
+  mappingVersionId: string;
+  intakeAttemptId: string;
+  mappingTraceId: string;
+  source: SourceProvenance;
+  record: Record<string, unknown>;
 }
