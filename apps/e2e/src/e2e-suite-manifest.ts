@@ -27,6 +27,18 @@ const DEFAULT_E2E_ENV = {
   E2E_BASE_URL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:8787",
 } as const;
 
+const VITEST_JOURNEYS_CONFIG = "vitest.journeys.config.ts";
+
+export function createVitestStep(id: string, files: readonly string[]): E2ESuiteStep {
+  return {
+    runner: "vitest",
+    logName: id,
+    configPath: VITEST_JOURNEYS_CONFIG,
+    fixedFiles: files,
+    batchKey: id,
+  };
+}
+
 const FOUNDATION_FILES = ["journeys/worker-health.e2e.ts"] as const;
 const AUTH_FILES = ["journeys/auth-session.e2e.ts"] as const;
 const MESSAGING_FILES = [
@@ -56,15 +68,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: FOUNDATION_FILES,
     batchKey: "foundation",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "foundation",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: FOUNDATION_FILES,
-        batchKey: "foundation",
-      },
-    ],
+    steps: [createVitestStep("foundation", FOUNDATION_FILES)],
   },
   {
     id: "auth",
@@ -72,15 +76,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: AUTH_FILES,
     batchKey: "auth",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "auth",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: AUTH_FILES,
-        batchKey: "auth",
-      },
-    ],
+    steps: [createVitestStep("auth", AUTH_FILES)],
   },
   {
     id: "messaging",
@@ -88,15 +84,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: MESSAGING_FILES,
     batchKey: "messaging",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "messaging",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: MESSAGING_FILES,
-        batchKey: "messaging",
-      },
-    ],
+    steps: [createVitestStep("messaging", MESSAGING_FILES)],
   },
   {
     id: "hardening",
@@ -104,15 +92,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: HARDENING_FILES,
     batchKey: "hardening",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "hardening",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: HARDENING_FILES,
-        batchKey: "hardening",
-      },
-    ],
+    steps: [createVitestStep("hardening", HARDENING_FILES)],
   },
   {
     id: "intake",
@@ -120,15 +100,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: INTAKE_FILES,
     batchKey: "intake",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "intake",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: INTAKE_FILES,
-        batchKey: "intake",
-      },
-    ],
+    steps: [createVitestStep("intake", INTAKE_FILES)],
   },
   {
     id: "demo",
@@ -136,15 +108,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: DEMO_FILES,
     batchKey: "demo",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "demo",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: DEMO_FILES,
-        batchKey: "demo",
-      },
-    ],
+    steps: [createVitestStep("demo", DEMO_FILES)],
   },
   {
     id: "client",
@@ -152,15 +116,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: CLIENT_FILES,
     batchKey: "client",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "client",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: CLIENT_FILES,
-        batchKey: "client",
-      },
-    ],
+    steps: [createVitestStep("client", CLIENT_FILES)],
   },
   {
     id: "branding",
@@ -168,15 +124,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: BRANDING_FILES,
     batchKey: "branding",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "branding",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: BRANDING_FILES,
-        batchKey: "branding",
-      },
-    ],
+    steps: [createVitestStep("branding", BRANDING_FILES)],
   },
   {
     id: "full",
@@ -184,15 +132,7 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: [],
     batchKey: "full",
     env: DEFAULT_E2E_ENV,
-    steps: [
-      {
-        runner: "vitest",
-        logName: "full",
-        configPath: "vitest.journeys.config.ts",
-        fixedFiles: FULL_FILES,
-        batchKey: "full",
-      },
-    ],
+    steps: [createVitestStep("full", FULL_FILES)],
   },
 ];
 

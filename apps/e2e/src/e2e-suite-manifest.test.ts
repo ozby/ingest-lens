@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  createVitestStep,
   listE2ESuites,
   normalizeE2EPath,
   resolveE2ESuiteForFile,
@@ -212,6 +213,17 @@ describe("e2e-suite-manifest", () => {
         ],
       },
     ]);
+  });
+
+  it("builds a vitest step with the default runner, config, and batchKey === id", () => {
+    const step = createVitestStep("demo", ["journeys/public-fixture-demo-flow.e2e.ts"]);
+    expect(step).toEqual({
+      runner: "vitest",
+      logName: "demo",
+      configPath: "vitest.journeys.config.ts",
+      fixedFiles: ["journeys/public-fixture-demo-flow.e2e.ts"],
+      batchKey: "demo",
+    });
   });
 
   it("normalizes e2e paths from repo-relative inputs", () => {
