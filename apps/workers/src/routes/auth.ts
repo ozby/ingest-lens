@@ -83,16 +83,9 @@ authRoutes.post("/login", async (c) => {
     return c.json({ status: "error", message: "Invalid credentials" }, 401);
   }
 
-  const verification = await verifyPassword(password, user.password);
-  if (!verification.valid) {
+  const passwordValid = await verifyPassword(password, user.password);
+  if (!passwordValid) {
     return c.json({ status: "error", message: "Invalid credentials" }, 401);
-  }
-
-  if (verification.needsMigration && verification.migratedHash) {
-    await db
-      .update(users)
-      .set({ password: verification.migratedHash })
-      .where(eq(users.id, user.id));
   }
 
   const token = await generateToken(user.id, user.username, c.env.JWT_SECRET);

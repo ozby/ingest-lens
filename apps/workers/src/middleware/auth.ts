@@ -137,13 +137,6 @@ const PBKDF2_PREFIX = "pbkdf2";
 const PBKDF2_ITERATIONS = 310000;
 const PBKDF2_SALT_BYTES = 16;
 const PBKDF2_HASH_BITS = 256;
-const LEGACY_STATIC_SALT = "some-salt";
-
-type PasswordVerification = {
-  valid: boolean;
-  needsMigration: boolean;
-  migratedHash?: string;
-};
 
 export async function hashPasswordAsync(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(PBKDF2_SALT_BYTES));
@@ -160,47 +153,19 @@ export async function hashPasswordAsync(password: string): Promise<string> {
 export async function verifyPassword(
   candidatePassword: string,
   storedHash: string,
-): Promise<PasswordVerification> {
-  const parsedHash = parsePbkdf2Hash(storedHash);
-
-  if (parsedHash) {
-    const candidateHash = await derivePbkdf2Hash(
-      candidatePassword,
-      parsedHash.salt,
-      parsedHash.iterations,
-    );
-
-    return {
-      valid: constantTimeEqual(candidateHash, parsedHash.hash),
-      needsMigration: false,
-    };
-  }
-
-  const legacyHash = decodeHex(storedHash);
-  if (!legacyHash) {
-    return { valid: false, needsMigration: false };
-  }
-
-  const candidateLegacyHash = await hashLegacyPassword(candidatePassword);
-  const valid = constantTimeEqual(candidateLegacyHash, legacyHash);
-
-  if (!valid) {
-    return { valid: false, needsMigration: false };
-  }
-
-  return {
-    valid: true,
-    needsMigration: true,
-    migratedHash: await hashPasswordAsync(candidatePassword),
-  };
-}
-
-export async function comparePassword(
-  candidatePassword: string,
-  storedHash: string,
 ): Promise<boolean> {
-  const verification = await verifyPassword(candidatePassword, storedHash);
-  return verification.valid;
+  const parsedHash = parsePbkdf2Hash(storedHash);
+  if (!parsedHash) {
+    return false;
+  }
+
+  const candidateHash = await derivePbkdf2Hash(
+    candidatePassword,
+    parsedHash.salt,
+    parsedHash.iterations,
+  );
+
+  return constantTimeEqual(candidateHash, parsedHash.hash);
 }
 
 async function derivePbkdf2Hash(
@@ -224,16 +189,6 @@ async function derivePbkdf2Hash(
   );
 
   return new Uint8Array(derivedBits);
-}
-
-async function hashLegacyPassword(password: string): Promise<Uint8Array> {
-  const encoder = new TextEncoder();
-  const legacyHash = await crypto.subtle.digest(
-    "SHA-256",
-    encoder.encode(password + LEGACY_STATIC_SALT),
-  );
-
-  return new Uint8Array(legacyHash);
 }
 
 function parsePbkdf2Hash(storedHash: string): {
@@ -272,20 +227,6 @@ function decodeBase64UrlBytes(value: string): Uint8Array | null {
   } catch {
     return null;
   }
-}
-
-function decodeHex(value: string): Uint8Array | null {
-  if (!/^[0-9a-f]{64}$/i.test(value)) {
-    return null;
-  }
-
-  const bytes = new Uint8Array(value.length / 2);
-
-  for (let index = 0; index < value.length; index += 2) {
-    bytes[index / 2] = Number.parseInt(value.slice(index, index + 2), 16);
-  }
-
-  return bytes;
 }
 
 function constantTimeEqual(left: Uint8Array, right: Uint8Array): boolean {

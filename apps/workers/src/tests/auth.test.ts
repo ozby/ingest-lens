@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
 import { createDb } from "../db/client";
-import { comparePassword, generateToken, hashPasswordAsync } from "../middleware/auth";
+import { generateToken, hashPasswordAsync, verifyPassword } from "../middleware/auth";
 import {
   buildInsertChain,
   buildSelectChain,
@@ -28,16 +28,12 @@ function mockRegisteredUser() {
   };
 }
 
-async function hashLegacyPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(password + "some-salt"));
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 function expectPbkdf2HashFormat(hash: string): void {
   expect(hash).toMatch(/^pbkdf2\$\d+\$[A-Za-z0-9_-]+\$[A-Za-z0-9_-]+$/);
+}
+
+function expectJwtFormat(token: string): void {
+  expect(token).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
 }
 
 beforeEach(() => {
@@ -70,13 +66,13 @@ describe("Auth routes", () => {
     it("verifies a matching pbkdf2 password", async () => {
       const hash = await hashPasswordAsync("password123");
 
-      await expect(comparePassword("password123", hash)).resolves.toBe(true);
+      await expect(verifyPassword("password123", hash)).resolves.toBe(true);
     });
 
     it("rejects a wrong password for a pbkdf2 hash", async () => {
       const hash = await hashPasswordAsync("password123");
 
-      await expect(comparePassword("wrong-password", hash)).resolves.toBe(false);
+      await expect(verifyPassword("wrong-password", hash)).resolves.toBe(false);
     });
   });
 
@@ -140,7 +136,7 @@ describe("Auth routes", () => {
         };
       };
       expect(body.status).toBe("success");
-      expect(body.data.token).toBeDefined();
+      expectJwtFormat(body.data.token);
       expect(body.data.user.updatedAt).toBe(mockRegisteredUser().updatedAt.toISOString());
 
       const db = vi.mocked(createDb).mock.results[0]?.value as {
@@ -152,7 +148,13 @@ describe("Auth routes", () => {
         | undefined;
       const [projection] = returningMock?.mock.calls[0] ?? [];
 
-      expect(projection).toHaveProperty("updatedAt");
+      expect(Object.keys(projection ?? {}).sort()).toEqual([
+        "createdAt",
+        "email",
+        "id",
+        "updatedAt",
+        "username",
+      ]);
     });
 
     it("stores new passwords in pbkdf2 format", async () => {
@@ -171,7 +173,6 @@ describe("Auth routes", () => {
       const valuesMock = db.insert.mock.results[0]?.value.values as ReturnType<typeof vi.fn>;
       const [{ password }] = valuesMock.mock.calls[0] ?? [];
 
-      expect(typeof password).toBe("string");
       expectPbkdf2HashFormat(password);
     });
   });
@@ -180,39 +181,6 @@ describe("Auth routes", () => {
     it("returns 400 when credentials are missing", async () => {
       const res = await app.fetch(post("/api/auth/login", { username: "testuser" }), mockEnv);
       expect(res.status).toBe(400);
-    });
-
-    it("migrates supported legacy sha256 users to pbkdf2 on successful login", async () => {
-      const legacyHash = await hashLegacyPassword("password123");
-      const legacyUser = {
-        ...mockRegisteredUser(),
-        password: legacyHash,
-      };
-      const { selectMock } = buildSelectChain([legacyUser]);
-      const { updateMock, setMock } = buildUpdateChain();
-
-      vi.mocked(createDb).mockReturnValue({
-        select: selectMock,
-        update: updateMock,
-      } as any);
-
-      const res = await app.fetch(
-        post("/api/auth/login", {
-          username: "testuser",
-          password: "password123",
-        }),
-        mockEnv,
-      );
-
-      expect(res.status).toBe(200);
-      expect(updateMock).toHaveBeenCalledOnce();
-      expect(setMock).toHaveBeenCalledOnce();
-
-      const [{ password: migratedHash }] = setMock.mock.calls[0] ?? [];
-      expect(typeof migratedHash).toBe("string");
-      expect(migratedHash).not.toBe(legacyHash);
-      expectPbkdf2HashFormat(migratedHash);
-      await expect(comparePassword("password123", migratedHash)).resolves.toBe(true);
     });
 
     it("returns the shared auth user payload including updatedAt", async () => {
