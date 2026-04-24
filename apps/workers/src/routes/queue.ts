@@ -4,6 +4,7 @@ import { createDb, type Env } from "../db/client";
 import { queues, queueMetrics } from "../db/schema";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
+import { requireOwnedQueue } from "./ownership";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -87,23 +88,13 @@ queueRoutes.get("/", async (c) => {
 // GET /api/queues/:id — get single queue
 queueRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");
-  const ownerId = c.get("user").userId;
-  const db = createDb(c.env);
 
-  const [queue] = await db.select().from(queues).where(eq(queues.id, id)).limit(1);
-
-  if (!queue) {
-    return c.json({ status: "error", message: `Queue not found with ID: ${id}` }, 404);
-  }
-
-  if (queue.ownerId !== ownerId) {
-    return c.json(
-      {
-        status: "error",
-        message: "You do not have permission to access this queue",
-      },
-      403,
-    );
+  const queue = await requireOwnedQueue(c, id, {
+    notFound: `Queue not found with ID: ${id}`,
+    unauthorized: "You do not have permission to access this queue",
+  });
+  if (queue instanceof Response) {
+    return queue;
   }
 
   return c.json({ status: "success", data: { queue } });
@@ -112,23 +103,14 @@ queueRoutes.get("/:id", async (c) => {
 // DELETE /api/queues/:id — delete queue
 queueRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [queue] = await db.select().from(queues).where(eq(queues.id, id)).limit(1);
-
-  if (!queue) {
-    return c.json({ status: "error", message: `Queue not found with ID: ${id}` }, 404);
-  }
-
-  if (queue.ownerId !== ownerId) {
-    return c.json(
-      {
-        status: "error",
-        message: "You do not have permission to delete this queue",
-      },
-      403,
-    );
+  const queue = await requireOwnedQueue(c, id, {
+    notFound: `Queue not found with ID: ${id}`,
+    unauthorized: "You do not have permission to delete this queue",
+  });
+  if (queue instanceof Response) {
+    return queue;
   }
 
   await db.delete(queues).where(eq(queues.id, id));
