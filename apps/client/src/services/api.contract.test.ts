@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AuthResponse, IMessage, IUser } from "@repo/types";
+import type {
+  AuthResponse,
+  IMessage,
+  IUser,
+  IntakeAttemptRecord,
+  IntakeApprovalData,
+} from "@repo/types";
 
 const axiosMocks = vi.hoisted(() => {
   const get = vi.fn();
@@ -204,5 +210,246 @@ describe("api service contracts", () => {
 
     await expect(apiService.getCurrentUser()).resolves.toEqual(user);
     expect(axiosMocks.get).toHaveBeenCalledWith("/api/auth/me");
+  });
+
+  it("creates mapping-suggestion attempts from the intake helper", async () => {
+    const attempt: IntakeAttemptRecord = {
+      intakeAttemptId: "attempt-1",
+      mappingTraceId: "trace-1",
+      contractId: "order-created-v1",
+      contractVersion: "1.0.0",
+      sourceSystem: "webhook-provider-a",
+      sourceKind: "inline_payload",
+      sourceHash: "hash-1",
+      deliveryTarget: { queueId: "q-1" },
+      status: "pending_review",
+      ingestStatus: "not_started",
+      driftCategory: "renamed_field",
+      modelName: "gpt-test",
+      promptVersion: "payload-mapper-v1",
+      overallConfidence: 0.81,
+      redactedSummary: "Sanitized payload preview",
+      validationErrors: [],
+      createdAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+      updatedAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+    };
+
+    axiosMocks.post.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          attempt,
+        },
+      },
+    });
+
+    await expect(
+      apiService.createIntakeSuggestion({
+        sourceSystem: "webhook-provider-a",
+        contractId: "order-created-v1",
+        payload: { id: "x" },
+      }),
+    ).resolves.toEqual(attempt);
+    expect(axiosMocks.post).toHaveBeenCalledWith("/api/intake/mapping-suggestions", {
+      sourceSystem: "webhook-provider-a",
+      contractId: "order-created-v1",
+      payload: { id: "x" },
+    });
+  });
+
+  it("reads pending intake attempts from the list helper", async () => {
+    const attempts = [
+      {
+        intakeAttemptId: "attempt-1",
+        mappingTraceId: "trace-1",
+        contractId: "order-created-v1",
+        contractVersion: "1.0.0",
+        sourceSystem: "webhook-provider-a",
+        sourceKind: "inline_payload",
+        sourceHash: "hash-1",
+        deliveryTarget: { queueId: "q-1" },
+        status: "pending_review",
+        ingestStatus: "not_started",
+        driftCategory: "renamed_field",
+        modelName: "gpt-test",
+        promptVersion: "payload-mapper-v1",
+        overallConfidence: 0.8,
+        redactedSummary: "Sanitized payload preview",
+        validationErrors: [],
+        createdAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+        updatedAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+      } as IntakeAttemptRecord,
+    ];
+
+    axiosMocks.get.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          attempts,
+          results: 1,
+        },
+      },
+    });
+
+    await expect(apiService.getIntakeSuggestions("pending_review")).resolves.toEqual(attempts);
+    expect(axiosMocks.get).toHaveBeenCalledWith("/api/intake/mapping-suggestions", {
+      params: { status: "pending_review" },
+    });
+  });
+
+  it("approves a mapping attempt and returns mapping metadata", async () => {
+    const response: IntakeApprovalData = {
+      attempt: {
+        intakeAttemptId: "attempt-1",
+        mappingTraceId: "trace-1",
+        contractId: "order-created-v1",
+        contractVersion: "1.0.0",
+        sourceSystem: "webhook-provider-a",
+        sourceKind: "inline_payload",
+        sourceHash: "hash-1",
+        deliveryTarget: { queueId: "q-1" },
+        status: "ingested",
+        ingestStatus: "ingested",
+        driftCategory: "renamed_field",
+        modelName: "gpt-test",
+        promptVersion: "payload-mapper-v1",
+        overallConfidence: 0.9,
+        redactedSummary: "Sanitized payload preview",
+        validationErrors: [],
+        createdAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+        updatedAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+      },
+      mappingVersion: {
+        mappingVersionId: "mapping-v1",
+        intakeAttemptId: "attempt-1",
+        mappingTraceId: "trace-1",
+        contractId: "order-created-v1",
+        contractVersion: "1.0.0",
+        targetRecordType: "order_created",
+        approvedSuggestionIds: ["s-1"],
+        sourceHash: "hash-1",
+        sourceKind: "inline_payload",
+        deliveryTarget: { queueId: "q-1" },
+        createdAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+      },
+    };
+
+    axiosMocks.post.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: response,
+      },
+    });
+
+    await expect(
+      apiService.approveIntakeSuggestion("attempt-1", { approvedSuggestionIds: ["s-1"] }),
+    ).resolves.toEqual(response);
+    expect(axiosMocks.post).toHaveBeenCalledWith(
+      "/api/intake/mapping-suggestions/attempt-1/approve",
+      { approvedSuggestionIds: ["s-1"] },
+    );
+  });
+
+  it("rejects a mapping attempt with reason", async () => {
+    const attempt: IntakeAttemptRecord = {
+      intakeAttemptId: "attempt-1",
+      mappingTraceId: "trace-1",
+      contractId: "order-created-v1",
+      contractVersion: "1.0.0",
+      sourceSystem: "webhook-provider-a",
+      sourceKind: "inline_payload",
+      sourceHash: "hash-1",
+      deliveryTarget: { queueId: "q-1" },
+      status: "rejected",
+      ingestStatus: "not_started",
+      driftCategory: "renamed_field",
+      modelName: "gpt-test",
+      promptVersion: "payload-mapper-v1",
+      overallConfidence: 0.4,
+      redactedSummary: "Sanitized payload preview",
+      validationErrors: [],
+      rejectionReason: "Bad mapping",
+      createdAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+      updatedAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+    };
+
+    axiosMocks.post.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          attempt,
+        },
+      },
+    });
+
+    await expect(
+      apiService.rejectIntakeSuggestion("attempt-1", { reason: "Bad mapping" }),
+    ).resolves.toEqual(attempt);
+    expect(axiosMocks.post).toHaveBeenCalledWith(
+      "/api/intake/mapping-suggestions/attempt-1/reject",
+      { reason: "Bad mapping" },
+    );
+  });
+
+  it("loads public fixture metadata catalog from intake fixture endpoint", async () => {
+    axiosMocks.get.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          fixtures: [
+            {
+              id: "ashby-job-001",
+              sourceSystem: "ashby",
+              sourceUrl: "https://example.com/ashby",
+              summary: "Staff Software Engineer sample",
+              contractHint: "job-posting-v1",
+            },
+          ],
+        },
+      },
+    });
+
+    await expect(apiService.getPublicFixtures()).resolves.toEqual([
+      {
+        id: "ashby-job-001",
+        sourceSystem: "ashby",
+        sourceUrl: "https://example.com/ashby",
+        summary: "Staff Software Engineer sample",
+        contractHint: "job-posting-v1",
+      },
+    ]);
+
+    expect(axiosMocks.get).toHaveBeenCalledWith("/api/intake/public-fixtures");
+  });
+
+  it("loads a public fixture payload by id from intake fixture endpoint", async () => {
+    axiosMocks.get.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          fixture: {
+            id: "ashby-job-001",
+            sourceSystem: "ashby",
+            sourceUrl: "https://example.com/ashby",
+            contractHint: "job-posting-v1",
+            payload: {
+              title: "Staff Engineer",
+            },
+          },
+        },
+      },
+    });
+
+    await expect(apiService.getPublicFixtureById("ashby-job-001")).resolves.toEqual({
+      id: "ashby-job-001",
+      sourceSystem: "ashby",
+      sourceUrl: "https://example.com/ashby",
+      contractHint: "job-posting-v1",
+      payload: {
+        title: "Staff Engineer",
+      },
+    });
+
+    expect(axiosMocks.get).toHaveBeenCalledWith("/api/intake/public-fixtures/ashby-job-001");
   });
 });

@@ -67,7 +67,7 @@ describe("intake validators", () => {
 
     expect(validateMappingSuggestionBatch(batch)).toEqual({
       ok: false,
-      errors: ["/suggestions/0/explanation must NOT have fewer than 1 characters"],
+      errors: ["/suggestions/0/explanation Expected string length greater or equal to 1"],
     });
   });
 
@@ -80,7 +80,7 @@ describe("intake validators", () => {
 
     expect(validateMappingSuggestionBatch(batch)).toEqual({
       ok: false,
-      errors: ["/suggestions/0/confidence must be <= 1"],
+      errors: ["/suggestions/0/confidence Expected number to be less or equal to 1"],
     });
   });
 
@@ -172,7 +172,7 @@ describe("intake validators", () => {
       }),
     ).toEqual({
       ok: false,
-      errors: ["/ must have required property 'contractId'"],
+      errors: ["/contractId Expected required property", "/contractId Expected string"],
     });
   });
 });

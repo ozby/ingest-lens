@@ -13,11 +13,21 @@ This directory contains the evaluation contract, rubric, and metrics spec for th
 ## How to use
 
 1. Load eval tasks from `../mapping_tasks/eval.jsonl` and `../mapping_tasks/adversarial.jsonl`.
-2. For each task, invoke the mapper with `source_payload` and `target_fields`.
+2. For each task, produce one structured suggestion batch with a persisted `prompt_version`.
 3. Validate mapper output against `eval-contract.json` (output_format schema).
 4. Score output against gold labels using the rules in `eval-contract.json` (scoring_rules).
 5. Aggregate scores per `metrics.json` definitions.
 6. Check pass/fail against `pass_thresholds`.
+
+Run the deterministic v1 harness with:
+
+```bash
+pnpm ai:eval
+```
+
+The current v1 harness is intentionally credential-free and deterministic. It
+verifies the scoring pipeline, non-hallucination gate, and checked-in task
+contract before any optional live-model eval is considered.
 
 ## Pass gates
 

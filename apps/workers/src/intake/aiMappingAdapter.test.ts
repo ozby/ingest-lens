@@ -51,6 +51,53 @@ function createInput() {
 }
 
 describe("suggestMappings", () => {
+  it("falls back to deterministic local suggestions when the AI binding is unavailable", async () => {
+    const result = await suggestMappings({
+      payload: {
+        title: "Staff Software Engineer, Backend",
+        apply_url: "https://jobs.ashbyhq.com/example-co/abc123",
+        employment_type: "FullTime",
+        department: "Engineering",
+        locations: ["Remote"],
+      },
+      sourceSystem: "ashby",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      promptVersion: "payload-mapping-v1",
+      targetFields: ["name", "status", "department", "location", "post_url", "employment_type"],
+    });
+
+    expect(result.kind).toBe("success");
+    if (result.kind !== "success") {
+      return;
+    }
+
+    expect(result.decisionLog).toMatchObject({
+      provider: "test-runner",
+      model: DEFAULT_PRIMARY_MODEL,
+      promptVersion: "payload-mapping-v1",
+      validationOutcome: "passed",
+    });
+    expect(result.batch).toMatchObject({
+      contractId: "job-posting-v1",
+      sourceSystem: "ashby",
+      missingRequiredFields: [],
+      driftCategories: ["renamed_field"],
+    });
+    expect(result.batch.suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          sourcePath: "/title",
+          targetField: "name",
+        }),
+        expect.objectContaining({
+          sourcePath: "/apply_url",
+          targetField: "post_url",
+        }),
+      ]),
+    );
+  });
+
   it("returns success for a validated fake provider result", async () => {
     const fakeRunner: StructuredRunner = async () => createValidBatch();
 
@@ -99,7 +146,7 @@ describe("suggestMappings", () => {
     ).resolves.toEqual({
       kind: "invalid_output",
       reason: "Deterministic validation rejected the model output.",
-      errors: ["/suggestions/0/explanation must NOT have fewer than 1 characters"],
+      errors: ["/suggestions/0/explanation Expected string length greater or equal to 1"],
       decisionLog: {
         provider: "test-runner",
         model: DEFAULT_PRIMARY_MODEL,

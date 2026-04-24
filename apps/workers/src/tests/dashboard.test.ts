@@ -265,4 +265,48 @@ describe("Dashboard routes", () => {
       expect(activeMessagesWhereSql).toContain("visibility_expires_at >");
     });
   });
+
+  describe("GET /api/dashboard/intake", () => {
+    it("returns owner-scoped intake counts and supports trace filtering", async () => {
+      bypassAuth(vi.mocked(authenticate));
+
+      const attempts = [
+        {
+          id: "attempt-1",
+          ownerId: "user-123",
+          mappingTraceId: "trace-1",
+          status: "pending_review",
+        },
+        {
+          id: "attempt-2",
+          ownerId: "user-123",
+          mappingTraceId: "trace-2",
+          status: "ingested",
+        },
+      ];
+
+      const whereMock = vi.fn().mockResolvedValue(attempts);
+      const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+      const selectMock = vi.fn().mockReturnValue({ from: fromMock });
+
+      vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+
+      const res = await app.fetch(
+        get("/api/dashboard/intake?mappingTraceId=trace-2", AUTH_HEADER),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        data: {
+          attempts: Array<{ id: string; mappingTraceId: string }>;
+          counts: Record<string, number>;
+        };
+      };
+      expect(body.data.attempts).toEqual([
+        expect.objectContaining({ id: "attempt-2", mappingTraceId: "trace-2" }),
+      ]);
+      expect(body.data.counts).toEqual({ ingested: 1 });
+    });
+  });
 });

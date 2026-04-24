@@ -11,25 +11,15 @@ const Topics = lazy(() => import("./pages/Topics"));
 const TopicDetail = lazy(() => import("./pages/TopicDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Metrics = lazy(() => import("./pages/Metrics"));
+const Intake = lazy(() => import("./pages/Intake"));
+const AdminIntake = lazy(() => import("./pages/AdminIntake"));
 
 const routeLoadingFallback = <div aria-live="polite">Loading route…</div>;
-
-const toasterClassNames = {
-  toast:
-    "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-  description: "group-[.toast]:text-muted-foreground",
-  actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-  cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-} as const;
 
 function App() {
   return (
     <>
-      <Toaster
-        theme="system"
-        className="toaster group"
-        toastOptions={{ classNames: toasterClassNames }}
-      />
+      <Toaster theme="system" className="toaster group" />
       <BrowserRouter>
         <AuthProvider>
           <Suspense fallback={routeLoadingFallback}>
@@ -80,6 +70,22 @@ function App() {
                 element={
                   <RequireAuth>
                     <TopicDetail />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/intake"
+                element={
+                  <RequireAuth>
+                    <Intake />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/intake"
+                element={
+                  <RequireAuth>
+                    <AdminIntake />
                   </RequireAuth>
                 }
               />

@@ -175,3 +175,15 @@ Key pass gates:
 
 The non-hallucination hard gate ensures the mapper never claims a source field path exists when
 it does not.
+
+## Prompt + eval contract sync
+
+The persisted adapter contract carries a prompt version alongside each structured
+suggestion batch:
+
+- `promptVersion` is stored on suggestion attempts and decision logs;
+- `data/payload-mapper/evals/eval-contract.json` mirrors the structured batch
+  shape rather than an older flat `suggested_mapping` payload;
+- `pnpm ai:eval` runs a deterministic, credential-free harness over the checked-in
+  eval/adversarial tasks so contract drift is caught before any optional live AI
+  comparison is attempted.

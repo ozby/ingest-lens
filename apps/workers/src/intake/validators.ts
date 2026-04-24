@@ -1,4 +1,5 @@
-import Ajv from "ajv";
+import type { TSchema } from "@sinclair/typebox";
+import { Value } from "@sinclair/typebox/value";
 import type { JudgeAssessment, MappingSuggestionBatch, ReplayPlan } from "@repo/types";
 import { parseSourcePath, resolveSourcePath } from "./sourcePath";
 import { JudgeAssessmentSchema, MappingSuggestionBatchSchema, ReplayPlanSchema } from "./schemas";
@@ -20,18 +21,9 @@ export interface MappingSuggestionValidationOptions {
   sourcePayload?: unknown;
 }
 
-const ajv = new Ajv({
-  allErrors: true,
-  strict: false,
-});
-
-const validateBatchSchema = ajv.compile<MappingSuggestionBatch>(MappingSuggestionBatchSchema);
-const validateJudgeSchema = ajv.compile<JudgeAssessment>(JudgeAssessmentSchema);
-const validateReplayPlanSchema = ajv.compile<ReplayPlan>(ReplayPlanSchema);
-
-function formatAjvErrors(errors: typeof validateBatchSchema.errors): string[] {
-  return (errors ?? []).map((error) => {
-    const path = error.instancePath || "/";
+function formatValueErrors(schema: TSchema, input: unknown): string[] {
+  return [...Value.Errors(schema, input)].map((error) => {
+    const path = error.path || "/";
     return `${path} ${error.message ?? "is invalid"}`;
   });
 }
@@ -73,10 +65,10 @@ export function validateMappingSuggestionBatch(
   input: unknown,
   options: MappingSuggestionValidationOptions = {},
 ): ValidationResult<MappingSuggestionBatch> {
-  if (!validateBatchSchema(input)) {
+  if (!Value.Check(MappingSuggestionBatchSchema, input)) {
     return {
       ok: false,
-      errors: formatAjvErrors(validateBatchSchema.errors),
+      errors: formatValueErrors(MappingSuggestionBatchSchema, input),
     };
   }
 
@@ -100,29 +92,29 @@ export function validateMappingSuggestionBatch(
 }
 
 export function validateJudgeAssessment(input: unknown): ValidationResult<JudgeAssessment> {
-  if (!validateJudgeSchema(input)) {
+  if (!Value.Check(JudgeAssessmentSchema, input)) {
     return {
       ok: false,
-      errors: formatAjvErrors(validateJudgeSchema.errors),
+      errors: formatValueErrors(JudgeAssessmentSchema, input),
     };
   }
 
   return {
     ok: true,
-    value: input,
+    value: input as JudgeAssessment,
   };
 }
 
 export function validateReplayPlan(input: unknown): ValidationResult<ReplayPlan> {
-  if (!validateReplayPlanSchema(input)) {
+  if (!Value.Check(ReplayPlanSchema, input)) {
     return {
       ok: false,
-      errors: formatAjvErrors(validateReplayPlanSchema.errors),
+      errors: formatValueErrors(ReplayPlanSchema, input),
     };
   }
 
   return {
     ok: true,
-    value: input,
+    value: input as ReplayPlan,
   };
 }

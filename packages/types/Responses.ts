@@ -5,6 +5,11 @@ import type {
   IServerMetrics,
   IUser,
 } from "./Entities";
+import type {
+  IntakeAttemptRecord,
+  ApprovedMappingRevision,
+  NormalizedRecordEnvelope,
+} from "./IntakeMapping";
 
 export interface AuthResponse {
   token: string;
@@ -61,4 +66,18 @@ export interface ReceiveMessagesData {
 
 export interface DeleteMessageData {
   deletedMessageId: string;
+}
+
+export interface IntakeAttemptData {
+  attempt: IntakeAttemptRecord;
+}
+
+export interface IntakeAttemptListData {
+  attempts: IntakeAttemptRecord[];
+}
+
+export interface IntakeApprovalData {
+  attempt: IntakeAttemptRecord;
+  mappingVersion: ApprovedMappingRevision;
+  normalizedRecord?: NormalizedRecordEnvelope;
 }

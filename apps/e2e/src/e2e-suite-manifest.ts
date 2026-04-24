@@ -33,7 +33,21 @@ const MESSAGING_FILES = [
   "journeys/queue-message-flow.e2e.ts",
   "journeys/topic-publish-flow.e2e.ts",
 ] as const;
-const FULL_FILES = [...FOUNDATION_FILES, ...AUTH_FILES, ...MESSAGING_FILES] as const;
+const HARDENING_FILES = ["journeys/ownership-hardening.e2e.ts"] as const;
+const INTAKE_FILES = ["journeys/intake-mapping-flow.e2e.ts"] as const;
+const DEMO_FILES = ["journeys/public-fixture-demo-flow.e2e.ts"] as const;
+const CLIENT_FILES = ["journeys/client-route-code-splitting.e2e.ts"] as const;
+const BRANDING_FILES = ["journeys/ingestlens-branding.e2e.ts"] as const;
+const FULL_FILES = [
+  ...FOUNDATION_FILES,
+  ...AUTH_FILES,
+  ...MESSAGING_FILES,
+  ...HARDENING_FILES,
+  ...INTAKE_FILES,
+  ...DEMO_FILES,
+  ...CLIENT_FILES,
+  ...BRANDING_FILES,
+] as const;
 
 const E2E_SUITES: readonly E2ESuiteDefinition[] = [
   {
@@ -85,8 +99,88 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     ],
   },
   {
+    id: "hardening",
+    aliases: ["security", "ownership"],
+    fileMatchers: HARDENING_FILES,
+    batchKey: "hardening",
+    env: DEFAULT_E2E_ENV,
+    steps: [
+      {
+        runner: "vitest",
+        logName: "hardening",
+        configPath: "vitest.journeys.config.ts",
+        fixedFiles: HARDENING_FILES,
+        batchKey: "hardening",
+      },
+    ],
+  },
+  {
+    id: "intake",
+    aliases: ["ai", "review"],
+    fileMatchers: INTAKE_FILES,
+    batchKey: "intake",
+    env: DEFAULT_E2E_ENV,
+    steps: [
+      {
+        runner: "vitest",
+        logName: "intake",
+        configPath: "vitest.journeys.config.ts",
+        fixedFiles: INTAKE_FILES,
+        batchKey: "intake",
+      },
+    ],
+  },
+  {
+    id: "demo",
+    aliases: ["public", "fixtures"],
+    fileMatchers: DEMO_FILES,
+    batchKey: "demo",
+    env: DEFAULT_E2E_ENV,
+    steps: [
+      {
+        runner: "vitest",
+        logName: "demo",
+        configPath: "vitest.journeys.config.ts",
+        fixedFiles: DEMO_FILES,
+        batchKey: "demo",
+      },
+    ],
+  },
+  {
+    id: "client",
+    aliases: ["bundle", "splitting"],
+    fileMatchers: CLIENT_FILES,
+    batchKey: "client",
+    env: DEFAULT_E2E_ENV,
+    steps: [
+      {
+        runner: "vitest",
+        logName: "client",
+        configPath: "vitest.journeys.config.ts",
+        fixedFiles: CLIENT_FILES,
+        batchKey: "client",
+      },
+    ],
+  },
+  {
+    id: "branding",
+    aliases: ["rebrand", "ui"],
+    fileMatchers: BRANDING_FILES,
+    batchKey: "branding",
+    env: DEFAULT_E2E_ENV,
+    steps: [
+      {
+        runner: "vitest",
+        logName: "branding",
+        configPath: "vitest.journeys.config.ts",
+        fixedFiles: BRANDING_FILES,
+        batchKey: "branding",
+      },
+    ],
+  },
+  {
     id: "full",
-    aliases: ["all", "backend"],
+    aliases: ["all", "backend", "blueprints"],
     fileMatchers: [],
     batchKey: "full",
     env: DEFAULT_E2E_ENV,
