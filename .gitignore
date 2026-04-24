@@ -83,3 +83,4 @@ Thumbs.db
 # Vitest per-run reports (machine-local)
 .test-reports/
 .neon
+scripts/probes/consistency-lab/verdicts.jsonl
