@@ -55,13 +55,13 @@ catalogs:
       specifier: ^6.0.1
       version: 6.0.1
     '@webpresso/stryker-config':
-      specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config
       version: 0.0.1
     '@webpresso/typescript-config':
-      specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/typescript-config
       version: 0.1.0
     '@webpresso/vitest-config':
-      specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/vitest-config
       version: 0.0.1
     axios:
       specifier: ^1.15.2
