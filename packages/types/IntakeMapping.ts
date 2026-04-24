@@ -120,19 +120,17 @@ export interface ReplayPlan {
   failureReason?: string;
 }
 
-export interface IntakeAttemptRecord {
+interface IntakeAttemptBase {
   intakeAttemptId: string;
   mappingTraceId: string;
   contractId: string;
   contractVersion: string;
-  mappingVersionId?: string;
   sourceSystem: string;
   sourceKind: SourceReferenceKind;
   sourceFixtureId?: string;
   sourceHash: string;
   reviewPayloadExpiresAt?: string;
   deliveryTarget: DeliveryTarget;
-  status: IntakeAttemptStatus;
   ingestStatus: IngestStatus;
   driftCategory: DriftCategory;
   modelName: string;
@@ -144,8 +142,21 @@ export interface IntakeAttemptRecord {
   rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
-  approvedAt?: string;
 }
+
+export type IntakeAttemptRecord = IntakeAttemptBase &
+  (
+    | {
+        status: "pending_review" | "abstained" | "invalid_output" | "runtime_failure" | "rejected";
+        mappingVersionId?: never;
+        approvedAt?: never;
+      }
+    | {
+        status: "approved" | "ingested" | "ingest_failed";
+        mappingVersionId: string;
+        approvedAt: string;
+      }
+  );
 
 export interface ApprovedMappingRevision {
   mappingVersionId: string;

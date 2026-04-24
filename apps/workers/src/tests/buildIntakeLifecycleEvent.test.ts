@@ -53,6 +53,8 @@ describe("buildIntakeLifecycleEvent", () => {
       ingestStatus: "failed",
       deliveryTarget: { topicId: "topic-99" },
       validationErrors: [],
+      mappingVersionId: "mapping-version-1",
+      approvedAt: "2026-01-01T00:05:00.000Z",
     };
 
     const event = buildIntakeLifecycleEvent(failed, "suggestion.ingest_failed");
@@ -82,6 +84,8 @@ describe("buildIntakeLifecycleEvent", () => {
       status: "ingested",
       ingestStatus: "ingested",
       deliveryTarget: {},
+      mappingVersionId: "mapping-version-1",
+      approvedAt: "2026-01-01T00:05:00.000Z",
     };
 
     const event = buildIntakeLifecycleEvent(ingested, "suggestion.ingested");

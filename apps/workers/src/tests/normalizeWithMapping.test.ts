@@ -105,6 +105,7 @@ describe("normalizeWithMapping", () => {
           validationErrors: [],
           createdAt: "2026-04-24T00:00:00.000Z",
           updatedAt: "2026-04-24T00:00:00.000Z",
+          approvedAt: "2026-04-24T00:00:00.000Z",
         },
         mappingVersion: {
           mappingVersionId: `mapping-version-${fixtureId}`,

@@ -39,20 +39,18 @@ export const intakeRoutes = new Hono<{
 intakeRoutes.use("*", authenticate);
 intakeRoutes.use("*", rateLimiter);
 
-function toAttemptRecord(row: AttemptRow): IntakeAttemptRecord {
-  return {
+export function toAttemptRecord(row: AttemptRow): IntakeAttemptRecord {
+  const base = {
     intakeAttemptId: row.id,
     mappingTraceId: row.mappingTraceId,
     contractId: row.contractId,
     contractVersion: row.contractVersion,
-    mappingVersionId: row.mappingVersionId ?? undefined,
     sourceSystem: row.sourceSystem,
     sourceKind: row.sourceKind as IntakeAttemptRecord["sourceKind"],
     sourceFixtureId: row.sourceFixtureId ?? undefined,
     sourceHash: row.sourceHash,
     reviewPayloadExpiresAt: row.reviewPayloadExpiresAt?.toISOString(),
     deliveryTarget: row.deliveryTarget,
-    status: row.status as IntakeAttemptRecord["status"],
     ingestStatus: row.ingestStatus as IntakeAttemptRecord["ingestStatus"],
     driftCategory: row.driftCategory as IntakeAttemptRecord["driftCategory"],
     modelName: row.modelName,
@@ -64,8 +62,36 @@ function toAttemptRecord(row: AttemptRow): IntakeAttemptRecord {
     rejectionReason: row.rejectionReason ?? undefined,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    approvedAt: row.approvedAt?.toISOString(),
   };
+
+  const status = row.status as IntakeAttemptRecord["status"];
+  switch (status) {
+    case "approved":
+    case "ingested":
+    case "ingest_failed": {
+      if (!row.mappingVersionId || !row.approvedAt) {
+        throw new Error(
+          "toAttemptRecord: approved-family row is missing mappingVersionId or approvedAt",
+        );
+      }
+      return {
+        ...base,
+        status,
+        mappingVersionId: row.mappingVersionId,
+        approvedAt: row.approvedAt.toISOString(),
+      };
+    }
+    case "pending_review":
+    case "abstained":
+    case "invalid_output":
+    case "runtime_failure":
+    case "rejected":
+      return { ...base, status };
+    default: {
+      const exhaustive: never = status;
+      throw new Error(`toAttemptRecord: unknown status ${String(exhaustive)}`);
+    }
+  }
 }
 
 function toMappingRevision(row: MappingVersionRow): ApprovedMappingRevision {
@@ -437,11 +463,24 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
   const attemptRow = attemptRowOrResponse;
   const db = createDb(c.env);
 
-  if (attemptRow.mappingVersionId) {
+  const alreadyApproved =
+    attemptRow.status === "approved" ||
+    attemptRow.status === "ingested" ||
+    attemptRow.status === "ingest_failed";
+
+  if (alreadyApproved) {
+    const existingAttempt = toAttemptRecord(attemptRow);
+    if (
+      existingAttempt.status !== "approved" &&
+      existingAttempt.status !== "ingested" &&
+      existingAttempt.status !== "ingest_failed"
+    ) {
+      throw new Error("approve handler: status narrowed to approved-family but record did not");
+    }
     const [mappingVersionRow] = await db
       .select()
       .from(approvedMappingRevisions)
-      .where(eq(approvedMappingRevisions.id, attemptRow.mappingVersionId))
+      .where(eq(approvedMappingRevisions.id, existingAttempt.mappingVersionId))
       .limit(1);
 
     if (body.approvedSuggestionIds !== undefined && mappingVersionRow) {
@@ -464,7 +503,7 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     return c.json({
       status: "success",
       data: {
-        attempt: toAttemptRecord(attemptRow),
+        attempt: existingAttempt,
         mappingVersion: mappingVersionRow ? toMappingRevision(mappingVersionRow) : undefined,
       },
     });

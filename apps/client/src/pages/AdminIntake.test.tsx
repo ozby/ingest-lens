@@ -120,6 +120,8 @@ describe("AdminIntake page", () => {
         ...attempt,
         status: "ingested",
         ingestStatus: "ingested",
+        mappingVersionId: "mapping-1",
+        approvedAt: new Date("2026-04-01T00:00:00.000Z").toISOString(),
       },
       mappingVersion: {
         mappingVersionId: "mapping-1",

@@ -318,6 +318,8 @@ describe("api service contracts", () => {
         validationErrors: [],
         createdAt: new Date("2026-04-01T00:00:00Z").toISOString(),
         updatedAt: new Date("2026-04-01T00:00:00Z").toISOString(),
+        mappingVersionId: "mapping-v1",
+        approvedAt: new Date("2026-04-01T00:00:00Z").toISOString(),
       },
       mappingVersion: {
         mappingVersionId: "mapping-v1",
