@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import apiService from "@/services/api";
+import { useDataLoading } from "@/hooks/useDataLoading";
 import { PublishTopicRequest, SubscribeTopicRequest } from "@repo/types";
 import { ITopic, IQueue } from "@repo/types";
 import NavBar from "@/components/NavBar";
@@ -32,7 +33,6 @@ const TopicDetail = () => {
   const [topic, setTopic] = useState<ITopic | null>(null);
   const [queues, setQueues] = useState<IQueue[]>([]);
   const [availableQueues, setAvailableQueues] = useState<IQueue[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [publishData, setPublishData] = useState("");
@@ -40,39 +40,38 @@ const TopicDetail = () => {
   const [selectedQueueId, setSelectedQueueId] = useState("");
   const [isSubscribing, setIsSubscribing] = useState(false);
 
-  useEffect(() => {
-    const fetchTopicData = async () => {
-      if (!id) return;
-
-      try {
-        setIsLoading(true);
-        const [topicData, queuesData] = await Promise.all([
-          apiService.getTopic(id),
-          apiService.getQueues(),
-        ]);
-        setTopic(topicData);
-        setQueues(queuesData);
-
-        // Filter out already subscribed queues
-        const available = queuesData.filter(
-          (queue) => !topicData.subscribedQueues.includes(queue.id),
-        );
-        setAvailableQueues(available);
-
-        // Set default selected queue if available
-        if (available.length > 0) {
-          setSelectedQueueId(available[0].id);
-        }
-      } catch (error) {
-        console.error("Failed to fetch topic data", error);
-        toast.error("Failed to load topic details");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTopicData();
+  const loadTopic = useCallback(async (): Promise<{
+    topic: ITopic;
+    queues: IQueue[];
+  } | null> => {
+    if (!id) return null;
+    const [topicData, queuesData] = await Promise.all([
+      apiService.getTopic(id),
+      apiService.getQueues(),
+    ]);
+    return { topic: topicData, queues: queuesData };
   }, [id]);
+
+  const { data: loadedData, isLoading, error: loadError } = useDataLoading(loadTopic, [id]);
+
+  useEffect(() => {
+    if (!loadedData) return;
+    setTopic(loadedData.topic);
+    setQueues(loadedData.queues);
+    const available = loadedData.queues.filter(
+      (queue) => !loadedData.topic.subscribedQueues.includes(queue.id),
+    );
+    setAvailableQueues(available);
+    if (available.length > 0) {
+      setSelectedQueueId(available[0].id);
+    }
+  }, [loadedData]);
+
+  useEffect(() => {
+    if (!loadError) return;
+    console.error("Failed to fetch topic data", loadError);
+    toast.error("Failed to load topic details");
+  }, [loadError]);
 
   const handleDeleteTopic = async () => {
     // Note: The API doesn't actually provide a deleteTopic endpoint in the spec,

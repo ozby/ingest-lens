@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import apiService from "@/services/api";
+import { useDataLoading } from "@/hooks/useDataLoading";
 import { IQueue, IQueueMetrics, IMessage } from "@repo/types";
 import { SendMessageRequest } from "@repo/types";
 import NavBar from "@/components/NavBar";
@@ -32,7 +33,6 @@ const QueueDetail = () => {
   const [queue, setQueue] = useState<IQueue | null>(null);
   const [metrics, setMetrics] = useState<IQueueMetrics | null>(null);
   const [messages, setMessages] = useState<IMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,29 +54,32 @@ const QueueDetail = () => {
     }
   }, [id]);
 
-  useEffect(() => {
-    const fetchQueueData = async () => {
-      if (!id) return;
-
-      try {
-        setIsLoading(true);
-        const [queueData, queueMetrics] = await Promise.all([
-          apiService.getQueue(id),
-          apiService.getQueueMetrics(id),
-        ]);
-        setQueue(queueData);
-        setMetrics(queueMetrics);
-        await fetchMessages();
-      } catch (error) {
-        console.error("Failed to fetch queue data", error);
-        toast.error("Failed to load queue details");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchQueueData();
+  const loadQueue = useCallback(async (): Promise<{
+    queue: IQueue;
+    metrics: IQueueMetrics;
+  } | null> => {
+    if (!id) return null;
+    const [queueData, queueMetrics] = await Promise.all([
+      apiService.getQueue(id),
+      apiService.getQueueMetrics(id),
+    ]);
+    await fetchMessages();
+    return { queue: queueData, metrics: queueMetrics };
   }, [id, fetchMessages]);
+
+  const { data: loadedData, isLoading, error: loadError } = useDataLoading(loadQueue, [id]);
+
+  useEffect(() => {
+    if (!loadedData) return;
+    setQueue(loadedData.queue);
+    setMetrics(loadedData.metrics);
+  }, [loadedData]);
+
+  useEffect(() => {
+    if (!loadError) return;
+    console.error("Failed to fetch queue data", loadError);
+    toast.error("Failed to load queue details");
+  }, [loadError]);
 
   const handleDeleteQueue = async () => {
     if (!id) return;
