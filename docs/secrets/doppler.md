@@ -160,14 +160,19 @@ In CI, inject secrets via the Doppler CLI:
     DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
 ```
 
-Or use the official [Doppler GitHub Action](https://github.com/DopplerHQ/doppler-action):
+Or use the official Doppler secrets fetch action to hydrate subsequent steps:
 
 ```yaml
-- uses: DopplerHQ/doppler-action@v3
+- uses: dopplerhq/secrets-fetch-action@v2.0.0
   with:
-    token: ${{ secrets.DOPPLER_TOKEN }}
-    inject-env: true
+    doppler-token: ${{ secrets.DOPPLER_TOKEN }}
+    inject-env-vars: true
 ```
+
+The scheduled Neon cleanup workflow prefers this path. When `DOPPLER_TOKEN` is
+present, it hydrates Neon control-plane secrets from Doppler and keeps the
+credential source out of the workflow YAML. Direct `NEON_*` GitHub Secrets
+remain as a fallback for bootstrap or migration periods.
 
 ---
 
