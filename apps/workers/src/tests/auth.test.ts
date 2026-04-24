@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
 import { createDb } from "../db/client";
-import { generateToken, hashPasswordAsync, verifyPassword } from "../middleware/auth";
+import { generateToken, hashPasswordAsync, verifyPassword } from "../auth/crypto";
 import {
   buildInsertChain,
   buildSelectChain,

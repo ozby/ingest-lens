@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import { eq, or } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { users } from "../db/schema";
-import { authenticate, generateToken, hashPasswordAsync, verifyPassword } from "../middleware/auth";
+import { generateToken, hashPasswordAsync, verifyPassword } from "../auth/crypto";
+import { authenticate } from "../middleware/auth";
 
 type AuthVariables = {
   user: { userId: string; username: string };
