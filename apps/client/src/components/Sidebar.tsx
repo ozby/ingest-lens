@@ -10,10 +10,18 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
   const navItems = [
-    { name: "Dashboard", path: "/dashboard", icon: <BarChart3 className="h-5 w-5" /> },
+    {
+      name: "Dashboard",
+      path: "/dashboard",
+      icon: <BarChart3 className="h-5 w-5" />,
+    },
     { name: "Queues", path: "/queues", icon: <List className="h-5 w-5" /> },
     { name: "Topics", path: "/topics", icon: <Hash className="h-5 w-5" /> },
-    { name: "Server Metrics", path: "/metrics", icon: <Activity className="h-5 w-5" /> },
+    {
+      name: "Server Metrics",
+      path: "/metrics",
+      icon: <Activity className="h-5 w-5" />,
+    },
   ];
 
   return (
@@ -67,21 +75,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
           <div className="p-4 border-t border-slate-200 dark:border-slate-800">
             <div className="glass-card p-3 space-y-2">
               <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
-                SYSTEM STATUS
+                DASHBOARD NOTES
               </h4>
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-green-500" />
-                  <span>Uptime</span>
+                  <span>Queue metrics</span>
                 </div>
-                <span className="font-medium">24h 13m</span>
+                <span className="font-medium">Live</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-blue-500" />
-                  <span>Messages</span>
+                  <span>Activity history</span>
                 </div>
-                <span className="font-medium">21,205</span>
+                <span className="font-medium">Demo label when empty</span>
               </div>
             </div>
           </div>

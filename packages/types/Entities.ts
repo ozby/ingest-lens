@@ -5,10 +5,9 @@ export interface IMessage {
   updatedAt: Date;
   queueId: string;
   received: boolean;
-  receivedAt?: Date;
+  receivedAt?: Date | null;
+  visibilityExpiresAt?: Date | null;
   expiresAt: Date;
-  expiresAt2: Date;
-  expiresAt3: Date;
   receivedCount: number;
 }
 
@@ -36,7 +35,6 @@ export interface IUser {
   id: string;
   username: string;
   email: string;
-  password: string;
   createdAt: Date;
   updatedAt: Date;
 }

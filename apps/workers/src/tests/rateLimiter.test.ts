@@ -22,6 +22,18 @@ function buildTestApp(mockEnv: Env) {
 }
 
 describe("rateLimiter middleware", () => {
+  it("allows request through when RATE_LIMITER binding is unavailable", async () => {
+    const mockEnv = createMockEnv();
+    delete mockEnv.RATE_LIMITER;
+    const fetch = buildTestApp(mockEnv);
+
+    const res = await fetch(new Request("http://localhost/test"));
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { status: string };
+    expect(body.status).toBe("ok");
+  });
+
   it("allows request through when rate limit is not exceeded", async () => {
     const mockRateLimiter = { limit: vi.fn().mockResolvedValue({ success: true }) };
     const mockEnv = createMockEnv(undefined, mockRateLimiter);

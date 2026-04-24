@@ -1,8 +1,9 @@
 import { Hono } from "hono";
-import { eq, and, sql } from "drizzle-orm";
+import { and, eq, lte, or, sql } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
-import { queues, messages, queueMetrics } from "../db/schema";
+import { messages, queueMetrics } from "../db/schema";
 import { serializeMessage, serializeMessages } from "./message-response";
+import { requireOwnedQueue } from "./ownership";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 
@@ -33,9 +34,9 @@ messageRoutes.post("/:queueId", async (c) => {
 
   const db = createDb(c.env);
 
-  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
-  if (!queue) {
-    return c.json({ status: "error", message: "Queue not found" }, 404);
+  const queue = await requireOwnedQueue(c, queueId);
+  if (queue instanceof Response) {
+    return queue;
   }
 
   const idempotencyKey = c.req.header("Idempotency-Key") ?? null;
@@ -98,38 +99,70 @@ messageRoutes.get("/:queueId", async (c) => {
     c.req.query("visibilityTimeout") ?? String(DEFAULT_VISIBILITY_TIMEOUT),
     10,
   );
+  const clampedVisibilityTimeout =
+    Number.isFinite(visibilityTimeout) && visibilityTimeout > 0
+      ? visibilityTimeout
+      : DEFAULT_VISIBILITY_TIMEOUT;
 
   const db = createDb(c.env);
 
-  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
-  if (!queue) {
-    return c.json({ status: "error", message: "Queue not found" }, 404);
+  const queue = await requireOwnedQueue(c, queueId);
+  if (queue instanceof Response) {
+    return queue;
   }
+
+  const now = new Date();
+  const visibilityExpiresAt = new Date(now.getTime() + clampedVisibilityTimeout * 1000);
+
+  await db
+    .update(messages)
+    .set({
+      received: false,
+      visibilityExpiresAt: null,
+    })
+    .where(
+      and(
+        eq(messages.queueId, queueId),
+        eq(messages.received, true),
+        lte(messages.visibilityExpiresAt, now),
+      ),
+    );
 
   const result = await db
     .select()
     .from(messages)
-    .where(and(eq(messages.queueId, queueId), eq(messages.received, false)))
+    .where(
+      and(
+        eq(messages.queueId, queueId),
+        or(eq(messages.received, false), lte(messages.visibilityExpiresAt, now)),
+      ),
+    )
     .limit(Math.min(maxMessages, 10));
 
   if (result.length === 0) {
     return c.json({
       status: "success",
       results: 0,
-      data: { messages: [], visibilityTimeout },
+      data: { messages: [], visibilityTimeout: clampedVisibilityTimeout },
     });
   }
 
   const messageIds = result.map((m) => m.id);
-  const receivedAt = new Date();
+  const leasedMessages = result.map((message) => ({
+    ...message,
+    received: true,
+    receivedAt: now,
+    visibilityExpiresAt,
+    receivedCount: message.receivedCount + 1,
+  }));
 
-  // Mark messages as received
   for (const id of messageIds) {
     await db
       .update(messages)
       .set({
         received: true,
-        receivedAt,
+        receivedAt: now,
+        visibilityExpiresAt,
         receivedCount: sql`${messages.receivedCount} + 1`,
       })
       .where(eq(messages.id, id));
@@ -146,7 +179,10 @@ messageRoutes.get("/:queueId", async (c) => {
   return c.json({
     status: "success",
     results: result.length,
-    data: { messages: serializeMessages(result), visibilityTimeout },
+    data: {
+      messages: serializeMessages(leasedMessages),
+      visibilityTimeout: clampedVisibilityTimeout,
+    },
   });
 });
 
@@ -155,6 +191,11 @@ messageRoutes.get("/:queueId/:messageId", async (c) => {
   const queueId = c.req.param("queueId");
   const messageId = c.req.param("messageId");
   const db = createDb(c.env);
+
+  const queue = await requireOwnedQueue(c, queueId);
+  if (queue instanceof Response) {
+    return queue;
+  }
 
   const [message] = await db
     .select()
@@ -166,7 +207,7 @@ messageRoutes.get("/:queueId/:messageId", async (c) => {
     return c.json({ status: "error", message: "Message not found" }, 404);
   }
 
-  return c.json({ status: "success", data: serializeMessage(message) });
+  return c.json({ status: "success", data: { message: serializeMessage(message) } });
 });
 
 // DELETE /api/messages/:queueId/:messageId — delete (ack) message
@@ -175,9 +216,9 @@ messageRoutes.delete("/:queueId/:messageId", async (c) => {
   const messageId = c.req.param("messageId");
   const db = createDb(c.env);
 
-  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
-  if (!queue) {
-    return c.json({ status: "error", message: "Queue not found" }, 404);
+  const queue = await requireOwnedQueue(c, queueId);
+  if (queue instanceof Response) {
+    return queue;
   }
 
   const [message] = await db
@@ -192,5 +233,5 @@ messageRoutes.delete("/:queueId/:messageId", async (c) => {
 
   await db.delete(messages).where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)));
 
-  return c.json({ status: "success", data: null }, 200);
+  return c.json({ status: "success", data: { deletedMessageId: messageId } }, 200);
 });

@@ -35,7 +35,7 @@
     "dev": "bunchee --watch",
     "check-types": "tsgo --noEmit",
     "lint": "oxlint src/",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "catalog:",

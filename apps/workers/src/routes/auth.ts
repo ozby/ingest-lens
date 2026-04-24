@@ -2,12 +2,7 @@ import { Hono } from "hono";
 import { eq, or } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { users } from "../db/schema";
-import {
-  authenticate,
-  generateToken,
-  hashPasswordAsync,
-  comparePassword,
-} from "../middleware/auth";
+import { authenticate, generateToken, hashPasswordAsync, verifyPassword } from "../middleware/auth";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -64,6 +59,7 @@ authRoutes.post("/register", async (c) => {
       username: users.username,
       email: users.email,
       createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
     });
 
   const token = await generateToken(user.id, user.username, c.env.JWT_SECRET);
@@ -87,9 +83,16 @@ authRoutes.post("/login", async (c) => {
     return c.json({ status: "error", message: "Invalid credentials" }, 401);
   }
 
-  const valid = await comparePassword(password, user.password);
-  if (!valid) {
+  const verification = await verifyPassword(password, user.password);
+  if (!verification.valid) {
     return c.json({ status: "error", message: "Invalid credentials" }, 401);
+  }
+
+  if (verification.needsMigration && verification.migratedHash) {
+    await db
+      .update(users)
+      .set({ password: verification.migratedHash })
+      .where(eq(users.id, user.id));
   }
 
   const token = await generateToken(user.id, user.username, c.env.JWT_SECRET);
@@ -99,6 +102,7 @@ authRoutes.post("/login", async (c) => {
     username: user.username,
     email: user.email,
     createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 
   return c.json({ status: "success", data: { user: safeUser, token } });
@@ -114,6 +118,7 @@ authRoutes.get("/me", authenticate, async (c) => {
       username: users.username,
       email: users.email,
       createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
     })
     .from(users)
     .where(eq(users.id, userId))

@@ -43,6 +43,17 @@
   },
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
+    "overrides": {
+      "@commitlint/config-validator>ajv": "8.18.0",
+      "@esbuild-kit/core-utils>esbuild": "0.25.12",
+      "@secretlint/config-loader>ajv": "8.18.0",
+      "@textlint/linter-formatter>js-yaml": "3.14.2",
+      "@textlint/linter-formatter>lodash": "4.18.1",
+      "@voidzero-dev/vite-plus-core>yaml": "2.8.3",
+      "micromatch>picomatch": "2.3.2",
+      "protobufjs": "7.5.5",
+      "table>ajv": "8.18.0"
+    },
     "peerDependencyRules": {
       "allowedVersions": {
         "vite>esbuild": "*"

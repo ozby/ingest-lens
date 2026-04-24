@@ -47,6 +47,10 @@ type MessageRecord = {
   createdAt: string;
 };
 
+type DeleteMessageResponse = {
+  deletedMessageId: string;
+};
+
 async function postJson<T>(
   path: string,
   body: Record<string, unknown>,
@@ -171,12 +175,15 @@ describe("queue message flow", () => {
       seq: expect.any(String),
     });
 
-    const ackedMessage = await deleteJson<ApiSuccess<null>>(
+    const ackedMessage = await deleteJson<ApiSuccess<DeleteMessageResponse>>(
       `/api/messages/${queueId}/${sentMessage.body.data.message.id}`,
       token,
     );
     expect(ackedMessage.response.status).toBe(200);
-    expect(ackedMessage.body).toEqual({ status: "success", data: null });
+    expect(ackedMessage.body).toEqual({
+      status: "success",
+      data: { deletedMessageId: sentMessage.body.data.message.id },
+    });
 
     const queueAfterAck = await getJson<
       ApiSuccess<{ messages: MessageRecord[]; visibilityTimeout: number }>

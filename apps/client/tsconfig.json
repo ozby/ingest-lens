@@ -6,7 +6,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@repo/ui/components": ["../../packages/ui/src/components/index.tsx"],
+      "@repo/ui/lib": ["../../packages/ui/src/lib/index.tsx"]
     },
     "noUncheckedIndexedAccess": false,
     "verbatimModuleSyntax": false

@@ -3,6 +3,7 @@ import { eq, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { topics, queues, messages } from "../db/schema";
 import { serializeMessage } from "./message-response";
+import { requireOwnedQueue, requireOwnedTopic } from "./ownership";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 
@@ -55,7 +56,12 @@ topicRoutes.get("/", async (c) => {
 // GET /api/topics/:topicId/ws — WebSocket upgrade via TopicRoom DO (must be before /:id)
 topicRoutes.get("/:topicId/ws", async (c) => {
   const topicId = c.req.param("topicId");
-  const id = c.env.TOPIC_ROOMS.idFromName(topicId);
+  const topic = await requireOwnedTopic(c, topicId);
+  if (topic instanceof Response) {
+    return topic;
+  }
+
+  const id = c.env.TOPIC_ROOMS.idFromName(topic.id);
   const stub = c.env.TOPIC_ROOMS.get(id);
   return stub.fetch(c.req.raw);
 });
@@ -63,17 +69,10 @@ topicRoutes.get("/:topicId/ws", async (c) => {
 // GET /api/topics/:id — get single topic
 topicRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");
-  const ownerId = c.get("user").userId;
-  const db = createDb(c.env);
+  const topic = await requireOwnedTopic(c, id);
 
-  const [topic] = await db.select().from(topics).where(eq(topics.id, id)).limit(1);
-
-  if (!topic) {
-    return c.json({ status: "error", message: "Topic not found" }, 404);
-  }
-
-  if (topic.ownerId !== ownerId) {
-    return c.json({ status: "error", message: "Not authorized to access this topic" }, 403);
+  if (topic instanceof Response) {
+    return topic;
   }
 
   return c.json({ status: "success", data: { topic } });
@@ -82,17 +81,15 @@ topicRoutes.get("/:id", async (c) => {
 // DELETE /api/topics/:id — delete topic
 topicRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db.select().from(topics).where(eq(topics.id, id)).limit(1);
+  const topic = await requireOwnedTopic(c, id, {
+    notFound: `Topic not found with ID: ${id}`,
+    unauthorized: "Not authorized to delete this topic",
+  });
 
-  if (!topic) {
-    return c.json({ status: "error", message: `Topic not found with ID: ${id}` }, 404);
-  }
-
-  if (topic.ownerId !== ownerId) {
-    return c.json({ status: "error", message: "Not authorized to delete this topic" }, 403);
+  if (topic instanceof Response) {
+    return topic;
   }
 
   await db.delete(topics).where(eq(topics.id, id));
@@ -110,21 +107,18 @@ topicRoutes.post("/:topicId/subscribe", async (c) => {
     return c.json({ status: "error", message: "queueId is required" }, 400);
   }
 
-  const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db.select().from(topics).where(eq(topics.id, topicId)).limit(1);
-  if (!topic) {
-    return c.json({ status: "error", message: "Topic not found" }, 404);
+  const topic = await requireOwnedTopic(c, topicId, {
+    unauthorized: "Not authorized to modify this topic",
+  });
+  if (topic instanceof Response) {
+    return topic;
   }
 
-  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
-  if (!queue) {
-    return c.json({ status: "error", message: "Queue not found" }, 404);
-  }
-
-  if (topic.ownerId !== ownerId) {
-    return c.json({ status: "error", message: "Not authorized to modify this topic" }, 403);
+  const queue = await requireOwnedQueue(c, queueId);
+  if (queue instanceof Response) {
+    return queue;
   }
 
   if (topic.subscribedQueues.includes(queueId)) {
@@ -150,16 +144,13 @@ topicRoutes.post("/:topicId/publish", async (c) => {
     return c.json({ status: "error", message: "Message data must be an object" }, 400);
   }
 
-  const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db.select().from(topics).where(eq(topics.id, topicId)).limit(1);
-  if (!topic) {
-    return c.json({ status: "error", message: "Topic not found" }, 404);
-  }
-
-  if (topic.ownerId !== ownerId) {
-    return c.json({ status: "error", message: "Not authorized to publish to this topic" }, 403);
+  const topic = await requireOwnedTopic(c, topicId, {
+    unauthorized: "Not authorized to publish to this topic",
+  });
+  if (topic instanceof Response) {
+    return topic;
   }
 
   if (topic.subscribedQueues.length === 0) {

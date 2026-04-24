@@ -17,7 +17,7 @@ export type Env = {
   JWT_SECRET: string;
   NODE_ENV?: string;
   DELIVERY_QUEUE: Queue<DeliveryPayload>;
-  RATE_LIMITER: RateLimit;
+  RATE_LIMITER?: RateLimit;
   ANALYTICS: AnalyticsEngineDataset;
   TOPIC_ROOMS: DurableObjectNamespace;
 };

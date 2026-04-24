@@ -56,6 +56,7 @@ export const messages = pgTable(
     idempotencyKey: text("idempotency_key"),
     received: boolean("received").notNull().default(false),
     receivedAt: timestamp("received_at"),
+    visibilityExpiresAt: timestamp("visibility_expires_at"),
     expiresAt: timestamp("expires_at").notNull(),
     receivedCount: integer("received_count").notNull().default(0),
     createdAt: timestamp("created_at").defaultNow().notNull(),

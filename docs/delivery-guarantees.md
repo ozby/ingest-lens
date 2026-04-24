@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-22"
+last_updated: "2026-04-24"
 ---
 
 # Delivery Guarantees
@@ -26,6 +26,40 @@ The contract is:
 
 **Implication for receivers:** Your push endpoint must be idempotent. The same message may arrive
 twice. If duplicate processing is harmful, use idempotency keys (see below).
+
+## Pull receive visibility leases
+
+`GET /api/messages/:queueId` supports a queue-style pull lease with two query
+parameters:
+
+- `maxMessages` — max messages to claim in one call, capped at 10
+- `visibilityTimeout` — lease length in seconds, default `30`
+
+Behavior:
+
+1. The route returns currently visible messages for the owned queue.
+2. Returned messages are marked with `received: true`, `receivedAt: <now>`,
+   and `visibilityExpiresAt: <now + visibilityTimeout>`. This lease state is
+   backed by the `visibility_expires_at` database column added in
+   `apps/workers/src/db/migrations/0002_jazzy_karnak.sql`.
+3. While the lease is active, the same message is hidden from later receive
+   calls on that queue.
+4. After the lease expires, the message becomes visible again unless it has
+   been acknowledged by deletion.
+5. `DELETE /api/messages/:queueId/:messageId` is the acknowledgement path; it
+   removes the leased row so it cannot reappear after the timeout.
+
+**Important concurrency caveat:** the current implementation is still a
+select-then-update flow, not a single atomic claim statement. Concurrent pull
+consumers can race and receive the same visible row before both updates land.
+This is still an at-least-once model. A message may be received more than once
+if the client does not delete it before the lease expires, or if two consumers
+race to claim the same row at nearly the same time.
+
+Dashboard `activeMessages` counts only leases that are currently in-flight
+(`received = true` with an unexpired `visibility_expires_at`). Expired leases do
+not count as active even before a later receive call makes the row visible
+again.
 
 ## Idempotency keys
 

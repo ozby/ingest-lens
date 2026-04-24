@@ -1,6 +1,15 @@
 import axios, { AxiosRequestConfig } from "axios";
 import {
+  ApiResponse,
   AuthResponse,
+  CurrentUserData,
+  DeleteMessageData,
+  MessageData,
+  QueueMetricsData,
+  QueueMetricsListData,
+  ReceiveMessagesData,
+  ServerActivityHistoryData,
+  ServerMetricsData,
   CreateQueueRequest,
   CreateTopicRequest,
   IActivityDataPoint,
@@ -18,12 +27,6 @@ import {
   SubscribeTopicRequest,
 } from "@repo/types";
 import { toast } from "sonner";
-
-// Define types for API responses
-interface ApiResponse<T> {
-  status: string;
-  data: T;
-}
 
 class ApiService {
   private api: ReturnType<typeof axios.create>;
@@ -77,7 +80,7 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<IUser> {
-    const response = await this.api.get<ApiResponse<{ user: IUser }>>("/api/auth/me");
+    const response = await this.api.get<ApiResponse<CurrentUserData>>("/api/auth/me");
     return response.data.data.user;
   }
 
@@ -92,29 +95,27 @@ class ApiService {
   }
 
   async getServerMetrics(): Promise<IServerMetrics> {
-    const response =
-      await this.api.get<ApiResponse<{ serverMetrics: IServerMetrics }>>("/api/dashboard/server");
+    const response = await this.api.get<ApiResponse<ServerMetricsData>>("/api/dashboard/server");
     return response.data.data.serverMetrics;
   }
 
   async getServerActivityHistory(): Promise<IActivityDataPoint[]> {
-    const response = await this.api.get<ApiResponse<{ activityHistory: IActivityDataPoint[] }>>(
+    const response = await this.api.get<ApiResponse<ServerActivityHistoryData>>(
       "/api/dashboard/server/activity",
     );
     return response.data.data.activityHistory;
   }
 
   async getAllQueueMetrics(): Promise<IQueueMetrics[]> {
-    const response =
-      await this.api.get<ApiResponse<{ queueMetrics: IQueueMetrics[] }>>("/api/dashboard/queues");
+    const response = await this.api.get<ApiResponse<QueueMetricsListData>>("/api/dashboard/queues");
     return response.data.data.queueMetrics;
   }
 
   async getQueueMetrics(queueId: string): Promise<IQueueMetrics> {
-    const response = await this.api.get<ApiResponse<{ queueMetric: IQueueMetrics }>>(
+    const response = await this.api.get<ApiResponse<QueueMetricsData>>(
       `/api/dashboard/queues/${queueId}`,
     );
-    return response.data.data.queueMetric;
+    return response.data.data.queueMetrics;
   }
 
   async createQueue(queue: CreateQueueRequest): Promise<IQueue> {
@@ -168,7 +169,7 @@ class ApiService {
   }
 
   async sendMessage(queueId: string, request: SendMessageRequest): Promise<IMessage> {
-    const response = await this.api.post<ApiResponse<{ message: IMessage }>>(
+    const response = await this.api.post<ApiResponse<MessageData>>(
       `/api/messages/${queueId}`,
       request,
     );
@@ -180,7 +181,7 @@ class ApiService {
     if (query) {
       config.params = query;
     }
-    const response = await this.api.get<ApiResponse<{ messages: IMessage[] }>>(
+    const response = await this.api.get<ApiResponse<ReceiveMessagesData>>(
       `/api/messages/${queueId}`,
       config,
     );
@@ -188,14 +189,17 @@ class ApiService {
   }
 
   async getMessage(queueId: string, messageId: string): Promise<IMessage> {
-    const response = await this.api.get<ApiResponse<{ message: IMessage }>>(
+    const response = await this.api.get<ApiResponse<MessageData>>(
       `/api/messages/${queueId}/${messageId}`,
     );
     return response.data.data.message;
   }
 
-  async deleteMessage(queueId: string, messageId: string): Promise<void> {
-    await this.api.delete(`/api/messages/${queueId}/${messageId}`);
+  async deleteMessage(queueId: string, messageId: string): Promise<string> {
+    const response = await this.api.delete<ApiResponse<DeleteMessageData>>(
+      `/api/messages/${queueId}/${messageId}`,
+    );
+    return response.data.data.deletedMessageId;
   }
 }
 
