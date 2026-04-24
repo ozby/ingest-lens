@@ -92,14 +92,7 @@ const Dashboard = () => {
   };
 
   const totalMessages = queueMetrics.reduce((sum, metric) => sum + metric.messageCount, 0);
-  const totalSent = queueMetrics.reduce((sum, metric) => sum + metric.messagesSent, 0);
-  const totalReceived = queueMetrics.reduce((sum, metric) => sum + metric.messagesReceived, 0);
-
-  const avgWaitTime =
-    queueMetrics.length > 0
-      ? queueMetrics.reduce((sum, metric) => sum + metric.avgWaitTime, 0) / queueMetrics.length
-      : 0;
-  console.log(totalMessages, totalSent, totalReceived, avgWaitTime);
+  const availableQueues = queues.map((queue) => ({ id: queue.id, name: queue.name }));
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -110,8 +103,11 @@ const Dashboard = () => {
         <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
-              <h1 className="text-3xl font-bold mb-1">Dashboard</h1>
-              <p className="text-muted-foreground">Overview of your message queuing system</p>
+              <h1 className="text-3xl font-bold mb-1">IngestLens operations dashboard</h1>
+              <p className="text-muted-foreground">
+                Track delivery rails, queue activity, and observability across your owned queues and
+                topics.
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <QueueForm
@@ -127,7 +123,7 @@ const Dashboard = () => {
               <TopicForm
                 onSubmit={handleCreateTopic}
                 isLoading={isCreatingTopic}
-                availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
+                availableQueues={availableQueues}
                 trigger={
                   <Button>
                     <Hash className="mr-2 h-4 w-4" />
@@ -158,28 +154,28 @@ const Dashboard = () => {
                 title="Total Queues"
                 value={queues.length}
                 icon={List}
-                description={`Active message queues in the system`}
+                description={`Owned delivery queues for current message traffic`}
                 iconColor="text-indigo-500"
               />
               <MetricsCard
                 title="Total Topics"
                 value={topics.length}
                 icon={Hash}
-                description={`Publish/subscribe topics`}
+                description={`Fan-out rails for current publish events`}
                 iconColor="text-pink-500"
               />
               <MetricsCard
                 title="Total Messages"
                 value={totalMessages.toLocaleString()}
                 icon={SendHorizontal}
-                description={`Messages currently in queues`}
+                description={`Payloads currently sitting on delivery rails`}
                 iconColor="text-blue-500"
               />
               <MetricsCard
                 title="System Activity"
                 value={`${serverMetrics?.activeConnections || 0} active`}
                 icon={Activity}
-                description={`${serverMetrics?.totalRequests.toLocaleString() || 0} total requests`}
+                description={`${serverMetrics?.totalRequests.toLocaleString() || 0} requests across auth, delivery, and observability`}
                 iconColor="text-green-500"
               />
             </div>
@@ -203,8 +199,10 @@ const Dashboard = () => {
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Recent Queues</CardTitle>
-                <CardDescription>Your recently created message queues</CardDescription>
+                <CardTitle>Delivery Queues</CardTitle>
+                <CardDescription>
+                  Owned rails for direct delivery traffic and retries
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {isLoading ? (
@@ -218,13 +216,17 @@ const Dashboard = () => {
                   </div>
                 ) : queues.length === 0 ? (
                   <div className="p-6 text-center">
-                    <p className="text-muted-foreground">No queues created yet</p>
+                    <p className="text-muted-foreground">No delivery queues configured yet</p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Create a queue to route delivery traffic and retries while intake tooling
+                      remains planned.
+                    </p>
                     <QueueForm
                       onSubmit={handleCreateQueue}
                       isLoading={isCreatingQueue}
                       trigger={
                         <Button variant="outline" className="mt-4">
-                          Create your first queue
+                          Create your first delivery queue
                         </Button>
                       }
                     />
@@ -261,8 +263,8 @@ const Dashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Recent Topics</CardTitle>
-                <CardDescription>Your recently created pub/sub topics</CardDescription>
+                <CardTitle>Delivery Topics</CardTitle>
+                <CardDescription>Fan-out rails for current delivery events</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {isLoading ? (
@@ -276,14 +278,18 @@ const Dashboard = () => {
                   </div>
                 ) : topics.length === 0 ? (
                   <div className="p-6 text-center">
-                    <p className="text-muted-foreground">No topics created yet</p>
+                    <p className="text-muted-foreground">No delivery topics configured yet</p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Create a topic when one delivery event should fan out across multiple delivery
+                      rails.
+                    </p>
                     <TopicForm
                       onSubmit={handleCreateTopic}
                       isLoading={isCreatingTopic}
-                      availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
+                      availableQueues={availableQueues}
                       trigger={
                         <Button variant="outline" className="mt-4">
-                          Create your first topic
+                          Create your first delivery topic
                         </Button>
                       }
                     />
@@ -295,7 +301,7 @@ const Dashboard = () => {
                         <div>
                           <h4 className="font-medium">{topic.name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {topic.subscribedQueues.length} subscribed queues
+                            {topic.subscribedQueues.length} subscribed delivery queues
                           </p>
                         </div>
                         <Button asChild variant="ghost" size="sm">

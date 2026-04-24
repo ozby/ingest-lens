@@ -5,6 +5,10 @@ last_updated: "2026-04-24"
 
 # Delivery Guarantees
 
+These guarantees describe the **current delivery substrate behind IngestLens**.
+Queues/topics are shipped execution primitives; future intake/mapping features
+must inherit these same guarantees instead of redefining them.
+
 ## At-least-once delivery
 
 When a message is published to a queue with a `pushEndpoint`, the system guarantees that it will be

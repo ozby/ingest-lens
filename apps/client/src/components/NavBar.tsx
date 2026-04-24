@@ -28,9 +28,14 @@ const NavBar: React.FC<NavBarProps> = ({ toggleSidebar }) => {
           </Button>
           <Link to="/dashboard" className="flex items-center gap-2">
             <div className="bg-primary rounded-md w-8 h-8 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">PS</span>
+              <span className="text-primary-foreground font-bold">IL</span>
             </div>
-            <span className="font-medium text-lg hidden sm:inline-block">PubSub Dashboard</span>
+            <div className="flex flex-col">
+              <span className="font-medium text-base sm:text-lg leading-tight">IngestLens</span>
+              <span className="hidden md:inline text-xs text-muted-foreground">
+                AI-assisted integration observability
+              </span>
+            </div>
           </Link>
         </div>
 

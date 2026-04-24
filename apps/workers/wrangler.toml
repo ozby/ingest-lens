@@ -1,3 +1,6 @@
+# Internal runtime identifier intentionally deferred during the IngestLens
+# rebrand to avoid risky Cloudflare resource churn before deploy migration is
+# planned and verified.
 name = "node-pubsub"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"

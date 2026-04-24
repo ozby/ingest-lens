@@ -7,18 +7,27 @@ last_updated: "2026-04-24"
 
 ## Problem statement
 
-Delivering webhooks reliably is harder than it looks. The naive approach — HTTP call inside the
-publish request — fails silently when the receiver is down, slow, or returning 5xx. The caller gets
-no signal, the message is lost, and there is no retry.
+IngestLens uses Cloudflare delivery primitives to solve a broader IntegrationOps
+problem: third-party payloads are unreliable, operators need a trustworthy path
+from intake to delivery, and the system must stay honest about what is shipped
+versus merely planned.
 
-The harder version of the same problem is that stateless compute makes it worse. Cloudflare Workers
-run in V8 isolates that are garbage-collected after the request. You cannot hold a background goroutine
-that retries failed deliveries. You cannot maintain a long-lived TCP connection to Postgres between
-requests. Every piece of state must be either persisted externally or passed through a queue.
+The current repo already ships the delivery substrate: authenticated queue/topic
+routes, push delivery, pull receive leases, dashboard metrics, and replay-aware
+WebSocket fan-out. The planned product layer adds AI-assisted mapping review on
+top of that substrate rather than replacing it.
+
+Stateless compute is the core design constraint. Cloudflare Workers run in V8
+isolates that are reclaimed after the request. There is no background process to
+hold retries in memory, and there is no long-lived Postgres connection per
+process. Every durable fact must live in Postgres, Cloudflare Queues, Durable
+Objects, or explicit route state.
 
 This system is built around that constraint rather than fighting it.
 
 ## System components
+
+Throughout this document, treat **queues and topics as the shipped delivery rails** and **AI-assisted mapping as a planned product layer** unless a section explicitly says otherwise.
 
 ### Cloudflare Workers (Hono)
 

@@ -1,6 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+
+const landingPageCopy =
+  "Sign in to inspect delivery rails, monitor observability, and prepare for future intake mapping workflows.";
+const dashboardSummaryCopy =
+  "Track delivery rails, queue activity, and observability across your owned queues and topics.";
 
 const apiMocks = vi.hoisted(() => ({
   clearToken: vi.fn(),
@@ -45,9 +50,8 @@ describe("App", () => {
   it("shows the auth landing page at the root route when signed out", async () => {
     render(<App />);
 
-    await waitFor(() =>
-      expect(screen.getByText("Login or create an account to continue")).toBeTruthy(),
-    );
+    expect(screen.getByText("Loading route…")).toBeTruthy();
+    await screen.findByText(landingPageCopy, {}, { timeout: 5000 });
   });
 
   it("redirects protected routes back to the auth landing page when no token is present", async () => {
@@ -55,9 +59,7 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() =>
-      expect(screen.getByText("Login or create an account to continue")).toBeTruthy(),
-    );
+    await screen.findByText(landingPageCopy, {}, { timeout: 5000 });
   });
 
   it("renders the protected dashboard when auth bootstrap succeeds", async () => {
@@ -67,6 +69,7 @@ describe("App", () => {
       username: "demo",
       email: "demo@example.com",
       createdAt: new Date("2026-04-01T00:00:00Z"),
+      updatedAt: new Date("2026-04-01T00:00:00Z"),
     });
     apiMocks.getQueues.mockResolvedValueOnce([]);
     apiMocks.getTopics.mockResolvedValueOnce([]);
@@ -85,8 +88,6 @@ describe("App", () => {
     render(<App />);
 
     expect(screen.getByText("Loading...")).toBeTruthy();
-    expect(
-      await screen.findByText("Overview of your message queuing system", {}, { timeout: 5000 }),
-    ).toBeTruthy();
-  });
+    await screen.findByText(dashboardSummaryCopy, {}, { timeout: 8000 });
+  }, 10000);
 });

@@ -77,8 +77,9 @@ and UI copy:
   subscription, and dashboard metrics need a hardening pass before the product
   can be presented as an ingestion review system.
 - Public identity: the IngestLens vision exists here and in planned blueprints,
-  but README/UI/package/runtime labels are still being reworked by the rebrand
-  blueprint.
+  but README/UI labels are still being reworked by the rebrand blueprint, and
+  the deployed Worker resource name remains the legacy `node-pubsub-workers`
+  identifier until that rename is proven low-risk.
 
 ### Planned
 

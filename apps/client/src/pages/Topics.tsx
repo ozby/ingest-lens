@@ -84,15 +84,12 @@ const Topics = () => {
     }
   };
 
-  // Add the missing handleDeleteTopic function
   const handleDeleteTopic = async () => {
     if (!topicToDelete) return;
 
     try {
       setIsDeleting(true);
       await apiService.deleteTopic(topicToDelete.id);
-
-      // Update the topics list after deletion
       const updatedTopics = await apiService.getTopics();
       setTopics(updatedTopics);
 
@@ -109,6 +106,7 @@ const Topics = () => {
   const filteredTopics = topics.filter((topic) =>
     topic.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+  const availableQueues = queues.map((queue) => ({ id: queue.id, name: queue.name }));
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -119,13 +117,15 @@ const Topics = () => {
         <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
-              <h1 className="text-3xl font-bold mb-1">Topics</h1>
-              <p className="text-muted-foreground">Manage your publish/subscribe topics</p>
+              <h1 className="text-3xl font-bold mb-1">Delivery Topics</h1>
+              <p className="text-muted-foreground">
+                Broadcast delivery events across subscribed delivery rails.
+              </p>
             </div>
             <TopicForm
               onSubmit={handleCreateTopic}
               isLoading={isCreating}
-              availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
+              availableQueues={availableQueues}
               trigger={
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />
@@ -138,7 +138,7 @@ const Topics = () => {
           <div className="mb-6 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search topics..."
+              placeholder="Search delivery topics..."
               className="pl-9"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -181,15 +181,16 @@ const Topics = () => {
                   </>
                 ) : (
                   <>
-                    <h3 className="text-lg font-medium mb-2">No topics yet</h3>
+                    <h3 className="text-lg font-medium mb-2">No delivery topics yet</h3>
                     <p className="text-muted-foreground text-center mb-4">
-                      You haven't created any pub/sub topics yet
+                      Create a topic when one delivery event should fan out across multiple delivery
+                      queues.
                     </p>
                     <TopicForm
                       onSubmit={handleCreateTopic}
                       isLoading={isCreating}
-                      availableQueues={queues.map((q) => ({ id: q.id, name: q.name }))}
-                      trigger={<Button>Create your first topic</Button>}
+                      availableQueues={availableQueues}
+                      trigger={<Button>Create your first delivery topic</Button>}
                     />
                   </>
                 )}

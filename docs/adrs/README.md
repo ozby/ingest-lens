@@ -6,9 +6,17 @@ last_updated: "2026-04-24"
 # Architecture Decision Records
 
 This directory contains Architecture Decision Records (ADRs) for the
-node-pubsub platform. ADRs capture the _why_ behind significant decisions
-so future maintainers (including future you) understand the reasoning, not
-just the outcome.
+IngestLens showcase and its underlying delivery platform. ADRs capture the
+_why_ behind significant decisions so future maintainers (including future you)
+understand the reasoning, not just the outcome.
+
+## Public naming note
+
+Public docs and UI should use **IngestLens**. The Cloudflare Worker resource
+name in `apps/workers/wrangler.toml` intentionally remains
+`node-pubsub-workers` for now so the rebrand does not quietly change deployed
+runtime identifiers. Treat that as an explicit internal-name deferment, not the
+public product name.
 
 ## What belongs here
 
