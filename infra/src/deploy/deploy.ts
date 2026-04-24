@@ -14,7 +14,9 @@ if (!stack) {
   process.exit(1);
 }
 
-const dopplerConfig = stack === "prd" ? "production" : "preview";
+// Doppler project `ozby-shell` currently exposes only a `dev` config.
+// The `prd` branch needs a corresponding Doppler config provisioned before it can run.
+const dopplerConfig = stack === "prd" ? "production" : "dev";
 const doppler = `doppler run --project ozby-shell --config ${dopplerConfig} --`;
 
 execSync(`${doppler} pulumi up --yes --stack ${stack}`, { stdio: "inherit" });

@@ -82,3 +82,4 @@ Thumbs.db
 
 # Vitest per-run reports (machine-local)
 .test-reports/
+.neon

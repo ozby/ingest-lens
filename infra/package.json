@@ -20,6 +20,7 @@
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/typescript-config": "file:../.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
     "@webpresso/vitest-config": "file:../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
+    "tsx": "^4.21.0",
     "vitest": "catalog:tooling"
   }
 }
