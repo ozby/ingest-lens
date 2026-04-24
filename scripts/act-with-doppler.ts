@@ -5,21 +5,19 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "n
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import process from "node:process";
+import {
+  getActSecretProfile,
+  isActSecretProfileId,
+  listMissingRequiredSecrets,
+  pickAllowedSecrets,
+  resolveActSecretProfile,
+  type ActSecretProfile,
+} from "./act-secret-profile.ts";
 
 export type DopplerSource = {
   project: string;
   config: string;
 };
-
-const DEFAULT_SOURCES = ["node-pubsub:dev", "ozby-shell:dev"] as const;
-const ENV_FALLBACK_KEYS = [
-  "GITHUB_TOKEN",
-  "GITHUB_PAT",
-  "NEON_API_KEY",
-  "NEON_PROJECT_ID",
-  "NEON_PARENT_BRANCH_ID",
-  "DOPPLER_TOKEN",
-] as const;
 
 export function parseDopplerSource(spec: string): DopplerSource {
   const [project, config] = spec.split(":");
@@ -142,10 +140,14 @@ function parseCliArgs(argv: string[]): {
   actArgs: string[];
   strictSecrets: boolean;
   sources: DopplerSource[];
+  secretProfile: ActSecretProfile;
 } {
   const actArgs: string[] = [];
   let strictSecrets = false;
   const explicitSources: DopplerSource[] = [];
+  let explicitProfileId: ActSecretProfile["id"] | undefined;
+  let workflowPath: string | undefined;
+  let jobName: string | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -162,30 +164,71 @@ function parseCliArgs(argv: string[]): {
       index += 1;
       continue;
     }
+    if (arg === "--secret-profile") {
+      const profileId = argv[index + 1];
+      if (!profileId || !isActSecretProfileId(profileId)) {
+        throw new Error("--secret-profile requires one of: none, github-api, neon-control-plane.");
+      }
+      explicitProfileId = profileId;
+      index += 1;
+      continue;
+    }
     if (arg === "--secret-file") {
       throw new Error(
         "Do not pass --secret-file directly to act-with-doppler.ts. It generates the file automatically.",
       );
     }
+    if ((arg === "-W" || arg === "--workflows") && argv[index + 1]) {
+      workflowPath = argv[index + 1];
+    }
+    if ((arg === "-j" || arg === "--job") && argv[index + 1]) {
+      jobName = argv[index + 1];
+    }
     actArgs.push(arg);
   }
 
-  const sourceSpecs =
-    explicitSources.length > 0
-      ? explicitSources
-      : (process.env.ACT_DOPPLER_SOURCES?.split(",")
-          .map((item) => item.trim())
-          .filter(Boolean)
-          .map(parseDopplerSource) ?? DEFAULT_SOURCES.map(parseDopplerSource));
+  const secretProfile = resolveActSecretProfile({
+    workflowPath,
+    jobName,
+    explicitProfileId,
+  });
+  const sourceSpecs = resolveDopplerSources(secretProfile, explicitSources);
 
   return {
     actArgs,
     strictSecrets,
     sources: sourceSpecs,
+    secretProfile,
   };
 }
 
-function loadDopplerSecrets(source: DopplerSource): Record<string, string> | null {
+function resolveDopplerSources(
+  secretProfile: ActSecretProfile,
+  explicitSources: readonly DopplerSource[],
+): DopplerSource[] {
+  if (explicitSources.length > 0) {
+    return [...explicitSources];
+  }
+
+  if (secretProfile.allowedKeys.length === 0) {
+    return [];
+  }
+
+  const envSources = process.env.ACT_DOPPLER_SOURCES?.split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map(parseDopplerSource);
+  if ((envSources?.length ?? 0) > 0) {
+    return envSources ?? [];
+  }
+
+  return secretProfile.defaultSources.map(parseDopplerSource);
+}
+
+function loadDopplerSecrets(
+  source: DopplerSource,
+  allowedKeys: readonly string[],
+): Record<string, string> | null {
   try {
     const output = execFileSync(
       "doppler",
@@ -202,7 +245,7 @@ function loadDopplerSecrets(source: DopplerSource): Record<string, string> | nul
       ],
       { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
     );
-    return JSON.parse(output) as Record<string, string>;
+    return pickAllowedSecrets(JSON.parse(output) as Record<string, string>, allowedKeys);
   } catch (error) {
     const reason = error instanceof Error ? error.message.split("\n")[0] : String(error);
     console.warn(`⚠️  Skipping Doppler source ${source.project}:${source.config} (${reason})`);
@@ -210,13 +253,8 @@ function loadDopplerSecrets(source: DopplerSource): Record<string, string> | nul
   }
 }
 
-function loadAmbientSecrets(): Record<string, string> {
-  const entries = ENV_FALLBACK_KEYS.flatMap((key) => {
-    const value = process.env[key];
-    return typeof value === "string" && value.length > 0 ? [[key, value] as const] : [];
-  });
-
-  return Object.fromEntries(entries);
+function loadAmbientSecrets(allowedKeys: readonly string[]): Record<string, string> {
+  return pickAllowedSecrets(process.env as Record<string, string>, allowedKeys);
 }
 
 function loadManifestObjects(): Array<Record<string, unknown>> {
@@ -243,11 +281,15 @@ function loadManifestObjects(): Array<Record<string, unknown>> {
 }
 
 function main(): void {
-  const { actArgs, strictSecrets, sources } = parseCliArgs(process.argv.slice(2));
+  const { actArgs, strictSecrets, sources, secretProfile } = parseCliArgs(process.argv.slice(2));
   assertBinary("act", "Install via: brew install act");
-  assertBinary("doppler", "Install via: brew install dopplerhq/cli/doppler");
+  if (sources.length > 0) {
+    assertBinary("doppler", "Install via: brew install dopplerhq/cli/doppler");
+  }
 
-  const dopplerResults = sources.map(loadDopplerSecrets);
+  const dopplerResults = sources.map((source) =>
+    loadDopplerSecrets(source, secretProfile.allowedKeys),
+  );
   if (strictSecrets && dopplerResults.some((result) => result === null)) {
     process.exit(1);
   }
@@ -255,12 +297,20 @@ function main(): void {
   const secretMap = normalizeActSecretsWithOptions(
     [
       ...dopplerResults.filter((result): result is Record<string, string> => result !== null),
-      loadAmbientSecrets(),
+      loadAmbientSecrets(secretProfile.allowedKeys),
     ],
     {
-      mapGithubPatToToken: process.env.ACT_MAP_GITHUB_PAT === "1",
+      mapGithubPatToToken:
+        secretProfile.id === "github-api" && process.env.ACT_MAP_GITHUB_PAT === "1",
     },
   );
+  const missingRequiredKeys = listMissingRequiredSecrets(secretMap, secretProfile.requiredKeys);
+  if (strictSecrets && missingRequiredKeys.length > 0) {
+    console.error(
+      `\n❌  Missing required secrets for profile "${secretProfile.id}": ${missingRequiredKeys.join(", ")}\n`,
+    );
+    process.exit(1);
+  }
 
   const tempDirectory = mkdtempSync(join(tmpdir(), "act-secrets-"));
   const secretFile = join(tempDirectory, "secrets.env");
@@ -274,7 +324,7 @@ function main(): void {
       secretFile,
     ];
     console.error(
-      `▶ act ${finalArgs.join(" ")}\n  injected secrets: ${Object.keys(secretMap).sort().join(", ") || "(none)"}`,
+      `▶ act ${finalArgs.join(" ")}\n  secret profile: ${secretProfile.id}\n  injected secrets: ${Object.keys(secretMap).sort().join(", ") || "(none)"}`,
     );
 
     const result = spawnSync("act", finalArgs, {

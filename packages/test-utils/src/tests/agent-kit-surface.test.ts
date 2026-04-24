@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { loadConfiguredHostAdapter } from "@webpresso/agent-kit/e2e";
+import { createCommandE2eHostAdapter, loadConfiguredHostAdapter } from "@webpresso/agent-kit/e2e";
 
 interface PackageManifest {
   exports?: Record<string, unknown>;
@@ -39,6 +39,10 @@ describe("@webpresso/agent-kit consumer surface", () => {
 
     expect(exports).toContain("./test");
     expect(exports).toContain("./e2e");
+  });
+
+  it("exports the shared command-host adapter factory", () => {
+    expect(typeof createCommandE2eHostAdapter).toBe("function");
   });
 
   it("loads the repo-owned e2e host adapter from agent-kit.config.ts", async () => {

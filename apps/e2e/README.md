@@ -27,6 +27,11 @@ Repo-owned end-to-end surface for `node-pubsub`.
 
 All suites use `E2E_BASE_URL` and default to `http://127.0.0.1:8787` via the host adapter.
 
+The host adapter is built from the shared `createCommandE2eHostAdapter()` helper
+exported by `@webpresso/agent-kit/e2e`, so `node-pubsub` and Webpresso share
+the same adapter contract while keeping repo-specific suite manifests and run
+commands local.
+
 ## Local worker prerequisites for `auth`, `messaging`, and `full`
 
 The non-smoke suites need the worker to have both a JWT secret and a migrated local Postgres schema:

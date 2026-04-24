@@ -98,9 +98,20 @@ pnpm act:cleanup
 ```
 
 The wrapper loads secrets from Doppler sources (`node-pubsub:dev`,
-`ozby-shell:dev`) when available, falls back to ambient env for common keys,
-mounts absolute local `file:/...` package sources into the act job container,
-and automatically adds `--container-architecture linux/amd64` on Apple Silicon.
+`ozby-shell:dev`) only when the selected workflow needs them, filters the
+result through a least-privilege secret profile, never forwards
+`DOPPLER_TOKEN` into the `act` container, mounts absolute local `file:/...`
+package sources into the act job container, and automatically adds
+`--container-architecture linux/amd64` on Apple Silicon.
+
+Current profiles:
+
+- `none` — default for local CI and local E2E harness runs; injects nothing
+- `neon-control-plane` — used for Neon branch cleanup; injects only
+  `NEON_API_KEY`, `NEON_PROJECT_ID`, and `NEON_PARENT_BRANCH_ID`
+
+Use `--secret-profile <profile>` when you need to override the inferred
+workflow profile explicitly.
 
 `pnpm act:e2e` targets the local-host harness workflow
 `.github/workflows/testing-e2e-act.yml`, which is shaped for `act` and expects a

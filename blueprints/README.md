@@ -67,6 +67,12 @@ Invoke `$plan-refine <slug>`. The skill will:
 - [`ai-payload-intake-mapper`](./planned/ai-payload-intake-mapper/_overview.md) — add a Workers AI suggestion-only payload mapping flow with validation and approval.
 - [`public-dataset-demo-ingestion`](./planned/public-dataset-demo-ingestion/_overview.md) — package the demo around public `open-apply-jobs` ATS fixtures and optional allowlisted live fetches.
 - [`client-route-code-splitting`](./planned/client-route-code-splitting/_overview.md) — split the client SPA at route boundaries to remove the Vite large-chunk warning and add a dependency-free bundle budget gate.
+- [`consistency-lab-probes`](./planned/consistency-lab-probes/_overview.md) — pre-flight fact-check probes that reproduce every load-bearing external claim the lab blueprints rely on (Hyperdrive LISTEN/NOTIFY, Worker CPU 300s, HTMX SSE replay, Workers Assets binding, `@thi.ng/tdigest` on Workers, Doppler write API, font licenses, CF Queues one-consumer, CF billing API absence). Gates all downstream lab blueprints.
+- [`consistency-lab-core`](./planned/consistency-lab-core/_overview.md) — `packages/lab-core` scaffold for the consistency lab: runner contract, `SessionLock` + `LabConcurrencyGauge` DOs, `TelemetryCollector`, allowlist `Sanitizer`, and `lab.*` Postgres schema.
+- [`consistency-lab-01a-correctness`](./planned/consistency-lab-01a-correctness/_overview.md) — scenario 1a: three delivery paths (CF Queues vs Postgres polling vs Hyperdrive LISTEN/NOTIFY) run the same 10k-message workload and report inversions, duplicates, and ordering property.
+- [`consistency-lab-01b-latency`](./planned/consistency-lab-01b-latency/_overview.md) — scenario 1b: same three delivery paths measured for p50/p95/p99 latency, throughput under contention, and cost-per-million from a pinned CF pricing table.
+- [`consistency-lab-shell`](./planned/consistency-lab-shell/_overview.md) — `apps/lab` Hono app: HTMX-on-Hono SSR scenario pages, SSE live updates, `LAB_ENABLED` feature flag, session-cookie auth, self-hosted Inter Tight + JetBrains Mono.
+- [`consistency-lab-ops`](./planned/consistency-lab-ops/_overview.md) — operational hardening: 15-min synthetic-run heartbeat, CF-billing cost alerts with $50 auto kill-switch, incident runbook, `packages/lab-core` onboarding README, HTMX-precedent note in CLAUDE.md.
 
 ## Execution roadmap
 

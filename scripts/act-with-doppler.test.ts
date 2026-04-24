@@ -1,6 +1,12 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  getActSecretProfile,
+  listMissingRequiredSecrets,
+  pickAllowedSecrets,
+  resolveActSecretProfile,
+} from "./act-secret-profile.ts";
+import {
   extractAbsoluteFileDependencyDirectories,
   injectContainerMountArgs,
   injectDefaultActArgs,
@@ -22,6 +28,55 @@ describe("parseDopplerSource", () => {
     expect(() => parseDopplerSource("ozby-shell")).toThrow(
       'Invalid Doppler source "ozby-shell". Expected <project>:<config>.',
     );
+  });
+});
+
+describe("act secret profiles", () => {
+  it("defaults local CI and local E2E workflows to zero injected secrets", () => {
+    expect(
+      resolveActSecretProfile({
+        workflowPath: ".github/workflows/ci.yml",
+      }).id,
+    ).toBe("none");
+    expect(
+      resolveActSecretProfile({
+        workflowPath: ".github/workflows/testing-e2e-act.yml",
+        jobName: "full-suite-local",
+      }).id,
+    ).toBe("none");
+  });
+
+  it("routes Neon maintenance jobs to the control-plane profile", () => {
+    expect(
+      resolveActSecretProfile({
+        workflowPath: ".github/workflows/cleanup-stale-neon-e2e-branches.yml",
+        jobName: "cleanup",
+      }).id,
+    ).toBe("neon-control-plane");
+  });
+
+  it("filters injected secrets down to the allowlist", () => {
+    expect(
+      pickAllowedSecrets(
+        {
+          GITHUB_TOKEN: "github-token",
+          NEON_API_KEY: "neon-token",
+          DOPPLER_TOKEN: "doppler-token",
+        },
+        getActSecretProfile("neon-control-plane").allowedKeys,
+      ),
+    ).toEqual({
+      NEON_API_KEY: "neon-token",
+    });
+  });
+
+  it("reports missing required Neon secrets for strict runs", () => {
+    expect(
+      listMissingRequiredSecrets(
+        { NEON_API_KEY: "neon-token" },
+        getActSecretProfile("neon-control-plane").requiredKeys,
+      ),
+    ).toEqual(["NEON_PROJECT_ID", "NEON_PARENT_BRANCH_ID"]);
   });
 });
 

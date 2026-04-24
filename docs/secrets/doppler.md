@@ -187,11 +187,31 @@ Or use the official [Doppler GitHub Action](https://github.com/DopplerHQ/doppler
 
 `pnpm act:*` expands through `scripts/act-with-doppler.ts`, which:
 
-- loads secrets from Doppler (`node-pubsub:dev`, `ozby-shell:dev`) when available,
-- falls back to ambient env for common secret keys,
-- can opt into `GITHUB_PAT` → `GITHUB_TOKEN` mapping with `ACT_MAP_GITHUB_PAT=1`,
+- infers a least-privilege secret profile from the target workflow/job,
+- only contacts Doppler when that profile actually needs managed secrets,
+- filters injected values to the profile allowlist,
+- never forwards `DOPPLER_TOKEN` into the `act` container,
+- can opt into `GITHUB_PAT` → `GITHUB_TOKEN` mapping with `ACT_MAP_GITHUB_PAT=1`
+  for the `github-api` profile,
 - mounts absolute local `file:/...` package sources into the act job container,
 - and injects the result into `act` via a temporary `--secret-file`.
+
+Current `act` profiles:
+
+| Profile              | Used by                                            | Allowed injected secrets                                   |
+| -------------------- | -------------------------------------------------- | ---------------------------------------------------------- |
+| `none`               | `ci.yml`, `testing-e2e.yml`, `testing-e2e-act.yml` | none                                                       |
+| `neon-control-plane` | `cleanup-stale-neon-e2e-branches.yml`              | `NEON_API_KEY`, `NEON_PROJECT_ID`, `NEON_PARENT_BRANCH_ID` |
+
+Override inference explicitly when needed:
+
+```bash
+bun ./scripts/act-with-doppler.ts \
+  --secret-profile neon-control-plane \
+  workflow_dispatch \
+  -W .github/workflows/cleanup-stale-neon-e2e-branches.yml \
+  -j cleanup
+```
 
 ---
 
