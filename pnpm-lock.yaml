@@ -54,6 +54,15 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: ^6.0.1
       version: 6.0.1
+    '@webpresso/stryker-config':
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config
+      version: 0.0.1
+    '@webpresso/typescript-config':
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+      version: 0.1.0
+    '@webpresso/vitest-config':
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+      version: 0.0.1
     axios:
       specifier: ^1.15.2
       version: 1.15.2
@@ -157,13 +166,13 @@ importers:
         specifier: github:webpresso/agent-kit#e869a333dde35a8a47c179b51e21e8d2079cf3b5
         version: git+https://git@github.com:webpresso/agent-kit.git#e869a333dde35a8a47c179b51e21e8d2079cf3b5
       '@webpresso/stryker-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       husky:
         specifier: 'catalog:'
@@ -371,10 +380,10 @@ importers:
         specifier: 'catalog:'
         version: 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       oxlint:
         specifier: catalog:tooling
@@ -405,10 +414,10 @@ importers:
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       oxlint:
         specifier: catalog:tooling
@@ -454,13 +463,13 @@ importers:
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2
       '@webpresso/stryker-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       drizzle-kit:
         specifier: catalog:workers
@@ -494,10 +503,10 @@ importers:
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       tsx:
         specifier: ^4.21.0
@@ -526,13 +535,13 @@ importers:
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2
       '@webpresso/stryker-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'
@@ -553,10 +562,10 @@ importers:
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'
@@ -586,13 +595,13 @@ importers:
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2
       '@webpresso/stryker-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'
@@ -613,10 +622,10 @@ importers:
         specifier: catalog:tooling
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       vitest:
         specifier: catalog:tooling
@@ -692,10 +701,10 @@ importers:
         specifier: 'catalog:'
         version: 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
       '@webpresso/typescript-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
       '@webpresso/vitest-config':
-        specifier: git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config
+        specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'

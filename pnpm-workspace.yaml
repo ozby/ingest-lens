@@ -46,6 +46,11 @@ catalog:
   bunchee: ^6.10.0
   husky: ^9.1.7
 
+  # Webpresso tooling (git-pointer to github.com:webpresso/tooling monorepo)
+  "@webpresso/typescript-config": "git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config"
+  "@webpresso/vitest-config": "git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config"
+  "@webpresso/stryker-config": "git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config"
+
 catalogs:
   tooling:
     typescript: 6.0.3

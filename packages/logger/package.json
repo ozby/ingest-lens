@@ -35,9 +35,9 @@
     "@stryker-mutator/vitest-runner": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/stryker-config": "git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config",
-    "@webpresso/typescript-config": "git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config",
-    "@webpresso/vitest-config": "git+ssh://git@github.com/webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config",
+    "@webpresso/stryker-config": "catalog:",
+    "@webpresso/typescript-config": "catalog:",
+    "@webpresso/vitest-config": "catalog:",
     "bunchee": "catalog:",
     "oxlint": "catalog:tooling",
     "vitest": "catalog:tooling"
