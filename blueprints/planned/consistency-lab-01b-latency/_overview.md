@@ -34,7 +34,7 @@ parallel with Lane B (scenario 1a).
   Split surfaced in design review to make each scenario's story tight.
 - **Scope:** Three latency-focused `ScenarioRunner` implementations
   (`CfQueuesLatencyPath`, `PgPollingLatencyPath`,
-  `HyperdriveNotifyLatencyPath`) hosted by `S1bRunnerDO` (F-04: alarm-
+  `PostgresDirectNotifyLatencyPath`) hosted by `S1bRunnerDO` (F-04: alarm-
   chunked batches; CPU budget doesn't permit one-request execution),
   end-to-end latency measurement (send timestamp → recv timestamp), per-
   path cost summary driven by `PricingTable` (consumed from `@repo/lab-core`
@@ -62,7 +62,7 @@ POST /lab/s1b/run  (sessionId created by shell in Lane D)
        │
        ├──▶ CfQueuesLatencyPath       ── send(t0) → recv(t1) → latency = t1 - t0
        ├──▶ PgPollingLatencyPath      ── insert(t0) → select(t1) → latency = t1 - t0
-       └──▶ HyperdriveNotifyLatencyPath ── insert+notify(t0) → subscriber(t1)
+       └──▶ PostgresDirectNotifyLatencyPath ── insert+notify(t0) → subscriber DO(t1)  [direct TCP, bypasses Hyperdrive]
        │
        ▼
  per-path summarize:
@@ -78,16 +78,16 @@ POST /lab/s1b/run  (sessionId created by shell in Lane D)
 
 ## Key Decisions
 
-| Decision          | Choice                                                            | Rationale                                                                              | Finding    |
-| ----------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------- |
-| Runner hosting    | `S1bRunnerDO` Durable Object, alarm-chunked batches of 100        | Worker CPU cap; one-request can't drive 10k messages with measurement overhead         | F-04       |
-| Default workload  | 1,000 messages (10k as override)                                  | Histograms are stable at 1k; CF cost down 10x for routine runs                         | F-04       |
-| Path run mode     | **Sequential by default** (`mode: "parallel"` as stress override) | Parallel shares Hyperdrive pool across paths; p99 correlation contaminates measurement | F-07       |
-| Latency clock     | `Date.now()` (ms), server-side both ends                          | Sub-ms precision not needed; clocks co-located on CF                                   | —          |
-| Histogram backend | `@thi.ng/tdigest` from `@repo/lab-core` (Task 1.7)                | Moved to Lane A to unblock Lane B/C parallel lanes                                     | F-10, F11T |
-| Cost calc         | `PricingTable` from `@repo/lab-core` (Task 1.7)                   | Single source of truth; pinned `effectiveDate`; 90-day staleness warning               | F-10       |
-| Queue topology    | Dedicated `lab-s1b-cf-queues` (+ DLQ)                             | CF Queues: one consumer per queue (cannot share with s1a or prod)                      | F-3T       |
-| Reproducibility   | Three seeded runs; assert ±15% variance                           | Detects flake before users see it                                                      | —          |
+| Decision          | Choice                                                            | Rationale                                                                                  | Finding             |
+| ----------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
+| Runner hosting    | `S1bRunnerDO` Durable Object, alarm-chunked batches of 100        | Worker CPU cap; one-request can't drive 10k messages with measurement overhead             | F-04                |
+| Default workload  | 1,000 messages (10k as override)                                  | Histograms are stable at 1k; CF cost down 10x for routine runs                             | F-04                |
+| Path run mode     | **Sequential by default** (`mode: "parallel"` as stress override) | Parallel shares Hyperdrive pool across paths; p99 correlation contaminates measurement     | F-07                |
+| Latency clock     | `Date.now()` (ms), server-side both ends                          | Sub-ms precision not needed; clocks co-located on CF                                       | —                   |
+| Histogram backend | Inline t-digest impl from `@repo/lab-core` (Task 1.7)             | `@thi.ng/tdigest` was a fabricated package per source verification; inline impl is primary | F-10, F11T-reversed |
+| Cost calc         | `PricingTable` from `@repo/lab-core` (Task 1.7)                   | Single source of truth; pinned `effectiveDate`; 90-day staleness warning                   | F-10                |
+| Queue topology    | Dedicated `lab-s1b-cf-queues` (+ DLQ)                             | CF Queues: one consumer per queue (cannot share with s1a or prod)                          | F-3T                |
+| Reproducibility   | Three seeded runs; assert ±15% variance                           | Detects flake before users see it                                                          | —                   |
 
 ## Quick Reference (Execution Waves)
 

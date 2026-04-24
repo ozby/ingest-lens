@@ -42,7 +42,7 @@ lab work. It unblocks scenarios 1a and 1b and every scenario after.
   - a `KillSwitchKV` helper over CF KV used by the shell's feature-flag middleware (F-01: Doppler injects at deploy time; runtime toggling needs KV),
   - a `TelemetryCollector` that batches `ScenarioEvent`s to ~10Hz for SSE fan-out **and persists a durable copy to `lab.events_archive`** (F-05: ring buffer alone cannot support `Last-Event-ID` replay at 166 ev/s),
   - a whitelisting `Sanitizer` that strips internal identifiers, stack traces, and non-allowlisted fields before events reach users (CEO review H5),
-  - a `Histogram` (TDigest via `@thi.ng/tdigest`, F11T) and a `PricingTable` (CF unit prices pinned with `effectiveDate`) (F-10: moved here from Lane C so Lanes B and C can run truly parallel without writing to `@repo/lab-core`),
+  - a `Histogram` (inline ~200-line t-digest impl; F11T-reversed — `@thi.ng/tdigest` was a fabricated package per source verification) and a `PricingTable` (CF unit prices pinned with `effectiveDate`) (F-10: moved here from Lane C so Lanes B and C can run truly parallel without writing to `@repo/lab-core`),
   - `lab.*` Postgres schema migrations for `lab.sessions`, `lab.runs`, `lab.events_archive`, `lab.heartbeat` (CEO review — schema isolation), with a dedicated `drizzle.config.ts` per-package and a CI guard rejecting any `public.` DDL in the lab migration set (F-12).
 - **Out of scope:** Any scenario implementation, any HTTP route, any
   user-facing page, any deployment config. This package is consumed; it does
@@ -387,8 +387,10 @@ Scope enforcement (F-12):
 
 Add `Histogram` (a small **inline t-digest implementation** — ~200 LOC,
 adapted from Dunning's reference impl) and `PricingTable` (static JSON
-of CF Queues, Hyperdrive write, Worker request, Durable Object request
-costs, annotated with `effectiveDate` and `source`). Both exported from
+of CF Queues, Worker request, Durable Object request, Postgres egress
+costs; **no Hyperdrive unit cost** — probe p14 confirmed Hyperdrive has
+no per-query charge, so Hyperdrive itself is a free hop over the underlying
+Postgres), annotated with `effectiveDate` and `source`. Both exported from
 the `@repo/lab-core` barrel. Moved here so Lane C does not need to write
 to `@repo/lab-core` — unblocks true Lane B/C parallelism.
 
@@ -525,22 +527,22 @@ add Stryker CI once the lab core stabilizes.
 
 ## Edge Cases and Error Handling
 
-| Edge Case                                   | Risk                          | Solution                                                                            | Task     | Finding |
-| ------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------- | -------- | ------- |
-| Slot holder crashes                         | Queue stalls forever          | TTL alarm auto-releases; default 300s (was 120s)                                    | 1.2      | F-20    |
-| Alarm fires mid-init                        | Double-initialize             | `blockConcurrencyWhile` + `getAlarm()` check before `setAlarm`                      | 1.2      | F6T     |
-| Alarm retry after transient failure         | Double-release                | Alarm handler idempotent                                                            | 1.2, 1.3 | F6T     |
-| Concurrency gauge crashes without release   | Cap drifts monotonically down | Sessioned map + TTL reaper, not naked counter                                       | 1.3      | F-02    |
-| Concurrency gauge release double-call       | Double-decrement              | Idempotent release; invariant test                                                  | 1.3      | F-02    |
-| Sanitizer sees unknown event shape          | Leak                          | Default-deny; null return with actionable log                                       | 1.4      | —       |
-| Telemetry backpressure on a burst           | Memory growth                 | Max batch size 64; archive insert decoupled from live stream                        | 1.5      | F-05    |
-| Archive insert fails                        | SSE replay broken             | Archive is best-effort; live SSE unblocked; replay falls back to empty with warning | 1.5      | F-05    |
-| SSE reconnect mid-run                       | Dropped events                | Replay by `Last-Event-ID` from `lab.events_archive`, not ring buffer                | 1.5      | F-05    |
-| Schema drop with live sessions              | Data loss                     | Tear-down migration is a manual ritual, not automated                               | 1.6      | —       |
-| `drizzle-kit push` leaks to `public.*`      | Prod schema pollution         | Per-package drizzle.config.ts + CI guard + `SET search_path` + role GRANT           | 1.6      | F-12    |
-| `@thi.ng/tdigest` incompatible with Workers | Histogram broken              | Fallback inline ~200-line implementation                                            | 1.7      | F11T    |
-| Pricing table stale                         | Misleading cost numbers       | `effectiveDate` + staleness warning at 90 days                                      | 1.7      | F9T     |
-| Kill-switch KV read on every request        | Latency                       | 5s local cache                                                                      | 1.8      | F-01    |
+| Edge Case                                 | Risk                          | Solution                                                                                     | Task     | Finding       |
+| ----------------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------- | -------- | ------------- |
+| Slot holder crashes                       | Queue stalls forever          | TTL alarm auto-releases; default 300s (was 120s)                                             | 1.2      | F-20          |
+| Alarm fires mid-init                      | Double-initialize             | `blockConcurrencyWhile` + `getAlarm()` check before `setAlarm`                               | 1.2      | F6T           |
+| Alarm retry after transient failure       | Double-release                | Alarm handler idempotent                                                                     | 1.2, 1.3 | F6T           |
+| Concurrency gauge crashes without release | Cap drifts monotonically down | Sessioned map + TTL reaper, not naked counter                                                | 1.3      | F-02          |
+| Concurrency gauge release double-call     | Double-decrement              | Idempotent release; invariant test                                                           | 1.3      | F-02          |
+| Sanitizer sees unknown event shape        | Leak                          | Default-deny; null return with actionable log                                                | 1.4      | —             |
+| Telemetry backpressure on a burst         | Memory growth                 | Max batch size 64; archive insert decoupled from live stream                                 | 1.5      | F-05          |
+| Archive insert fails                      | SSE replay broken             | Archive is best-effort; live SSE unblocked; replay falls back to empty with warning          | 1.5      | F-05          |
+| SSE reconnect mid-run                     | Dropped events                | Replay by `Last-Event-ID` from `lab.events_archive`, not ring buffer                         | 1.5      | F-05          |
+| Schema drop with live sessions            | Data loss                     | Tear-down migration is a manual ritual, not automated                                        | 1.6      | —             |
+| `drizzle-kit push` leaks to `public.*`    | Prod schema pollution         | Per-package drizzle.config.ts + CI guard + `SET search_path` + role GRANT                    | 1.6      | F-12          |
+| Inline t-digest has a correctness bug     | Incorrect percentiles         | Property-based tests against analytical distributions (uniform, Gaussian, Pareto) locked ±2% | 1.7      | F11T-reversed |
+| Pricing table stale                       | Misleading cost numbers       | `effectiveDate` + staleness warning at 90 days                                               | 1.7      | F9T           |
+| Kill-switch KV read on every request      | Latency                       | 5s local cache                                                                               | 1.8      | F-01          |
 
 ## Non-goals
 
@@ -559,33 +561,33 @@ Agents consulted:
 2. **Phase 2 Codebase Verification** — `@repo/workers` structure, existing DO (`TopicRoom`), Drizzle pattern, catalog names, `.worktrees/` convention, `deepFreeze` location
 3. **Phase 3 Architecture Adversarial** — race conditions, CPU budget, SSE replay math, Doppler-vs-runtime, admin secret blast radius, cross-path contention
 
-| Finding    | Severity | Fix                                                                        | Applied in           |
-| ---------- | -------- | -------------------------------------------------------------------------- | -------------------- |
-| F-01       | CRITICAL | `KillSwitchKV` replaces wrong "Doppler-runtime-flip" design                | Task 1.8             |
-| F-02       | CRITICAL | Gauge = sessioned map + TTL reaper; acquire after lock                     | Task 1.3             |
-| F-04       | CRITICAL | Runner moves into DO in Lanes B/C; core exposes contract only              | Contract in Task 1.1 |
-| F-05       | CRITICAL | `TelemetryCollector` persists to `lab.events_archive`; `replayFrom` method | Task 1.5             |
-| F-007C     | CRITICAL | Drop `test:mutation` gate; note non-goal                                   | Verification Gates   |
-| F-10       | HIGH     | `Histogram` + `PricingTable` moved from Lane C to here                     | Task 1.7             |
-| F-12       | HIGH     | Per-package drizzle.config + CI guard + search_path + role grant           | Task 1.6             |
-| F-20       | LOW      | Lock TTL default 300s, tunable per scenario                                | Task 1.2             |
-| F6T        | LOW      | DO alarm init pattern documented                                           | Task 1.2             |
-| F11T       | LOW      | `@thi.ng/tdigest` + inline fallback named                                  | Task 1.7             |
-| F-codebase | MEDIUM   | `@repo/test-utils` extraction; `apps/workers` shim preserves tests         | Task 1.9             |
+| Finding       | Severity | Fix                                                                        | Applied in             |
+| ------------- | -------- | -------------------------------------------------------------------------- | ---------------------- |
+| F-01          | CRITICAL | `KillSwitchKV` replaces wrong "Doppler-runtime-flip" design                | Task 1.8               |
+| F-02          | CRITICAL | Gauge = sessioned map + TTL reaper; acquire after lock                     | Task 1.3               |
+| F-04          | CRITICAL | Runner moves into DO in Lanes B/C; core exposes contract only              | Contract in Task 1.1   |
+| F-05          | CRITICAL | `TelemetryCollector` persists to `lab.events_archive`; `replayFrom` method | Task 1.5               |
+| F-007C        | CRITICAL | Drop `test:mutation` gate; note non-goal                                   | Verification Gates     |
+| F-10          | HIGH     | `Histogram` + `PricingTable` moved from Lane C to here                     | Task 1.7               |
+| F-12          | HIGH     | Per-package drizzle.config + CI guard + search_path + role grant           | Task 1.6               |
+| F-20          | LOW      | Lock TTL default 300s, tunable per scenario                                | Task 1.2               |
+| F6T           | LOW      | DO alarm init pattern documented                                           | Task 1.2               |
+| F11T-reversed | MEDIUM   | `@thi.ng/tdigest` was fabricated; inline t-digest impl is primary          | Task 1.7, Tech Choices |
+| F-codebase    | MEDIUM   | `@repo/test-utils` extraction; `apps/workers` shim preserves tests         | Task 1.9               |
 
 Parallelization score: **A** (RW1=7, CPR=3.0, DD=0.89, CP=0). Ready for `/pll` with 6-8 agents.
 
 ## Risks
 
-| Risk                                                    | Impact                         | Mitigation                                                                   | Finding    |
-| ------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------- | ---------- |
-| DO storage limits on sessioned gauge map                | Cap drifts if storage corrupts | Bounded by max-sessions (100) × small session record; periodic snapshot test | F-02       |
-| Drizzle schema format change                            | Migration incompatibility      | Pin Drizzle to catalog version; per-package config                           | F-12       |
-| `@thi.ng/tdigest` incompatible with Workers runtime     | Histogram broken               | Fallback inline impl in Task 1.7                                             | F11T       |
-| Sanitizer allowlist too restrictive                     | Valid events dropped           | Actionable log makes it easy to spot + add shape                             | —          |
-| `test-utils` extraction breaks `apps/workers` tests     | CI red                         | Re-export shim preserves all current import sites                            | F-codebase |
-| Events archive write amplifies DB writes (10k+ per run) | Hyperdrive load                | Archive is append-only; partition-by-day plausible if scale grows            | F-05       |
-| Per-package drizzle.config.ts diverges                  | Schema drift                   | README captures the ritual; CI guard catches `public.` leaks                 | F-12       |
+| Risk                                                    | Impact                         | Mitigation                                                                   | Finding       |
+| ------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------- | ------------- |
+| DO storage limits on sessioned gauge map                | Cap drifts if storage corrupts | Bounded by max-sessions (100) × small session record; periodic snapshot test | F-02          |
+| Drizzle schema format change                            | Migration incompatibility      | Pin Drizzle to catalog version; per-package config                           | F-12          |
+| Inline t-digest diverges from analytical percentiles    | Misleading p99 numbers         | Property-based test suite against known distributions (±2%)                  | F11T-reversed |
+| Sanitizer allowlist too restrictive                     | Valid events dropped           | Actionable log makes it easy to spot + add shape                             | —             |
+| `test-utils` extraction breaks `apps/workers` tests     | CI red                         | Re-export shim preserves all current import sites                            | F-codebase    |
+| Events archive write amplifies DB writes (10k+ per run) | Hyperdrive load                | Archive is append-only; partition-by-day plausible if scale grows            | F-05          |
+| Per-package drizzle.config.ts diverges                  | Schema drift                   | README captures the ritual; CI guard catches `public.` leaks                 | F-12          |
 
 ## Technology Choices
 

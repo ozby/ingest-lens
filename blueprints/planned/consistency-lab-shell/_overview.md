@@ -363,8 +363,8 @@ Assets:
 **Files:**
 
 - Create: `apps/lab/assets/lab.css`
-- Create: `apps/lab/assets/fonts/inter-tight-*.woff2` (400/500/700, Latin + box-drawing subset)
-- Create: `apps/lab/assets/fonts/jetbrains-mono-*.woff2` (400/600, Latin + box-drawing subset)
+- Create: `apps/lab/assets/fonts/inter-tight-*.woff2` (400/500/700, sourced from `@fontsource-variable/inter-tight` — p17-confirmed published package — subset to Latin + U+2500-257F box-drawing range, which Fontsource supports via their subset file naming)
+- Create: `apps/lab/assets/fonts/jetbrains-mono-*.woff2` (400/600, sourced from `@fontsource/jetbrains-mono`, same subset scope)
 - Create: `apps/lab/assets/htmx.min.js` (2.0.x)
 - Create: `apps/lab/assets/htmx-ext-sse.js` (2.2.x)
 - Create: `apps/lab/assets/LICENSES/OFL-1.1.txt` (covers BOTH Inter Tight and JetBrains Mono; include attribution notices for each)

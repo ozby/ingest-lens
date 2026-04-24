@@ -25,22 +25,31 @@ a false assumption.
 ## Source-verification log (pre-probe, 2026-04-24)
 
 Before probe code runs, a fact-check agent fetched the primary sources
-for all 10 claims and **reversed or softened 6 of them**. Runtime probes
-below are the final gate, but the downstream blueprints have already
-been updated to match the source-verified reality.
+for all 10 original claims and **reversed or softened 6 of them**. A
+second round (2026-04-24) added 7 more probes (p11–p17) to cover gaps
+the user surfaced. Current runtime totals: **11 CONFIRMED, 5 PARTIAL,
+0 WRONG, 1 SKIPPED.** Runtime probes are the final gate; downstream
+blueprints are updated to match the source-verified reality.
 
-| #   | Original claim                          | Verdict                        | Blueprint action                                                                                              |
-| --- | --------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| 1   | Hyperdrive supports LISTEN/NOTIFY       | **REVERSED** (unsupported)     | Scenario 1a/1b third path renamed `PostgresDirectNotifyPath`; direct `connect()` from DO, Hyperdrive bypassed |
-| 2   | Worker CPU configurable to 300s on paid | CONFIRMED                      | No change                                                                                                     |
-| 3   | HTMX 4 rewrites SSE                     | SOFTENED (no HTMX 4 exists)    | Pin at `htmx.org@2.0.10` + `htmx-ext-sse@2.2.4`; wording relaxed                                              |
-| 4   | Workers Assets binding                  | CONFIRMED                      | No change                                                                                                     |
-| 5   | `@thi.ng/tdigest` ESM                   | **FABRICATED**                 | Histogram is inline ~200-line t-digest as primary                                                             |
-| 6   | Doppler Service Tokens read-only        | SOFTENED                       | Any token type with write scope is fine                                                                       |
-| 7   | Inter Tight OFL 1.1                     | CONFIRMED                      | No change                                                                                                     |
-| 8   | JetBrains Mono Apache 2.0               | **REVERSED** (font is OFL 1.1) | Single `OFL-1.1.txt` covers both fonts                                                                        |
-| 9   | CF Queues rejects second consumer       | SOFTENED (no doc says so)      | Dedicated queues kept, justification reworded                                                                 |
-| 10  | No public CF billing API                | CONFIRMED                      | No change                                                                                                     |
+| #   | Original claim                             | Verdict                                        | Blueprint action                                                                                              |
+| --- | ------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1   | Hyperdrive supports LISTEN/NOTIFY          | **REVERSED** (unsupported)                     | Scenario 1a/1b third path renamed `PostgresDirectNotifyPath`; direct `connect()` from DO, Hyperdrive bypassed |
+| 2   | Worker CPU configurable to 300s on paid    | CONFIRMED                                      | No change                                                                                                     |
+| 3   | HTMX 4 rewrites SSE                        | SOFTENED (no HTMX 4 exists)                    | Pin at `htmx.org@2.0.10` + `htmx-ext-sse@2.2.4`; wording relaxed                                              |
+| 4   | Workers Assets binding                     | CONFIRMED                                      | No change                                                                                                     |
+| 5   | `@thi.ng/tdigest` ESM                      | **FABRICATED**                                 | Histogram is inline ~200-line t-digest as primary                                                             |
+| 6   | Doppler Service Tokens read-only           | SOFTENED                                       | Any token type with write scope is fine                                                                       |
+| 7   | Inter Tight OFL 1.1                        | CONFIRMED                                      | No change                                                                                                     |
+| 8   | JetBrains Mono Apache 2.0                  | **REVERSED** (font is OFL 1.1)                 | Single `OFL-1.1.txt` covers both fonts                                                                        |
+| 9   | CF Queues rejects second consumer          | SOFTENED (no doc says so)                      | Dedicated queues kept, justification reworded                                                                 |
+| 10  | No public CF billing API                   | CONFIRMED                                      | No change                                                                                                     |
+| 11  | Workers `connect()` TCP API exists         | CONFIRMED (docs rich)                          | Validates the redesigned third-path structure                                                                 |
+| 12  | `@neondatabase/serverless` supports LISTEN | PARTIAL — no doc mention                       | Raw `connect()` retained as the chosen path; Neon driver ruled out                                            |
+| 13  | Worker subrequest cap 1000/req paid        | CONFIRMED                                      | Scenario runner DO default 100-msg batches safely under                                                       |
+| 14  | Hyperdrive has no per-query charge         | CONFIRMED                                      | PricingTable: removed "Hyperdrive write" line; Postgres cost flows through                                    |
+| 15  | `ak` CLI exists + supports `--suite`       | CONFIRMED                                      | AK suite registration tasks 2.7 / 3.7 are real, not aspirational                                              |
+| 16  | Postgres NOTIFY 8000-byte payload cap      | CONFIRMED                                      | Scenario schema encoded size << 8000; guardrail added to Key Decisions                                        |
+| 17  | Inter Tight ships as published package     | CONFIRMED (`@fontsource-variable/inter-tight`) | Lane D font source pinned to Fontsource package                                                               |
 
 The probes below now act as **regression gates** — they will fail if CF,
 HTMX, or Doppler later change behavior and invalidate one of the
@@ -377,10 +386,15 @@ the font license is not OFL 1.1.
 
 **Depends:** CF account with Queues enabled
 
-Reproduce the claim that CF Queues accepts only one consumer Worker per
-queue. Creates a sandbox queue, deploys Worker A as consumer
-(succeeds), then tries to deploy Worker B as a second consumer and
-asserts the deploy is rejected.
+**Updated:** Source verification found no CF doc text saying "second
+consumer is rejected at publish time." The real constraint is at the
+wrangler binding level — each queue binds to one consumer Worker in
+wrangler.toml; multiple concurrent _invocations_ are supported (up to
+250). Probe asserts the observed wrangler behavior when you try to
+deploy Worker B with the same queue consumer binding as Worker A: either
+B is rejected, or B silently replaces A. Either outcome is captured as
+evidence; verdict `CONFIRMED` either way since the blueprint's "dedicated
+queue per scenario" design stays safe under both.
 
 **Files:**
 
