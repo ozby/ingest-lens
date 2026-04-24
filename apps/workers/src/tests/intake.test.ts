@@ -37,7 +37,13 @@ type FakeDbState = {
   topics: TopicRow[];
 };
 
-function createFakeDb(state: FakeDbState) {
+type FakeDbOverrides = {
+  emptyIntakeAttemptInsert?: boolean;
+  emptyIntakeAttemptUpdate?: boolean;
+  emptyApprovedRevisionInsert?: boolean;
+};
+
+function createFakeDb(state: FakeDbState, overrides: FakeDbOverrides = {}) {
   const fake = {
     select: vi.fn(() => ({
       from: vi.fn((table: unknown) => ({
@@ -56,12 +62,14 @@ function createFakeDb(state: FakeDbState) {
       values: vi.fn((values: Record<string, unknown>) => ({
         returning: vi.fn(async () => {
           if (table === intakeAttempts) {
+            if (overrides.emptyIntakeAttemptInsert) return [];
             const row = values as unknown as AttemptRow;
             state.attempts = [row, ...state.attempts.filter((attempt) => attempt.id !== row.id)];
             return [row];
           }
 
           if (table === approvedMappingRevisions) {
+            if (overrides.emptyApprovedRevisionInsert) return [];
             const row = values as unknown as MappingVersionRow;
             state.mappingVersions = [
               row,
@@ -93,14 +101,17 @@ function createFakeDb(state: FakeDbState) {
       set: vi.fn((values: Record<string, unknown>) => ({
         where: vi.fn(() => ({
           returning: vi.fn(async () => {
-            if (table === intakeAttempts && state.attempts[0]) {
-              state.attempts = [
-                {
-                  ...state.attempts[0],
-                  ...values,
-                } as AttemptRow,
-              ];
-              return state.attempts;
+            if (table === intakeAttempts) {
+              if (overrides.emptyIntakeAttemptUpdate) return [];
+              if (state.attempts[0]) {
+                state.attempts = [
+                  {
+                    ...state.attempts[0],
+                    ...values,
+                  } as AttemptRow,
+                ];
+                return state.attempts;
+              }
             }
             return [];
           }),
@@ -430,6 +441,119 @@ describe("intake routes", () => {
 
     expect(secondResponse.status).toBe(200);
     expect(deliveryQueue.send).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns 500 when the intakeAttempts INSERT returns no row", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    vi.mocked(suggestMappings).mockResolvedValueOnce({
+      kind: "success",
+      batch: createAttemptRow().suggestionBatch!,
+      decisionLog: {
+        provider: "test-runner",
+        model: "test-model",
+        promptVersion: "payload-mapper-v1",
+        validationOutcome: "passed",
+        confidence: { average: 0.96, maximum: 0.96, minimum: 0.96, overall: 0.92 },
+        judgeDisagreements: 0,
+        judgeUnavailableCount: 0,
+      },
+    });
+    const state: FakeDbState = {
+      attempts: [],
+      mappingVersions: [],
+      messages: [],
+      queues: [],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(
+      createFakeDb(state, { emptyIntakeAttemptInsert: true }) as never,
+    );
+
+    const response = await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions",
+        {
+          contractId: "job-posting-v1",
+          fixtureId: "ashby-job-001",
+          queueId: "queue-1",
+          sourceSystem: "manual",
+        },
+        AUTH_HEADER,
+      ),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(500);
+    const payload = (await response.json()) as { status: string; message: string };
+    expect(payload.status).toBe("error");
+    expect(payload.message).toBe("Failed to record intake attempt");
+  });
+
+  it("returns 404 from the reject endpoint when UPDATE matches no row", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    const attempt = createAttemptRow();
+    const state: FakeDbState = {
+      attempts: [attempt],
+      mappingVersions: [],
+      messages: [],
+      queues: [],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(
+      createFakeDb(state, { emptyIntakeAttemptUpdate: true }) as never,
+    );
+
+    const response = await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions/attempt-1/reject",
+        { reason: "Not a match" },
+        AUTH_HEADER,
+      ),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(404);
+    const payload = (await response.json()) as { status: string; message: string };
+    expect(payload.status).toBe("error");
+    expect(payload.message).toBe("Intake attempt not found");
+  });
+
+  it("returns 500 from the approve endpoint when the transaction returns no rows", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    const attempt = createAttemptRow();
+    const state: FakeDbState = {
+      attempts: [attempt],
+      mappingVersions: [],
+      messages: [],
+      queues: [
+        {
+          id: "queue-1",
+          name: "Demo queue",
+          ownerId: "user-123",
+          retentionPeriod: 14,
+          schema: null,
+          pushEndpoint: "https://example.com/webhook",
+          createdAt: new Date("2026-04-24T00:00:00.000Z"),
+          updatedAt: new Date("2026-04-24T00:00:00.000Z"),
+        },
+      ],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(
+      createFakeDb(state, { emptyApprovedRevisionInsert: true }) as never,
+    );
+
+    const response = await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions/attempt-1/approve",
+        { approvedSuggestionIds: ["suggestion-1"] },
+        AUTH_HEADER,
+      ),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(500);
+    expect(deliveryQueue.send).not.toHaveBeenCalled();
   });
 
   it("blocks approval when an inline review payload has expired", async () => {

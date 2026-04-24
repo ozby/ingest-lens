@@ -1,12 +1,34 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
 import app from "../index";
-import { createMockEnv, post, get, del } from "./helpers";
+import { authenticate } from "../middleware/auth";
+import {
+  AUTH_HEADER,
+  buildInsertChain,
+  bypassAuth,
+  createMockEnv,
+  mockCreateDb,
+  post,
+  get,
+  del,
+} from "./helpers";
 
-vi.mock("../db/client", () => ({
-  createDb: vi.fn(() => ({})),
+vi.mock("../middleware/auth", () => ({
+  authenticate: vi.fn(),
 }));
 
+vi.mock("../db/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../db/client")>();
+  return { ...actual, createDb: vi.fn() };
+});
+
 const mockEnv = createMockEnv();
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(authenticate).mockImplementation(async (c: any) =>
+    c.json({ status: "error", message: "Authentication required" }, 401),
+  );
+});
 
 describe("Queue routes", () => {
   describe("GET /api/queues", () => {
@@ -20,6 +42,22 @@ describe("Queue routes", () => {
     it("returns 401 when not authenticated", async () => {
       const res = await app.fetch(post("/api/queues", { name: "test-queue" }), mockEnv);
       expect(res.status).toBe(401);
+    });
+
+    it("returns 500 when the queues INSERT returns no row", async () => {
+      bypassAuth(vi.mocked(authenticate));
+      const { insertMock } = buildInsertChain([]);
+      mockCreateDb({ insert: insertMock });
+
+      const res = await app.fetch(
+        post("/api/queues", { name: "test-queue" }, AUTH_HEADER),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(500);
+      const body = (await res.json()) as { status: string; message: string };
+      expect(body.status).toBe("error");
+      expect(body.message).toBe("Failed to create queue");
     });
   });
 

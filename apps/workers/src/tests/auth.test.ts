@@ -75,6 +75,30 @@ describe("Auth routes", () => {
 
       await expect(verifyPassword("wrong-password", hash)).resolves.toBe(false);
     });
+
+    it("rejects a hash with non-pbkdf2 prefix", async () => {
+      await expect(verifyPassword("any", "sha256$1$aa$bb")).resolves.toBe(false);
+    });
+
+    it("rejects a hash with missing segments", async () => {
+      await expect(verifyPassword("any", "pbkdf2$310000$salt")).resolves.toBe(false);
+    });
+
+    it("rejects a hash with extra segments", async () => {
+      await expect(verifyPassword("any", "pbkdf2$1$a$b$c")).resolves.toBe(false);
+    });
+
+    it("rejects a hash with non-integer iterations", async () => {
+      await expect(verifyPassword("any", "pbkdf2$abc$aa$bb")).resolves.toBe(false);
+    });
+
+    it("rejects a hash with zero iterations", async () => {
+      await expect(verifyPassword("any", "pbkdf2$0$aa$bb")).resolves.toBe(false);
+    });
+
+    it("rejects a hash with empty hash segment", async () => {
+      await expect(verifyPassword("any", "pbkdf2$310000$aa$")).resolves.toBe(false);
+    });
   });
 
   describe("POST /api/auth/register", () => {
@@ -156,6 +180,29 @@ describe("Auth routes", () => {
         "updatedAt",
         "username",
       ]);
+    });
+
+    it("returns 500 when the users INSERT returns no row", async () => {
+      const { selectMock } = buildSelectChain([]);
+      const { insertMock } = buildInsertChain([]);
+      mockCreateDb({
+        select: selectMock,
+        insert: insertMock,
+      });
+
+      const res = await app.fetch(
+        post("/api/auth/register", {
+          username: "testuser",
+          email: "test@example.com",
+          password: "password123",
+        }),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(500);
+      const body = (await res.json()) as { status: string; message: string };
+      expect(body.status).toBe("error");
+      expect(body.message).toBe("Failed to create user");
     });
 
     it("stores new passwords in pbkdf2 format", async () => {

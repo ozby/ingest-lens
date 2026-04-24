@@ -203,6 +203,32 @@ describe("Topic routes", () => {
       expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
     });
 
+    it("returns 500 when the per-queue messages INSERT returns no row", async () => {
+      bypassAuth(vi.mocked(authenticate));
+      const { fromMock: topicFrom } = buildSelectChain([mockTopic]);
+      const { fromMock: queuesFrom } = buildUnboundedSelectChain([mockQueue]);
+      const selectMock = vi
+        .fn()
+        .mockReturnValueOnce({ from: topicFrom })
+        .mockReturnValue({ from: queuesFrom });
+      const { insertMock } = buildInsertChain([]);
+      mockCreateDb({
+        select: selectMock,
+        insert: insertMock,
+      });
+
+      const res = await app.fetch(
+        post("/api/topics/topic-1/publish", { data: { key: "value" } }, AUTH_HEADER),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(500);
+      const body = (await res.json()) as { status: string; message: string };
+      expect(body.status).toBe("error");
+      expect(body.message).toBe("Failed to create message");
+      expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
+    });
+
     it("returns 400 when topic has no subscribers", async () => {
       bypassAuth(vi.mocked(authenticate));
       setupPublishDb({ ...mockTopic, subscribedQueues: [] }, []);

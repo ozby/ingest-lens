@@ -238,6 +238,29 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
   });
 
+  it("returns 500 when the messages INSERT returns no row", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    const { selectMock } = buildSelectChain([mockQueue]);
+    const { insertMock } = buildInsertChain([]);
+    const { updateMock } = buildUpdateChain();
+    mockCreateDb({
+      select: selectMock,
+      insert: insertMock,
+      update: updateMock,
+    });
+
+    const res = await app.fetch(
+      post("/api/messages/queue-1", { data: { key: "value" } }, AUTH_HEADER),
+      mockEnv,
+    );
+
+    expect(res.status).toBe(500);
+    const body = (await res.json()) as { status: string; message: string };
+    expect(body.status).toBe("error");
+    expect(body.message).toBe("Failed to create message");
+    expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
+  });
+
   it("returns 201 with new message when Idempotency-Key is not a duplicate", async () => {
     bypassAuth(vi.mocked(authenticate));
 

@@ -236,4 +236,37 @@ describe("ownership hardening", () => {
       intruderQueue.body.data.queue.id,
     );
   });
+
+  it("allows same-tenant access to own queue", async () => {
+    const runId = crypto.randomUUID().slice(0, 8);
+    const credentials = {
+      username: `tenant-${runId}`,
+      email: `tenant-${runId}@example.test`,
+      password: `Pass-${runId}`,
+    };
+
+    const registration = await postJson<AuthResponse>("/api/auth/register", credentials);
+    expect(registration.response.status).toBe(201);
+    const token = registration.body.data.token;
+    const ownerId = registration.body.data.user.id;
+
+    const created = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      "/api/queues",
+      { name: `tenant-queue-${runId}` },
+      token,
+    );
+    expect(created.response.status).toBe(201);
+    const createdQueue = created.body.data.queue;
+
+    const fetched = await getJson<ApiSuccess<{ queue: QueueRecord }>>(
+      `/api/queues/${createdQueue.id}`,
+      token,
+    );
+    expect(fetched.response.status).toBe(200);
+    expect(fetched.body.data.queue).toMatchObject({
+      id: createdQueue.id,
+      name: `tenant-queue-${runId}`,
+      ownerId,
+    });
+  });
 });
