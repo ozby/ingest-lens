@@ -175,35 +175,56 @@ async function publishToTarget(
     .from(queues)
     .where(inArray(queues.id, topic.subscribedQueues));
 
-  for (const queue of subscribedQueues) {
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + queue.retentionPeriod);
+  // Outbox-style: persist all fan-out messages atomically inside the
+  // transaction, then emit DELIVERY_QUEUE.send calls AFTER commit. If any
+  // INSERT fails the entire batch rolls back and no queue sends are emitted,
+  // so subscribers never observe a partial fan-out.
+  const pendingSends = await db.transaction(async (tx) => {
+    const batched: Array<{
+      messageId: string;
+      seq: string;
+      queueId: string;
+      pushEndpoint: string;
+      topicId: string;
+      attempt: number;
+    }> = [];
 
-    const [message] = await db
-      .insert(messages)
-      .values({
-        data: envelope,
-        queueId: queue.id,
-        expiresAt,
-        received: false,
-        receivedCount: 0,
-      })
-      .returning();
+    for (const queue of subscribedQueues) {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + queue.retentionPeriod);
 
-    if (!message) {
-      throw new Error("Failed to insert message into topic fan-out target.");
+      const [message] = await tx
+        .insert(messages)
+        .values({
+          data: envelope,
+          queueId: queue.id,
+          expiresAt,
+          received: false,
+          receivedCount: 0,
+        })
+        .returning();
+
+      if (!message) {
+        throw new Error("Failed to insert message into topic fan-out target.");
+      }
+
+      if (queue.pushEndpoint) {
+        batched.push({
+          messageId: message.id,
+          seq: String(message.seq),
+          queueId: queue.id,
+          pushEndpoint: queue.pushEndpoint,
+          topicId,
+          attempt: 0,
+        });
+      }
     }
 
-    if (queue.pushEndpoint) {
-      await c.env.DELIVERY_QUEUE.send({
-        messageId: message.id,
-        seq: String(message.seq),
-        queueId: queue.id,
-        pushEndpoint: queue.pushEndpoint,
-        topicId,
-        attempt: 0,
-      });
-    }
+    return batched;
+  });
+
+  for (const payload of pendingSends) {
+    await c.env.DELIVERY_QUEUE.send(payload);
   }
 }
 

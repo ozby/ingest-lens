@@ -10,6 +10,7 @@ import { topicRoutes } from "./routes/topic";
 import { dashboardRoutes } from "./routes/dashboard";
 import { intakeRoutes } from "./routes/intake";
 import { handleDeliveryBatch } from "./consumers/deliveryConsumer";
+import { handleScheduled as handleScheduledPurge } from "./cron/purgeExpiredReviewPayloads";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -28,4 +29,5 @@ app.route("/api/intake", intakeRoutes);
 export default {
   fetch: app.fetch,
   queue: handleDeliveryBatch,
+  scheduled: handleScheduledPurge,
 };

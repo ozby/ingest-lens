@@ -63,6 +63,10 @@ dead_letter_queue = "delivery-dlq-dev"
 binding = "ANALYTICS"
 dataset = "delivery_events_dev"
 
+[env.dev.triggers]
+# Hourly TTL purge of expired intake review payloads.
+crons = ["0 * * * *"]
+
 # ─── prd environment ──────────────────────────────────────────────────────
 # Deployed Worker name: node-pubsub-prd
 # Custom domain: api.ozby.dev
@@ -112,3 +116,7 @@ dead_letter_queue = "delivery-dlq-prd"
 [[env.prd.analytics_engine_datasets]]
 binding = "ANALYTICS"
 dataset = "delivery_events_prd"
+
+[env.prd.triggers]
+# Hourly TTL purge of expired intake review payloads.
+crons = ["0 * * * *"]
