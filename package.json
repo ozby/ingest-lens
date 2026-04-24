@@ -60,6 +60,9 @@
       "allowedVersions": {
         "vite>esbuild": "*"
       }
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@webpresso/vitest-config"
+    ]
   }
 }
