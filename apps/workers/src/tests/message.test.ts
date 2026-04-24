@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import app from "../index";
-import { createDb } from "../db/client";
 import {
   messages as messageTable,
   queues as queueTable,
@@ -13,6 +12,7 @@ import {
   buildInsertChain,
   buildUpdateChain,
   createMockEnv,
+  mockCreateDb,
   mockQueue,
   mockMessage,
   get,
@@ -45,11 +45,11 @@ function setupDb(queue: typeof mockQueue | QueueWithNullEndpoint | null) {
   const { selectMock } = buildSelectChain(queue ? [queue] : []);
   const { insertMock } = buildInsertChain([mockMessage]);
   const { updateMock } = buildUpdateChain();
-  vi.mocked(createDb).mockReturnValue({
+  mockCreateDb({
     select: selectMock,
     insert: insertMock,
     update: updateMock,
-  } as any);
+  });
 }
 
 function setupLeaseDb(initialMessages: LeaseMessage[]) {
@@ -149,11 +149,11 @@ function setupLeaseDb(initialMessages: LeaseMessage[]) {
     }),
   }));
 
-  vi.mocked(createDb).mockReturnValue({
+  mockCreateDb({
     select: selectMock,
     update: updateMock,
     delete: deleteMock,
-  } as any);
+  });
 
   return state;
 }
@@ -250,11 +250,11 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
     const { insertMock } = buildInsertChain([mockMessage]);
     const { updateMock } = buildUpdateChain();
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       insert: insertMock,
       update: updateMock,
-    } as any);
+    });
 
     const res = await app.fetch(
       post(
@@ -285,10 +285,10 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     const fromMock = vi.fn().mockReturnValue({ where: whereMock });
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
     const insertMock = vi.fn();
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       insert: insertMock,
-    } as any);
+    });
 
     const res = await app.fetch(
       post(
@@ -320,11 +320,11 @@ describe("Message routes — ownership checks", () => {
     const insertMock = vi.fn();
     const updateMock = vi.fn();
 
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       insert: insertMock,
       update: updateMock,
-    } as any);
+    });
 
     const res = await app.fetch(
       post("/api/messages/queue-1", { data: { key: "value" } }, AUTH_HEADER),
@@ -344,10 +344,10 @@ describe("Message routes — ownership checks", () => {
     const { selectMock } = buildSelectChain([foreignQueue]);
     const updateMock = vi.fn();
 
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       update: updateMock,
-    } as any);
+    });
 
     const res = await app.fetch(get("/api/messages/queue-1", AUTH_HEADER), mockEnv);
 
@@ -361,7 +361,7 @@ describe("Message routes — ownership checks", () => {
     const foreignQueue = { ...mockQueue, ownerId: "user-999" };
     const { selectMock } = buildSelectChain([foreignQueue]);
 
-    vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+    mockCreateDb({ select: selectMock });
 
     const res = await app.fetch(get("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
@@ -375,10 +375,10 @@ describe("Message routes — ownership checks", () => {
     const { selectMock } = buildSelectChain([foreignQueue]);
     const deleteMock = vi.fn();
 
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       delete: deleteMock,
-    } as any);
+    });
 
     const res = await app.fetch(del("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
@@ -406,10 +406,10 @@ describe("Message routes — response contracts", () => {
       .mockImplementationOnce(() => ({ from: messagesFromMock }));
     const { updateMock } = buildUpdateChain();
 
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       update: updateMock,
-    } as any);
+    });
 
     const res = await app.fetch(
       get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=45", AUTH_HEADER),
@@ -462,7 +462,7 @@ describe("Message routes — response contracts", () => {
       .mockImplementationOnce(() => ({ from: queueFromMock }))
       .mockImplementationOnce(() => ({ from: messageFromMock }));
 
-    vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+    mockCreateDb({ select: selectMock });
 
     const res = await app.fetch(get("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
@@ -509,10 +509,10 @@ describe("Message routes — response contracts", () => {
     const deleteWhereMock = vi.fn().mockResolvedValue([]);
     const deleteMock = vi.fn().mockReturnValue({ where: deleteWhereMock });
 
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       delete: deleteMock,
-    } as any);
+    });
 
     const res = await app.fetch(del("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
@@ -744,11 +744,11 @@ describe("Message routes — visibility leases", () => {
       }),
     }));
 
-    vi.mocked(createDb).mockReturnValue({
+    mockCreateDb({
       select: selectMock,
       update: updateMock,
       delete: deleteMock,
-    } as any);
+    });
 
     await app.fetch(
       get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=5", AUTH_HEADER),

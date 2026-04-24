@@ -8,6 +8,7 @@ import {
   buildUpdateChain,
   createMockEnv,
   get,
+  mockCreateDb,
   post,
 } from "./helpers";
 
@@ -43,11 +44,11 @@ beforeEach(() => {
   const { insertMock } = buildInsertChain([mockRegisteredUser()]);
   const { updateMock } = buildUpdateChain();
 
-  vi.mocked(createDb).mockReturnValue({
+  mockCreateDb({
     select: selectMock,
     insert: insertMock,
     update: updateMock,
-  } as any);
+  });
 });
 
 describe("Auth routes", () => {
@@ -190,9 +191,9 @@ describe("Auth routes", () => {
       };
       const { selectMock } = buildSelectChain([loginUser]);
 
-      vi.mocked(createDb).mockReturnValue({
+      mockCreateDb({
         select: selectMock,
-      } as any);
+      });
 
       const res = await app.fetch(
         post("/api/auth/login", {
@@ -241,9 +242,9 @@ describe("Auth routes", () => {
       const currentUser = mockRegisteredUser();
       const { selectMock } = buildSelectChain([currentUser]);
 
-      vi.mocked(createDb).mockReturnValue({
+      mockCreateDb({
         select: selectMock,
-      } as any);
+      });
 
       const token = await generateToken(currentUser.id, currentUser.username, mockEnv.JWT_SECRET);
 

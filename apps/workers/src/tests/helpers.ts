@@ -1,6 +1,14 @@
 import { vi } from "vitest";
 import type { Mock } from "vitest";
-import type { Env } from "../db/client";
+import { createDb, type Env } from "../db/client";
+
+type MockedDb = ReturnType<typeof createDb>;
+
+export function mockCreateDb(
+  shape: Partial<Record<"select" | "insert" | "update" | "delete", Mock>>,
+): void {
+  vi.mocked(createDb).mockReturnValue(shape as unknown as MockedDb);
+}
 
 function deepFreeze<T extends object>(obj: T): Readonly<T> {
   Object.freeze(obj);

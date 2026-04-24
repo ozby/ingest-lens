@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createDb } from "../db/client";
 import { authenticate } from "../middleware/auth";
 import { topicRoutes } from "../routes/topic";
-import { AUTH_HEADER, createMockEnv, get, mockTopic } from "./helpers";
+import { AUTH_HEADER, createMockEnv, get, mockCreateDb, mockTopic } from "./helpers";
 
 vi.mock("../middleware/auth", () => ({ authenticate: vi.fn() }));
 vi.mock("../middleware/rateLimiter", () => ({
@@ -39,7 +38,7 @@ describe("GET /:topicId/ws", () => {
     const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
     const fromMock = vi.fn().mockReturnValue({ where: whereMock });
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
-    vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+    mockCreateDb({ select: selectMock });
 
     const mockFetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
     const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
@@ -65,7 +64,7 @@ describe("GET /:topicId/ws", () => {
     const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
     const fromMock = vi.fn().mockReturnValue({ where: whereMock });
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
-    vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+    mockCreateDb({ select: selectMock });
 
     // Use 200 here — Node's Response rejects 101 (CF Workers-only status)
     // The meaningful assertion is that the DO stub was called, not the WS status

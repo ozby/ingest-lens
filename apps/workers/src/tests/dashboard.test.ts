@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
-import { createDb } from "../db/client";
 import { authenticate } from "../middleware/auth";
-import { AUTH_HEADER, bypassAuth, createMockEnv, get } from "./helpers";
+import { AUTH_HEADER, bypassAuth, createMockEnv, get, mockCreateDb } from "./helpers";
 
 vi.mock("../middleware/auth", () => ({
   authenticate: vi.fn(),
@@ -88,7 +87,7 @@ describe("Dashboard routes", () => {
         .mockImplementationOnce(() => ({ from: totalMessagesFromMock }))
         .mockImplementationOnce(() => ({ from: activeMessagesFromMock }));
 
-      vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+      mockCreateDb({ select: selectMock });
 
       const res = await app.fetch(get("/api/dashboard/server", AUTH_HEADER), mockEnv);
 
@@ -136,7 +135,7 @@ describe("Dashboard routes", () => {
       const fromMock = vi.fn().mockReturnValue({ limit: limitMock });
       const selectMock = vi.fn().mockReturnValue({ from: fromMock });
 
-      vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+      mockCreateDb({ select: selectMock });
 
       const res = await app.fetch(get("/api/dashboard/server/activity", AUTH_HEADER), mockEnv);
 
@@ -180,7 +179,7 @@ describe("Dashboard routes", () => {
         .mockImplementationOnce(() => ({ from: ownedQueueFromMock }))
         .mockImplementationOnce(() => ({ from: queueMetricsFromMock }));
 
-      vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+      mockCreateDb({ select: selectMock });
 
       const res = await app.fetch(get("/api/dashboard/queues", AUTH_HEADER), mockEnv);
 
@@ -236,7 +235,7 @@ describe("Dashboard routes", () => {
         .mockImplementationOnce(() => ({ from: activeMessagesFromMock }))
         .mockImplementationOnce(() => ({ from: oldestFromMock }));
 
-      vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+      mockCreateDb({ select: selectMock });
 
       const res = await app.fetch(get("/api/dashboard/queues/queue-1", AUTH_HEADER), mockEnv);
 
@@ -289,7 +288,7 @@ describe("Dashboard routes", () => {
       const fromMock = vi.fn().mockReturnValue({ where: whereMock });
       const selectMock = vi.fn().mockReturnValue({ from: fromMock });
 
-      vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+      mockCreateDb({ select: selectMock });
 
       const res = await app.fetch(
         get("/api/dashboard/intake?mappingTraceId=trace-2", AUTH_HEADER),

@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { handleDeliveryBatch } from "../consumers/deliveryConsumer";
 import type { DeliveryPayload } from "../db/client";
-import { createDb } from "../db/client";
-import { buildSelectChain, createMockEnv } from "./helpers";
+import { buildSelectChain, createMockEnv, mockCreateDb } from "./helpers";
 
 vi.mock("../db/client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../db/client")>();
@@ -35,7 +34,7 @@ function makeMsg(body: DeliveryPayload, ack: Mock, retry: Mock): Message<Deliver
 
 function setupCreateDb(selectRows: unknown[]) {
   const chain = buildSelectChain(selectRows);
-  vi.mocked(createDb).mockReturnValue({ select: chain.selectMock } as any);
+  mockCreateDb({ select: chain.selectMock });
   return chain;
 }
 
@@ -199,7 +198,7 @@ describe("handleDeliveryBatch", () => {
     const whereMock = vi.fn().mockReturnValue({ limit: limitMockImpl });
     const fromMock = vi.fn().mockReturnValue({ where: whereMock });
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
-    vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
+    mockCreateDb({ select: selectMock });
 
     const ack1 = vi.fn();
     const retry1 = vi.fn();

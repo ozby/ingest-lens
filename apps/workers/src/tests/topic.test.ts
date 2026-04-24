@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
-import { createDb } from "../db/client";
 import { authenticate } from "../middleware/auth";
 import {
   AUTH_HEADER,
@@ -9,6 +8,7 @@ import {
   buildSelectChain,
   buildUnboundedSelectChain,
   createMockEnv,
+  mockCreateDb,
   mockMessage,
   mockQueue,
   mockTopic,
@@ -40,10 +40,10 @@ function setupPublishDb(topic: typeof mockTopic | null, subscribedQueues: MockQu
     .mockReturnValueOnce({ from: topicFrom })
     .mockReturnValue({ from: queuesFrom });
   const { insertMock } = buildInsertChain([mockMessage]);
-  vi.mocked(createDb).mockReturnValue({
+  mockCreateDb({
     select: selectMock,
     insert: insertMock,
-  } as any);
+  });
 }
 
 beforeEach(() => {
@@ -93,10 +93,10 @@ describe("Topic routes", () => {
       const selectMock = vi.fn().mockReturnValue({ from: fromMock });
       const updateMock = vi.fn();
 
-      vi.mocked(createDb).mockReturnValue({
+      mockCreateDb({
         select: selectMock,
         update: updateMock,
-      } as any);
+      });
 
       const res = await app.fetch(
         post("/api/topics/topic-1/subscribe", { queueId: "queue-1" }, AUTH_HEADER),
