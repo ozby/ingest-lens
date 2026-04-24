@@ -149,11 +149,10 @@ describe("AdminIntake page", () => {
     expect(apiMocks.approveIntakeSuggestion).toHaveBeenCalledWith("attempt-1", {
       approvedSuggestionIds: ["s-1"],
     });
-    const ingestNode = await screen.findByText((_, node) => {
+    await screen.findByText((_, node) => {
       const textContent = node?.tagName?.toLowerCase() === "span" ? node.textContent : "";
       return textContent.includes("Ingest: ingested");
     });
-    ingestNode;
   });
 
   it("rejects attempt with reason", async () => {
@@ -175,7 +174,6 @@ describe("AdminIntake page", () => {
     await screen.findByText("attempt-1");
     const sanitizedHeaders = screen.getAllByText("Sanitized payload preview");
     expect(sanitizedHeaders).toHaveLength(2);
-    sanitizedHeaders[0];
     await user.type(screen.getByPlaceholderText("Rejection reason"), "No good");
     await user.click(screen.getByRole("button", { name: "Reject" }));
 

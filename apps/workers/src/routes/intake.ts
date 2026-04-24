@@ -446,6 +446,23 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
       .where(eq(approvedMappingRevisions.id, attemptRow.mappingVersionId))
       .limit(1);
 
+    if (body.approvedSuggestionIds !== undefined && mappingVersionRow) {
+      const requested = [...body.approvedSuggestionIds].sort();
+      const existing = [...mappingVersionRow.approvedSuggestionIds].sort();
+      const differs =
+        requested.length !== existing.length ||
+        requested.some((id, index) => id !== existing[index]);
+      if (differs) {
+        return c.json(
+          {
+            status: "error",
+            message: `Attempt ${attemptRow.id} has already been approved with a different suggestion set.`,
+          },
+          409,
+        );
+      }
+    }
+
     return c.json({
       status: "success",
       data: {
@@ -489,40 +506,46 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     suggestions: approvedSuggestions,
   });
 
-  const [mappingVersionRow] = await db
-    .insert(approvedMappingRevisions)
-    .values({
-      id: mappingVersionId,
-      ownerId,
-      intakeAttemptId: attemptRow.id,
-      mappingTraceId: attemptRow.mappingTraceId,
-      contractId: attemptRow.contractId,
-      contractVersion: attemptRow.contractVersion,
-      targetRecordType: attemptRow.contractId.replace(/-v\d+$/, "").replace(/-/g, "_"),
-      approvedSuggestionIds: approvedSuggestions.map((suggestion) => suggestion.id),
-      sourceHash: attemptRow.sourceHash,
-      sourceKind: attemptRow.sourceKind,
-      sourceFixtureId: attemptRow.sourceFixtureId,
-      deliveryTarget: attemptRow.deliveryTarget,
-      createdAt: now,
-    })
-    .returning();
+  const persisted = await db.transaction(async (tx) => {
+    const [revision] = await tx
+      .insert(approvedMappingRevisions)
+      .values({
+        id: mappingVersionId,
+        ownerId,
+        intakeAttemptId: attemptRow.id,
+        mappingTraceId: attemptRow.mappingTraceId,
+        contractId: attemptRow.contractId,
+        contractVersion: attemptRow.contractVersion,
+        targetRecordType: attemptRow.contractId.replace(/-v\d+$/, "").replace(/-/g, "_"),
+        approvedSuggestionIds: approvedSuggestions.map((suggestion) => suggestion.id),
+        sourceHash: attemptRow.sourceHash,
+        sourceKind: attemptRow.sourceKind,
+        sourceFixtureId: attemptRow.sourceFixtureId,
+        deliveryTarget: attemptRow.deliveryTarget,
+        createdAt: now,
+      })
+      .returning();
 
-  const [approvedAttemptRow] = await db
-    .update(intakeAttempts)
-    .set({
-      status: "approved",
-      ingestStatus: "pending",
-      mappingVersionId,
-      approvedAt: now,
-      updatedAt: now,
-    })
-    .where(eq(intakeAttempts.id, attemptRow.id))
-    .returning();
+    const [attempt] = await tx
+      .update(intakeAttempts)
+      .set({
+        status: "approved",
+        ingestStatus: "pending",
+        mappingVersionId,
+        approvedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(intakeAttempts.id, attemptRow.id))
+      .returning();
 
-  if (!mappingVersionRow || !approvedAttemptRow) {
-    return c.json({ status: "error", message: "Failed to persist approval" }, 500);
-  }
+    if (!revision || !attempt) {
+      throw new Error("Approval persistence returned no rows; rolling back.");
+    }
+    return { revision, attempt };
+  });
+
+  const mappingVersionRow = persisted.revision;
+  const approvedAttemptRow = persisted.attempt;
 
   const approvedAttempt = toAttemptRecord(approvedAttemptRow);
   const mappingVersion = toMappingRevision(mappingVersionRow);

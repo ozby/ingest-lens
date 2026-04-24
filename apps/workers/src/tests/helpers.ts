@@ -1,6 +1,8 @@
 import { vi } from "vitest";
 import type { Mock } from "vitest";
+import type { Context, Next } from "hono";
 import { createDb, type Env } from "../db/client";
+import type { DecodedToken } from "../middleware/auth";
 
 type MockedDb = ReturnType<typeof createDb>;
 
@@ -9,6 +11,8 @@ export function mockCreateDb(
 ): void {
   vi.mocked(createDb).mockReturnValue(shape as unknown as MockedDb);
 }
+
+type AuthenticateContext = Context<{ Bindings: Env; Variables: { user: DecodedToken } }>;
 
 function deepFreeze<T extends object>(obj: T): Readonly<T> {
   Object.freeze(obj);
@@ -48,7 +52,7 @@ export function createMockEnv(
 }
 
 export function bypassAuth(authenticateMock: ReturnType<typeof vi.fn>): void {
-  authenticateMock.mockImplementation(async (c: any, next: any) => {
+  authenticateMock.mockImplementation(async (c: AuthenticateContext, next: Next) => {
     c.set("user", { userId: "user-123", username: "testuser" });
     await next();
   });

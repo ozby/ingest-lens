@@ -38,7 +38,7 @@ type FakeDbState = {
 };
 
 function createFakeDb(state: FakeDbState) {
-  return {
+  const fake = {
     select: vi.fn(() => ({
       from: vi.fn((table: unknown) => ({
         where: vi.fn(() => ({
@@ -107,7 +107,9 @@ function createFakeDb(state: FakeDbState) {
         })),
       })),
     })),
+    transaction: vi.fn(async (cb: (tx: typeof fake) => unknown) => cb(fake)),
   };
+  return fake;
 }
 
 function createAttemptRow(overrides: Partial<AttemptRow> = {}): AttemptRow {
