@@ -83,6 +83,19 @@ const MappingSuggestionReview = ({
           <p>{suggestion.explanation}</p>
         </div>
 
+        <div className="space-y-1">
+          <p className="text-muted-foreground">Deterministic validation</p>
+          <p>
+            {suggestion.deterministicValidation.isValid ? "passed" : "failed"} · replay{" "}
+            {suggestion.replayStatus}
+          </p>
+          {suggestion.deterministicValidation.errors.length > 0 ? (
+            <p className="text-xs text-rose-600 dark:text-rose-300">
+              {suggestion.deterministicValidation.errors.join(", ")}
+            </p>
+          ) : null}
+        </div>
+
         {suggestion.judgeAssessment ? (
           <div className="space-y-1">
             <p className="text-muted-foreground">Judge verdict</p>

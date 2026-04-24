@@ -34,6 +34,18 @@ const statusTone: Record<IntakeAttemptRecord["status"], string> = {
 const toPreviewText = (value: string) =>
   value ? value.slice(0, 500) : "No sanitized payload preview available.";
 
+const formatDeliveryTarget = (attempt: IntakeAttemptRecord) => {
+  if (attempt.deliveryTarget.queueId) {
+    return `queue:${attempt.deliveryTarget.queueId}`;
+  }
+
+  if (attempt.deliveryTarget.topicId) {
+    return `topic:${attempt.deliveryTarget.topicId}`;
+  }
+
+  return "not set";
+};
+
 const AdminIntake = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [attempts, setAttempts] = useState<IntakeAttemptRecord[]>([]);
@@ -44,17 +56,25 @@ const AdminIntake = () => {
 
   const statusPending = useMemo(
     () =>
-      attempts.filter((attempt) => attempt.status === "pending_review" || attempt.status === "approved" || attempt.status === "ingested").
-      sort((left, right) =>
-        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
-      ),
+      attempts
+        .filter(
+          (attempt) =>
+            attempt.status === "pending_review" ||
+            attempt.status === "approved" ||
+            attempt.status === "ingested",
+        )
+        .sort(
+          (left, right) =>
+            new Date(right.createdAt).getTime() -
+            new Date(left.createdAt).getTime(),
+        ),
     [attempts],
   );
 
   const fetchAttempts = async () => {
     try {
       setIsLoading(true);
-      const items = await apiService.getIntakeSuggestions("pending_review");
+      const items = await apiService.getIntakeSuggestions();
       setAttempts(items);
       setSelectedSuggestions({});
     } catch (error) {
@@ -207,6 +227,12 @@ const AdminIntake = () => {
                         </Badge>
                         <span className="ml-2">Ingest: {attempt.ingestStatus}</span>
                         <span className="ml-2">mappingTraceId: {attempt.mappingTraceId}</span>
+                        <span className="ml-2">
+                          Confidence: {Math.round(attempt.overallConfidence * 100)}%
+                        </span>
+                        <span className="ml-2">
+                          Delivery: {formatDeliveryTarget(attempt)}
+                        </span>
                       </div>
                     </div>
                   </CardHeader>

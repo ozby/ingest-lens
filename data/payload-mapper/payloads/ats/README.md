@@ -1,7 +1,9 @@
-# ATS Payload Samples
+# ATS Payload Samples (Public Demo Lens)
 
-This directory contains a pinned working subset of ATS job posting payloads derived from the
-[open-apply-jobs](https://huggingface.co/datasets/edwarddgao/open-apply-jobs) public dataset.
+This directory contains a **pinned**, curated subset of public ATS job-posting
+payloads derived from the
+[open-apply-jobs](https://huggingface.co/datasets/edwarddgao/open-apply-jobs)
+public dataset.
 
 ## Files
 
@@ -14,9 +16,12 @@ This directory contains a pinned working subset of ATS job posting payloads deri
 - Only columns required for mapping tasks are retained: `title`/`name`/`text`, `apply_url`/`applyUrl`,
   `employment_type`, `department`/`team`, `locations`/`location`, `status`/`state`.
 - Payloads are stored in the `payload-record.schema.json` envelope format.
-- The sample is intentionally small and deterministic; not a live-fetch runtime dependency.
+- The sample is intentionally small and deterministic.
+- It is the canonical pinned fixture source for public-dataset demo ingestion.
+- Demo runtime should use a bundled version of this file; no runtime filesystem
+  reads or arbitrary public-URL scraping are required in v1.
 - The open-apply-jobs dataset is a **daily full snapshot**, not an event stream — use it for
-  offline task generation only.
+  offline task generation and reproducible demo fixtures.
 
 ## Coverage
 

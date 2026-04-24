@@ -34,6 +34,22 @@ import {
 } from "@repo/types";
 import { toast } from "sonner";
 
+interface PublicFixtureMetadata {
+  id: string;
+  sourceSystem: string;
+  sourceUrl: string;
+  summary: string;
+  contractHint?: string;
+}
+
+interface PublicFixtureDetail {
+  id: string;
+  sourceSystem: string;
+  sourceUrl: string;
+  payload: Record<string, unknown>;
+  contractHint?: string;
+}
+
 class ApiService {
   private api: ReturnType<typeof axios.create>;
   private token: string | null = null;
@@ -252,6 +268,22 @@ class ApiService {
       },
     );
     return response.data.data.attempts;
+  }
+
+  async getPublicFixtures(): Promise<PublicFixtureMetadata[]> {
+    const response = await this.api.get<ApiResponse<{ fixtures: PublicFixtureMetadata[] }>>(
+      "/api/intake/public-fixtures",
+    );
+    return response.data.data.fixtures;
+  }
+
+  async getPublicFixtureById(
+    fixtureId: string,
+  ): Promise<PublicFixtureDetail> {
+    const response = await this.api.get<ApiResponse<{ fixture: PublicFixtureDetail }>>(
+      `/api/intake/public-fixtures/${fixtureId}`,
+    );
+    return response.data.data.fixture;
   }
 
   async approveIntakeSuggestion(

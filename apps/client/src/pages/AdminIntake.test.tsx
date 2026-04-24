@@ -109,7 +109,7 @@ describe("AdminIntake page", () => {
 
     await screen.findByText("mappingTraceId: trace-1");
     expect(screen.getByText("pending_review")).toBeTruthy();
-    expect(apiMocks.getIntakeSuggestions).toHaveBeenCalledWith("pending_review");
+    expect(apiMocks.getIntakeSuggestions).toHaveBeenCalledWith();
   });
 
   it("approves selected mapping suggestion and uses mappingTraceId in result", async () => {

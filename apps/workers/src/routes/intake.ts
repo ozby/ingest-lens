@@ -21,6 +21,7 @@ import { normalizeWithMapping } from "../intake/normalizeWithMapping";
 import { recordIntakeLifecycle } from "../telemetry";
 import { requireOwnedQueue, requireOwnedTopic } from "./ownership";
 import { getFixtureReference } from "../intake/contracts";
+import { getDemoFixtureById, listDemoFixtures } from "../intake/demoFixtures";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -227,6 +228,30 @@ function getAttemptPayload(attempt: AttemptRow): Record<string, unknown> | null 
 
   return (attempt.reviewPayload as Record<string, unknown> | null) ?? null;
 }
+
+intakeRoutes.get("/public-fixtures", async (c) =>
+  c.json({
+    status: "success",
+    data: {
+      fixtures: listDemoFixtures(),
+    },
+  }),
+);
+
+intakeRoutes.get("/public-fixtures/:fixtureId", async (c) => {
+  const fixture = getDemoFixtureById(c.req.param("fixtureId"));
+
+  if (!fixture) {
+    return c.json({ status: "error", message: "Fixture not found" }, 404);
+  }
+
+  return c.json({
+    status: "success",
+    data: {
+      fixture,
+    },
+  });
+});
 
 intakeRoutes.get("/mapping-suggestions", async (c) => {
   const ownerId = c.get("user").userId;

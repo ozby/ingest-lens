@@ -3,6 +3,7 @@ import type {
   DriftCategory,
   SourceReferenceKind,
 } from "@repo/types";
+import { getDemoFixtureById } from "./demoFixtures";
 
 export interface DeterministicDependencies {
   clock: () => Date;
@@ -23,6 +24,8 @@ export interface FixtureReference {
   sourceSystem: string;
   payload: Record<string, unknown>;
   sourceUrl: string;
+  contractHint?: string;
+  summary?: string;
 }
 
 export const DEFAULT_REVIEW_PAYLOAD_TTL_HOURS = 24;
@@ -80,49 +83,6 @@ export const TARGET_CONTRACTS: Record<string, TargetContractDefinition> = {
   },
 };
 
-export const PUBLIC_FIXTURES: Record<string, FixtureReference> = {
-  "ashby-job-001": {
-    id: "ashby-job-001",
-    sourceSystem: "ashby",
-    sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
-    payload: {
-      title: "Staff Software Engineer, Backend",
-      apply_url: "https://jobs.ashbyhq.com/example-co/abc123",
-      employment_type: "FullTime",
-      department: "Engineering",
-      locations: ["Remote"],
-    },
-  },
-  "greenhouse-job-001": {
-    id: "greenhouse-job-001",
-    sourceSystem: "greenhouse",
-    sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
-    payload: {
-      id: 7654321,
-      name: "Senior Data Engineer",
-      status: "open",
-      departments: [{ id: 101, name: "Data Platform" }],
-      offices: [{ id: 201, location: { name: "Austin, TX" } }],
-      created_at: "2026-01-15T09:00:00Z",
-      updated_at: "2026-04-01T14:22:00Z",
-    },
-  },
-  "lever-posting-001": {
-    id: "lever-posting-001",
-    sourceSystem: "lever",
-    sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
-    payload: {
-      id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      text: "Senior Frontend Engineer",
-      state: "published",
-      team: "Frontend",
-      location: "Remote - Europe",
-      applyUrl: "https://jobs.lever.co/example-co/a1b2c3d4",
-      workplaceType: "remote",
-    },
-  },
-};
-
 export function getTargetContract(
   contractId: string,
 ): TargetContractDefinition | undefined {
@@ -132,7 +92,7 @@ export function getTargetContract(
 export function getFixtureReference(
   fixtureId: string,
 ): FixtureReference | undefined {
-  return PUBLIC_FIXTURES[fixtureId];
+  return getDemoFixtureById(fixtureId);
 }
 
 export function validateDeliveryTarget(target: DeliveryTarget): string[] {

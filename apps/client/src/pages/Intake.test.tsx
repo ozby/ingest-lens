@@ -7,6 +7,8 @@ import Intake from "./Intake";
 const apiMocks = vi.hoisted(() => ({
   createIntakeSuggestion: vi.fn(),
   getIntakeSuggestions: vi.fn(),
+  getPublicFixtures: vi.fn(),
+  getPublicFixtureById: vi.fn(),
 }));
 
 vi.mock("@/services/api", () => ({
@@ -79,6 +81,15 @@ describe("Intake page", () => {
         },
       },
     ]);
+    apiMocks.getPublicFixtures.mockResolvedValueOnce([
+      {
+        id: "ashby-job-001",
+        sourceSystem: "ashby",
+        sourceUrl: "https://example.com/ashby",
+        summary: "Staff Software Engineer sample",
+        contractHint: "job-posting-v1",
+      },
+    ]);
 
     render(
       <MemoryRouter>
@@ -87,12 +98,14 @@ describe("Intake page", () => {
     );
 
     expect(apiMocks.getIntakeSuggestions).toHaveBeenCalledTimes(1);
+    expect(apiMocks.getPublicFixtures).toHaveBeenCalledTimes(1);
     expect(await screen.findByText("Intake mapping")).toBeTruthy();
   });
 
   it("submits a new mapping suggestion", async () => {
     const user = userEvent.setup();
     apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
+    apiMocks.getPublicFixtures.mockResolvedValueOnce([]);
     apiMocks.createIntakeSuggestion.mockResolvedValueOnce({
       intakeAttemptId: "attempt-2",
       mappingTraceId: "trace-2",
@@ -142,6 +155,78 @@ describe("Intake page", () => {
       contractId: "contract-1",
       payload: { customerId: "abc" },
       fixtureId: undefined,
+      queueId: undefined,
+      topicId: undefined,
+    });
+  });
+
+  it("loads fixture catalog and prefills payload from selected fixture", async () => {
+    const user = userEvent.setup();
+    apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
+    apiMocks.getPublicFixtures.mockResolvedValueOnce([
+      {
+        id: "ashby-job-001",
+        sourceSystem: "ashby",
+        sourceUrl: "https://example.com/ashby",
+        summary: "Staff Software Engineer sample",
+        contractHint: "job-posting-v1",
+      },
+    ]);
+    apiMocks.getPublicFixtureById.mockResolvedValueOnce({
+      id: "ashby-job-001",
+      sourceSystem: "ashby",
+      sourceUrl: "https://example.com/ashby",
+      contractHint: "job-posting-v1",
+      payload: { title: "Staff Engineer" },
+    });
+    apiMocks.createIntakeSuggestion.mockResolvedValueOnce({
+      intakeAttemptId: "attempt-3",
+      mappingTraceId: "trace-3",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      sourceSystem: "ashby",
+      sourceKind: "fixture_reference",
+      sourceHash: "hash-3",
+      deliveryTarget: { queueId: "queue-1" },
+      status: "pending_review",
+      ingestStatus: "not_started",
+      driftCategory: "renamed_field",
+      modelName: "gpt-test",
+      promptVersion: "payload-mapper-v1",
+      overallConfidence: 0.72,
+      redactedSummary: "Fixture summary",
+      validationErrors: [],
+      createdAt: new Date("2026-04-01T00:00:00.000Z").toISOString(),
+      updatedAt: new Date("2026-04-01T00:00:00.000Z").toISOString(),
+    });
+
+    render(
+      <MemoryRouter>
+        <Intake />
+      </MemoryRouter>,
+    );
+
+    const fixtureSelect = await screen.findByLabelText("Public fixture (optional)");
+    await user.selectOptions(fixtureSelect, "ashby-job-001");
+
+    expect(apiMocks.getPublicFixtureById).toHaveBeenCalledWith("ashby-job-001");
+
+    const payloadInput = screen.getByPlaceholderText('{ "customerId": "abc", "status": "created" }');
+    expect((payloadInput as HTMLTextAreaElement).value).toBe(
+      '{\n  "title": "Staff Engineer"\n}',
+    );
+
+    const sourceSystemInput = screen.getByPlaceholderText("Source system");
+    expect((sourceSystemInput as HTMLInputElement).value).toBe("ashby");
+
+    const submit = screen.getByRole("button", { name: "Generate mapping suggestions" });
+    await user.click(submit);
+
+    expect(apiMocks.createIntakeSuggestion).toHaveBeenCalledWith({
+      sourceSystem: "ashby",
+      contractId: "job-posting-v1",
+      payload: undefined,
+      fixtureId: "ashby-job-001",
       queueId: undefined,
       topicId: undefined,
     });

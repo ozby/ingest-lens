@@ -51,9 +51,30 @@ flowchart TD
    - `ai-payload-intake-mapper` — add mapping suggestion + approval
    - `public-dataset-demo-ingestion` — package the canonical public dataset demo
 
-> Planned guide path: [`docs/guides/public-dataset-demo.md`](docs/guides/public-dataset-demo.md)
-> will become the canonical human walkthrough once
-> `public-dataset-demo-ingestion` lands.
+### Public dataset demo (planned, provenance-documented)
+
+The ATS demo lens is an explicit, public-data boundary and is intentionally
+deterministic:
+
+- **Canonical fixture source:**
+  `data/payload-mapper/payloads/ats/open-apply-sample.jsonl`
+- **Boundary:** public ATS job-posting payloads only (Ashby/Greenhouse/Lever sample)
+  and no private connector ingestion.
+- **Runtime behavior:** no runtime filesystem dependency, no default live fetch;
+  the demo uses a pinned fixture catalog/bundle.
+- **Route strategy:** extend and reuse existing intake routes under
+  `/api/intake/*` (including mapping suggestions, pending review, approval,
+  and rejection).
+
+For a concrete flow, add the canonical walkthrough:
+[`docs/guides/public-dataset-demo.md`](docs/guides/public-dataset-demo.md).
+
+For this workstream, “provenance-correct docs” means:
+
+- naming the exact fixture path used by the demo,
+- calling out deterministic v1 behavior and optional (explicit) freshness updates,
+- clearly stating what the demo is **not** (live connector, private data,
+  autonomous mutation).
 
 ## Run locally from a clean checkout
 

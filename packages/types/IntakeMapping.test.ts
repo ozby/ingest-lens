@@ -253,6 +253,7 @@ describe("Intake mapping contracts", () => {
         fixtureId: "ashby-job-001",
         sourceHash: "sha256:test",
         sourceSystem: "ashby",
+        sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
         capturedAt: "2026-04-24T00:25:00.000Z",
       },
       record: {

@@ -13,6 +13,7 @@ import {
   AUTH_HEADER,
   bypassAuth,
   createMockEnv,
+  get,
   post,
 } from "./helpers";
 import { suggestMappings } from "../intake/aiMappingAdapter";
@@ -195,6 +196,71 @@ beforeEach(() => {
 });
 
 describe("intake routes", () => {
+  it("lists public fixture metadata without payload bodies", async () => {
+    bypassAuth(vi.mocked(authenticate));
+
+    const response = await app.fetch(
+      get("/api/intake/public-fixtures", AUTH_HEADER),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      data: {
+        fixtures: Array<Record<string, unknown>>;
+      };
+    };
+
+    expect(payload.data.fixtures).toHaveLength(8);
+    expect(payload.data.fixtures[0]).toMatchObject({
+      id: "ashby-job-001",
+      sourceSystem: "ashby",
+      contractHint: "job-posting-v1",
+    });
+    expect(payload.data.fixtures[0]).not.toHaveProperty("payload");
+  });
+
+  it("loads one public fixture payload by id", async () => {
+    bypassAuth(vi.mocked(authenticate));
+
+    const response = await app.fetch(
+      get("/api/intake/public-fixtures/lever-posting-001", AUTH_HEADER),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      data: {
+        fixture: {
+          id: string;
+          sourceSystem: string;
+          contractHint: string;
+          payload: Record<string, unknown>;
+        };
+      };
+    };
+
+    expect(payload.data.fixture).toMatchObject({
+      id: "lever-posting-001",
+      sourceSystem: "lever",
+      contractHint: "job-posting-v1",
+      payload: {
+        text: "Senior Frontend Engineer",
+      },
+    });
+  });
+
+  it("returns 404 for unknown public fixture ids", async () => {
+    bypassAuth(vi.mocked(authenticate));
+
+    const response = await app.fetch(
+      get("/api/intake/public-fixtures/missing-fixture", AUTH_HEADER),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(404);
+  });
+
   it("returns 401 when not authenticated", async () => {
     const response = await app.fetch(
       post("/api/intake/mapping-suggestions", {

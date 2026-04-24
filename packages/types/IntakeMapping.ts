@@ -193,6 +193,7 @@ export interface SourceProvenance {
   fixtureId?: string;
   sourceHash: string;
   sourceSystem: string;
+  sourceUrl?: string;
   capturedAt: string;
 }
 

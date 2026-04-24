@@ -410,4 +410,70 @@ describe("api service contracts", () => {
       { reason: "Bad mapping" },
     );
   });
+
+  it("loads public fixture metadata catalog from intake fixture endpoint", async () => {
+    axiosMocks.get.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          fixtures: [
+            {
+              id: "ashby-job-001",
+              sourceSystem: "ashby",
+              sourceUrl: "https://example.com/ashby",
+              summary: "Staff Software Engineer sample",
+              contractHint: "job-posting-v1",
+            },
+          ],
+        },
+      },
+    });
+
+    await expect(apiService.getPublicFixtures()).resolves.toEqual([
+      {
+        id: "ashby-job-001",
+        sourceSystem: "ashby",
+        sourceUrl: "https://example.com/ashby",
+        summary: "Staff Software Engineer sample",
+        contractHint: "job-posting-v1",
+      },
+    ]);
+
+    expect(axiosMocks.get).toHaveBeenCalledWith(
+      "/api/intake/public-fixtures",
+    );
+  });
+
+  it("loads a public fixture payload by id from intake fixture endpoint", async () => {
+    axiosMocks.get.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          fixture: {
+            id: "ashby-job-001",
+            sourceSystem: "ashby",
+            sourceUrl: "https://example.com/ashby",
+            contractHint: "job-posting-v1",
+            payload: {
+              title: "Staff Engineer",
+            },
+          },
+        },
+      },
+    });
+
+    await expect(apiService.getPublicFixtureById("ashby-job-001")).resolves.toEqual({
+      id: "ashby-job-001",
+      sourceSystem: "ashby",
+      sourceUrl: "https://example.com/ashby",
+      contractHint: "job-posting-v1",
+      payload: {
+        title: "Staff Engineer",
+      },
+    });
+
+    expect(axiosMocks.get).toHaveBeenCalledWith(
+      "/api/intake/public-fixtures/ashby-job-001",
+    );
+  });
 });
