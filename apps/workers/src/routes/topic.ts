@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { eq, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { topics, queues, messages } from "../db/schema";
+import { serializeMessage } from "./message-response";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 
@@ -186,7 +187,7 @@ topicRoutes.post("/:topicId/publish", async (c) => {
       })
       .returning();
 
-    createdMessages.push(message);
+    createdMessages.push(serializeMessage(message));
 
     // Enqueue delivery via Cloudflare Queues for reliable ack/retry
     if (queue.pushEndpoint) {

@@ -96,6 +96,12 @@ describe("Topic routes", () => {
 
       expect(res.status).toBe(201);
       expect(mockDeliveryQueue.send).toHaveBeenCalledOnce();
+      const body = (await res.json()) as {
+        status: string;
+        results: number;
+        data: { messages: Array<{ id: string; seq: string }> };
+      };
+      expect(body.data.messages[0].seq).toBe("42");
       expect(mockDeliveryQueue.send).toHaveBeenCalledWith({
         messageId: mockMessage.id,
         seq: String(mockMessage.seq),

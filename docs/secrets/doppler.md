@@ -59,13 +59,16 @@ To create the `preview` root config and its children in the Doppler dashboard:
 
 ### `ozby-shell` project (infrastructure credentials)
 
-| Secret                  | `dev`                     | `production`               |
-| ----------------------- | ------------------------- | -------------------------- |
-| `CLOUDFLARE_API_TOKEN`  | scoped API token (deploy) | same or production token   |
-| `CLOUDFLARE_ACCOUNT_ID` | CF account ID             | same                       |
-| `CLOUDFLARE_ZONE_ID`    | CF zone for the domain    | same                       |
-| `PULUMI_ACCESS_TOKEN`   | personal access token     | CI service token           |
-| `DATABASE_URL`          | Neon dev branch URL       | Neon production branch URL |
+| Secret                  | `dev`                                         | `production`                                  |
+| ----------------------- | --------------------------------------------- | --------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | scoped API token (deploy)                     | same or production token                      |
+| `CLOUDFLARE_ACCOUNT_ID` | CF account ID                                 | same                                          |
+| `CLOUDFLARE_ZONE_ID`    | CF zone for the domain                        | same                                          |
+| `PULUMI_ACCESS_TOKEN`   | personal access token                         | CI service token                              |
+| `DATABASE_URL`          | Neon dev branch URL                           | Neon production branch URL                    |
+| `NEON_API_KEY`          | Neon API key for E2E / cleanup workflow       | Neon API key for E2E / cleanup workflow       |
+| `NEON_PROJECT_ID`       | Neon project id for E2E / cleanup workflow    | Neon project id for E2E / cleanup workflow    |
+| `NEON_PARENT_BRANCH_ID` | Neon parent branch for E2E / cleanup workflow | Neon parent branch for E2E / cleanup workflow |
 
 The `infra/` workspace scripts always inject from `ozby-shell`:
 

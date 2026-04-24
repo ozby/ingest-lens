@@ -61,6 +61,30 @@ pnpm --filter @repo/workers test    # vitest
 pnpm --filter @repo/workers check-types  # tsgo --noEmit
 ```
 
+## E2E surface
+
+The repo now owns its E2E seam via a root `agent-kit.config.ts`, the `apps/e2e`
+host adapter, and the `packages/neon` branch helpers.
+
+Current live suites:
+
+- `foundation` — worker health smoke
+- `auth` — register / login / session recovery
+- `messaging` — queue send/receive/ack and topic publish fanout
+- `full` — runs the full live HTTP suite in one invocation
+
+```bash
+pnpm exec ak e2e --suite foundation --print-command
+E2E_BASE_URL=http://127.0.0.1:8787 pnpm exec ak e2e --suite full
+pnpm --filter @repo/e2e db:branch:list
+```
+
+Local `auth`, `messaging`, and `full` runs require a migrated local Postgres
+schema plus `wrangler dev --var JWT_SECRET:e2e-test-secret`.
+
+Neon branch commands and the cleanup workflow read `NEON_API_KEY`,
+`NEON_PROJECT_ID`, and `NEON_PARENT_BRANCH_ID` from Doppler-backed shell env.
+
 ## Docs
 
 - [Architecture](docs/architecture.md) — system design walk-through

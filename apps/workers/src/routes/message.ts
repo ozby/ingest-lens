@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { eq, and, sql } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { queues, messages, queueMetrics } from "../db/schema";
+import { serializeMessage, serializeMessages } from "./message-response";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 
@@ -46,7 +47,7 @@ messageRoutes.post("/:queueId", async (c) => {
       .where(and(eq(messages.queueId, queueId), eq(messages.idempotencyKey, idempotencyKey)))
       .limit(1);
     if (existing) {
-      return c.json({ status: "success", data: { message: existing } }, 200);
+      return c.json({ status: "success", data: { message: serializeMessage(existing) } }, 200);
     }
   }
 
@@ -86,7 +87,7 @@ messageRoutes.post("/:queueId", async (c) => {
     });
   }
 
-  return c.json({ status: "success", data: { message } }, 201);
+  return c.json({ status: "success", data: { message: serializeMessage(message) } }, 201);
 });
 
 // GET /api/messages/:queueId — receive messages
@@ -145,7 +146,7 @@ messageRoutes.get("/:queueId", async (c) => {
   return c.json({
     status: "success",
     results: result.length,
-    data: { messages: result, visibilityTimeout },
+    data: { messages: serializeMessages(result), visibilityTimeout },
   });
 });
 
@@ -165,7 +166,7 @@ messageRoutes.get("/:queueId/:messageId", async (c) => {
     return c.json({ status: "error", message: "Message not found" }, 404);
   }
 
-  return c.json({ status: "success", data: message });
+  return c.json({ status: "success", data: serializeMessage(message) });
 });
 
 // DELETE /api/messages/:queueId/:messageId — delete (ack) message

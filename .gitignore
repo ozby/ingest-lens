@@ -31,7 +31,16 @@ Thumbs.db
 
 # MCP / tool session artifacts
 .playwright-mcp/
-.omx/
+!.omx/
+.omx/*
+!.omx/contracts/
+!.omx/contracts/**
+!.omx/plans/
+!.omx/plans/**
+!.omx/state/
+.omx/state/*
+!.omx/state/lifecycle/
+!.omx/state/lifecycle/**
 .codex/.tmp/
 .codex/cache/
 .codex/log/

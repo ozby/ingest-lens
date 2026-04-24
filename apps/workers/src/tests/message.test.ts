@@ -64,6 +64,11 @@ describe("Message routes — POST /api/messages/:queueId", () => {
 
     expect(res.status).toBe(201);
     expect(mockDeliveryQueue.send).toHaveBeenCalledOnce();
+    const body = (await res.json()) as {
+      status: string;
+      data: { message: { id: string; seq: string } };
+    };
+    expect(body.data.message.seq).toBe("42");
     expect(mockDeliveryQueue.send).toHaveBeenCalledWith({
       messageId: mockMessage.id,
       seq: String(mockMessage.seq),
@@ -138,8 +143,12 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     );
 
     expect(res.status).toBe(201);
-    const body = (await res.json()) as { status: string; data: { message: { id: string } } };
+    const body = (await res.json()) as {
+      status: string;
+      data: { message: { id: string; seq: string } };
+    };
     expect(body.data.message.id).toBe("msg-1");
+    expect(body.data.message.seq).toBe("42");
   });
 
   it("returns 200 with existing message when Idempotency-Key is a duplicate", async () => {
@@ -165,8 +174,12 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     );
 
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { status: string; data: { message: { id: string } } };
+    const body = (await res.json()) as {
+      status: string;
+      data: { message: { id: string; seq: string } };
+    };
     expect(body.data.message.id).toBe("msg-1");
+    expect(body.data.message.seq).toBe("42");
     expect(insertMock).not.toHaveBeenCalled();
     expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
   });

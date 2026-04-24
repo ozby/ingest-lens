@@ -1,0 +1,38 @@
+name: cleanup-stale-neon-e2e-branches
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+      NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Skip when Neon credentials are unavailable
+        if: env.NEON_API_KEY == '' || env.NEON_PROJECT_ID == '' || env.NEON_PARENT_BRANCH_ID == ''
+        run: echo "Skipping Neon cleanup because credentials are not configured."
+
+      - name: Cleanup stale e2e branches
+        if: env.NEON_API_KEY != '' && env.NEON_PROJECT_ID != '' && env.NEON_PARENT_BRANCH_ID != ''
+        run: pnpm --filter @repo/e2e run db:branch:cleanup

@@ -1,0 +1,86 @@
+name: testing-e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  full-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pubsub
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d pubsub"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pubsub
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Migrate local postgres schema
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION IF NOT EXISTS pgcrypto;'
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/workers/src/db/migrations/0000_initial_workers_schema.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=0 -f apps/workers/src/db/migrations/0001_add_message_seq.sql || true
+
+      - name: Start workers runtime
+        run: |
+          pnpm --filter @repo/workers exec wrangler dev --port 8787 --var JWT_SECRET:e2e-test-secret > worker.log 2>&1 &
+          echo $! > worker.pid
+
+      - name: Wait for worker health
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8787/health > /tmp/e2e-health.json; then
+              cat /tmp/e2e-health.json
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Worker did not become healthy in time" >&2
+          exit 1
+
+      - name: Run full e2e suite
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8787
+        run: pnpm exec ak e2e --suite full
+
+      - name: Upload worker log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-log
+          path: worker.log
+
+      - name: Stop workers runtime
+        if: always()
+        run: |
+          if [ -f worker.pid ]; then
+            kill $(cat worker.pid) || true
+          fi
