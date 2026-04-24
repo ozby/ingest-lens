@@ -1,42 +1,112 @@
-name = "node-pubsub-workers"
+name = "node-pubsub"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
+account_id = "e93986039ea9bd9729fa534a29e9e88f"  # ozby account — not a secret; CF account IDs are public identifiers
 
-# Production domain: api.ozby.dev
-# Hyperdrive binding ID is injected by infra/src/deploy/wrangler-config.ts after pulumi up
-[[hyperdrive]]
+# NOTE: wrangler environments do NOT inherit `durable_objects`, `queues`, or
+# `analytics_engine_datasets` from the top level — each env must re-declare
+# them. Hyperdrive/KV/R2 IDs per-env are synced by
+# `infra/src/deploy/sync-wrangler-ids.ts` after `pulumi up`.
+#
+# Each env's Worker is auto-named `node-pubsub-<env>` by wrangler and is
+# deployed via `wrangler deploy --env <env>`.
+
+# ─── dev environment ──────────────────────────────────────────────────────
+# Deployed Worker name: node-pubsub-dev
+# Custom domain: api.dev.ozby.dev (wrangler atomically creates Worker +
+# route + DNS + cert when `custom_domain = true`).
+
+[env.dev]
+workers_dev = false
+routes = [
+  { pattern = "api.dev.ozby.dev", custom_domain = true }
+]
+
+[env.dev.vars]
+NODE_ENV = "development"
+
+[[env.dev.hyperdrive]]
 binding = "HYPERDRIVE"
-id = "placeholder-hyperdrive-id"
+id = "04f6be6c29b94198a3a3b273a0d7423b"
 localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
 
-[[queues.producers]]
-binding = "DELIVERY_QUEUE"
-queue = "delivery-queue"
+[[env.dev.kv_namespaces]]
+binding = "KV"
+id = "5dbeb40fc8584a22af3cb9fffa276e3c"
 
-[[queues.consumers]]
-queue = "delivery-queue"
-max_batch_size = 10
-max_batch_timeout = 5
-max_retries = 5
-dead_letter_queue = "delivery-dlq"
+[[env.dev.r2_buckets]]
+binding = "ASSETS"
+bucket_name = "node-pubsub-dev-assets"
 
-[[ratelimits]]
-name = "RATE_LIMITER"
-namespace_id = "<cloudflare-rate-limit-namespace-id>"
-simple = { limit = 100, period = 60 }
-
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-dataset = "delivery_events"
-
-[[durable_objects.bindings]]
+[[env.dev.durable_objects.bindings]]
 name = "TOPIC_ROOMS"
 class_name = "TopicRoom"
 
-[[migrations]]
+[[env.dev.migrations]]
 tag = "v1"
 new_sqlite_classes = ["TopicRoom"]
 
-[vars]
-NODE_ENV = "development"
+[[env.dev.queues.producers]]
+binding = "DELIVERY_QUEUE"
+queue = "delivery-queue-dev"
+
+[[env.dev.queues.consumers]]
+queue = "delivery-queue-dev"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 5
+dead_letter_queue = "delivery-dlq-dev"
+
+[[env.dev.analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "delivery_events_dev"
+
+# ─── prd environment ──────────────────────────────────────────────────────
+# Deployed Worker name: node-pubsub-prd
+# Custom domain: api.ozby.dev
+
+[env.prd]
+workers_dev = false
+routes = [
+  { pattern = "api.ozby.dev", custom_domain = true }
+]
+
+[env.prd.vars]
+NODE_ENV = "production"
+
+[[env.prd.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "placeholder-prd-hyperdrive-id"
+localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
+
+[[env.prd.kv_namespaces]]
+binding = "KV"
+id = "placeholder-prd-kv-id"
+
+[[env.prd.r2_buckets]]
+binding = "ASSETS"
+bucket_name = "placeholder-prd-r2-bucket"
+
+[[env.prd.durable_objects.bindings]]
+name = "TOPIC_ROOMS"
+class_name = "TopicRoom"
+
+[[env.prd.migrations]]
+tag = "v1"
+new_sqlite_classes = ["TopicRoom"]
+
+[[env.prd.queues.producers]]
+binding = "DELIVERY_QUEUE"
+queue = "delivery-queue-prd"
+
+[[env.prd.queues.consumers]]
+queue = "delivery-queue-prd"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 5
+dead_letter_queue = "delivery-dlq-prd"
+
+[[env.prd.analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "delivery_events_prd"
