@@ -136,6 +136,10 @@ async function publishToTarget(
       })
       .returning();
 
+    if (!message) {
+      throw new Error("Failed to insert message into queue target.");
+    }
+
     if (queue.pushEndpoint) {
       await c.env.DELIVERY_QUEUE.send({
         messageId: message.id,
@@ -185,6 +189,10 @@ async function publishToTarget(
         receivedCount: 0,
       })
       .returning();
+
+    if (!message) {
+      throw new Error("Failed to insert message into topic fan-out target.");
+    }
 
     if (queue.pushEndpoint) {
       await c.env.DELIVERY_QUEUE.send({
@@ -345,6 +353,10 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     })
     .returning();
 
+  if (!row) {
+    return c.json({ status: "error", message: "Failed to record intake attempt" }, 500);
+  }
+
   const attempt = toAttemptRecord(row);
   const deliveryTargetInfo = getDeliveryTargetInfo(attempt.deliveryTarget);
   recordIntakeLifecycle(c.env, {
@@ -403,6 +415,10 @@ intakeRoutes.post("/mapping-suggestions/:id/reject", async (c) => {
     })
     .where(eq(intakeAttempts.id, attemptId))
     .returning();
+
+  if (!updated) {
+    return c.json({ status: "error", message: "Intake attempt not found" }, 404);
+  }
 
   return c.json({ status: "success", data: { attempt: toAttemptRecord(updated) } });
 });
@@ -492,7 +508,7 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     })
     .returning();
 
-  const updatedAttemptBase = await db
+  const [approvedAttemptRow] = await db
     .update(intakeAttempts)
     .set({
       status: "approved",
@@ -504,7 +520,10 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     .where(eq(intakeAttempts.id, attemptRow.id))
     .returning();
 
-  const approvedAttemptRow = updatedAttemptBase[0];
+  if (!mappingVersionRow || !approvedAttemptRow) {
+    return c.json({ status: "error", message: "Failed to persist approval" }, 500);
+  }
+
   const approvedAttempt = toAttemptRecord(approvedAttemptRow);
   const mappingVersion = toMappingRevision(mappingVersionRow);
   const normalizedRecord = createNormalizedEnvelope({
@@ -530,6 +549,10 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
       })
       .where(eq(intakeAttempts.id, attemptRow.id))
       .returning();
+
+    if (!failedAttemptRow) {
+      return c.json({ status: "error", message: "Failed to record ingest failure" }, 500);
+    }
 
     const failedAttempt = toAttemptRecord(failedAttemptRow);
     const deliveryTargetInfo = getDeliveryTargetInfo(failedAttempt.deliveryTarget);
@@ -574,6 +597,10 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     })
     .where(eq(intakeAttempts.id, attemptRow.id))
     .returning();
+
+  if (!ingestedAttemptRow) {
+    return c.json({ status: "error", message: "Failed to record ingest success" }, 500);
+  }
 
   const ingestedAttempt = toAttemptRecord(ingestedAttemptRow);
   const deliveryTargetInfo = getDeliveryTargetInfo(ingestedAttempt.deliveryTarget);

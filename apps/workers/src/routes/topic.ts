@@ -178,6 +178,10 @@ topicRoutes.post("/:topicId/publish", async (c) => {
       })
       .returning();
 
+    if (!message) {
+      return c.json({ status: "error", message: "Failed to create message" }, 500);
+    }
+
     createdMessages.push(serializeMessage(message));
 
     // Enqueue delivery via Cloudflare Queues for reliable ack/retry

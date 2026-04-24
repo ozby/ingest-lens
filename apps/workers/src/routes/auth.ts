@@ -62,6 +62,10 @@ authRoutes.post("/register", async (c) => {
       updatedAt: users.updatedAt,
     });
 
+  if (!user) {
+    return c.json({ status: "error", message: "Failed to create user" }, 500);
+  }
+
   const token = await generateToken(user.id, user.username, c.env.JWT_SECRET);
 
   return c.json({ status: "success", data: { user, token } }, 201);

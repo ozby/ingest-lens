@@ -1,9 +1,8 @@
 {
-  "extends": "@webpresso/typescript-config/cloudflare.json",
+  "extends": "../../tooling/tsconfig/cloudflare.json",
   "compilerOptions": {
     "types": ["@cloudflare/workers-types"],
     "noEmit": true,
-    "noUncheckedIndexedAccess": false,
     "verbatimModuleSyntax": false
   },
   "include": ["src/**/*.ts"]

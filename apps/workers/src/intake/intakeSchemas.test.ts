@@ -60,10 +60,9 @@ describe("intake validators", () => {
 
   it("rejects a batch with missing explanations", () => {
     const batch = createValidBatch();
-    batch.suggestions[0] = {
-      ...batch.suggestions[0],
-      explanation: "",
-    };
+    const [first] = batch.suggestions;
+    if (!first) throw new Error("Fixture invariant: expected at least one suggestion");
+    batch.suggestions[0] = { ...first, explanation: "" };
 
     expect(validateMappingSuggestionBatch(batch)).toEqual({
       ok: false,
@@ -73,10 +72,9 @@ describe("intake validators", () => {
 
   it("rejects invalid confidence values", () => {
     const batch = createValidBatch();
-    batch.suggestions[0] = {
-      ...batch.suggestions[0],
-      confidence: 1.2,
-    };
+    const [first] = batch.suggestions;
+    if (!first) throw new Error("Fixture invariant: expected at least one suggestion");
+    batch.suggestions[0] = { ...first, confidence: 1.2 };
 
     expect(validateMappingSuggestionBatch(batch)).toEqual({
       ok: false,
@@ -86,10 +84,9 @@ describe("intake validators", () => {
 
   it("rejects unknown target fields when an allowlist is provided", () => {
     const batch = createValidBatch();
-    batch.suggestions[0] = {
-      ...batch.suggestions[0],
-      targetField: "unknownField",
-    };
+    const [first] = batch.suggestions;
+    if (!first) throw new Error("Fixture invariant: expected at least one suggestion");
+    batch.suggestions[0] = { ...first, targetField: "unknownField" };
 
     expect(
       validateMappingSuggestionBatch(batch, {
@@ -103,10 +100,9 @@ describe("intake validators", () => {
 
   it("rejects malformed source paths", () => {
     const batch = createValidBatch();
-    batch.suggestions[0] = {
-      ...batch.suggestions[0],
-      sourcePath: "company/name",
-    };
+    const [first] = batch.suggestions;
+    if (!first) throw new Error("Fixture invariant: expected at least one suggestion");
+    batch.suggestions[0] = { ...first, sourcePath: "company/name" };
 
     expect(validateMappingSuggestionBatch(batch)).toEqual({
       ok: false,
@@ -116,10 +112,9 @@ describe("intake validators", () => {
 
   it("rejects syntactically valid source paths that do not exist in the payload", () => {
     const batch = createValidBatch();
-    batch.suggestions[0] = {
-      ...batch.suggestions[0],
-      sourcePath: "/company/missing",
-    };
+    const [first] = batch.suggestions;
+    if (!first) throw new Error("Fixture invariant: expected at least one suggestion");
+    batch.suggestions[0] = { ...first, sourcePath: "/company/missing" };
 
     expect(
       validateMappingSuggestionBatch(batch, {

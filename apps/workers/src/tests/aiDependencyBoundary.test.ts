@@ -43,7 +43,10 @@ function findBlockedImports(source: string): Array<{ dependency: string; line: n
 
     for (const match of source.matchAll(pattern)) {
       const dependency = match[1];
-      if (!BLOCKED_DEPENDENCIES.includes(dependency as (typeof BLOCKED_DEPENDENCIES)[number])) {
+      if (
+        !dependency ||
+        !BLOCKED_DEPENDENCIES.includes(dependency as (typeof BLOCKED_DEPENDENCIES)[number])
+      ) {
         continue;
       }
 

@@ -61,7 +61,9 @@ describe("mapping telemetry", () => {
     });
 
     expect(analytics.writeDataPoint).toHaveBeenCalledOnce();
-    const [payload] = analytics.writeDataPoint.mock.calls[0];
+    const firstCall = analytics.writeDataPoint.mock.calls[0];
+    if (!firstCall) throw new Error("Expected writeDataPoint to have been called");
+    const [payload] = firstCall;
     expect(payload.blobs.join(" ")).not.toContain("Staff Software Engineer");
     expect(payload.blobs).toContain("trace-1");
   });

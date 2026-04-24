@@ -74,7 +74,8 @@ describe("handleDeliveryBatch", () => {
     await handleDeliveryBatch(batch, env);
 
     expect(ack).toHaveBeenCalledOnce();
-    const pushRequest = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    const [, pushRequestArg] = vi.mocked(fetch).mock.calls[0] ?? [];
+    const pushRequest = pushRequestArg as RequestInit;
     expect(JSON.parse(pushRequest.body as string)).toEqual(
       expect.objectContaining({ id: "msg-1", seq: "42" }),
     );
@@ -269,7 +270,8 @@ describe("handleDeliveryBatch", () => {
     expect(mockIdFromName).toHaveBeenCalledWith("topic-1");
     expect(mockGet).toHaveBeenCalledWith("stub-id");
     expect(mockFetch).toHaveBeenCalledOnce();
-    const notifyRequest = mockFetch.mock.calls[0][0] as Request;
+    const [notifyRequestArg] = mockFetch.mock.calls[0] ?? [];
+    const notifyRequest = notifyRequestArg as Request;
     expect(notifyRequest.method).toBe("POST");
     expect(notifyRequest.headers.get("Content-Type")).toBe("application/json");
     await expect(notifyRequest.json()).resolves.toEqual({
@@ -312,7 +314,8 @@ describe("handleDeliveryBatch", () => {
     await handleDeliveryBatch(batch, env);
 
     expect(ack).toHaveBeenCalledOnce();
-    const notifyRequest = mockFetch.mock.calls[0][0] as Request;
+    const [notifyRequestArg] = mockFetch.mock.calls[0] ?? [];
+    const notifyRequest = notifyRequestArg as Request;
     await expect(notifyRequest.json()).resolves.toEqual({
       messageId: "msg-1",
       seq: "42",

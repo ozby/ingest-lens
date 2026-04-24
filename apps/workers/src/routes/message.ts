@@ -67,6 +67,10 @@ messageRoutes.post("/:queueId", async (c) => {
     })
     .returning();
 
+  if (!message) {
+    return c.json({ status: "error", message: "Failed to create message" }, 500);
+  }
+
   // Increment queue metrics
   await db
     .update(queueMetrics)

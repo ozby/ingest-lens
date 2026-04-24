@@ -111,12 +111,11 @@ describe("evaluateMappings", () => {
       [baseTask, { ...baseTask, id: "adv-1", split: "adversarial", expected_mapping: {} }],
       (task) => ({
         ...createGoldenEvalBatch(task),
-        suggestions: [
-          {
-            ...createGoldenEvalBatch(baseTask).suggestions[0],
-            sourcePath: "/missing",
-          },
-        ],
+        suggestions: (() => {
+          const [first] = createGoldenEvalBatch(baseTask).suggestions;
+          if (!first) throw new Error("Fixture invariant: expected at least one suggestion");
+          return [{ ...first, sourcePath: "/missing" }];
+        })(),
       }),
     );
 
@@ -146,6 +145,7 @@ describe("evaluateMappings", () => {
     );
 
     const [taskResult] = report.taskResults;
+    if (!taskResult) throw new Error("Expected at least one task result");
     expect(taskResult.missingFieldScore).toBe(0);
     expect(taskResult.ambiguityScore).toBe(0);
   });

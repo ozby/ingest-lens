@@ -46,6 +46,10 @@ queueRoutes.post("/", async (c) => {
     })
     .returning();
 
+  if (!queue) {
+    return c.json({ status: "error", message: "Failed to create queue" }, 500);
+  }
+
   await db.insert(queueMetrics).values({
     queueId: queue.id,
     messageCount: 0,

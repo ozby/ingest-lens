@@ -41,7 +41,8 @@ function createSqlMock(seed: ReplayRecord[] = []) {
     if (normalized.startsWith("DELETE FROM msg_log WHERE created_at < ?")) {
       const [cutoff] = bindings as [number];
       for (let index = rows.length - 1; index >= 0; index -= 1) {
-        if (rows[index].createdAt < cutoff) {
+        const row = rows[index];
+        if (row && row.createdAt < cutoff) {
           rows.splice(index, 1);
         }
       }

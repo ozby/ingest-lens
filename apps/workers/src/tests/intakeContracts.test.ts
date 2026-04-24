@@ -91,10 +91,9 @@ describe("intake contracts", () => {
 
   it("rejects hallucinated sourcePath values before publish", () => {
     const batch = createBatch();
-    batch.suggestions[0] = {
-      ...batch.suggestions[0],
-      sourcePath: "/missing/title",
-    };
+    const [first] = batch.suggestions;
+    if (!first) throw new Error("Fixture invariant: expected at least one suggestion");
+    batch.suggestions[0] = { ...first, sourcePath: "/missing/title" };
 
     expect(
       validateMappingSuggestionBatch(batch, {

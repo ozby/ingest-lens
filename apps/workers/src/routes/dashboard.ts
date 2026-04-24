@@ -38,12 +38,16 @@ dashboardRoutes.get("/server", async (c) => {
       .returning();
   }
 
-  const [{ totalQueues }] = await db.select({ totalQueues: count() }).from(queues);
-  const [{ totalMessages }] = await db.select({ totalMessages: count() }).from(messages);
-  const [{ activeMessages }] = await db
+  const [totalQueuesRow] = await db.select({ totalQueues: count() }).from(queues);
+  const [totalMessagesRow] = await db.select({ totalMessages: count() }).from(messages);
+  const [activeMessagesRow] = await db
     .select({ activeMessages: count() })
     .from(messages)
     .where(and(eq(messages.received, true), gt(messages.visibilityExpiresAt, now)));
+
+  const totalQueues = totalQueuesRow?.totalQueues ?? 0;
+  const totalMessages = totalMessagesRow?.totalMessages ?? 0;
+  const activeMessages = activeMessagesRow?.activeMessages ?? 0;
 
   return c.json({
     status: "success",
@@ -162,12 +166,12 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
       .returning();
   }
 
-  const [{ totalMessages }] = await db
+  const [totalMessagesRow] = await db
     .select({ totalMessages: count() })
     .from(messages)
     .where(eq(messages.queueId, queueId));
 
-  const [{ activeMessages }] = await db
+  const [activeMessagesRow] = await db
     .select({ activeMessages: count() })
     .from(messages)
     .where(
@@ -177,6 +181,9 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
         gt(messages.visibilityExpiresAt, now),
       ),
     );
+
+  const totalMessages = totalMessagesRow?.totalMessages ?? 0;
+  const activeMessages = activeMessagesRow?.activeMessages ?? 0;
 
   const [oldestMessage] = await db
     .select({ createdAt: messages.createdAt })
