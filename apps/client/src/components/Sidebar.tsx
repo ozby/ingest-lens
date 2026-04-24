@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
           <div className="p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                MAIN NAVIGATION
+                INTEGRATION OBSERVABILITY
               </h2>
             </div>
           </div>
@@ -75,21 +75,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, closeSidebar }) => {
           <div className="p-4 border-t border-slate-200 dark:border-slate-800">
             <div className="glass-card p-3 space-y-2">
               <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
-                DASHBOARD NOTES
+                DELIVERY PRIMITIVES
               </h4>
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-green-500" />
-                  <span>Queue metrics</span>
+                  <span>Queues and topics stay visible as the shipped delivery rails.</span>
                 </div>
-                <span className="font-medium">Live</span>
+                <span className="font-medium">Shipped</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-blue-500" />
-                  <span>Activity history</span>
+                  <span>
+                    Queue metrics and delivery telemetry remain visible while intake tooling is
+                    still planned.
+                  </span>
                 </div>
-                <span className="font-medium">Demo label when empty</span>
+                <span className="font-medium">Partial</span>
               </div>
             </div>
           </div>

@@ -1,17 +1,20 @@
 ---
 type: research
-last_updated: "2026-04-22"
+last_updated: "2026-04-24"
 ---
 
 # Scale Considerations
 
-This document is an honest account of where the current design works, where it starts to strain,
-and what would need to change at higher load.
+This document is an honest account of where the current IngestLens delivery
+substrate works, where it starts to strain, and what would need to change at
+higher load. It describes the shipped queue/topic/runtime foundation, not the
+future AI intake layer.
 
 ## Current design point
 
-The system is designed for a moderate-traffic SaaS API: tens of thousands of messages per day,
-hundreds of concurrent publishers, and a handful of topics with dozens of subscribers each.
+The current showcase is designed for a moderate-traffic integration workflow:
+tens of thousands of messages per day, hundreds of concurrent publishers, and a
+handful of topics with dozens of subscribers each.
 
 At this scale, the limiting factors are all external services:
 

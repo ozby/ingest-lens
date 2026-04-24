@@ -1,61 +1,19 @@
-version: "3.8"
-
 services:
-  mongo1:
-    image: mongo:7.0
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-    ports:
-      - 27017:27017
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    healthcheck:
-      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) }" | mongosh --port 27017 --quiet
-      interval: 5s
-      timeout: 30s
-      start_period: 0s
-      start_interval: 1s
-      retries: 30
-    volumes:
-      - "mongo1_data:/data/db"
-      - "mongo1_config:/data/configdb"
-
-  mongo-express:
-    image: mongo-express:latest
-    platform: linux/arm64/v8 # Specific for M2 Mac
+  postgres:
+    image: postgres:16-alpine
     environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo1
-      - ME_CONFIG_BASICAUTH_USERNAME=admin
-      - ME_CONFIG_BASICAUTH_PASSWORD=password
+      POSTGRES_DB: pubsub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
-      - "8081:8081"
-    depends_on:
-      mongo1:
-        condition: service_healthy
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - "redis_data:/data"
-    command: redis-server --appendonly yes
+      - "5432:5432"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pubsub"]
       interval: 5s
-      timeout: 30s
-      retries: 5
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-    ports:
-      - "8082:8081"
-    depends_on:
-      redis:
-        condition: service_healthy
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  mongo1_data:
-  mongo1_config:
-  redis_data:
+  postgres_data:

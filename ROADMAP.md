@@ -45,11 +45,65 @@ Objective: align public surfaces around IngestLens without overclaiming planned 
 
 Objective: deliver the intake → mapping → approval → normalized event → observability demo.
 
-| Blueprint                                                                                        | Goal                                                                                  | Depends on                                                               |
-| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [`ai-oss-tooling-adapter`](blueprints/planned/ai-oss-tooling-adapter/_overview.md)               | Adopt the minimal OSS AI/validation stack behind one Worker adapter                   | `showcase-hardening-100`                                                 |
-| [`ai-payload-intake-mapper`](blueprints/planned/ai-payload-intake-mapper/_overview.md)           | Add Workers AI suggestion-only payload mapping with validation and approval           | `showcase-hardening-100`, `rebrand-ingestlens`, `ai-oss-tooling-adapter` |
-| [`public-dataset-demo-ingestion`](blueprints/planned/public-dataset-demo-ingestion/_overview.md) | Package the demo around public ATS fixture data and optional allowlisted live fetches | `ai-payload-intake-mapper`                                               |
+| Blueprint                                                                                        | Goal                                                                                  | Depends on                                                                 |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [`ai-oss-tooling-adapter`](blueprints/planned/ai-oss-tooling-adapter/_overview.md)               | Adopt the minimal OSS AI/validation stack behind one Worker adapter                   | `rebrand-ingestlens`                                                       |
+| [`ai-payload-intake-mapper`](blueprints/planned/ai-payload-intake-mapper/_overview.md)           | Add Workers AI suggestion-only payload mapping with validation and approval           | `showcase-hardening-100`, `rebrand-ingestlens`, `ai-oss-tooling-adapter`   |
+| [`public-dataset-demo-ingestion`](blueprints/planned/public-dataset-demo-ingestion/_overview.md) | Package the demo around public ATS fixture data and optional allowlisted live fetches | `showcase-hardening-100`, `rebrand-ingestlens`, `ai-payload-intake-mapper` |
+
+## Active execution DAG
+
+Source of truth: direct edges below come from active blueprint frontmatter
+(`depends_on`) as of 2026-04-24. The wave tables above are the human execution
+grouping; this DAG is the machine-friendly dependency view for parallel lane
+planning.
+
+```mermaid
+flowchart TD
+  SH["showcase-hardening-100"]
+  CRS["client-route-code-splitting"]
+  RB["rebrand-ingestlens"]
+  AIOSS["ai-oss-tooling-adapter"]
+  AIPM["ai-payload-intake-mapper"]
+  PDDI["public-dataset-demo-ingestion"]
+  E2E["e2e-neon (draft)"]
+
+  SH --> RB
+  SH --> AIPM
+  SH --> PDDI
+  RB --> AIOSS
+  RB --> AIPM
+  RB --> PDDI
+  AIOSS --> AIPM
+  AIPM --> PDDI
+```
+
+## Parallel execution read
+
+- **Ready now:** `showcase-hardening-100`, `client-route-code-splitting`
+- **Blocked until predecessors land:** `rebrand-ingestlens`,
+  `ai-oss-tooling-adapter`, `ai-payload-intake-mapper`,
+  `public-dataset-demo-ingestion`
+- **Not yet schedulable as an execution lane:** `e2e-neon` remains `draft` and
+  is intentionally excluded from the runnable DAG until promoted to
+  `planned`/`in-progress`
+
+### Shared-file choke points
+
+- `ai-payload-intake-mapper` and `public-dataset-demo-ingestion` converge on
+  the same intake route, admin UI, API client, and mapping review components;
+  they should stay serialized.
+- `ai-payload-intake-mapper` and `ai-oss-tooling-adapter` both own the intake
+  adapter boundary (`apps/workers/src/intake/aiMappingAdapter.ts`),
+  `packages/types/IntakeMapping.ts`, worker package metadata, and
+  `apps/workers/wrangler.toml`; the adapter blueprint should land first.
+- `rebrand-ingestlens` and `showcase-hardening-100` both touch
+  `apps/client/src/components/Sidebar.tsx` and docs/template cleanup surfaces,
+  so rebrand should wait for hardening completion as already modeled above.
+- `client-route-code-splitting` is mostly independent, but it shares
+  `apps/client/src/App.tsx` with `ai-payload-intake-mapper` and root manifest
+  surfaces with hardening, so it is safest either alongside hardening or before
+  the AI intake wave.
 
 ## Key constraints
 

@@ -1,117 +1,122 @@
-# node-pubsub
+# IngestLens
 
-A serverless pub/sub platform built on Cloudflare's edge primitives — exploring where each one's
-consistency guarantees break down.
+**AI-assisted integration observability for payload intake, mapping, delivery, and replay-aware debugging.**
+
+IngestLens is a Cloudflare-first showcase for a common IntegrationOps problem:
+third-party payloads drift, operators need help mapping them safely, and the
+underlying delivery rails still need honest, observable guarantees.
+
+## What is shipped vs. partial vs. planned?
+
+| State | What it means here |
+| --- | --- |
+| **Shipped** | Worker auth, owned queues/topics, push delivery, pull receive leases, dashboard metrics, and route/client contract alignment are implemented in this repo today. |
+| **Partial** | The current UI and docs now frame the product as IngestLens, but the intake-mapping review workflow is not fully built yet. |
+| **Planned** | AI-assisted mapping suggestions, canonical demo-guide flows, and the public dataset ingestion story are tracked as blueprints, not presented as completed product features. |
+
+## The product in 30 seconds
+
+- **Input:** messy third-party payloads that need review before they can be
+  trusted.
+- **Control plane:** authenticated operators own the queues, topics, and future
+  mapping reviews tied to their delivery rails.
+- **Delivery substrate:** Cloudflare Workers + Postgres + Queues + Durable
+  Objects provide the current execution backbone.
+- **Observability:** dashboard stats, replay-aware fan-out, and explicit
+  delivery guarantees make the system inspectable instead of magical.
+
+## Current architecture snapshot
 
 ```mermaid
 flowchart TD
-    subgraph "Path A — Direct queue publish"
-        A1([Client]) --> A2["POST /api/messages/:queueId"]
-        A2 --> A3[authenticate]
-        A3 --> A4{Idempotency-Key\nheader?}
-        A4 -->|present| A5[query existing message]
-        A5 -->|found| A6[200 — existing message]
-        A5 -->|not found| A7["INSERT message\nPostgres via Hyperdrive"]
-        A4 -->|absent| A7
-        A7 --> A8{pushEndpoint\nconfigured?}
-        A8 -->|yes| A9[DELIVERY_QUEUE.send]
-        A8 -->|no| A10[201 Created]
-        A9 --> A10
-    end
-
-    subgraph "Path B — Topic fan-out"
-        B1([Client]) --> B2["POST /api/topics/:topicId/publish"]
-        B2 --> B3[authenticate]
-        B3 --> B4[find topic + subscribed queues]
-        B4 --> B5["for each queue:\nINSERT message + DELIVERY_QUEUE.send"]
-        B5 --> B6[201 Created]
-    end
-
-    subgraph "Delivery consumer"
-        C1[DELIVERY_QUEUE batch] --> C2[fetch DB row]
-        C2 -->|missing| C3["msg.ack() — safe drop"]
-        C2 -->|found| C4["POST pushEndpoint"]
-        C4 -->|2xx| C5["msg.ack()"]
-        C4 -->|5xx / error| C6["msg.retry(backoff)\n[5, 10, 20, 40, 80]s"]
-        C6 -->|after 5 retries| C7[delivery-dlq]
-        C5 --> C8{"topicId present?\n(planned)"}
-        C8 -->|yes| C9["TOPIC_ROOMS.get(topicId)\n.fetch('/notify')"]
-    end
-
-    A9 -.->|enqueue| C1
-    B5 -.->|enqueue| C1
+    A[Third-party payload or operator action] --> B[Cloudflare Worker API]
+    B --> C[Validate auth + ownership]
+    C --> D[Postgres via Hyperdrive]
+    D --> E[Queue/topic delivery rails]
+    E --> F[Cloudflare Queues consumer]
+    F --> G[Push delivery + retry / DLQ]
+    F --> H[TopicRoom Durable Object fan-out]
+    B -. planned .-> I[AI-assisted mapping suggestion + approval flow]
 ```
 
-## Key design decisions
+## Demo path
 
-| Decision      | Choice                       | Trade-off                                                                                                                   |
-| ------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Runtime       | Cloudflare Workers           | No idle cost, 30s CPU limit — [ADR 001](docs/decisions/001-cloudflare-workers-runtime.md)                                   |
-| Delivery      | Cloudflare Queues            | At-least-once, ack/retry built-in — [ADR 002](docs/decisions/002-cloudflare-queues-delivery.md)                             |
-| Database      | Postgres via Hyperdrive      | PoP-level connection pooling solves V8 isolate TCP problem — [ADR 003](docs/decisions/003-hyperdrive-connection-pooling.md) |
-| Rate limiting | CF Workers binding (per-PoP) | Sub-ms decisions, not a global quota system — [ADR 004](docs/decisions/004-per-pop-rate-limiting.md)                        |
-| Real-time     | Durable Objects fan-out      | Actor model, single-writer, hibernation economics — [ADR 005](docs/decisions/005-durable-objects-fan-out.md)                |
+1. Register and log in.
+2. Create owned queues/topics and inspect delivery/dashboard behavior.
+3. Publish payloads directly or via topics and observe push + replay-aware
+   delivery behavior.
+4. Follow the planned IngestLens roadmap for the next layer:
+   - `rebrand-ingestlens` — align all public surfaces around the product story
+   - `ai-oss-tooling-adapter` — add the adapter boundary for OSS AI/validation
+   - `ai-payload-intake-mapper` — add mapping suggestion + approval
+   - `public-dataset-demo-ingestion` — package the canonical public dataset demo
 
-## Quick start
+> Planned guide path: [`docs/guides/public-dataset-demo.md`](docs/guides/public-dataset-demo.md)
+> will become the canonical human walkthrough once
+> `public-dataset-demo-ingestion` lands.
+
+## Run locally from a clean checkout
 
 ```bash
 pnpm install
-pnpm --filter @repo/workers dev     # wrangler dev (local Postgres via DATABASE_URL)
-pnpm --filter @repo/workers test    # vitest
-pnpm --filter @repo/workers check-types  # tsgo --noEmit
+pnpm --filter @repo/workers dev
+pnpm --filter client dev
 ```
+
+Local worker development expects the environment described in
+[`.env.example`](./.env.example): a Postgres connection (`DATABASE_URL`) for
+local development, a `JWT_SECRET`, and the same Cloudflare binding shape used by
+`wrangler.toml`. Doppler remains the preferred secret-loading path for real
+runs, but the package-level commands above are the clean-checkout baseline.
+
+## Verify locally
+
+```bash
+pnpm -r lint
+pnpm lint:repo
+pnpm -r check-types
+pnpm -r test
+pnpm -r --if-present build
+pnpm docs:check
+pnpm blueprints:check
+```
+
+## Delivery rails, honestly stated
+
+IngestLens is not pretending queues/topics disappeared. They remain the
+execution primitives behind the product:
+
+- **Queues** hold direct message delivery work.
+- **Topics** fan out to subscribed queues.
+- **Pull receive leases** are at-least-once and currently non-atomic under
+  concurrent consumers.
+- **Push delivery** retries with backoff and DLQ behavior.
+- **Durable Objects** provide topic fan-out and short reconnect replay.
+
+See the detailed system docs for the exact guarantees and caveats.
 
 ## Docs
 
-- [Architecture](docs/architecture.md) — system design walk-through
-- [Delivery guarantees](docs/delivery-guarantees.md) — at-least-once contract, idempotency keys, backoff, DLQ
-- [Scale considerations](docs/scale-considerations.md) — where it breaks and what to do about it
-- [Decisions](docs/decisions/) — architecture decision records
+- [Architecture](docs/architecture.md) — system design and truth-state notes
+- [Delivery guarantees](docs/delivery-guarantees.md) — push and pull delivery behavior
+- [Scale considerations](docs/scale-considerations.md) — where the current design strains
+- [ADR index](docs/adrs/README.md) — durable product and architecture decisions
+- [Blueprints](blueprints/README.md) — planned work, dependencies, and execution order
+- [Roadmap](ROADMAP.md) — current wave plan and dependency DAG
 
-## API reference
+## Why this repo exists
 
-| Method | Path                             | Auth   | Description                                        |
-| ------ | -------------------------------- | ------ | -------------------------------------------------- |
-| POST   | `/api/auth/register`             | —      | Create user account                                |
-| POST   | `/api/auth/login`                | —      | Authenticate, receive JWT                          |
-| GET    | `/api/auth/me`                   | Bearer | Current user                                       |
-| POST   | `/api/queues`                    | Bearer | Create queue (optional `pushEndpoint`)             |
-| GET    | `/api/queues`                    | Bearer | List owned queues                                  |
-| GET    | `/api/queues/:id`                | Bearer | Get queue                                          |
-| DELETE | `/api/queues/:id`                | Bearer | Delete queue                                       |
-| POST   | `/api/messages/:queueId`         | Bearer | Publish message; supports `Idempotency-Key` header |
-| POST   | `/api/topics`                    | Bearer | Create topic                                       |
-| GET    | `/api/topics`                    | Bearer | List owned topics                                  |
-| POST   | `/api/topics/:topicId/subscribe` | Bearer | Subscribe a queue to a topic                       |
-| POST   | `/api/topics/:topicId/publish`   | Bearer | Fan-out publish to all subscribed queues           |
-| GET    | `/api/topics/:topicId/ws`        | Bearer | WebSocket upgrade — planned                        |
-| GET    | `/api/dashboard`                 | Bearer | Server and queue metrics                           |
-| GET    | `/health`                        | —      | Health check                                       |
+This repo is intentionally scoped as a **showcase**, not a full connector
+platform. It demonstrates:
 
-## Stack
+- secure ownership boundaries,
+- honest delivery semantics,
+- AI-assisted mapping as a controlled future layer,
+- and a reviewable blueprint-driven execution model.
 
-| Layer              | Technology                                               |
-| ------------------ | -------------------------------------------------------- |
-| Runtime            | Cloudflare Workers (Hono)                                |
-| Database           | Postgres + Drizzle ORM, pooled via Cloudflare Hyperdrive |
-| Async delivery     | Cloudflare Queues                                        |
-| Real-time fan-out  | Cloudflare Durable Objects — planned                     |
-| Rate limiting      | Cloudflare Rate Limiting binding — planned               |
-| Delivery telemetry | Cloudflare Analytics Engine — planned                    |
-| Test runner        | Vitest                                                   |
-| Type checker       | `tsgo` (`@typescript/native-preview`)                    |
-| Secrets            | Doppler — no `.env` files                                |
+It does **not** claim:
 
-## Roadmap
-
-Feature work is tracked as self-contained blueprints in [`blueprints/`](./blueprints/).
-Each blueprint has an explicit dependency graph, TDD steps, and verification gates.
-
-| Blueprint                                                            | Status    |
-| -------------------------------------------------------------------- | --------- |
-| `workers-hono-port` — hard-cut Express → Hono on CF Workers          | completed |
-| `cf-queues-delivery` — Cloudflare Queues consumer with ack/retry     | completed |
-| `cf-rate-limiting` — per-PoP rate limiting on authenticated routes   | planned   |
-| `analytics-engine-telemetry` — delivery metrics via Analytics Engine | planned   |
-| `durable-objects-fan-out` — WebSocket fan-out via TopicRoom DO       | planned   |
-| `message-replay-cursor` — durable replay cursor on TopicRoom DO      | planned   |
+- a finished marketplace of connectors,
+- exactly-once delivery,
+- a production-ready global quota system,
+- or a completed AI ingestion product surface.
