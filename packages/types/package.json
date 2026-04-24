@@ -2,5 +2,17 @@
   "name": "@repo/types",
   "version": "0.0.0",
   "private": true,
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "check-types": "tsgo --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:tooling",
+    "@webpresso/typescript-config": "file:../../.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
+    "@webpresso/vitest-config": "file:../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
+    "vitest": "catalog:tooling"
+  }
 }

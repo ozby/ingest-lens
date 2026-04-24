@@ -7,6 +7,9 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret; CF account IDs are public identifiers
 
+[ai]
+binding = "AI"
+
 # NOTE: wrangler environments do NOT inherit `durable_objects`, `queues`, or
 # `analytics_engine_datasets` from the top level — each env must re-declare
 # them. Hyperdrive/KV/R2 IDs per-env are synced by

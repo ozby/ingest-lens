@@ -11,14 +11,14 @@ export default mergeConfig(workersConfig as never, {
         test: {
           name: "node",
           environment: "node",
-          include: ["src/tests/**/*.test.ts"],
+          include: ["src/**/*.test.ts"],
           exclude: ["src/tests/TopicRoom.test.ts"],
         },
       },
       // Workers pool — tests that exercise CF-native globals:
       // WebSocketPair, DurableObjectState, Response with status 101.
       {
-        plugins: [cloudflareTest({ wrangler: { configPath: "./wrangler.toml" } })],
+        plugins: [cloudflareTest({ wrangler: { configPath: "./wrangler.vitest.toml" } })],
         test: {
           name: "workers",
           include: ["src/tests/TopicRoom.test.ts"],
