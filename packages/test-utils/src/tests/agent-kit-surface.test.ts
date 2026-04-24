@@ -13,6 +13,25 @@ function readAgentKitManifest(): PackageManifest {
   return JSON.parse(readFileSync(manifestPath, "utf8")) as PackageManifest;
 }
 
+const workspaceManifestPaths = [
+  "package.json",
+  "apps/client/package.json",
+  "apps/e2e/package.json",
+  "apps/workers/package.json",
+  "infra/package.json",
+  "packages/logger/package.json",
+  "packages/neon/package.json",
+  "packages/test-utils/package.json",
+  "packages/ui/package.json",
+] as const;
+
+function readWorkspaceManifest(manifestPath: (typeof workspaceManifestPaths)[number]) {
+  return JSON.parse(readFileSync(resolve(process.cwd(), manifestPath), "utf8")) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+  };
+}
+
 describe("@webpresso/agent-kit consumer surface", () => {
   it("ships the portable public test and e2e subpath exports", () => {
     const manifest = readAgentKitManifest();
@@ -45,5 +64,19 @@ describe("@webpresso/agent-kit consumer surface", () => {
         ],
       },
     ]);
+  });
+
+  it("keeps webpresso tarball dependencies repo-relative for hosted CI installs", () => {
+    for (const manifestPath of workspaceManifestPaths) {
+      const manifest = readWorkspaceManifest(manifestPath);
+      const specs = Object.values({
+        ...manifest.dependencies,
+        ...manifest.devDependencies,
+      }).filter((value) => value.includes("@webpresso") || value.includes("webpresso-"));
+
+      for (const spec of specs) {
+        expect(spec.startsWith("file:/Users/")).toBe(false);
+      }
+    }
   });
 });
