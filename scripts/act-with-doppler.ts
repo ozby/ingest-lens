@@ -6,7 +6,6 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import process from "node:process";
 import {
-  getActSecretProfile,
   isActSecretProfileId,
   listMissingRequiredSecrets,
   pickAllowedSecrets,

@@ -28,16 +28,12 @@ function seededRng(seed: number): () => number {
 
 // Uniform [0, 1): analytical p50=0.5, p95=0.95, p99=0.99
 function uniformSamples(rng: () => number, n: number): number[] {
-  const out = new Array<number>(n);
-  for (let i = 0; i < n; i++) out[i] = rng();
-  return out;
+  return Array.from({ length: n }, () => rng());
 }
 
 // Exponential with mean 1: analytical p50 = ln(2) ≈ 0.693, p99 = ln(100) ≈ 4.605
 function exponentialSamples(rng: () => number, n: number): number[] {
-  const out = new Array<number>(n);
-  for (let i = 0; i < n; i++) out[i] = -Math.log(1 - rng());
-  return out;
+  return Array.from({ length: n }, () => -Math.log(1 - rng()));
 }
 
 function assertWithin(
