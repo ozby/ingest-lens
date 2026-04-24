@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import {
   ApiResponse,
   AuthResponse,
@@ -50,6 +50,17 @@ interface PublicFixtureDetail {
   contractHint?: string;
 }
 
+export function extractData<T>(response: AxiosResponse<ApiResponse<T>>): T {
+  const envelope = response.data;
+  if (!envelope) {
+    throw new Error("API response envelope is missing");
+  }
+  if (envelope.status !== "success") {
+    throw new Error(`API response envelope status is "${envelope.status}", expected "success"`);
+  }
+  return envelope.data;
+}
+
 class ApiService {
   private api: ReturnType<typeof axios.create>;
   private token: string | null = null;
@@ -87,8 +98,9 @@ class ApiService {
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await this.api.post<ApiResponse<AuthResponse>>("/api/auth/login", credentials);
-    this.setToken(response.data.data.token);
-    return response.data.data;
+    const data = extractData(response);
+    this.setToken(data.token);
+    return data;
   }
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
@@ -96,13 +108,14 @@ class ApiService {
       "/api/auth/register",
       credentials,
     );
-    this.setToken(response.data.data.token);
-    return response.data.data;
+    const data = extractData(response);
+    this.setToken(data.token);
+    return data;
   }
 
   async getCurrentUser(): Promise<IUser> {
     const response = await this.api.get<ApiResponse<CurrentUserData>>("/api/auth/me");
-    return response.data.data.user;
+    return extractData(response).user;
   }
 
   setToken(token: string): void {
@@ -117,41 +130,41 @@ class ApiService {
 
   async getServerMetrics(): Promise<IServerMetrics> {
     const response = await this.api.get<ApiResponse<ServerMetricsData>>("/api/dashboard/server");
-    return response.data.data.serverMetrics;
+    return extractData(response).serverMetrics;
   }
 
   async getServerActivityHistory(): Promise<IActivityDataPoint[]> {
     const response = await this.api.get<ApiResponse<ServerActivityHistoryData>>(
       "/api/dashboard/server/activity",
     );
-    return response.data.data.activityHistory;
+    return extractData(response).activityHistory;
   }
 
   async getAllQueueMetrics(): Promise<IQueueMetrics[]> {
     const response = await this.api.get<ApiResponse<QueueMetricsListData>>("/api/dashboard/queues");
-    return response.data.data.queueMetrics;
+    return extractData(response).queueMetrics;
   }
 
   async getQueueMetrics(queueId: string): Promise<IQueueMetrics> {
     const response = await this.api.get<ApiResponse<QueueMetricsData>>(
       `/api/dashboard/queues/${queueId}`,
     );
-    return response.data.data.queueMetrics;
+    return extractData(response).queueMetrics;
   }
 
   async createQueue(queue: CreateQueueRequest): Promise<IQueue> {
     const response = await this.api.post<ApiResponse<{ queue: IQueue }>>("/api/queues", queue);
-    return response.data.data.queue;
+    return extractData(response).queue;
   }
 
   async getQueues(): Promise<IQueue[]> {
     const response = await this.api.get<ApiResponse<{ queues: IQueue[] }>>("/api/queues");
-    return response.data.data.queues;
+    return extractData(response).queues;
   }
 
   async getQueue(id: string): Promise<IQueue> {
     const response = await this.api.get<ApiResponse<{ queue: IQueue }>>(`/api/queues/${id}`);
-    return response.data.data.queue;
+    return extractData(response).queue;
   }
 
   async deleteQueue(id: string): Promise<void> {
@@ -160,17 +173,17 @@ class ApiService {
 
   async createTopic(topic: CreateTopicRequest): Promise<ITopic> {
     const response = await this.api.post<ApiResponse<{ topic: ITopic }>>("/api/topics", topic);
-    return response.data.data.topic;
+    return extractData(response).topic;
   }
 
   async getTopics(): Promise<ITopic[]> {
     const response = await this.api.get<ApiResponse<{ topics: ITopic[] }>>("/api/topics");
-    return response.data.data.topics;
+    return extractData(response).topics;
   }
 
   async getTopic(id: string): Promise<ITopic> {
     const response = await this.api.get<ApiResponse<{ topic: ITopic }>>(`/api/topics/${id}`);
-    return response.data.data.topic;
+    return extractData(response).topic;
   }
 
   async deleteTopic(id: string): Promise<void> {
@@ -182,7 +195,7 @@ class ApiService {
       `/api/topics/${topicId}/subscribe`,
       request,
     );
-    return response.data.data.topic;
+    return extractData(response).topic;
   }
 
   async publishToTopic(topicId: string, request: PublishTopicRequest): Promise<void> {
@@ -194,7 +207,7 @@ class ApiService {
       `/api/messages/${queueId}`,
       request,
     );
-    return response.data.data.message;
+    return extractData(response).message;
   }
 
   async receiveMessages(queueId: string, query?: ReceiveMessagesQuery): Promise<IMessage[]> {
@@ -206,14 +219,14 @@ class ApiService {
       `/api/messages/${queueId}`,
       config,
     );
-    return response.data.data.messages;
+    return extractData(response).messages;
   }
 
   async getMessage(queueId: string, messageId: string): Promise<IMessage> {
     const response = await this.api.get<ApiResponse<MessageData>>(
       `/api/messages/${queueId}/${messageId}`,
     );
-    return response.data.data.message;
+    return extractData(response).message;
   }
 
   async createIntakeSuggestion(
@@ -223,7 +236,7 @@ class ApiService {
       "/api/intake/mapping-suggestions",
       request,
     );
-    return response.data.data.attempt;
+    return extractData(response).attempt;
   }
 
   async getIntakeSuggestions(status?: string): Promise<IntakeAttemptData["attempt"][]> {
@@ -233,21 +246,21 @@ class ApiService {
         params: status ? { status } : undefined,
       },
     );
-    return response.data.data.attempts;
+    return extractData(response).attempts;
   }
 
   async getPublicFixtures(): Promise<PublicFixtureMetadata[]> {
     const response = await this.api.get<ApiResponse<{ fixtures: PublicFixtureMetadata[] }>>(
       "/api/intake/public-fixtures",
     );
-    return response.data.data.fixtures;
+    return extractData(response).fixtures;
   }
 
   async getPublicFixtureById(fixtureId: string): Promise<PublicFixtureDetail> {
     const response = await this.api.get<ApiResponse<{ fixture: PublicFixtureDetail }>>(
       `/api/intake/public-fixtures/${fixtureId}`,
     );
-    return response.data.data.fixture;
+    return extractData(response).fixture;
   }
 
   async approveIntakeSuggestion(
@@ -258,7 +271,7 @@ class ApiService {
       `/api/intake/mapping-suggestions/${attemptId}/approve`,
       request,
     );
-    return response.data.data;
+    return extractData(response);
   }
 
   async rejectIntakeSuggestion(
@@ -269,14 +282,14 @@ class ApiService {
       `/api/intake/mapping-suggestions/${attemptId}/reject`,
       request,
     );
-    return response.data.data.attempt;
+    return extractData(response).attempt;
   }
 
   async deleteMessage(queueId: string, messageId: string): Promise<string> {
     const response = await this.api.delete<ApiResponse<DeleteMessageData>>(
       `/api/messages/${queueId}/${messageId}`,
     );
-    return response.data.data.deletedMessageId;
+    return extractData(response).deletedMessageId;
   }
 }
 
