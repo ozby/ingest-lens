@@ -25,10 +25,10 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
-    "@webpresso/agent-kit": "file:/Users/ozby/.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz",
-    "@webpresso/stryker-config": "file:/Users/ozby/.agent-kit-packs/webpresso-stryker-config-0.0.1.tgz",
-    "@webpresso/typescript-config": "file:/Users/ozby/.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
-    "@webpresso/vitest-config": "file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
+    "@webpresso/agent-kit": "file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz",
+    "@webpresso/stryker-config": "file:../../../.agent-kit-packs/webpresso-stryker-config-0.0.1.tgz",
+    "@webpresso/typescript-config": "file:../../../.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
+    "@webpresso/vitest-config": "file:../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
     "husky": "catalog:",
     "oxlint": "catalog:tooling",
     "secretlint": "^9.3.0",
@@ -39,6 +39,17 @@
   },
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
+    "overrides": {
+      "@commitlint/config-validator>ajv": "8.18.0",
+      "@esbuild-kit/core-utils>esbuild": "0.25.12",
+      "@secretlint/config-loader>ajv": "8.18.0",
+      "@textlint/linter-formatter>js-yaml": "3.14.2",
+      "@textlint/linter-formatter>lodash": "4.18.1",
+      "@voidzero-dev/vite-plus-core>yaml": "2.8.3",
+      "micromatch>picomatch": "2.3.2",
+      "protobufjs": "7.5.5",
+      "table>ajv": "8.18.0"
+    },
     "peerDependencyRules": {
       "allowedVersions": {
         "vite>esbuild": "*"

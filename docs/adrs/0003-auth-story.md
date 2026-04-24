@@ -1,6 +1,6 @@
 ---
 type: adr
-last_updated: "2026-04-22"
+last_updated: "2026-04-24"
 ---
 
 # ADR 0003: Auth Story (v1 API Keys)
@@ -67,6 +67,27 @@ defer JWTs is visible and reversible.
 - mTLS is documented as rejected (see below) but remains viable for
   machine-to-machine integrations if the platform gains a certificate
   provisioning story
+
+## Showcase Worker password-storage addendum
+
+The showcase Worker's user-password storage is hardened separately from the
+v1 API-key decision above.
+
+- **Stored format:** `pbkdf2$<iterations>$<salt>$<hash>`
+- **KDF:** WebCrypto PBKDF2-HMAC-SHA-256
+- **Parameters:** `310000` iterations, 16-byte random salt, 32-byte derived key
+- **Encoding:** base64url for both salt and derived hash
+- **Verification:** derive with the stored salt/iteration count, then compare
+  against the stored hash via a constant-time byte comparison path
+
+### Legacy-user handling
+
+- Existing 64-character hex SHA-256 hashes from the old
+  `password + "some-salt"` scheme remain readable as a migration boundary.
+- On the next successful login, that legacy hash is replaced immediately with
+  the PBKDF2 format above.
+- Any other non-PBKDF2 password string is treated as unsupported legacy data
+  and rejected instead of silently falling back to weaker comparisons.
 
 ## Alternatives considered
 

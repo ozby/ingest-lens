@@ -1,0 +1,1 @@
+ALTER TABLE "messages" ADD COLUMN "visibility_expires_at" timestamp;

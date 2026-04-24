@@ -11,51 +11,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  setup:
-    name: Install
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-monorepo
-
-  check:
-    name: Check (lint + types)
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: ./.github/actions/setup-monorepo
-      - run: pnpm check
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: ./.github/actions/setup-monorepo
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm check-types
       - run: pnpm test
-
-  catalog-drift:
-    name: Catalog drift
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: ./.github/actions/setup-monorepo
-      - run: pnpm catalog:check
-
-  blueprint-validate:
-    name: Blueprint validation
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: ./.github/actions/setup-monorepo
-      - run: bun ./scripts/validate-blueprints.ts
+      - run: pnpm build
+      - run: pnpm blueprints:check
 
   mutation:
     name: Mutation (affected)
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [verify]
     if: github.event_name == 'pull_request'
     steps:
-      - uses: ./.github/actions/setup-monorepo
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: "0"
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
       - run: bun ./scripts/affected-mutation.ts

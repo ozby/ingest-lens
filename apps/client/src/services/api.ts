@@ -1,6 +1,15 @@
 import axios, { AxiosRequestConfig } from "axios";
 import {
+  ApiResponse,
   AuthResponse,
+  CurrentUserData,
+  DeleteMessageData,
+  MessageData,
+  QueueMetricsData,
+  QueueMetricsListData,
+  ReceiveMessagesData,
+  ServerActivityHistoryData,
+  ServerMetricsData,
   CreateQueueRequest,
   CreateTopicRequest,
   IActivityDataPoint,
@@ -18,12 +27,6 @@ import {
   SubscribeTopicRequest,
 } from "@repo/types";
 import { toast } from "sonner";
-
-// Define types for API responses
-interface ApiResponse<T> {
-  status: string;
-  data: T;
-}
 
 class ApiService {
   private api: ReturnType<typeof axios.create>;
@@ -52,7 +55,8 @@ class ApiService {
     this.api.interceptors.response.use(
       (response) => response,
       (error) => {
-        const errorMessage = error.response?.data?.message || "An error occurred";
+        const errorMessage =
+          error.response?.data?.message || "An error occurred";
         toast.error(errorMessage);
         return Promise.reject(error);
       },
@@ -62,7 +66,10 @@ class ApiService {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<ApiResponse<AuthResponse>>("/api/auth/login", credentials);
+    const response = await this.api.post<ApiResponse<AuthResponse>>(
+      "/api/auth/login",
+      credentials,
+    );
     this.setToken(response.data.data.token);
     return response.data.data;
   }
@@ -77,7 +84,8 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<IUser> {
-    const response = await this.api.get<ApiResponse<{ user: IUser }>>("/api/auth/me");
+    const response =
+      await this.api.get<ApiResponse<CurrentUserData>>("/api/auth/me");
     return response.data.data.user;
   }
 
@@ -92,43 +100,51 @@ class ApiService {
   }
 
   async getServerMetrics(): Promise<IServerMetrics> {
-    const response =
-      await this.api.get<ApiResponse<{ serverMetrics: IServerMetrics }>>("/api/dashboard/server");
+    const response = await this.api.get<ApiResponse<ServerMetricsData>>(
+      "/api/dashboard/server",
+    );
     return response.data.data.serverMetrics;
   }
 
   async getServerActivityHistory(): Promise<IActivityDataPoint[]> {
-    const response = await this.api.get<ApiResponse<{ activityHistory: IActivityDataPoint[] }>>(
+    const response = await this.api.get<ApiResponse<ServerActivityHistoryData>>(
       "/api/dashboard/server/activity",
     );
     return response.data.data.activityHistory;
   }
 
   async getAllQueueMetrics(): Promise<IQueueMetrics[]> {
-    const response =
-      await this.api.get<ApiResponse<{ queueMetrics: IQueueMetrics[] }>>("/api/dashboard/queues");
+    const response = await this.api.get<ApiResponse<QueueMetricsListData>>(
+      "/api/dashboard/queues",
+    );
     return response.data.data.queueMetrics;
   }
 
   async getQueueMetrics(queueId: string): Promise<IQueueMetrics> {
-    const response = await this.api.get<ApiResponse<{ queueMetric: IQueueMetrics }>>(
+    const response = await this.api.get<ApiResponse<QueueMetricsData>>(
       `/api/dashboard/queues/${queueId}`,
     );
-    return response.data.data.queueMetric;
+    return response.data.data.queueMetrics;
   }
 
   async createQueue(queue: CreateQueueRequest): Promise<IQueue> {
-    const response = await this.api.post<ApiResponse<{ queue: IQueue }>>("/api/queues", queue);
+    const response = await this.api.post<ApiResponse<{ queue: IQueue }>>(
+      "/api/queues",
+      queue,
+    );
     return response.data.data.queue;
   }
 
   async getQueues(): Promise<IQueue[]> {
-    const response = await this.api.get<ApiResponse<{ queues: IQueue[] }>>("/api/queues");
+    const response =
+      await this.api.get<ApiResponse<{ queues: IQueue[] }>>("/api/queues");
     return response.data.data.queues;
   }
 
   async getQueue(id: string): Promise<IQueue> {
-    const response = await this.api.get<ApiResponse<{ queue: IQueue }>>(`/api/queues/${id}`);
+    const response = await this.api.get<ApiResponse<{ queue: IQueue }>>(
+      `/api/queues/${id}`,
+    );
     return response.data.data.queue;
   }
 
@@ -137,17 +153,23 @@ class ApiService {
   }
 
   async createTopic(topic: CreateTopicRequest): Promise<ITopic> {
-    const response = await this.api.post<ApiResponse<{ topic: ITopic }>>("/api/topics", topic);
+    const response = await this.api.post<ApiResponse<{ topic: ITopic }>>(
+      "/api/topics",
+      topic,
+    );
     return response.data.data.topic;
   }
 
   async getTopics(): Promise<ITopic[]> {
-    const response = await this.api.get<ApiResponse<{ topics: ITopic[] }>>("/api/topics");
+    const response =
+      await this.api.get<ApiResponse<{ topics: ITopic[] }>>("/api/topics");
     return response.data.data.topics;
   }
 
   async getTopic(id: string): Promise<ITopic> {
-    const response = await this.api.get<ApiResponse<{ topic: ITopic }>>(`/api/topics/${id}`);
+    const response = await this.api.get<ApiResponse<{ topic: ITopic }>>(
+      `/api/topics/${id}`,
+    );
     return response.data.data.topic;
   }
 
@@ -155,7 +177,10 @@ class ApiService {
     await this.api.delete(`/api/topics/${id}`);
   }
 
-  async subscribeTopic(topicId: string, request: SubscribeTopicRequest): Promise<ITopic> {
+  async subscribeTopic(
+    topicId: string,
+    request: SubscribeTopicRequest,
+  ): Promise<ITopic> {
     const response = await this.api.post<ApiResponse<{ topic: ITopic }>>(
       `/api/topics/${topicId}/subscribe`,
       request,
@@ -163,24 +188,33 @@ class ApiService {
     return response.data.data.topic;
   }
 
-  async publishToTopic(topicId: string, request: PublishTopicRequest): Promise<void> {
+  async publishToTopic(
+    topicId: string,
+    request: PublishTopicRequest,
+  ): Promise<void> {
     await this.api.post(`/api/topics/${topicId}/publish`, request);
   }
 
-  async sendMessage(queueId: string, request: SendMessageRequest): Promise<IMessage> {
-    const response = await this.api.post<ApiResponse<{ message: IMessage }>>(
+  async sendMessage(
+    queueId: string,
+    request: SendMessageRequest,
+  ): Promise<IMessage> {
+    const response = await this.api.post<ApiResponse<MessageData>>(
       `/api/messages/${queueId}`,
       request,
     );
     return response.data.data.message;
   }
 
-  async receiveMessages(queueId: string, query?: ReceiveMessagesQuery): Promise<IMessage[]> {
+  async receiveMessages(
+    queueId: string,
+    query?: ReceiveMessagesQuery,
+  ): Promise<IMessage[]> {
     const config: AxiosRequestConfig = {};
     if (query) {
       config.params = query;
     }
-    const response = await this.api.get<ApiResponse<{ messages: IMessage[] }>>(
+    const response = await this.api.get<ApiResponse<ReceiveMessagesData>>(
       `/api/messages/${queueId}`,
       config,
     );
@@ -188,14 +222,17 @@ class ApiService {
   }
 
   async getMessage(queueId: string, messageId: string): Promise<IMessage> {
-    const response = await this.api.get<ApiResponse<{ message: IMessage }>>(
+    const response = await this.api.get<ApiResponse<MessageData>>(
       `/api/messages/${queueId}/${messageId}`,
     );
     return response.data.data.message;
   }
 
-  async deleteMessage(queueId: string, messageId: string): Promise<void> {
-    await this.api.delete(`/api/messages/${queueId}/${messageId}`);
+  async deleteMessage(queueId: string, messageId: string): Promise<string> {
+    const response = await this.api.delete<ApiResponse<DeleteMessageData>>(
+      `/api/messages/${queueId}/${messageId}`,
+    );
+    return response.data.data.deletedMessageId;
   }
 }
 

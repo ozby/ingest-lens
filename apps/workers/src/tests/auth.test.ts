@@ -1,38 +1,101 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
-import { createMockEnv, post, get } from "./helpers";
+import { createDb } from "../db/client";
+import {
+  comparePassword,
+  generateToken,
+  hashPasswordAsync,
+} from "../middleware/auth";
+import {
+  buildInsertChain,
+  buildSelectChain,
+  buildUpdateChain,
+  createMockEnv,
+  get,
+  post,
+} from "./helpers";
 
-vi.mock("../db/client", () => ({
-  createDb: vi.fn(() => ({
-    select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue([]),
-        }),
-      }),
-    }),
-    insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([
-          {
-            id: "user-1",
-            username: "testuser",
-            email: "test@example.com",
-            createdAt: new Date("2026-01-01"),
-          },
-        ]),
-      }),
-    }),
-  })),
-}));
+vi.mock("../db/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../db/client")>();
+  return { ...actual, createDb: vi.fn() };
+});
 
 const mockEnv = createMockEnv();
 
+function mockRegisteredUser() {
+  return {
+    id: "user-1",
+    username: "testuser",
+    email: "test@example.com",
+    createdAt: new Date("2026-01-01"),
+    updatedAt: new Date("2026-01-02"),
+  };
+}
+
+async function hashLegacyPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest(
+    "SHA-256",
+    encoder.encode(password + "some-salt"),
+  );
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function expectPbkdf2HashFormat(hash: string): void {
+  expect(hash).toMatch(/^pbkdf2\$\d+\$[A-Za-z0-9_-]+\$[A-Za-z0-9_-]+$/);
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+
+  const { selectMock } = buildSelectChain([]);
+  const { insertMock } = buildInsertChain([mockRegisteredUser()]);
+  const { updateMock } = buildUpdateChain();
+
+  vi.mocked(createDb).mockReturnValue({
+    select: selectMock,
+    insert: insertMock,
+    update: updateMock,
+  } as any);
+});
+
 describe("Auth routes", () => {
+  describe("password hashing", () => {
+    it("stores equal passwords with unique salts in pbkdf2 format", async () => {
+      const [firstHash, secondHash] = await Promise.all([
+        hashPasswordAsync("password123"),
+        hashPasswordAsync("password123"),
+      ]);
+
+      expectPbkdf2HashFormat(firstHash);
+      expectPbkdf2HashFormat(secondHash);
+      expect(firstHash).not.toBe(secondHash);
+    });
+
+    it("verifies a matching pbkdf2 password", async () => {
+      const hash = await hashPasswordAsync("password123");
+
+      await expect(comparePassword("password123", hash)).resolves.toBe(true);
+    });
+
+    it("rejects a wrong password for a pbkdf2 hash", async () => {
+      const hash = await hashPasswordAsync("password123");
+
+      await expect(comparePassword("wrong-password", hash)).resolves.toBe(
+        false,
+      );
+    });
+  });
+
   describe("POST /api/auth/register", () => {
     it("returns 400 when username is missing", async () => {
       const res = await app.fetch(
-        post("/api/auth/register", { email: "a@b.com", password: "password123" }),
+        post("/api/auth/register", {
+          email: "a@b.com",
+          password: "password123",
+        }),
         mockEnv,
       );
       expect(res.status).toBe(400);
@@ -52,7 +115,11 @@ describe("Auth routes", () => {
 
     it("returns 400 when password is too short", async () => {
       const res = await app.fetch(
-        post("/api/auth/register", { username: "testuser", email: "a@b.com", password: "abc" }),
+        post("/api/auth/register", {
+          username: "testuser",
+          email: "a@b.com",
+          password: "abc",
+        }),
         mockEnv,
       );
       expect(res.status).toBe(400);
@@ -68,16 +135,143 @@ describe("Auth routes", () => {
         mockEnv,
       );
       expect(res.status).toBe(201);
-      const body = (await res.json()) as { status: string; data: { token: string } };
+      const body = (await res.json()) as {
+        status: string;
+        data: {
+          token: string;
+          user: {
+            id: string;
+            username: string;
+            email: string;
+            createdAt: string;
+            updatedAt: string;
+          };
+        };
+      };
       expect(body.status).toBe("success");
       expect(body.data.token).toBeDefined();
+      expect(body.data.user.updatedAt).toBe(
+        mockRegisteredUser().updatedAt.toISOString(),
+      );
+
+      const db = vi.mocked(createDb).mock.results[0]?.value as {
+        insert: ReturnType<typeof vi.fn>;
+      };
+      const valuesMock = db.insert.mock.results[0]?.value.values as ReturnType<
+        typeof vi.fn
+      >;
+      const returningMock = valuesMock.mock.results[0]?.value.returning as
+        | ReturnType<typeof vi.fn>
+        | undefined;
+      const [projection] = returningMock?.mock.calls[0] ?? [];
+
+      expect(projection).toHaveProperty("updatedAt");
+    });
+
+    it("stores new passwords in pbkdf2 format", async () => {
+      await app.fetch(
+        post("/api/auth/register", {
+          username: "testuser",
+          email: "test@example.com",
+          password: "password123",
+        }),
+        mockEnv,
+      );
+
+      const db = vi.mocked(createDb).mock.results[0]?.value as {
+        insert: ReturnType<typeof vi.fn>;
+      };
+      const valuesMock = db.insert.mock.results[0]?.value.values as ReturnType<
+        typeof vi.fn
+      >;
+      const [{ password }] = valuesMock.mock.calls[0] ?? [];
+
+      expect(typeof password).toBe("string");
+      expectPbkdf2HashFormat(password);
     });
   });
 
   describe("POST /api/auth/login", () => {
     it("returns 400 when credentials are missing", async () => {
-      const res = await app.fetch(post("/api/auth/login", { username: "testuser" }), mockEnv);
+      const res = await app.fetch(
+        post("/api/auth/login", { username: "testuser" }),
+        mockEnv,
+      );
       expect(res.status).toBe(400);
+    });
+
+    it("migrates supported legacy sha256 users to pbkdf2 on successful login", async () => {
+      const legacyHash = await hashLegacyPassword("password123");
+      const legacyUser = {
+        ...mockRegisteredUser(),
+        password: legacyHash,
+      };
+      const { selectMock } = buildSelectChain([legacyUser]);
+      const { updateMock, setMock } = buildUpdateChain();
+
+      vi.mocked(createDb).mockReturnValue({
+        select: selectMock,
+        update: updateMock,
+      } as any);
+
+      const res = await app.fetch(
+        post("/api/auth/login", {
+          username: "testuser",
+          password: "password123",
+        }),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(200);
+      expect(updateMock).toHaveBeenCalledOnce();
+      expect(setMock).toHaveBeenCalledOnce();
+
+      const [{ password: migratedHash }] = setMock.mock.calls[0] ?? [];
+      expect(typeof migratedHash).toBe("string");
+      expect(migratedHash).not.toBe(legacyHash);
+      expectPbkdf2HashFormat(migratedHash);
+      await expect(comparePassword("password123", migratedHash)).resolves.toBe(
+        true,
+      );
+    });
+
+    it("returns the shared auth user payload including updatedAt", async () => {
+      const loginUser = {
+        ...mockRegisteredUser(),
+        password: await hashPasswordAsync("password123"),
+      };
+      const { selectMock } = buildSelectChain([loginUser]);
+
+      vi.mocked(createDb).mockReturnValue({
+        select: selectMock,
+      } as any);
+
+      const res = await app.fetch(
+        post("/api/auth/login", {
+          username: "testuser",
+          password: "password123",
+        }),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(200);
+
+      const body = (await res.json()) as {
+        status: string;
+        data: {
+          token: string;
+          user: {
+            id: string;
+            username: string;
+            email: string;
+            createdAt: string;
+            updatedAt: string;
+          };
+        };
+      };
+
+      expect(body.status).toBe("success");
+      expect(body.data.user.updatedAt).toBe(loginUser.updatedAt.toISOString());
     });
   });
 
@@ -93,6 +287,49 @@ describe("Auth routes", () => {
         mockEnv,
       );
       expect(res.status).toBe(401);
+    });
+
+    it("returns the shared auth user payload including updatedAt", async () => {
+      const currentUser = mockRegisteredUser();
+      const { selectMock } = buildSelectChain([currentUser]);
+
+      vi.mocked(createDb).mockReturnValue({
+        select: selectMock,
+      } as any);
+
+      const token = await generateToken(
+        currentUser.id,
+        currentUser.username,
+        mockEnv.JWT_SECRET,
+      );
+
+      const res = await app.fetch(
+        get("/api/auth/me", { Authorization: `Bearer ${token}` }),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(200);
+      expect(selectMock).toHaveBeenCalledWith(
+        expect.objectContaining({ updatedAt: expect.anything() }),
+      );
+
+      const body = (await res.json()) as {
+        status: string;
+        data: {
+          user: {
+            id: string;
+            username: string;
+            email: string;
+            createdAt: string;
+            updatedAt: string;
+          };
+        };
+      };
+
+      expect(body.status).toBe("success");
+      expect(body.data.user.updatedAt).toBe(
+        currentUser.updatedAt.toISOString(),
+      );
     });
   });
 });

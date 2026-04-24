@@ -21,7 +21,9 @@ interface ServerMetricsComponentProps {
   metrics: IServerMetrics;
 }
 
-const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics }) => {
+const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({
+  metrics,
+}) => {
   const [activityData, setActivityData] = useState<IActivityDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -50,9 +52,8 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
     fetchActivityData();
   }, [metrics]);
 
-  // Generate placeholder data if no real data is available
-  const placeholderData = React.useMemo(() => {
-    if (activityData && activityData.length > 0) return activityData;
+  const chartData = React.useMemo(() => {
+    if (activityData.length > 0) return activityData;
 
     const data = [];
     const now = new Date();
@@ -62,7 +63,10 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
       time.setHours(now.getHours() - i);
 
       data.push({
-        time: time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: time.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
         requests: 0,
         messages: 0,
         errors: 0,
@@ -71,6 +75,7 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
 
     return data;
   }, [activityData]);
+  const isSyntheticActivity = chartData.length > 0 && activityData.length === 0;
 
   return (
     <div className="space-y-6">
@@ -79,7 +84,6 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
           title="Total Requests"
           value={metrics.totalRequests.toLocaleString()}
           icon={Activity}
-          trend={{ value: 12.5, isPositive: true }}
         />
         <MetricsCard
           title="Active Connections"
@@ -92,14 +96,12 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
           value={metrics.messagesProcessed.toLocaleString()}
           icon={MailCheck}
           iconColor="text-green-500"
-          trend={{ value: 8.2, isPositive: true }}
         />
         <MetricsCard
           title="Error Count"
           value={metrics.errorCount}
           icon={XCircle}
           iconColor="text-red-500"
-          trend={{ value: 3.1, isPositive: false }}
         />
       </div>
 
@@ -107,13 +109,26 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">System Activity</CardTitle>
-            {isLoading && <p className="text-sm text-muted-foreground">Loading activity data...</p>}
+            {isLoading && (
+              <p className="text-sm text-muted-foreground">
+                Loading activity data...
+              </p>
+            )}
+            {isSyntheticActivity ? (
+              <p className="text-sm text-amber-700" role="note">
+                Demo sample activity shown until measured history is available.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground" role="note">
+                Activity history is measured from the current dashboard payload.
+              </p>
+            )}
           </CardHeader>
           <CardContent className="pt-0">
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={placeholderData}
+                  data={chartData}
                   margin={{
                     top: 10,
                     right: 10,
@@ -174,7 +189,9 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
                 <div>
                   <div className="text-sm font-medium">Uptime</div>
                   <div className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(metrics.startTime), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(metrics.startTime), {
+                      addSuffix: true,
+                    })}
                   </div>
                 </div>
               </div>
@@ -184,7 +201,9 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
                   <Activity className="h-4 w-4 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium">Average Response Time</div>
+                  <div className="text-sm font-medium">
+                    Average Response Time
+                  </div>
                   <div className="text-sm text-muted-foreground">
                     {metrics.avgResponseTime.toFixed(2)} ms
                   </div>
@@ -192,14 +211,11 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics
               </div>
 
               <div className="pt-4 border-t">
-                <div className="text-sm font-medium mb-2">System Health</div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5">
-                  <div className="bg-green-500 h-2.5 rounded-full" style={{ width: "92%" }}></div>
-                </div>
-                <div className="flex justify-between mt-1">
-                  <span className="text-xs text-slate-500">0%</span>
-                  <span className="text-xs text-green-500 font-medium">92%</span>
-                  <span className="text-xs text-slate-500">100%</span>
+                <div className="text-sm font-medium mb-2">Activity Source</div>
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-muted-foreground">
+                  {isSyntheticActivity
+                    ? "Demo sample derived in the client because the worker has no measured activity history yet."
+                    : "Measured activity history from the worker response."}
                 </div>
               </div>
             </div>

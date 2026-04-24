@@ -81,7 +81,10 @@ export const authenticate = createMiddleware<{
 
 function base64UrlDecode(str: string): Uint8Array {
   const base64 = str.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+  const padded = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    "=",
+  );
   const binary = atob(padded);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -98,7 +101,9 @@ export function generateToken(
 ): Promise<string> {
   return (async () => {
     const encoder = new TextEncoder();
-    const header = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const header = base64UrlEncode(
+      JSON.stringify({ alg: "HS256", typ: "JWT" }),
+    );
     const payload = base64UrlEncode(
       JSON.stringify({
         userId,
@@ -123,7 +128,9 @@ export function generateToken(
       cryptoKey,
       encoder.encode(signingInput),
     );
-    const signature = base64UrlEncode(String.fromCharCode(...new Uint8Array(signatureBuffer)));
+    const signature = base64UrlEncode(
+      String.fromCharCode(...new Uint8Array(signatureBuffer)),
+    );
 
     return `${header}.${payload}.${signature}`;
   })();
@@ -133,27 +140,179 @@ function base64UrlEncode(str: string): string {
   return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-export function hashPassword(password: string): string {
-  // Simple SHA-256 hash matching original Express app's crypto approach
-  // In production use a proper KDF like Argon2 / bcrypt
-  // Workers don't have synchronous crypto.createHash; use sync approach via SubtleCrypto
-  // For parity with the original (sha256 + salt), we do it synchronously using a polyfill approach
-  // NOTE: this is not ideal for security — matches legacy behavior only
-  return password + ":sha256-hashed"; // placeholder — real impl below via async
-}
+const PBKDF2_PREFIX = "pbkdf2";
+const PBKDF2_ITERATIONS = 310000;
+const PBKDF2_SALT_BYTES = 16;
+const PBKDF2_HASH_BITS = 256;
+const LEGACY_STATIC_SALT = "some-salt";
+
+type PasswordVerification = {
+  valid: boolean;
+  needsMigration: boolean;
+  migratedHash?: string;
+};
 
 export async function hashPasswordAsync(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + "some-salt");
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const salt = crypto.getRandomValues(new Uint8Array(PBKDF2_SALT_BYTES));
+  const hashBytes = await derivePbkdf2Hash(password, salt, PBKDF2_ITERATIONS);
+
+  return [
+    PBKDF2_PREFIX,
+    String(PBKDF2_ITERATIONS),
+    encodeBytesBase64Url(salt),
+    encodeBytesBase64Url(hashBytes),
+  ].join("$");
+}
+
+export async function verifyPassword(
+  candidatePassword: string,
+  storedHash: string,
+): Promise<PasswordVerification> {
+  const parsedHash = parsePbkdf2Hash(storedHash);
+
+  if (parsedHash) {
+    const candidateHash = await derivePbkdf2Hash(
+      candidatePassword,
+      parsedHash.salt,
+      parsedHash.iterations,
+    );
+
+    return {
+      valid: constantTimeEqual(candidateHash, parsedHash.hash),
+      needsMigration: false,
+    };
+  }
+
+  const legacyHash = decodeHex(storedHash);
+  if (!legacyHash) {
+    return { valid: false, needsMigration: false };
+  }
+
+  const candidateLegacyHash = await hashLegacyPassword(candidatePassword);
+  const valid = constantTimeEqual(candidateLegacyHash, legacyHash);
+
+  if (!valid) {
+    return { valid: false, needsMigration: false };
+  }
+
+  return {
+    valid: true,
+    needsMigration: true,
+    migratedHash: await hashPasswordAsync(candidatePassword),
+  };
 }
 
 export async function comparePassword(
   candidatePassword: string,
   storedHash: string,
 ): Promise<boolean> {
-  const candidateHash = await hashPasswordAsync(candidatePassword);
-  return candidateHash === storedHash;
+  const verification = await verifyPassword(candidatePassword, storedHash);
+  return verification.valid;
+}
+
+async function derivePbkdf2Hash(
+  password: string,
+  salt: Uint8Array,
+  iterations: number,
+): Promise<Uint8Array> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      hash: "SHA-256",
+      salt,
+      iterations,
+    },
+    key,
+    PBKDF2_HASH_BITS,
+  );
+
+  return new Uint8Array(derivedBits);
+}
+
+async function hashLegacyPassword(password: string): Promise<Uint8Array> {
+  const encoder = new TextEncoder();
+  const legacyHash = await crypto.subtle.digest(
+    "SHA-256",
+    encoder.encode(password + LEGACY_STATIC_SALT),
+  );
+
+  return new Uint8Array(legacyHash);
+}
+
+function parsePbkdf2Hash(storedHash: string): {
+  iterations: number;
+  salt: Uint8Array;
+  hash: Uint8Array;
+} | null {
+  const [prefix, iterationsValue, saltValue, hashValue, ...rest] =
+    storedHash.split("$");
+
+  if (
+    prefix !== PBKDF2_PREFIX ||
+    !iterationsValue ||
+    !saltValue ||
+    !hashValue ||
+    rest.length > 0
+  ) {
+    return null;
+  }
+
+  const iterations = Number.parseInt(iterationsValue, 10);
+  if (!Number.isInteger(iterations) || iterations <= 0) {
+    return null;
+  }
+
+  const salt = decodeBase64UrlBytes(saltValue);
+  const hash = decodeBase64UrlBytes(hashValue);
+
+  if (!salt || !hash || hash.length === 0) {
+    return null;
+  }
+
+  return { iterations, salt, hash };
+}
+
+function encodeBytesBase64Url(bytes: Uint8Array): string {
+  return base64UrlEncode(String.fromCharCode(...bytes));
+}
+
+function decodeBase64UrlBytes(value: string): Uint8Array | null {
+  try {
+    return base64UrlDecode(value);
+  } catch {
+    return null;
+  }
+}
+
+function decodeHex(value: string): Uint8Array | null {
+  if (!/^[0-9a-f]{64}$/i.test(value)) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(value.length / 2);
+
+  for (let index = 0; index < value.length; index += 2) {
+    bytes[index / 2] = Number.parseInt(value.slice(index, index + 2), 16);
+  }
+
+  return bytes;
+}
+
+function constantTimeEqual(left: Uint8Array, right: Uint8Array): boolean {
+  let mismatch = left.length ^ right.length;
+  const length = Math.max(left.length, right.length);
+
+  for (let index = 0; index < length; index += 1) {
+    mismatch |= (left[index] ?? 0) ^ (right[index] ?? 0);
+  }
+
+  return mismatch === 0;
 }

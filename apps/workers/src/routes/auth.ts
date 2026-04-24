@@ -6,7 +6,7 @@ import {
   authenticate,
   generateToken,
   hashPasswordAsync,
-  comparePassword,
+  verifyPassword,
 } from "../middleware/auth";
 
 type AuthVariables = {
@@ -40,7 +40,10 @@ authRoutes.post("/register", async (c) => {
     return c.json({ status: "error", message: "Email must be valid" }, 400);
   }
   if (!password || password.length < 6) {
-    return c.json({ status: "error", message: "Password must be at least 6 characters" }, 400);
+    return c.json(
+      { status: "error", message: "Password must be at least 6 characters" },
+      400,
+    );
   }
 
   const db = createDb(c.env);
@@ -52,7 +55,10 @@ authRoutes.post("/register", async (c) => {
     .limit(1);
 
   if (existing.length > 0) {
-    return c.json({ status: "error", message: "Username or email already exists" }, 400);
+    return c.json(
+      { status: "error", message: "Username or email already exists" },
+      400,
+    );
   }
 
   const hashedPassword = await hashPasswordAsync(password);
@@ -64,6 +70,7 @@ authRoutes.post("/register", async (c) => {
       username: users.username,
       email: users.email,
       createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
     });
 
   const token = await generateToken(user.id, user.username, c.env.JWT_SECRET);
@@ -76,20 +83,34 @@ authRoutes.post("/login", async (c) => {
   const { username, password } = body;
 
   if (!username || !password) {
-    return c.json({ status: "error", message: "Username and password are required" }, 400);
+    return c.json(
+      { status: "error", message: "Username and password are required" },
+      400,
+    );
   }
 
   const db = createDb(c.env);
 
-  const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.username, username))
+    .limit(1);
 
   if (!user) {
     return c.json({ status: "error", message: "Invalid credentials" }, 401);
   }
 
-  const valid = await comparePassword(password, user.password);
-  if (!valid) {
+  const verification = await verifyPassword(password, user.password);
+  if (!verification.valid) {
     return c.json({ status: "error", message: "Invalid credentials" }, 401);
+  }
+
+  if (verification.needsMigration && verification.migratedHash) {
+    await db
+      .update(users)
+      .set({ password: verification.migratedHash })
+      .where(eq(users.id, user.id));
   }
 
   const token = await generateToken(user.id, user.username, c.env.JWT_SECRET);
@@ -99,6 +120,7 @@ authRoutes.post("/login", async (c) => {
     username: user.username,
     email: user.email,
     createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 
   return c.json({ status: "success", data: { user: safeUser, token } });
@@ -114,6 +136,7 @@ authRoutes.get("/me", authenticate, async (c) => {
       username: users.username,
       email: users.email,
       createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
     })
     .from(users)
     .where(eq(users.id, userId))
