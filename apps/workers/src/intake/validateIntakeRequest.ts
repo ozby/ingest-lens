@@ -7,6 +7,7 @@ import {
   calculatePayloadDepth,
   getFixtureReference,
   getTargetContract,
+  resolveContractId,
   sourceKindFromFixtureId,
   validateDeliveryTarget,
   type DeterministicDependencies,
@@ -79,7 +80,9 @@ export function validateIntakeRequest(
   dependencies: ValidateIntakeRequestDependencies,
 ): IntakeValidationResult {
   const errors: string[] = [];
-  const contract = getTargetContract(input.contractId);
+  const resolvedContractId = resolveContractId(input.contractId);
+  const contract: TargetContractDefinition | undefined =
+    resolvedContractId === undefined ? undefined : getTargetContract(resolvedContractId);
 
   if (!contract) {
     errors.push("Unknown contract id.");

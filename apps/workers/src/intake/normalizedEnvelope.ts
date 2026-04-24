@@ -1,9 +1,10 @@
-import type {
-  ApprovedMappingRevision,
-  IntakeAttemptRecord,
-  NormalizedRecordEnvelope,
+import {
+  brandNormalizedEnvelope,
+  type ApprovedMappingRevision,
+  type IntakeAttemptRecord,
+  type NormalizedRecordEnvelope,
 } from "@repo/types";
-import { getFixtureReference, getTargetContract } from "./contracts";
+import { getFixtureReference, getTargetContract, resolveContractId } from "./contracts";
 
 export interface CreateNormalizedEnvelopeInput {
   attempt: IntakeAttemptRecord;
@@ -14,16 +15,17 @@ export interface CreateNormalizedEnvelopeInput {
 export function createNormalizedEnvelope(
   input: CreateNormalizedEnvelopeInput,
 ): NormalizedRecordEnvelope {
-  const contract = getTargetContract(input.mappingVersion.contractId);
-  if (!contract) {
+  const resolvedContractId = resolveContractId(input.mappingVersion.contractId);
+  if (resolvedContractId === undefined) {
     throw new Error(`Unknown contract id: ${input.mappingVersion.contractId}`);
   }
+  const contract = getTargetContract(resolvedContractId);
 
   const fixtureReference = input.attempt.sourceFixtureId
     ? getFixtureReference(input.attempt.sourceFixtureId)
     : undefined;
 
-  return {
+  return brandNormalizedEnvelope({
     eventType: "ingest.record.normalized",
     recordType: contract.targetRecordType,
     schemaVersion: "v1",
@@ -41,5 +43,5 @@ export function createNormalizedEnvelope(
       capturedAt: input.attempt.createdAt,
     },
     record: input.record,
-  };
+  });
 }

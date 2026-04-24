@@ -28,7 +28,7 @@ export const DEFAULT_REVIEW_PAYLOAD_TTL_HOURS = 24;
 export const MAX_PAYLOAD_DEPTH = 8;
 export const MAX_PAYLOAD_BYTES = 64_000;
 
-export const TARGET_CONTRACTS: Record<string, TargetContractDefinition> = {
+export const TARGET_CONTRACTS = {
   "job-posting-v1": {
     id: "job-posting-v1",
     version: "v1",
@@ -63,10 +63,16 @@ export const TARGET_CONTRACTS: Record<string, TargetContractDefinition> = {
     targetFields: ["id", "candidate_id", "job_id", "current_stage", "status", "applied_at"],
     requiredFields: ["id", "status"],
   },
-};
+} as const satisfies Record<string, TargetContractDefinition>;
 
-export function getTargetContract(contractId: string): TargetContractDefinition | undefined {
+export type ContractId = keyof typeof TARGET_CONTRACTS;
+
+export function getTargetContract(contractId: ContractId): TargetContractDefinition {
   return TARGET_CONTRACTS[contractId];
+}
+
+export function resolveContractId(value: string): ContractId | undefined {
+  return value in TARGET_CONTRACTS ? (value as ContractId) : undefined;
 }
 
 export function getFixtureReference(fixtureId: string): FixtureReference | undefined {

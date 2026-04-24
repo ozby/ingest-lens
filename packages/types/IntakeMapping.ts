@@ -175,15 +175,27 @@ export interface SourceProvenance {
   capturedAt: string;
 }
 
-export interface NormalizedRecordEnvelope {
-  eventType: "ingest.record.normalized";
-  recordType: string;
-  schemaVersion: "v1";
-  contractId: string;
-  contractVersion: string;
-  mappingVersionId: string;
-  intakeAttemptId: string;
-  mappingTraceId: string;
-  source: SourceProvenance;
-  record: Record<string, unknown>;
+const normalizedEnvelopeBrand = Symbol("NormalizedRecordEnvelope");
+
+export interface NormalizedRecordEnvelopeFields {
+  readonly eventType: "ingest.record.normalized";
+  readonly recordType: string;
+  readonly schemaVersion: "v1";
+  readonly contractId: string;
+  readonly contractVersion: string;
+  readonly mappingVersionId: string;
+  readonly intakeAttemptId: string;
+  readonly mappingTraceId: string;
+  readonly source: SourceProvenance;
+  readonly record: Record<string, unknown>;
+}
+
+export type NormalizedRecordEnvelope = NormalizedRecordEnvelopeFields & {
+  readonly [normalizedEnvelopeBrand]: true;
+};
+
+export function brandNormalizedEnvelope(
+  fields: NormalizedRecordEnvelopeFields,
+): NormalizedRecordEnvelope {
+  return { ...fields, [normalizedEnvelopeBrand]: true };
 }

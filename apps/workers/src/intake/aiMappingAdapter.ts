@@ -2,7 +2,7 @@ import { NoObjectGeneratedError, generateObject, jsonSchema } from "ai";
 import { createWorkersAI } from "workers-ai-provider";
 import type { JudgeAssessment, MappingSuggestionBatch } from "@repo/types";
 import type { Env } from "../db/client";
-import { classifyDriftCategory, getTargetContract } from "./contracts";
+import { classifyDriftCategory, getTargetContract, resolveContractId } from "./contracts";
 import { resolveSourcePath } from "./sourcePath";
 import { JudgeAssessmentSchema, MappingSuggestionBatchSchema } from "./schemas";
 import { validateJudgeAssessment, validateMappingSuggestionBatch } from "./validators";
@@ -144,10 +144,11 @@ function buildDecisionLog(
 function createDeterministicFallbackBatch(
   input: SuggestMappingsInput,
 ): MappingSuggestionBatch | null {
-  const contract = getTargetContract(input.contractId);
-  if (!contract || input.contractId !== "job-posting-v1") {
+  const resolvedContractId = resolveContractId(input.contractId);
+  if (resolvedContractId === undefined || resolvedContractId !== "job-posting-v1") {
     return null;
   }
+  const contract = getTargetContract(resolvedContractId);
 
   const candidates: readonly DeterministicFallbackSuggestionCandidate[] = [
     {

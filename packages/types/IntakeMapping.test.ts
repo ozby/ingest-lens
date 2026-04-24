@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { brandNormalizedEnvelope } from "./IntakeMapping";
 import type {
   ApprovedMappingRevision,
   IntakeAttemptRecord,
   JudgeAssessment,
   MappingSuggestion,
   MappingSuggestionBatch,
-  NormalizedRecordEnvelope,
   ReplayPlan,
 } from "./IntakeMapping";
 
@@ -239,7 +239,7 @@ describe("Intake mapping contracts", () => {
   });
 
   it("serializes a generic normalized record envelope", () => {
-    const envelope: NormalizedRecordEnvelope = {
+    const envelope = brandNormalizedEnvelope({
       eventType: "ingest.record.normalized",
       recordType: "job_posting",
       schemaVersion: "v1",
@@ -260,8 +260,30 @@ describe("Intake mapping contracts", () => {
         name: "Product Designer",
         post_url: "https://jobs.ashbyhq.com/example-co/def456",
       },
-    };
+    });
 
-    expect(roundTrip(envelope)).toEqual(envelope);
+    const serialized = JSON.parse(JSON.stringify(envelope)) as Record<string, unknown>;
+    expect(serialized).toEqual({
+      eventType: "ingest.record.normalized",
+      recordType: "job_posting",
+      schemaVersion: "v1",
+      contractId: "job-posting-v1",
+      contractVersion: "v1",
+      mappingVersionId: "mapping-v1",
+      intakeAttemptId: "attempt-1",
+      mappingTraceId: "trace-1",
+      source: {
+        kind: "fixture_reference",
+        fixtureId: "ashby-job-001",
+        sourceHash: "sha256:test",
+        sourceSystem: "ashby",
+        sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
+        capturedAt: "2026-04-24T00:25:00.000Z",
+      },
+      record: {
+        name: "Product Designer",
+        post_url: "https://jobs.ashbyhq.com/example-co/def456",
+      },
+    });
   });
 });
