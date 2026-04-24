@@ -102,26 +102,26 @@ describe("extractAbsoluteFileDependencyDirectories", () => {
       extractAbsoluteFileDependencyDirectories([
         {
           dependencies: {
-            a: "file:/Users/test/.local-file-packs/a.tgz",
+            a: "file:/Users/test/.agent-kit-packs/a.tgz",
             b: "workspace:*",
           },
         },
         {
           devDependencies: {
-            c: "file:/Users/test/.local-file-packs/c.tgz",
+            c: "file:/Users/test/.agent-kit-packs/c.tgz",
             d: "file:/opt/shared/d.tgz",
           },
         },
       ]),
-    ).toEqual(["/Users/test/.local-file-packs", "/opt/shared"]);
+    ).toEqual(["/Users/test/.agent-kit-packs", "/opt/shared"]);
   });
 });
 
 describe("injectContainerMountArgs", () => {
   it("prepends mount flags when no container options exist", () => {
-    expect(injectContainerMountArgs(["push"], ["/Users/test/.local-file-packs"])).toEqual([
+    expect(injectContainerMountArgs(["push"], ["/Users/test/.agent-kit-packs"])).toEqual([
       "--container-options",
-      "-v /Users/test/.local-file-packs:/Users/test/.local-file-packs:ro",
+      "-v /Users/test/.agent-kit-packs:/Users/test/.agent-kit-packs:ro",
       "push",
     ]);
   });
@@ -130,11 +130,11 @@ describe("injectContainerMountArgs", () => {
     expect(
       injectContainerMountArgs(
         ["--container-options", "--cpus 2", "push"],
-        ["/Users/test/.local-file-packs"],
+        ["/Users/test/.agent-kit-packs"],
       ),
     ).toEqual([
       "--container-options",
-      "--cpus 2 -v /Users/test/.local-file-packs:/Users/test/.local-file-packs:ro",
+      "--cpus 2 -v /Users/test/.agent-kit-packs:/Users/test/.agent-kit-packs:ro",
       "push",
     ]);
   });
