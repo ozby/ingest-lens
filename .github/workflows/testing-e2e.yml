@@ -7,6 +7,11 @@ on:
 
 jobs:
   full-suite:
+    # Fork-PR safety: only run on push-to-main or same-repo PRs.
+    # Current workflow uses no secrets, but this guard prevents accidental
+    # exposure if secrets are added later (forks inherit workflows; workflows
+    # triggered by fork PRs must never see repo secrets).
+    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
