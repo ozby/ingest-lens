@@ -10,6 +10,10 @@ Repo-owned end-to-end surface for `node-pubsub`.
 - `pnpm --filter @repo/e2e run e2e:run -- --suite full`
 - `pnpm act:e2e` (local GitHub Actions harness via `.github/workflows/testing-e2e-act.yml`)
 
+The hosted and local workflow harnesses both use `actions/setup-node@v6` plus
+Corepack-activated pnpm, so the E2E surface matches the repo's Node 24-native
+GitHub Actions setup.
+
 ## Current suites
 
 - `foundation`

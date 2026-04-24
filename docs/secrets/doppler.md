@@ -1,6 +1,6 @@
 ---
 type: runbook
-last_updated: "2026-04-22"
+last_updated: "2026-04-24"
 ---
 
 # Doppler Secret Management Runbook
@@ -201,6 +201,12 @@ fallback for bootstrap or migration periods.
   for the `github-api` profile,
 - mounts absolute local `file:/...` package sources into the act job container,
 - and injects the result into `act` via a temporary `--secret-file`.
+
+The GitHub workflows themselves now use the Node 24-native action majors
+(`actions/checkout@v6`, `actions/setup-node@v6`) and activate pnpm with
+Corepack (`corepack prepare pnpm@10.33.0 --activate`) instead of
+`pnpm/action-setup`. This removes the remaining Node 20 deprecation warning
+path while keeping local `act` runs and hosted runners aligned.
 
 Current `act` profiles:
 
