@@ -99,7 +99,7 @@ describe("Intake page", () => {
 
     expect(apiMocks.getIntakeSuggestions).toHaveBeenCalledTimes(1);
     expect(apiMocks.getPublicFixtures).toHaveBeenCalledTimes(1);
-    expect(await screen.findByText("Intake mapping")).toBeTruthy();
+    await screen.findByText("Intake mapping");
   });
 
   it("submits a new mapping suggestion", async () => {

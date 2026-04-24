@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, it, vi } from "vitest";
 import App from "./App";
 
 const landingPageCopy =
@@ -55,7 +55,7 @@ describe("App", () => {
   it("shows the auth landing page at the root route when signed out", async () => {
     render(<App />);
 
-    expect(screen.getByText("Loading route…")).toBeTruthy();
+    screen.getByText("Loading route…");
     await screen.findByText(landingPageCopy, {}, { timeout: 5000 });
   });
 
@@ -92,7 +92,7 @@ describe("App", () => {
 
     render(<App />);
 
-    expect(screen.getByText("Loading...")).toBeTruthy();
+    screen.getByText("Loading...");
     await screen.findByText(dashboardSummaryCopy, {}, { timeout: 8000 });
   }, 10000);
 

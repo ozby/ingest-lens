@@ -34,17 +34,13 @@ describe("ServerMetrics", () => {
     );
 
     await waitFor(() =>
-      expect(
-        screen.getByText("Demo sample activity shown until measured history is available."),
-      ).toBeTruthy(),
+      screen.getByText("Demo sample activity shown until measured history is available."),
     );
 
-    expect(screen.getByText("Activity Source")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Demo sample derived in the client because the worker has no measured activity history yet.",
-      ),
-    ).toBeTruthy();
+    screen.getByText("Activity Source");
+    screen.getByText(
+      "Demo sample derived in the client because the worker has no measured activity history yet.",
+    );
     expect(screen.queryByText(/from last period/i)).toBeNull();
   });
 
@@ -66,11 +62,9 @@ describe("ServerMetrics", () => {
     );
 
     await waitFor(() =>
-      expect(
-        screen.getByText("Activity history is measured from the current dashboard payload."),
-      ).toBeTruthy(),
+      screen.getByText("Activity history is measured from the current dashboard payload."),
     );
-    expect(screen.getByText("Measured activity history from the worker response.")).toBeTruthy();
+    screen.getByText("Measured activity history from the worker response.");
     expect(apiMocks.getServerActivityHistory).not.toHaveBeenCalled();
   });
 });

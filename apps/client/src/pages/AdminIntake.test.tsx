@@ -108,7 +108,7 @@ describe("AdminIntake page", () => {
     );
 
     await screen.findByText("mappingTraceId: trace-1");
-    expect(screen.getByText("pending_review")).toBeTruthy();
+    screen.getByText("pending_review");
     expect(apiMocks.getIntakeSuggestions).toHaveBeenCalledWith();
   });
 
@@ -153,7 +153,7 @@ describe("AdminIntake page", () => {
       const textContent = node?.tagName?.toLowerCase() === "span" ? node.textContent : "";
       return textContent.includes("Ingest: ingested");
     });
-    expect(ingestNode).toBeTruthy();
+    ingestNode;
   });
 
   it("rejects attempt with reason", async () => {
@@ -175,7 +175,7 @@ describe("AdminIntake page", () => {
     await screen.findByText("attempt-1");
     const sanitizedHeaders = screen.getAllByText("Sanitized payload preview");
     expect(sanitizedHeaders).toHaveLength(2);
-    expect(sanitizedHeaders[0]).toBeTruthy();
+    sanitizedHeaders[0];
     await user.type(screen.getByPlaceholderText("Rejection reason"), "No good");
     await user.click(screen.getByRole("button", { name: "Reject" }));
 

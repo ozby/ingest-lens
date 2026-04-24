@@ -40,7 +40,7 @@ describe("Button", () => {
     );
 
     const link = container.querySelector("a");
-    expect(link).toBeTruthy();
+    expect(link).not.toBeNull();
     expect(link?.getAttribute("href")).toBe("/queues");
     expect(link?.textContent).toBe("View Queues");
     root.unmount();

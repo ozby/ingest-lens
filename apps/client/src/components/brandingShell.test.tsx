@@ -24,23 +24,19 @@ describe("branding shell", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("IngestLens")).toBeTruthy();
-    expect(screen.getByText("AI-assisted integration observability")).toBeTruthy();
+    screen.getByText("IngestLens");
+    screen.getByText("AI-assisted integration observability");
     expect(screen.queryByText("PubSub Dashboard")).toBeNull();
 
-    expect(screen.getByText("INTEGRATION OBSERVABILITY")).toBeTruthy();
-    expect(screen.getByText("DELIVERY PRIMITIVES")).toBeTruthy();
-    expect(
-      screen.getByText("Queues and topics stay visible as the shipped delivery rails."),
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Queue metrics and delivery telemetry remain visible while intake tooling is still planned.",
-      ),
-    ).toBeTruthy();
+    screen.getByText("INTEGRATION OBSERVABILITY");
+    screen.getByText("DELIVERY PRIMITIVES");
+    screen.getByText("Queues and topics stay visible as the shipped delivery rails.");
+    screen.getByText(
+      "Queue metrics and delivery telemetry remain visible while intake tooling is still planned.",
+    );
 
-    expect(screen.getByText("Queues")).toBeTruthy();
-    expect(screen.getByText("Topics")).toBeTruthy();
-    expect(screen.getByText("Server Metrics")).toBeTruthy();
+    screen.getByText("Queues");
+    screen.getByText("Topics");
+    screen.getByText("Server Metrics");
   });
 });

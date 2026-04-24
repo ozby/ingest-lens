@@ -43,11 +43,9 @@ describe("delivery rail copy", () => {
 
     await screen.findByText("Delivery Queues");
 
-    expect(
-      screen.getByText("Manage the delivery rails that receive direct messages and retries."),
-    ).toBeTruthy();
-    expect(screen.getByText("No delivery queues yet")).toBeTruthy();
-    expect(screen.getByText("Create a queue to receive direct messages and retries.")).toBeTruthy();
+    screen.getByText("Manage the delivery rails that receive direct messages and retries.");
+    screen.getByText("No delivery queues yet");
+    screen.getByText("Create a queue to receive direct messages and retries.");
     expect(screen.queryByText("Manage your message queues")).toBeNull();
   });
 
@@ -63,15 +61,11 @@ describe("delivery rail copy", () => {
 
     await screen.findByText("Delivery Topics");
 
-    expect(
-      screen.getByText("Broadcast delivery events across subscribed delivery rails."),
-    ).toBeTruthy();
-    expect(screen.getByText("No delivery topics yet")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Create a topic when one delivery event should fan out across multiple delivery queues.",
-      ),
-    ).toBeTruthy();
+    screen.getByText("Broadcast delivery events across subscribed delivery rails.");
+    screen.getByText("No delivery topics yet");
+    screen.getByText(
+      "Create a topic when one delivery event should fan out across multiple delivery queues.",
+    );
     expect(screen.queryByText("Manage your publish/subscribe topics")).toBeNull();
   });
 });

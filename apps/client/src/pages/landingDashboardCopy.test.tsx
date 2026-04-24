@@ -68,12 +68,10 @@ describe("landing and dashboard copy", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("IngestLens")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Sign in to inspect delivery rails, monitor observability, and prepare for future intake mapping workflows.",
-      ),
-    ).toBeTruthy();
+    screen.getByText("IngestLens");
+    screen.getByText(
+      "Sign in to inspect delivery rails, monitor observability, and prepare for future intake mapping workflows.",
+    );
     expect(screen.queryByText("PubSub Dashboard")).toBeNull();
   });
 
@@ -98,23 +96,17 @@ describe("landing and dashboard copy", () => {
 
     await screen.findByText("IngestLens operations dashboard");
 
-    expect(
-      screen.getByText(
-        "Track delivery rails, queue activity, and observability across your owned queues and topics.",
-      ),
-    ).toBeTruthy();
-    expect(screen.getByText("No delivery queues configured yet")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Create a queue to route delivery traffic and retries while intake tooling remains planned.",
-      ),
-    ).toBeTruthy();
-    expect(screen.getByText("No delivery topics configured yet")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Create a topic when one delivery event should fan out across multiple delivery rails.",
-      ),
-    ).toBeTruthy();
+    screen.getByText(
+      "Track delivery rails, queue activity, and observability across your owned queues and topics.",
+    );
+    screen.getByText("No delivery queues configured yet");
+    screen.getByText(
+      "Create a queue to route delivery traffic and retries while intake tooling remains planned.",
+    );
+    screen.getByText("No delivery topics configured yet");
+    screen.getByText(
+      "Create a topic when one delivery event should fan out across multiple delivery rails.",
+    );
     expect(screen.queryByText("Overview of your message queuing system")).toBeNull();
   });
 });
