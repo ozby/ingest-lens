@@ -166,6 +166,25 @@ describe("e2e-suite-manifest", () => {
         ],
       },
       {
+        id: "neon-branch-provider",
+        aliases: ["neon", "db-branching"],
+        fileMatchers: ["journeys/neon-branch-provider.e2e.ts"],
+        batchKey: "neon-branch-provider",
+        env: undefined,
+        steps: [
+          {
+            runner: "vitest",
+            logName: "neon-branch-provider",
+            configPath: "vitest.journeys.config.ts",
+            fixedFiles: ["journeys/neon-branch-provider.e2e.ts"],
+            fixedArgs: undefined,
+            commandArgs: undefined,
+            batchKey: "neon-branch-provider",
+            env: undefined,
+          },
+        ],
+      },
+      {
         id: "s1b-latency",
         aliases: ["latency-lab"],
         fileMatchers: ["../../apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts"],
@@ -243,6 +262,9 @@ describe("e2e-suite-manifest", () => {
     expect(resolveE2ESuiteId("public")).toBe("demo");
     expect(resolveE2ESuiteId("splitting")).toBe("client");
     expect(resolveE2ESuiteId("rebrand")).toBe("branding");
+    expect(resolveE2ESuiteId("neon")).toBe("neon-branch-provider");
+    expect(resolveE2ESuiteId("db-branching")).toBe("neon-branch-provider");
+    expect(resolveE2ESuiteId("neon-branch-provider")).toBe("neon-branch-provider");
     expect(resolveE2ESuiteId("s1b-latency")).toBe("s1b-latency");
     expect(resolveE2ESuiteId("latency-lab")).toBe("s1b-latency");
     expect(resolveE2ESuiteId("all")).toBe("full");
@@ -283,6 +305,10 @@ describe("e2e-suite-manifest", () => {
     expect(resolveE2ESuiteForFile("journeys/ingestlens-branding.e2e.ts")).toEqual({
       normalizedPath: "journeys/ingestlens-branding.e2e.ts",
       suiteId: "branding",
+    });
+    expect(resolveE2ESuiteForFile("journeys/neon-branch-provider.e2e.ts")).toEqual({
+      normalizedPath: "journeys/neon-branch-provider.e2e.ts",
+      suiteId: "neon-branch-provider",
     });
     expect(resolveE2ESuiteForFile("journeys/missing.e2e.ts")).toBeNull();
   });
