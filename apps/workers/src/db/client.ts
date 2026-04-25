@@ -20,6 +20,7 @@ export type Env = {
   AI?: Ai;
   DELIVERY_QUEUE: Queue<DeliveryPayload>;
   RATE_LIMITER?: RateLimit;
+  AUTH_RATE_LIMITER?: RateLimit; // tighter limit (5 req/60s) for login + register
   ANALYTICS: AnalyticsEngineDataset;
   TOPIC_ROOMS: DurableObjectNamespace;
 };

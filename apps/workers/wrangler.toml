@@ -20,10 +20,18 @@ account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret;
 # Custom domain: api.dev.ozby.dev (wrangler atomically creates Worker +
 # route + DNS + cert when `custom_domain = true`).
 
+# General rate limiter — 100 req/60s (wrangler dev / local only; envs declare their own below)
+# namespace_id is a stable project-scoped UUID; CF creates the namespace on first deploy.
 [[rate_limiting]]
 binding = "RATE_LIMITER"
-namespace_id = "1"
+namespace_id = "b8f2e4a6-1c3d-4f5e-8a7b-9c0d1e2f3a4b"
 simple = { limit = 100, period = 60 }
+
+# Auth rate limiter — 5 req/60s (login + register brute-force protection)
+[[rate_limiting]]
+binding = "AUTH_RATE_LIMITER"
+namespace_id = "d0a4f6c8-3e5f-6a7b-0c9d-1e2f3a4b5c6d"
+simple = { limit = 5, period = 60 }
 
 [env.dev]
 workers_dev = false
@@ -35,8 +43,13 @@ ALLOWED_ORIGIN = "https://dev.ozby.dev"
 
 [[env.dev.rate_limiting]]
 binding = "RATE_LIMITER"
-namespace_id = "1"
+namespace_id = "b8f2e4a6-1c3d-4f5e-8a7b-9c0d1e2f3a4b"
 simple = { limit = 100, period = 60 }
+
+[[env.dev.rate_limiting]]
+binding = "AUTH_RATE_LIMITER"
+namespace_id = "d0a4f6c8-3e5f-6a7b-0c9d-1e2f3a4b5c6d"
+simple = { limit = 5, period = 60 }
 
 [[env.dev.hyperdrive]]
 binding = "HYPERDRIVE"
@@ -92,8 +105,13 @@ ALLOWED_ORIGIN = "https://ozby.dev"
 
 [[env.prd.rate_limiting]]
 binding = "RATE_LIMITER"
-namespace_id = "1"
+namespace_id = "c9f3e5b7-2d4e-5f6a-9b8c-0d1e2f3a4b5c"
 simple = { limit = 100, period = 60 }
+
+[[env.prd.rate_limiting]]
+binding = "AUTH_RATE_LIMITER"
+namespace_id = "e1b5a7d9-4f6a-7b8c-1d0e-2f3a4b5c6d7e"
+simple = { limit = 5, period = 60 }
 
 [env.prd.ai]
 binding = "AI"

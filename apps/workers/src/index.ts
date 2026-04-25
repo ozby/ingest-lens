@@ -9,7 +9,7 @@ import { messageRoutes } from "./routes/message";
 import { topicRoutes } from "./routes/topic";
 import { dashboardRoutes } from "./routes/dashboard";
 import { intakeRoutes } from "./routes/intake";
-import { rateLimiter } from "./middleware/rateLimiter";
+import { rateLimiter, authRateLimiter } from "./middleware/rateLimiter";
 import { handleDeliveryBatch } from "./consumers/deliveryConsumer";
 import { handleScheduled as handleScheduledPurge } from "./cron/purgeExpiredReviewPayloads";
 
@@ -31,8 +31,10 @@ app.use("*", logger());
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-// Auth routes get rate-limiting applied at the app level (FIX-2: CSO audit)
-app.use("/api/auth/*", rateLimiter);
+// All API routes: general 100 req/60s
+app.use("/api/*", rateLimiter);
+// Auth routes additionally constrained to 5 req/60s (brute-force protection)
+app.use("/api/auth/*", authRateLimiter);
 app.route("/api/auth", authRoutes);
 app.route("/api/queues", queueRoutes);
 app.route("/api/messages", messageRoutes);

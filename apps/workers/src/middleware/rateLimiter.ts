@@ -6,39 +6,44 @@ type RateLimiterVariables = {
   user: DecodedToken;
 };
 
-export const rateLimiter = createMiddleware<{
-  Bindings: Env;
-  Variables: RateLimiterVariables;
-}>(async (c, next) => {
-  const rateLimiterBinding = c.env.RATE_LIMITER;
+type HonoCtx = { Bindings: Env; Variables: RateLimiterVariables };
 
-  if (!rateLimiterBinding) {
-    // FIX-7 (CSO audit): warn loudly so the absence doesn't go unnoticed in
-    // staging/production logs.  In local wrangler dev the binding is absent by
-    // design; in deployed envs it must always be present.
-    console.warn(
-      "[rateLimiter] RATE_LIMITER binding is absent — rate limiting is DISABLED for this request.",
-    );
+function createRateLimiter(selectBinding: (env: Env) => RateLimit | undefined, label: string) {
+  return createMiddleware<HonoCtx>(async (c, next) => {
+    const binding = selectBinding(c.env);
+
+    if (!binding) {
+      console.warn(
+        `[rateLimiter] ${label} binding is absent — rate limiting is DISABLED for this request.`,
+      );
+      await next();
+      return;
+    }
+
+    const user = c.get("user") as DecodedToken | undefined;
+    const key =
+      user?.userId ??
+      c.req.raw.headers.get("CF-Connecting-IP") ??
+      c.req.raw.headers.get("X-Forwarded-For") ??
+      "anonymous";
+
+    const { success } = await binding.limit({ key });
+
+    if (!success) {
+      return c.json({ status: "error", message: "Rate limit exceeded" }, 429, {
+        "Retry-After": "60",
+      });
+    }
+
     await next();
-    return;
-  }
+  });
+}
 
-  // Use the authenticated userId when available; fall back to the client IP for
-  // unauthenticated routes (e.g. /api/auth/register, /api/auth/login).
-  const user = c.get("user") as DecodedToken | undefined;
-  const key =
-    user?.userId ??
-    c.req.raw.headers.get("CF-Connecting-IP") ??
-    c.req.raw.headers.get("X-Forwarded-For") ??
-    "anonymous";
+// General: 100 req/60s (all authenticated API routes)
+export const rateLimiter = createRateLimiter((env) => env.RATE_LIMITER, "RATE_LIMITER");
 
-  const { success } = await rateLimiterBinding.limit({ key });
-
-  if (!success) {
-    return c.json({ status: "error", message: "Rate limit exceeded" }, 429, {
-      "Retry-After": "60",
-    });
-  }
-
-  await next();
-});
+// Auth: 5 req/60s (login + register — brute-force protection)
+export const authRateLimiter = createRateLimiter(
+  (env) => env.AUTH_RATE_LIMITER ?? env.RATE_LIMITER,
+  "AUTH_RATE_LIMITER",
+);
