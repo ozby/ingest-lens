@@ -103,7 +103,7 @@ describe("Intake page", () => {
   });
 
   it("submits a new mapping suggestion", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
     apiMocks.getPublicFixtures.mockResolvedValueOnce([]);
     apiMocks.createIntakeSuggestion.mockResolvedValueOnce({
@@ -163,7 +163,7 @@ describe("Intake page", () => {
   });
 
   it("loads fixture catalog and prefills payload from selected fixture", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
     apiMocks.getPublicFixtures.mockResolvedValueOnce([
       {

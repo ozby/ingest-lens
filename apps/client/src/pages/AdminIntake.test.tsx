@@ -113,7 +113,7 @@ describe("AdminIntake page", () => {
   });
 
   it("approves selected mapping suggestion and uses mappingTraceId in result", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     apiMocks.getIntakeSuggestions.mockResolvedValueOnce([attempt]);
     apiMocks.approveIntakeSuggestion.mockResolvedValueOnce({
       attempt: {
@@ -158,7 +158,7 @@ describe("AdminIntake page", () => {
   });
 
   it("rejects attempt with reason", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     apiMocks.getIntakeSuggestions.mockResolvedValueOnce([attempt]);
     apiMocks.rejectIntakeSuggestion.mockResolvedValueOnce({
       ...attempt,
