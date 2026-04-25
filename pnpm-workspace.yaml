@@ -52,6 +52,10 @@ catalog:
   "@webpresso/vitest-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/vitest-config"
   "@webpresso/stryker-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config"
 
+  # Webpresso standalone packages (git-pointer to individual repos on GitHub)
+  "@webpresso/workers-test-kit": "git+ssh://git@github.com/webpresso/workers-test-kit.git#main"
+  "@webpresso/db-branching": "git+ssh://git@github.com/webpresso/db-branching.git#main"
+
 catalogs:
   tooling:
     typescript: 6.0.3

@@ -64,7 +64,9 @@
     },
     "onlyBuiltDependencies": [
       "@webpresso/agent-kit",
-      "@webpresso/vitest-config"
+      "@webpresso/db-branching",
+      "@webpresso/vitest-config",
+      "@webpresso/workers-test-kit"
     ]
   }
 }

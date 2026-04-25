@@ -21,7 +21,7 @@
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
-    "@webpresso/workers-test-kit": "file:/Users/ozby/repos/webpresso/workers-test-kit",
+    "@webpresso/workers-test-kit": "catalog:",
     "oxlint": "catalog:tooling",
     "vitest": "catalog:tooling",
     "wrangler": "catalog:workers"
