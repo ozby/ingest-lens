@@ -8,8 +8,8 @@ describe("PRICING_TABLE", () => {
 
   it("every entry has required fields", () => {
     for (const entry of PRICING_TABLE) {
-      expect(entry.service).toBeTruthy();
-      expect(entry.unit).toBeTruthy();
+      expect(entry.service).toBeTypeOf("string");
+      expect(entry.unit).toBeTypeOf("string");
       expect(typeof entry.priceUsd).toBe("number");
       expect(typeof entry.freePerMonth).toBe("number");
       expect(entry.effectiveDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);

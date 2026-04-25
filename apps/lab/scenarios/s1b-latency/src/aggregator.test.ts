@@ -80,7 +80,7 @@ describe("summarize", () => {
     );
     const summary = summarize("cf-queues-latency", events, 500);
 
-    expect(summary.pricingEffectiveDate).toBeTruthy();
+    expect(summary.pricingEffectiveDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(summary.pricingSource).toContain("cloudflare");
   });
 
@@ -90,7 +90,7 @@ describe("summarize", () => {
     );
     const summary = summarize("pg-polling-latency", events, 500);
 
-    expect(summary.pricingEffectiveDate).toBeTruthy();
+    expect(summary.pricingEffectiveDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(summary.costPerMillion).toBeGreaterThanOrEqual(0);
   });
 

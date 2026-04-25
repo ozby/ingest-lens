@@ -91,7 +91,7 @@ describe("POST /lab/s1a/run — happy path", () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as { ok: boolean; sessionId: string; streamUrl: string };
     expect(body.ok).toBe(true);
-    expect(body.sessionId).toBeTruthy();
+    expect(body.sessionId).toBeTypeOf("string");
     expect(body.streamUrl).toMatch(/^\/lab\/sessions\/.+\/stream$/);
   });
 
@@ -102,7 +102,7 @@ describe("POST /lab/s1a/run — happy path", () => {
     const res = await app.request(req, undefined, env);
     expect(res.status).toBe(200);
     const setCookieHeader = res.headers.get("set-cookie");
-    expect(setCookieHeader).toBeTruthy();
+    expect(setCookieHeader).not.toBeNull();
     expect(setCookieHeader).toContain("lab_sid");
   });
 

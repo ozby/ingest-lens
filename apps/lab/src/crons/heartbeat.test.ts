@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { runHeartbeat, InMemoryHeartbeatStore } from "./heartbeat";
 import type { HeartbeatDeps } from "./heartbeat";
 
@@ -100,7 +100,6 @@ describe("runHeartbeat — weekly kind", () => {
 
 describe("runHeartbeat — consecutive failure webhook", () => {
   it("does NOT send webhook on first failure", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503 });
     const webhookFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     const store = new InMemoryHeartbeatStore();
 
@@ -146,7 +145,7 @@ describe("runHeartbeat — consecutive failure webhook", () => {
     const store = new InMemoryHeartbeatStore();
     const webhookCalls: string[] = [];
 
-    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+    const fetchMock = vi.fn().mockImplementation((url: string, _init?: RequestInit) => {
       if (url.includes("/lab/health")) {
         // Determine tick by checking how many health calls have been made
         const healthCalls = fetchMock.mock.calls.filter((c) =>
@@ -196,7 +195,7 @@ describe("runHeartbeat — consecutive failure webhook", () => {
 
   it("does not send webhook when webhookUrl is not configured", async () => {
     const store = new InMemoryHeartbeatStore();
-    const fetchMock = vi.fn().mockImplementation((url: string) => {
+    const fetchMock = vi.fn().mockImplementation((_url: string) => {
       return Promise.resolve({ ok: false, status: 503 });
     });
 

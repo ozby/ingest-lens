@@ -1,3 +1,8 @@
+---
+type: runbook
+last_updated: "2026-04-25"
+---
+
 # Consistency Lab — Incident Runbook
 
 > Scannable in under 60 seconds per script. Exact commands where applicable.

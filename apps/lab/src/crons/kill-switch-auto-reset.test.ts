@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { runKillSwitchAutoReset } from "./kill-switch-auto-reset";
-import type { AutoResetDeps, AutoResetOutcome } from "./kill-switch-auto-reset";
+import type { AutoResetDeps } from "./kill-switch-auto-reset";
 import { KillSwitchKV } from "@repo/lab-core";
 import type { KVNamespace } from "@repo/lab-core";
 
