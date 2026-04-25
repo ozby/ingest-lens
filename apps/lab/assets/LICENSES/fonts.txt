@@ -1,0 +1,18 @@
+Inter Tight — https://rsms.me/inter/
+SIL Open Font License, Version 1.1
+Copyright (c) 2016-2023 The Inter Project Authors
+
+JetBrains Mono — https://www.jetbrains.com/lp/mono/
+SIL Open Font License, Version 1.1
+Copyright 2020 The JetBrains Mono Project Authors
+
+Font files (not vendored in this repo — serve via CDN or build step):
+  fonts/inter-tight-latin-400.woff2   — Inter Tight weight 400, Latin subset
+  fonts/inter-tight-latin-500.woff2   — Inter Tight weight 500, Latin subset
+  fonts/inter-tight-latin-700.woff2   — Inter Tight weight 700, Latin subset
+  fonts/jetbrains-mono-latin-400.woff2 — JetBrains Mono weight 400, Latin subset
+  fonts/jetbrains-mono-latin-600.woff2 — JetBrains Mono weight 600, Latin subset
+
+Download from: https://fontsource.org/fonts/inter-tight and https://fontsource.org/fonts/jetbrains-mono
+or add @fontsource/inter-tight and @fontsource/jetbrains-mono to devDependencies
+and copy the latin/*.woff2 files during build.

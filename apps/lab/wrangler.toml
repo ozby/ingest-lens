@@ -1,0 +1,91 @@
+name = "ingestlens-lab"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[limits]
+cpu_ms = 300000
+
+[assets]
+directory = "assets"
+binding = "LAB_ASSETS"
+
+# ─── Durable Objects ──────────────────────────────────────────────────────────
+
+[[durable_objects.bindings]]
+name = "SESSION_LOCK"
+class_name = "SessionLock"
+script_name = "ingestlens-lab"
+
+[[durable_objects.bindings]]
+name = "CONCURRENCY_GAUGE"
+class_name = "LabConcurrencyGauge"
+script_name = "ingestlens-lab"
+
+[[durable_objects.bindings]]
+name = "S1A_RUNNER"
+class_name = "S1aRunnerDO"
+script_name = "ingestlens-lab"
+
+[[durable_objects.bindings]]
+name = "S1B_RUNNER"
+class_name = "S1bRunnerDO"
+script_name = "ingestlens-lab"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SessionLock", "LabConcurrencyGauge", "S1aRunnerDO", "S1bRunnerDO"]
+
+# ─── Queues (F-3T) ────────────────────────────────────────────────────────────
+
+[[queues.producers]]
+binding = "LAB_S1A_QUEUE"
+queue = "lab-s1a-queue"
+
+[[queues.producers]]
+binding = "LAB_S1B_QUEUE"
+queue = "lab-s1b-queue"
+
+[[queues.consumers]]
+queue = "lab-s1a-queue"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+
+[[queues.consumers]]
+queue = "lab-s1b-queue"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+
+# ─── KV (F-01 kill switch) ────────────────────────────────────────────────────
+
+[[kv_namespaces]]
+binding = "KILL_SWITCH_KV"
+id = "placeholder-lab-kill-switch-kv-id"
+
+# ─── Hyperdrive ───────────────────────────────────────────────────────────────
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "placeholder-lab-hyperdrive-id"
+localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
+
+# ─── Secrets (injected by Doppler at deploy time) ─────────────────────────────
+# LAB_SESSION_SECRET — dedicated secret; never reuse JWT_SECRET (F-08)
+# HEARTBEAT_WEBHOOK_URL — wired by Lane E (consistency-lab-ops)
+
+# ─── Scheduled triggers (F-19, F-11, F-01) ───────────────────────────────────
+[triggers]
+crons = ["*/15 * * * *", "0 0 * * 0", "0 0 * * *"]
+# "*/15 * * * *" — HeartbeatCron (daily, workloadSize=100, F-19)
+# "0 0 * * 0"   — HeartbeatWeeklyCron (Sunday, workloadSize=10k, F-19)
+# "0 0 * * *"   — KillSwitchAutoReset daily (F-11)
+
+# ─── Analytics Engine (F9T cost estimation) ───────────────────────────────────
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "lab_events"
+
+[vars]
+NODE_ENV = "development"

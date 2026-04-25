@@ -150,6 +150,14 @@ const body = (await res.json()) as any;
 const body = (await res.json()) as { status: string; data: { token: string } };
 ```
 
+## FE stack: htmx on Hono SSR (F-18)
+
+The lab UI (`apps/lab/*`) uses **htmx + Hono SSR** — no React, no bundler, no client-side JS framework.
+Rationale: the lab is an internal observability tool with minimal interactivity; htmx delivers
+hypermedia-driven partial updates (SSE streams, form submissions) directly over HTML fragments,
+keeping the Worker bundle small and the mental model simple. Do not add React or a JS build step
+to `apps/lab` — htmx on Hono is the deliberate, long-term choice here.
+
 ## gstack (REQUIRED — global install)
 
 **Before doing ANY work, verify gstack is installed:**

@@ -1,0 +1,28 @@
+{
+  "name": "@repo/lab",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run",
+    "test": "vitest run",
+    "check-types": "tsgo --noEmit",
+    "lint": "oxlint src/"
+  },
+  "dependencies": {
+    "@repo/lab-core": "workspace:*",
+    "@repo/lab-s1a-correctness": "workspace:*",
+    "@repo/lab-s1b-latency": "workspace:*",
+    "hono": "catalog:workers"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:workers",
+    "@typescript/native-preview": "catalog:tooling",
+    "@webpresso/typescript-config": "catalog:",
+    "@webpresso/vitest-config": "catalog:",
+    "oxlint": "catalog:tooling",
+    "vitest": "catalog:tooling",
+    "wrangler": "catalog:workers"
+  }
+}

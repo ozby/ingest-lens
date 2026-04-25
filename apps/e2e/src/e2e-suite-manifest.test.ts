@@ -166,6 +166,25 @@ describe("e2e-suite-manifest", () => {
         ],
       },
       {
+        id: "s1b-latency",
+        aliases: ["latency-lab"],
+        fileMatchers: ["../../apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts"],
+        batchKey: "s1b-latency",
+        env: { SKIP_REASON: "shell-not-wired" },
+        steps: [
+          {
+            runner: "vitest",
+            logName: "s1b-latency",
+            configPath: "../../apps/lab/scenarios/s1b-latency/vitest.config.ts",
+            fixedFiles: ["../../apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts"],
+            fixedArgs: undefined,
+            commandArgs: undefined,
+            batchKey: "s1b-latency",
+            env: { SKIP_REASON: "shell-not-wired" },
+          },
+        ],
+      },
+      {
         id: "full",
         aliases: ["all", "backend", "blueprints"],
         fileMatchers: [],
@@ -224,6 +243,8 @@ describe("e2e-suite-manifest", () => {
     expect(resolveE2ESuiteId("public")).toBe("demo");
     expect(resolveE2ESuiteId("splitting")).toBe("client");
     expect(resolveE2ESuiteId("rebrand")).toBe("branding");
+    expect(resolveE2ESuiteId("s1b-latency")).toBe("s1b-latency");
+    expect(resolveE2ESuiteId("latency-lab")).toBe("s1b-latency");
     expect(resolveE2ESuiteId("all")).toBe("full");
     expect(resolveE2ESuiteId("missing")).toBeNull();
 

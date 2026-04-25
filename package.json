@@ -25,7 +25,8 @@
     "prepare": "husky",
     "docs:check": "ak audit docs-frontmatter",
     "blueprints:check": "ak audit blueprint-lifecycle --legacy-omx",
-    "ai:eval": "bun ./scripts/run-mapping-eval.ts"
+    "ai:eval": "bun ./scripts/run-mapping-eval.ts",
+    "probes:lab": "bun scripts/probes/consistency-lab/run-all.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
