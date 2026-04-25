@@ -38,18 +38,12 @@ dashboardRoutes.get("/server", async (c) => {
       .returning();
   }
 
-  const [{ totalQueues }] = await db
-    .select({ totalQueues: count() })
-    .from(queues);
-  const [{ totalMessages }] = await db
-    .select({ totalMessages: count() })
-    .from(messages);
+  const [{ totalQueues }] = await db.select({ totalQueues: count() }).from(queues);
+  const [{ totalMessages }] = await db.select({ totalMessages: count() }).from(messages);
   const [{ activeMessages }] = await db
     .select({ activeMessages: count() })
     .from(messages)
-    .where(
-      and(eq(messages.received, true), gt(messages.visibilityExpiresAt, now)),
-    );
+    .where(and(eq(messages.received, true), gt(messages.visibilityExpiresAt, now)));
 
   return c.json({
     status: "success",
@@ -198,9 +192,7 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
       stats: {
         totalMessages,
         activeMessages,
-        oldestMessageAge: oldestMessage
-          ? Date.now() - oldestMessage.createdAt.getTime()
-          : 0,
+        oldestMessageAge: oldestMessage ? Date.now() - oldestMessage.createdAt.getTime() : 0,
       },
     },
   });

@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
 import { createDb } from "../db/client";
-import {
-  comparePassword,
-  generateToken,
-  hashPasswordAsync,
-} from "../middleware/auth";
+import { comparePassword, generateToken, hashPasswordAsync } from "../middleware/auth";
 import {
   buildInsertChain,
   buildSelectChain,
@@ -34,10 +30,7 @@ function mockRegisteredUser() {
 
 async function hashLegacyPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
-  const hashBuffer = await crypto.subtle.digest(
-    "SHA-256",
-    encoder.encode(password + "some-salt"),
-  );
+  const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(password + "some-salt"));
   return Array.from(new Uint8Array(hashBuffer))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
@@ -83,9 +76,7 @@ describe("Auth routes", () => {
     it("rejects a wrong password for a pbkdf2 hash", async () => {
       const hash = await hashPasswordAsync("password123");
 
-      await expect(comparePassword("wrong-password", hash)).resolves.toBe(
-        false,
-      );
+      await expect(comparePassword("wrong-password", hash)).resolves.toBe(false);
     });
   });
 
@@ -150,16 +141,12 @@ describe("Auth routes", () => {
       };
       expect(body.status).toBe("success");
       expect(body.data.token).toBeDefined();
-      expect(body.data.user.updatedAt).toBe(
-        mockRegisteredUser().updatedAt.toISOString(),
-      );
+      expect(body.data.user.updatedAt).toBe(mockRegisteredUser().updatedAt.toISOString());
 
       const db = vi.mocked(createDb).mock.results[0]?.value as {
         insert: ReturnType<typeof vi.fn>;
       };
-      const valuesMock = db.insert.mock.results[0]?.value.values as ReturnType<
-        typeof vi.fn
-      >;
+      const valuesMock = db.insert.mock.results[0]?.value.values as ReturnType<typeof vi.fn>;
       const returningMock = valuesMock.mock.results[0]?.value.returning as
         | ReturnType<typeof vi.fn>
         | undefined;
@@ -181,9 +168,7 @@ describe("Auth routes", () => {
       const db = vi.mocked(createDb).mock.results[0]?.value as {
         insert: ReturnType<typeof vi.fn>;
       };
-      const valuesMock = db.insert.mock.results[0]?.value.values as ReturnType<
-        typeof vi.fn
-      >;
+      const valuesMock = db.insert.mock.results[0]?.value.values as ReturnType<typeof vi.fn>;
       const [{ password }] = valuesMock.mock.calls[0] ?? [];
 
       expect(typeof password).toBe("string");
@@ -193,10 +178,7 @@ describe("Auth routes", () => {
 
   describe("POST /api/auth/login", () => {
     it("returns 400 when credentials are missing", async () => {
-      const res = await app.fetch(
-        post("/api/auth/login", { username: "testuser" }),
-        mockEnv,
-      );
+      const res = await app.fetch(post("/api/auth/login", { username: "testuser" }), mockEnv);
       expect(res.status).toBe(400);
     });
 
@@ -230,9 +212,7 @@ describe("Auth routes", () => {
       expect(typeof migratedHash).toBe("string");
       expect(migratedHash).not.toBe(legacyHash);
       expectPbkdf2HashFormat(migratedHash);
-      await expect(comparePassword("password123", migratedHash)).resolves.toBe(
-        true,
-      );
+      await expect(comparePassword("password123", migratedHash)).resolves.toBe(true);
     });
 
     it("returns the shared auth user payload including updatedAt", async () => {
@@ -297,11 +277,7 @@ describe("Auth routes", () => {
         select: selectMock,
       } as any);
 
-      const token = await generateToken(
-        currentUser.id,
-        currentUser.username,
-        mockEnv.JWT_SECRET,
-      );
+      const token = await generateToken(currentUser.id, currentUser.username, mockEnv.JWT_SECRET);
 
       const res = await app.fetch(
         get("/api/auth/me", { Authorization: `Bearer ${token}` }),
@@ -327,9 +303,7 @@ describe("Auth routes", () => {
       };
 
       expect(body.status).toBe("success");
-      expect(body.data.user.updatedAt).toBe(
-        currentUser.updatedAt.toISOString(),
-      );
+      expect(body.data.user.updatedAt).toBe(currentUser.updatedAt.toISOString());
     });
   });
 });

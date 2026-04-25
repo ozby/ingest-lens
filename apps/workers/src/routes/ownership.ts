@@ -36,11 +36,7 @@ export async function requireOwnedQueue(
   const ownerId = c.get("user").userId;
   const resolved = { ...DEFAULT_QUEUE_MESSAGES, ...messages };
 
-  const [queue] = await db
-    .select()
-    .from(queues)
-    .where(eq(queues.id, queueId))
-    .limit(1);
+  const [queue] = await db.select().from(queues).where(eq(queues.id, queueId)).limit(1);
 
   if (!queue) {
     return c.json({ status: "error", message: resolved.notFound }, 404);
@@ -62,11 +58,7 @@ export async function requireOwnedTopic(
   const ownerId = c.get("user").userId;
   const resolved = { ...DEFAULT_TOPIC_MESSAGES, ...messages };
 
-  const [topic] = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.id, topicId))
-    .limit(1);
+  const [topic] = await db.select().from(topics).where(eq(topics.id, topicId)).limit(1);
 
   if (!topic) {
     return c.json({ status: "error", message: resolved.notFound }, 404);

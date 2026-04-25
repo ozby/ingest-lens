@@ -46,9 +46,7 @@ describe("App", () => {
     render(<App />);
 
     await waitFor(() =>
-      expect(
-        screen.getByText("Login or create an account to continue"),
-      ).toBeTruthy(),
+      expect(screen.getByText("Login or create an account to continue")).toBeTruthy(),
     );
   });
 
@@ -58,9 +56,7 @@ describe("App", () => {
     render(<App />);
 
     await waitFor(() =>
-      expect(
-        screen.getByText("Login or create an account to continue"),
-      ).toBeTruthy(),
+      expect(screen.getByText("Login or create an account to continue")).toBeTruthy(),
     );
   });
 
@@ -89,9 +85,7 @@ describe("App", () => {
     render(<App />);
 
     await waitFor(() =>
-      expect(
-        screen.getByText("Overview of your message queuing system"),
-      ).toBeTruthy(),
+      expect(screen.getByText("Overview of your message queuing system")).toBeTruthy(),
     );
   });
 });

@@ -28,10 +28,7 @@ messageRoutes.post("/:queueId", async (c) => {
   const { data } = body;
 
   if (!data || typeof data !== "object") {
-    return c.json(
-      { status: "error", message: "Message data must be an object" },
-      400,
-    );
+    return c.json({ status: "error", message: "Message data must be an object" }, 400);
   }
 
   const db = createDb(c.env);
@@ -47,12 +44,7 @@ messageRoutes.post("/:queueId", async (c) => {
     const [existing] = await db
       .select()
       .from(messages)
-      .where(
-        and(
-          eq(messages.queueId, queueId),
-          eq(messages.idempotencyKey, idempotencyKey),
-        ),
-      )
+      .where(and(eq(messages.queueId, queueId), eq(messages.idempotencyKey, idempotencyKey)))
       .limit(1);
     if (existing) {
       return c.json({ status: "success", data: { message: existing } }, 200);
@@ -101,10 +93,7 @@ messageRoutes.post("/:queueId", async (c) => {
 // GET /api/messages/:queueId — receive messages
 messageRoutes.get("/:queueId", async (c) => {
   const queueId = c.req.param("queueId");
-  const maxMessages = parseInt(
-    c.req.query("maxMessages") ?? String(DEFAULT_MAX_MESSAGES),
-    10,
-  );
+  const maxMessages = parseInt(c.req.query("maxMessages") ?? String(DEFAULT_MAX_MESSAGES), 10);
   const visibilityTimeout = parseInt(
     c.req.query("visibilityTimeout") ?? String(DEFAULT_VISIBILITY_TIMEOUT),
     10,
@@ -122,9 +111,7 @@ messageRoutes.get("/:queueId", async (c) => {
   }
 
   const now = new Date();
-  const visibilityExpiresAt = new Date(
-    now.getTime() + clampedVisibilityTimeout * 1000,
-  );
+  const visibilityExpiresAt = new Date(now.getTime() + clampedVisibilityTimeout * 1000);
 
   await db
     .update(messages)
@@ -146,10 +133,7 @@ messageRoutes.get("/:queueId", async (c) => {
     .where(
       and(
         eq(messages.queueId, queueId),
-        or(
-          eq(messages.received, false),
-          lte(messages.visibilityExpiresAt, now),
-        ),
+        or(eq(messages.received, false), lte(messages.visibilityExpiresAt, now)),
       ),
     )
     .limit(Math.min(maxMessages, 10));
@@ -246,12 +230,7 @@ messageRoutes.delete("/:queueId/:messageId", async (c) => {
     return c.json({ status: "error", message: "Message not found" }, 404);
   }
 
-  await db
-    .delete(messages)
-    .where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)));
+  await db.delete(messages).where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)));
 
-  return c.json(
-    { status: "success", data: { deletedMessageId: messageId } },
-    200,
-  );
+  return c.json({ status: "success", data: { deletedMessageId: messageId } }, 200);
 });

@@ -76,16 +76,10 @@ describe("Dashboard routes", () => {
       const metricsFromMock = vi.fn().mockReturnValue({ limit: limitMock });
 
       const totalQueuesFromMock = vi.fn().mockResolvedValue([{ totalQueues: 2 }]);
-      const totalMessagesFromMock = vi
-        .fn()
-        .mockResolvedValue([{ totalMessages: 4 }]);
+      const totalMessagesFromMock = vi.fn().mockResolvedValue([{ totalMessages: 4 }]);
 
-      const activeMessagesWhereMock = vi
-        .fn()
-        .mockResolvedValue([{ activeMessages: 1 }]);
-      const activeMessagesFromMock = vi
-        .fn()
-        .mockReturnValue({ where: activeMessagesWhereMock });
+      const activeMessagesWhereMock = vi.fn().mockResolvedValue([{ activeMessages: 1 }]);
+      const activeMessagesFromMock = vi.fn().mockReturnValue({ where: activeMessagesWhereMock });
 
       const selectMock = vi
         .fn()
@@ -96,10 +90,7 @@ describe("Dashboard routes", () => {
 
       vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
 
-      const res = await app.fetch(
-        get("/api/dashboard/server", AUTH_HEADER),
-        mockEnv,
-      );
+      const res = await app.fetch(get("/api/dashboard/server", AUTH_HEADER), mockEnv);
 
       expect(res.status).toBe(200);
       const body = (await res.json()) as {
@@ -115,9 +106,7 @@ describe("Dashboard routes", () => {
       expect(body.status).toBe("success");
       expect(body.data.stats.activeMessages).toBe(1);
 
-      const activeMessagesWhereSql = renderSql(
-        activeMessagesWhereMock.mock.calls[0]?.[0],
-      );
+      const activeMessagesWhereSql = renderSql(activeMessagesWhereMock.mock.calls[0]?.[0]);
       expect(activeMessagesWhereSql).toContain("received = true");
       expect(activeMessagesWhereSql).toContain("visibility_expires_at >");
     });
@@ -149,10 +138,7 @@ describe("Dashboard routes", () => {
 
       vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
 
-      const res = await app.fetch(
-        get("/api/dashboard/server/activity", AUTH_HEADER),
-        mockEnv,
-      );
+      const res = await app.fetch(get("/api/dashboard/server/activity", AUTH_HEADER), mockEnv);
 
       expect(res.status).toBe(200);
       const body = (await res.json()) as {
@@ -184,14 +170,10 @@ describe("Dashboard routes", () => {
       };
 
       const ownedQueueWhereMock = vi.fn().mockResolvedValue(ownedQueues);
-      const ownedQueueFromMock = vi
-        .fn()
-        .mockReturnValue({ where: ownedQueueWhereMock });
+      const ownedQueueFromMock = vi.fn().mockReturnValue({ where: ownedQueueWhereMock });
 
       const queueMetricsWhereMock = vi.fn().mockResolvedValue([ownedMetric]);
-      const queueMetricsFromMock = vi
-        .fn()
-        .mockReturnValue({ where: queueMetricsWhereMock });
+      const queueMetricsFromMock = vi.fn().mockReturnValue({ where: queueMetricsWhereMock });
 
       const selectMock = vi
         .fn()
@@ -200,10 +182,7 @@ describe("Dashboard routes", () => {
 
       vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
 
-      const res = await app.fetch(
-        get("/api/dashboard/queues", AUTH_HEADER),
-        mockEnv,
-      );
+      const res = await app.fetch(get("/api/dashboard/queues", AUTH_HEADER), mockEnv);
 
       expect(res.status).toBe(200);
       const body = (await res.json()) as {
@@ -230,44 +209,24 @@ describe("Dashboard routes", () => {
       };
 
       const oldestMessage = { createdAt: new Date("2026-01-01T00:00:00Z") };
-      const queueLimitMock = vi
-        .fn()
-        .mockResolvedValue([{ id: "queue-1", ownerId: "user-123" }]);
+      const queueLimitMock = vi.fn().mockResolvedValue([{ id: "queue-1", ownerId: "user-123" }]);
       const queueWhereMock = vi.fn().mockReturnValue({ limit: queueLimitMock });
       const queueFromMock = vi.fn().mockReturnValue({ where: queueWhereMock });
 
       const metricLimitMock = vi.fn().mockResolvedValue([metric]);
-      const metricWhereMock = vi
-        .fn()
-        .mockReturnValue({ limit: metricLimitMock });
-      const metricFromMock = vi
-        .fn()
-        .mockReturnValue({ where: metricWhereMock });
+      const metricWhereMock = vi.fn().mockReturnValue({ limit: metricLimitMock });
+      const metricFromMock = vi.fn().mockReturnValue({ where: metricWhereMock });
 
-      const totalMessagesWhereMock = vi
-        .fn()
-        .mockResolvedValue([{ totalMessages: 2 }]);
-      const totalMessagesFromMock = vi
-        .fn()
-        .mockReturnValue({ where: totalMessagesWhereMock });
+      const totalMessagesWhereMock = vi.fn().mockResolvedValue([{ totalMessages: 2 }]);
+      const totalMessagesFromMock = vi.fn().mockReturnValue({ where: totalMessagesWhereMock });
 
-      const activeMessagesWhereMock = vi
-        .fn()
-        .mockResolvedValue([{ activeMessages: 1 }]);
-      const activeMessagesFromMock = vi
-        .fn()
-        .mockReturnValue({ where: activeMessagesWhereMock });
+      const activeMessagesWhereMock = vi.fn().mockResolvedValue([{ activeMessages: 1 }]);
+      const activeMessagesFromMock = vi.fn().mockReturnValue({ where: activeMessagesWhereMock });
 
       const oldestLimitMock = vi.fn().mockResolvedValue([oldestMessage]);
-      const oldestOrderByMock = vi
-        .fn()
-        .mockReturnValue({ limit: oldestLimitMock });
-      const oldestWhereMock = vi
-        .fn()
-        .mockReturnValue({ orderBy: oldestOrderByMock });
-      const oldestFromMock = vi
-        .fn()
-        .mockReturnValue({ where: oldestWhereMock });
+      const oldestOrderByMock = vi.fn().mockReturnValue({ limit: oldestLimitMock });
+      const oldestWhereMock = vi.fn().mockReturnValue({ orderBy: oldestOrderByMock });
+      const oldestFromMock = vi.fn().mockReturnValue({ where: oldestWhereMock });
 
       const selectMock = vi
         .fn()
@@ -279,10 +238,7 @@ describe("Dashboard routes", () => {
 
       vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
 
-      const res = await app.fetch(
-        get("/api/dashboard/queues/queue-1", AUTH_HEADER),
-        mockEnv,
-      );
+      const res = await app.fetch(get("/api/dashboard/queues/queue-1", AUTH_HEADER), mockEnv);
 
       expect(res.status).toBe(200);
       const body = (await res.json()) as {
@@ -303,9 +259,7 @@ describe("Dashboard routes", () => {
       expect(body.data.stats.oldestMessageAge).toBeGreaterThanOrEqual(0);
       expect(body.data).not.toHaveProperty("queueMetric");
 
-      const activeMessagesWhereSql = renderSql(
-        activeMessagesWhereMock.mock.calls[0]?.[0],
-      );
+      const activeMessagesWhereSql = renderSql(activeMessagesWhereMock.mock.calls[0]?.[0]);
       expect(activeMessagesWhereSql).toContain("queue_id = queue-1");
       expect(activeMessagesWhereSql).toContain("received = true");
       expect(activeMessagesWhereSql).toContain("visibility_expires_at >");

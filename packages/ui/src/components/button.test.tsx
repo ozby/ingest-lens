@@ -18,9 +18,7 @@ function renderButton(ui: React.ReactNode) {
 describe("Button", () => {
   it("renders an accessible button and forwards click behavior", () => {
     const onClick = vi.fn();
-    const { container, root } = renderButton(
-      <Button onClick={onClick}>Create Queue</Button>,
-    );
+    const { container, root } = renderButton(<Button onClick={onClick}>Create Queue</Button>);
 
     const button = container.querySelector("button");
     expect(button?.textContent).toBe("Create Queue");

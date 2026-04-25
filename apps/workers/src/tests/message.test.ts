@@ -84,9 +84,7 @@ function setupLeaseDb(initialMessages: LeaseMessage[]) {
                 .slice(0, limit)
                 .map((message) => ({ ...message }));
 
-              state.pendingClaimIds = claimedMessages.map(
-                (message) => message.id,
-              );
+              state.pendingClaimIds = claimedMessages.map((message) => message.id);
               state.claimIndex = 0;
 
               return claimedMessages;
@@ -125,8 +123,7 @@ function setupLeaseDb(initialMessages: LeaseMessage[]) {
                   ...message,
                   received: true,
                   receivedAt: values.receivedAt as Date,
-                  visibilityExpiresAt:
-                    (values.visibilityExpiresAt as Date | null) ?? null,
+                  visibilityExpiresAt: (values.visibilityExpiresAt as Date | null) ?? null,
                   receivedCount: message.receivedCount + 1,
                 }
               : message,
@@ -175,10 +172,7 @@ afterEach(() => {
 
 describe("Message routes — POST /api/messages/:queueId", () => {
   it("returns 401 when not authenticated", async () => {
-    const res = await app.fetch(
-      post("/api/messages/queue-1", { data: { key: "value" } }),
-      mockEnv,
-    );
+    const res = await app.fetch(post("/api/messages/queue-1", { data: { key: "value" } }), mockEnv);
     expect(res.status).toBe(401);
   });
 
@@ -221,11 +215,7 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     setupDb(null);
 
     const res = await app.fetch(
-      post(
-        "/api/messages/nonexistent",
-        { data: { key: "value" } },
-        AUTH_HEADER,
-      ),
+      post("/api/messages/nonexistent", { data: { key: "value" } }, AUTH_HEADER),
       mockEnv,
     );
 
@@ -237,10 +227,7 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     bypassAuth(vi.mocked(authenticate));
     setupDb(mockQueue);
 
-    const res = await app.fetch(
-      post("/api/messages/queue-1", {}, AUTH_HEADER),
-      mockEnv,
-    );
+    const res = await app.fetch(post("/api/messages/queue-1", {}, AUTH_HEADER), mockEnv);
 
     expect(res.status).toBe(400);
     expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
@@ -355,10 +342,7 @@ describe("Message routes — ownership checks", () => {
       update: updateMock,
     } as any);
 
-    const res = await app.fetch(
-      get("/api/messages/queue-1", AUTH_HEADER),
-      mockEnv,
-    );
+    const res = await app.fetch(get("/api/messages/queue-1", AUTH_HEADER), mockEnv);
 
     expect(res.status).toBe(403);
     expect(updateMock).not.toHaveBeenCalled();
@@ -372,10 +356,7 @@ describe("Message routes — ownership checks", () => {
 
     vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
 
-    const res = await app.fetch(
-      get("/api/messages/queue-1/msg-1", AUTH_HEADER),
-      mockEnv,
-    );
+    const res = await app.fetch(get("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
     expect(res.status).toBe(403);
   });
@@ -392,10 +373,7 @@ describe("Message routes — ownership checks", () => {
       delete: deleteMock,
     } as any);
 
-    const res = await app.fetch(
-      del("/api/messages/queue-1/msg-1", AUTH_HEADER),
-      mockEnv,
-    );
+    const res = await app.fetch(del("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
     expect(res.status).toBe(403);
     expect(deleteMock).not.toHaveBeenCalled();
@@ -413,9 +391,7 @@ describe("Message routes — response contracts", () => {
     const messagesWhereMock = vi
       .fn()
       .mockReturnValue({ limit: vi.fn().mockResolvedValue([mockMessage]) });
-    const messagesFromMock = vi
-      .fn()
-      .mockReturnValue({ where: messagesWhereMock });
+    const messagesFromMock = vi.fn().mockReturnValue({ where: messagesWhereMock });
 
     const selectMock = vi
       .fn()
@@ -429,10 +405,7 @@ describe("Message routes — response contracts", () => {
     } as any);
 
     const res = await app.fetch(
-      get(
-        "/api/messages/queue-1?maxMessages=1&visibilityTimeout=45",
-        AUTH_HEADER,
-      ),
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=45", AUTH_HEADER),
       mockEnv,
     );
 
@@ -474,12 +447,8 @@ describe("Message routes — response contracts", () => {
     const queueFromMock = vi.fn().mockReturnValue({ where: queueWhereMock });
 
     const messageLimitMock = vi.fn().mockResolvedValue([mockMessage]);
-    const messageWhereMock = vi
-      .fn()
-      .mockReturnValue({ limit: messageLimitMock });
-    const messageFromMock = vi
-      .fn()
-      .mockReturnValue({ where: messageWhereMock });
+    const messageWhereMock = vi.fn().mockReturnValue({ limit: messageLimitMock });
+    const messageFromMock = vi.fn().mockReturnValue({ where: messageWhereMock });
 
     const selectMock = vi
       .fn()
@@ -488,10 +457,7 @@ describe("Message routes — response contracts", () => {
 
     vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
 
-    const res = await app.fetch(
-      get("/api/messages/queue-1/msg-1", AUTH_HEADER),
-      mockEnv,
-    );
+    const res = await app.fetch(get("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -526,12 +492,8 @@ describe("Message routes — response contracts", () => {
     const queueFromMock = vi.fn().mockReturnValue({ where: queueWhereMock });
 
     const messageLimitMock = vi.fn().mockResolvedValue([mockMessage]);
-    const messageWhereMock = vi
-      .fn()
-      .mockReturnValue({ limit: messageLimitMock });
-    const messageFromMock = vi
-      .fn()
-      .mockReturnValue({ where: messageWhereMock });
+    const messageWhereMock = vi.fn().mockReturnValue({ limit: messageLimitMock });
+    const messageFromMock = vi.fn().mockReturnValue({ where: messageWhereMock });
 
     const selectMock = vi
       .fn()
@@ -545,10 +507,7 @@ describe("Message routes — response contracts", () => {
       delete: deleteMock,
     } as any);
 
-    const res = await app.fetch(
-      del("/api/messages/queue-1/msg-1", AUTH_HEADER),
-      mockEnv,
-    );
+    const res = await app.fetch(del("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -576,10 +535,7 @@ describe("Message routes — visibility leases", () => {
     ]);
 
     const firstRes = await app.fetch(
-      get(
-        "/api/messages/queue-1?maxMessages=1&visibilityTimeout=45",
-        AUTH_HEADER,
-      ),
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=45", AUTH_HEADER),
       mockEnv,
     );
 
@@ -606,10 +562,7 @@ describe("Message routes — visibility leases", () => {
     ]);
 
     const secondRes = await app.fetch(
-      get(
-        "/api/messages/queue-1?maxMessages=1&visibilityTimeout=45",
-        AUTH_HEADER,
-      ),
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=45", AUTH_HEADER),
       mockEnv,
     );
 
@@ -644,20 +597,14 @@ describe("Message routes — visibility leases", () => {
     ]);
 
     await app.fetch(
-      get(
-        "/api/messages/queue-1?maxMessages=1&visibilityTimeout=10",
-        AUTH_HEADER,
-      ),
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=10", AUTH_HEADER),
       mockEnv,
     );
 
     vi.advanceTimersByTime(11_000);
 
     const res = await app.fetch(
-      get(
-        "/api/messages/queue-1?maxMessages=1&visibilityTimeout=10",
-        AUTH_HEADER,
-      ),
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=10", AUTH_HEADER),
       mockEnv,
     );
 
@@ -725,9 +672,7 @@ describe("Message routes — visibility leases", () => {
                 messageSelectCount += 1;
 
                 if (messageSelectCount === 2) {
-                  return state.messages
-                    .slice(0, limit)
-                    .map((message) => ({ ...message }));
+                  return state.messages.slice(0, limit).map((message) => ({ ...message }));
                 }
 
                 const now = Date.now();
@@ -771,8 +716,7 @@ describe("Message routes — visibility leases", () => {
               ...message,
               received: true,
               receivedAt: values.receivedAt as Date,
-              visibilityExpiresAt:
-                (values.visibilityExpiresAt as Date | null) ?? null,
+              visibilityExpiresAt: (values.visibilityExpiresAt as Date | null) ?? null,
               receivedCount: message.receivedCount + 1,
             }));
             return [];
@@ -800,17 +744,11 @@ describe("Message routes — visibility leases", () => {
     } as any);
 
     await app.fetch(
-      get(
-        "/api/messages/queue-1?maxMessages=1&visibilityTimeout=5",
-        AUTH_HEADER,
-      ),
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=5", AUTH_HEADER),
       mockEnv,
     );
 
-    const deleteRes = await app.fetch(
-      del("/api/messages/queue-1/msg-1", AUTH_HEADER),
-      mockEnv,
-    );
+    const deleteRes = await app.fetch(del("/api/messages/queue-1/msg-1", AUTH_HEADER), mockEnv);
 
     expect(deleteRes.status).toBe(200);
     const deleteBody = (await deleteRes.json()) as {
@@ -822,10 +760,7 @@ describe("Message routes — visibility leases", () => {
     vi.advanceTimersByTime(10_000);
 
     const receiveRes = await app.fetch(
-      get(
-        "/api/messages/queue-1?maxMessages=1&visibilityTimeout=5",
-        AUTH_HEADER,
-      ),
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=5", AUTH_HEADER),
       mockEnv,
     );
 

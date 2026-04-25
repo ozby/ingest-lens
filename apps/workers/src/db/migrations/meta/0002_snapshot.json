@@ -183,9 +183,7 @@
         "queue_metrics_queue_id_unique": {
           "name": "queue_metrics_queue_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "queue_id"
-          ]
+          "columns": ["queue_id"]
         }
       },
       "policies": {},
@@ -437,16 +435,12 @@
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

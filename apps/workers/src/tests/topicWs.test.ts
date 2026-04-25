@@ -23,11 +23,7 @@ describe("GET /:topicId/ws", () => {
       return c.json({ status: "error", message: "Unauthorized" }, 401);
     });
 
-    const res = await topicRoutes.request(
-      get("/topic-1/ws"),
-      {},
-      createMockEnv(),
-    );
+    const res = await topicRoutes.request(get("/topic-1/ws"), {}, createMockEnv());
 
     expect(res.status).toBe(401);
   });
@@ -45,19 +41,13 @@ describe("GET /:topicId/ws", () => {
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
     vi.mocked(createDb).mockReturnValue({ select: selectMock } as any);
 
-    const mockFetch = vi
-      .fn()
-      .mockResolvedValue(new Response(null, { status: 200 }));
+    const mockFetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
     const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
     const mockIdFromName = vi.fn().mockReturnValue("stub-id");
     const mockTopicRooms = { idFromName: mockIdFromName, get: mockGet };
     const env = createMockEnv(undefined, undefined, undefined, mockTopicRooms);
 
-    const res = await topicRoutes.request(
-      get("/topic-1/ws", AUTH_HEADER),
-      {},
-      env,
-    );
+    const res = await topicRoutes.request(get("/topic-1/ws", AUTH_HEADER), {}, env);
 
     expect(res.status).toBe(403);
     expect(mockIdFromName).not.toHaveBeenCalled();
@@ -79,19 +69,13 @@ describe("GET /:topicId/ws", () => {
 
     // Use 200 here — Node's Response rejects 101 (CF Workers-only status)
     // The meaningful assertion is that the DO stub was called, not the WS status
-    const mockFetch = vi
-      .fn()
-      .mockResolvedValue(new Response(null, { status: 200 }));
+    const mockFetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
     const mockGet = vi.fn().mockReturnValue({ fetch: mockFetch });
     const mockIdFromName = vi.fn().mockReturnValue("stub-id");
     const mockTopicRooms = { idFromName: mockIdFromName, get: mockGet };
     const env = createMockEnv(undefined, undefined, undefined, mockTopicRooms);
 
-    const res = await topicRoutes.request(
-      get("/topic-1/ws", AUTH_HEADER),
-      {},
-      env,
-    );
+    const res = await topicRoutes.request(get("/topic-1/ws", AUTH_HEADER), {}, env);
 
     expect(mockIdFromName).toHaveBeenCalledWith("topic-1");
     expect(mockGet).toHaveBeenCalledWith("stub-id");
@@ -101,12 +85,8 @@ describe("GET /:topicId/ws", () => {
 
   it("/:topicId/ws route is registered before /:id (structural check)", () => {
     const routes = topicRoutes.routes;
-    const wsIndex = routes.findIndex(
-      (r) => r.method === "GET" && r.path === "/:topicId/ws",
-    );
-    const idIndex = routes.findIndex(
-      (r) => r.method === "GET" && r.path === "/:id",
-    );
+    const wsIndex = routes.findIndex((r) => r.method === "GET" && r.path === "/:topicId/ws");
+    const idIndex = routes.findIndex((r) => r.method === "GET" && r.path === "/:id");
     expect(wsIndex).toBeGreaterThanOrEqual(0);
     expect(idIndex).toBeGreaterThanOrEqual(0);
     expect(wsIndex).toBeLessThan(idIndex);

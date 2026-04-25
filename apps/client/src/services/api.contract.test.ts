@@ -67,18 +67,12 @@ describe("api service contracts", () => {
       },
     });
 
-    await expect(apiService.getQueueMetrics("queue-1")).resolves.toEqual(
-      queueMetrics,
-    );
-    expect(axiosMocks.get).toHaveBeenCalledWith(
-      "/api/dashboard/queues/queue-1",
-    );
+    await expect(apiService.getQueueMetrics("queue-1")).resolves.toEqual(queueMetrics);
+    expect(axiosMocks.get).toHaveBeenCalledWith("/api/dashboard/queues/queue-1");
   });
 
   it("reads server activity history from the existing worker route", async () => {
-    const activityHistory = [
-      { time: "10:00", requests: 5, messages: 2, errors: 0 },
-    ];
+    const activityHistory = [{ time: "10:00", requests: 5, messages: 2, errors: 0 }];
 
     axiosMocks.get.mockResolvedValueOnce({
       data: {
@@ -87,12 +81,8 @@ describe("api service contracts", () => {
       },
     });
 
-    await expect(apiService.getServerActivityHistory()).resolves.toEqual(
-      activityHistory,
-    );
-    expect(axiosMocks.get).toHaveBeenCalledWith(
-      "/api/dashboard/server/activity",
-    );
+    await expect(apiService.getServerActivityHistory()).resolves.toEqual(activityHistory);
+    expect(axiosMocks.get).toHaveBeenCalledWith("/api/dashboard/server/activity");
   });
 
   it("reads received messages from the shared messages payload", async () => {
@@ -121,9 +111,9 @@ describe("api service contracts", () => {
       },
     });
 
-    await expect(
-      apiService.receiveMessages("queue-1", { maxMessages: 1 }),
-    ).resolves.toEqual(messages);
+    await expect(apiService.receiveMessages("queue-1", { maxMessages: 1 })).resolves.toEqual(
+      messages,
+    );
     expect(axiosMocks.get).toHaveBeenCalledWith("/api/messages/queue-1", {
       params: { maxMessages: 1 },
     });
@@ -150,9 +140,7 @@ describe("api service contracts", () => {
       },
     });
 
-    await expect(apiService.getMessage("queue-1", "msg-1")).resolves.toEqual(
-      message,
-    );
+    await expect(apiService.getMessage("queue-1", "msg-1")).resolves.toEqual(message);
     expect(axiosMocks.get).toHaveBeenCalledWith("/api/messages/queue-1/msg-1");
   });
 
@@ -164,9 +152,7 @@ describe("api service contracts", () => {
       },
     });
 
-    await expect(apiService.deleteMessage("queue-1", "msg-1")).resolves.toBe(
-      "msg-1",
-    );
+    await expect(apiService.deleteMessage("queue-1", "msg-1")).resolves.toBe("msg-1");
     expect(axiosMocks.del).toHaveBeenCalledWith("/api/messages/queue-1/msg-1");
   });
 

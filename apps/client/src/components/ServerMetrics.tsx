@@ -21,9 +21,7 @@ interface ServerMetricsComponentProps {
   metrics: IServerMetrics;
 }
 
-const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({
-  metrics,
-}) => {
+const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({ metrics }) => {
   const [activityData, setActivityData] = useState<IActivityDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -109,11 +107,7 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">System Activity</CardTitle>
-            {isLoading && (
-              <p className="text-sm text-muted-foreground">
-                Loading activity data...
-              </p>
-            )}
+            {isLoading && <p className="text-sm text-muted-foreground">Loading activity data...</p>}
             {isSyntheticActivity ? (
               <p className="text-sm text-amber-700" role="note">
                 Demo sample activity shown until measured history is available.
@@ -201,9 +195,7 @@ const ServerMetricsComponent: React.FC<ServerMetricsComponentProps> = ({
                   <Activity className="h-4 w-4 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium">
-                    Average Response Time
-                  </div>
+                  <div className="text-sm font-medium">Average Response Time</div>
                   <div className="text-sm text-muted-foreground">
                     {metrics.avgResponseTime.toFixed(2)} ms
                   </div>
