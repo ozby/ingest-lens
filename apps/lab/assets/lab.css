@@ -77,14 +77,17 @@
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────────── */
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -276,8 +279,12 @@ html, body {
 
 /* Cell flash on update */
 @keyframes lab-cell-update {
-  0% { background-color: #edf4ff; }
-  100% { background-color: transparent; }
+  0% {
+    background-color: #edf4ff;
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .lab-result-table__td[sse-swap] {
@@ -304,10 +311,18 @@ html, body {
   font-weight: 600;
 }
 
-.lab-status--pending { color: var(--lab-color-pending); }
-.lab-status--running { color: var(--lab-color-accent); }
-.lab-status--completed { color: var(--lab-color-success); }
-.lab-status--failed { color: var(--lab-color-danger); }
+.lab-status--pending {
+  color: var(--lab-color-pending);
+}
+.lab-status--running {
+  color: var(--lab-color-accent);
+}
+.lab-status--completed {
+  color: var(--lab-color-success);
+}
+.lab-status--failed {
+  color: var(--lab-color-danger);
+}
 
 /* ─── Empty state ────────────────────────────────────────────────────────────── */
 .lab-empty-state {
