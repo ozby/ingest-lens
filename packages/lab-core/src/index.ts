@@ -48,3 +48,13 @@ export type { PriceEntry } from "./pricing";
 // KillSwitchKV
 export { KillSwitchKV } from "./kill-switch";
 export type { KillSwitchState, KVNamespace } from "./kill-switch";
+
+// AdminBypassToken (F-06)
+export {
+  timingSafeEqual,
+  isValidAdminToken,
+  extractAdminToken,
+  hashToken,
+  writeAdminAuditEntry,
+} from "./admin-bypass";
+export type { AdminBypassEnv, AdminBypassAuditRow, KVNamespaceAdmin } from "./admin-bypass";

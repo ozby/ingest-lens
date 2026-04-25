@@ -46,8 +46,17 @@ export interface Env {
 
   // Secrets
   LAB_SESSION_SECRET: string; // dedicated; NOT JWT_SECRET (F-08)
-  HEARTBEAT_WEBHOOK_URL?: string; // wired by Lane E
+  HEARTBEAT_WEBHOOK_URL?: string; // wired by Lane E (consistency-lab-ops)
+  LAB_ADMIN_SECRET?: string; // admin bypass token for crons (F-06)
+
+  // Analytics Engine (F9T cost estimation)
+  ANALYTICS?: AnalyticsEngineDataset;
 
   // Vars
   NODE_ENV?: string;
+}
+
+/** Minimal Analytics Engine dataset interface for Workers binding. */
+export interface AnalyticsEngineDataset {
+  writeDataPoint(event: { indexes?: string[]; doubles?: number[]; blobs?: string[] }): void;
 }

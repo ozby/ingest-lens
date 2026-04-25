@@ -75,5 +75,17 @@ localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
 # LAB_SESSION_SECRET — dedicated secret; never reuse JWT_SECRET (F-08)
 # HEARTBEAT_WEBHOOK_URL — wired by Lane E (consistency-lab-ops)
 
+# ─── Scheduled triggers (F-19, F-11, F-01) ───────────────────────────────────
+[triggers]
+crons = ["*/15 * * * *", "0 0 * * 0", "0 0 * * *"]
+# "*/15 * * * *" — HeartbeatCron (daily, workloadSize=100, F-19)
+# "0 0 * * 0"   — HeartbeatWeeklyCron (Sunday, workloadSize=10k, F-19)
+# "0 0 * * *"   — KillSwitchAutoReset daily (F-11)
+
+# ─── Analytics Engine (F9T cost estimation) ───────────────────────────────────
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "lab_events"
+
 [vars]
 NODE_ENV = "development"
