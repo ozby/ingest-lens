@@ -99,3 +99,4 @@ apps/workers/reports/
 # Local extraction of github.com:webpresso/tooling — installed via pnpm catalog
 # git pointer; never commit a vendored copy.
 /tooling/
+.gstack/
