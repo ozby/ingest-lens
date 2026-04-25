@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
+import { createMockHyperdrive } from "@webpresso/workers-test-kit";
 import { streamRoutes } from "./stream";
 import { buildCookieValue } from "../middleware/session-cookie";
 import type { Env } from "../env";
@@ -32,6 +33,18 @@ function makeNs(stub: DurableObjectStub): DurableObjectNamespace {
   } as unknown as DurableObjectNamespace;
 }
 
+function makeMockQueue(): Queue {
+  return { send: vi.fn(), sendBatch: vi.fn() } as unknown as Queue;
+}
+
+function makeMockKv(): KVNamespace {
+  return { get: vi.fn().mockResolvedValue(null), put: vi.fn() } as unknown as KVNamespace;
+}
+
+function makeMockFetcher(): Fetcher {
+  return { fetch: vi.fn().mockResolvedValue(new Response()) } as unknown as Fetcher;
+}
+
 function makeEnv(runnerStub: DurableObjectStub): Env {
   return {
     SESSION_LOCK: makeNs({} as DurableObjectStub),
@@ -41,11 +54,11 @@ function makeEnv(runnerStub: DurableObjectStub): Env {
     LAB_SESSION_SECRET,
     LAB_RUN_TOKEN: "test-run-token",
     NODE_ENV: "test",
-    LAB_S1A_QUEUE: {} as unknown as Queue,
-    LAB_S1B_QUEUE: {} as unknown as Queue,
-    KILL_SWITCH_KV: {} as unknown as KVNamespace,
-    HYPERDRIVE: {} as unknown as Hyperdrive,
-    LAB_ASSETS: {} as unknown as Fetcher,
+    LAB_S1A_QUEUE: makeMockQueue(),
+    LAB_S1B_QUEUE: makeMockQueue(),
+    KILL_SWITCH_KV: makeMockKv(),
+    HYPERDRIVE: createMockHyperdrive(),
+    LAB_ASSETS: makeMockFetcher(),
   };
 }
 

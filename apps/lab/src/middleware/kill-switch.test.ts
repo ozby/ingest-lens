@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Hono } from "hono";
+import {
+  createMockHyperdrive,
+  createMockDurableObjectNamespace,
+} from "@webpresso/workers-test-kit";
 import { killSwitchMiddleware } from "./kill-switch";
 import type { Env } from "../env";
 
@@ -13,6 +17,14 @@ function makeKv(
   } as unknown as KVNamespace;
 }
 
+function makeMockQueue(): Queue {
+  return { send: vi.fn(), sendBatch: vi.fn() } as unknown as Queue;
+}
+
+function makeMockFetcher(): Fetcher {
+  return { fetch: vi.fn().mockResolvedValue(new Response()) } as unknown as Fetcher;
+}
+
 function makeApp(_kv: KVNamespace): Hono<{ Bindings: Env }> {
   const app = new Hono<{ Bindings: Env }>();
   app.use("/lab/*", killSwitchMiddleware);
@@ -24,7 +36,17 @@ function makeEnv(kv: KVNamespace): Env {
   return {
     KILL_SWITCH_KV: kv,
     LAB_SESSION_SECRET: "test-secret",
-  } as unknown as Env;
+    LAB_RUN_TOKEN: "test-run-token",
+    NODE_ENV: "test",
+    SESSION_LOCK: createMockDurableObjectNamespace(),
+    CONCURRENCY_GAUGE: createMockDurableObjectNamespace(),
+    S1A_RUNNER: createMockDurableObjectNamespace(),
+    S1B_RUNNER: createMockDurableObjectNamespace(),
+    LAB_S1A_QUEUE: makeMockQueue(),
+    LAB_S1B_QUEUE: makeMockQueue(),
+    HYPERDRIVE: createMockHyperdrive(),
+    LAB_ASSETS: makeMockFetcher(),
+  };
 }
 
 describe("killSwitchMiddleware", () => {

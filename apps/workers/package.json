@@ -27,6 +27,7 @@
     "@webpresso/stryker-config": "catalog:",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
+    "@webpresso/workers-test-kit": "file:/Users/ozby/repos/webpresso/workers-test-kit",
     "drizzle-kit": "catalog:workers",
     "oxlint": "catalog:tooling",
     "vitest": "catalog:tooling",

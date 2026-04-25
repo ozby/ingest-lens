@@ -1,6 +1,10 @@
 import { vi } from "vitest";
 import type { Mock } from "vitest";
 import type { Context, Next } from "hono";
+import {
+  createMockHyperdrive,
+  createMockDurableObjectNamespace,
+} from "@webpresso/workers-test-kit";
 import { createDb, type Env } from "../db/client";
 import type { DecodedToken } from "../middleware/auth";
 
@@ -33,7 +37,7 @@ export function createMockEnv(
   ai?: Ai,
 ): Env {
   return {
-    HYPERDRIVE: null as unknown as Env["HYPERDRIVE"],
+    HYPERDRIVE: createMockHyperdrive(),
     DATABASE_URL: "postgresql://localhost/test",
     JWT_SECRET: "test-secret",
     ALLOWED_ORIGIN: "https://dev.ozby.dev",
@@ -43,12 +47,8 @@ export function createMockEnv(
       limit: vi.fn().mockResolvedValue({ success: true }),
     }) as unknown as Env["RATE_LIMITER"],
     ANALYTICS: (analytics ?? { writeDataPoint: vi.fn() }) as unknown as Env["ANALYTICS"],
-    TOPIC_ROOMS: (topicRooms ?? {
-      idFromName: vi.fn().mockReturnValue("stub-id"),
-      get: vi
-        .fn()
-        .mockReturnValue({ fetch: vi.fn().mockResolvedValue(new Response(null, { status: 200 })) }),
-    }) as unknown as Env["TOPIC_ROOMS"],
+    TOPIC_ROOMS: (topicRooms ??
+      createMockDurableObjectNamespace()) as unknown as Env["TOPIC_ROOMS"],
   };
 }
 
@@ -156,3 +156,6 @@ export const mockTopic = deepFreeze({
   ownerId: "user-123",
   subscribedQueues: ["queue-1"],
 });
+
+// Re-export kit factories for direct use in tests
+export { createMockHyperdrive, createMockDurableObjectNamespace };
