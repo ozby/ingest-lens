@@ -1,8 +1,4 @@
-import type {
-  DeliveryTarget,
-  DriftCategory,
-  SourceReferenceKind,
-} from "@repo/types";
+import type { DeliveryTarget, DriftCategory, SourceReferenceKind } from "@repo/types";
 
 export interface DeterministicDependencies {
   clock: () => Date;
@@ -21,6 +17,7 @@ export interface TargetContractDefinition {
 export interface FixtureReference {
   id: string;
   sourceSystem: string;
+  contractHint: string;
   payload: Record<string, unknown>;
   sourceUrl: string;
 }
@@ -34,14 +31,7 @@ export const TARGET_CONTRACTS: Record<string, TargetContractDefinition> = {
     id: "job-posting-v1",
     version: "v1",
     targetRecordType: "job_posting",
-    targetFields: [
-      "name",
-      "status",
-      "department",
-      "location",
-      "post_url",
-      "employment_type",
-    ],
+    targetFields: ["name", "status", "department", "location", "post_url", "employment_type"],
     requiredFields: ["name", "post_url"],
   },
   "employee-v1": {
@@ -68,14 +58,7 @@ export const TARGET_CONTRACTS: Record<string, TargetContractDefinition> = {
     id: "application-v1",
     version: "v1",
     targetRecordType: "application",
-    targetFields: [
-      "id",
-      "candidate_id",
-      "job_id",
-      "current_stage",
-      "status",
-      "applied_at",
-    ],
+    targetFields: ["id", "candidate_id", "job_id", "current_stage", "status", "applied_at"],
     requiredFields: ["id", "status"],
   },
 };
@@ -84,6 +67,7 @@ export const PUBLIC_FIXTURES: Record<string, FixtureReference> = {
   "ashby-job-001": {
     id: "ashby-job-001",
     sourceSystem: "ashby",
+    contractHint: "job-posting-v1",
     sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
     payload: {
       title: "Staff Software Engineer, Backend",
@@ -96,6 +80,7 @@ export const PUBLIC_FIXTURES: Record<string, FixtureReference> = {
   "greenhouse-job-001": {
     id: "greenhouse-job-001",
     sourceSystem: "greenhouse",
+    contractHint: "job-posting-v1",
     sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
     payload: {
       id: 7654321,
@@ -110,6 +95,7 @@ export const PUBLIC_FIXTURES: Record<string, FixtureReference> = {
   "lever-posting-001": {
     id: "lever-posting-001",
     sourceSystem: "lever",
+    contractHint: "job-posting-v1",
     sourceUrl: "https://huggingface.co/datasets/edwarddgao/open-apply-jobs",
     payload: {
       id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -123,16 +109,16 @@ export const PUBLIC_FIXTURES: Record<string, FixtureReference> = {
   },
 };
 
-export function getTargetContract(
-  contractId: string,
-): TargetContractDefinition | undefined {
+export function getTargetContract(contractId: string): TargetContractDefinition | undefined {
   return TARGET_CONTRACTS[contractId];
 }
 
-export function getFixtureReference(
-  fixtureId: string,
-): FixtureReference | undefined {
+export function getFixtureReference(fixtureId: string): FixtureReference | undefined {
   return PUBLIC_FIXTURES[fixtureId];
+}
+
+export function getAllFixtureReferences(): FixtureReference[] {
+  return Object.values(PUBLIC_FIXTURES);
 }
 
 export function validateDeliveryTarget(target: DeliveryTarget): string[] {
@@ -161,20 +147,14 @@ export function classifyDriftCategory(
   return "renamed_field";
 }
 
-export function sourceKindFromFixtureId(
-  fixtureId?: string,
-): SourceReferenceKind {
+export function sourceKindFromFixtureId(fixtureId?: string): SourceReferenceKind {
   return fixtureId ? "fixture_reference" : "inline_payload";
 }
 
 export function calculatePayloadDepth(payload: unknown): number {
   if (Array.isArray(payload)) {
     return (
-      1 +
-      payload.reduce(
-        (maxDepth, value) => Math.max(maxDepth, calculatePayloadDepth(value)),
-        0,
-      )
+      1 + payload.reduce((maxDepth, value) => Math.max(maxDepth, calculatePayloadDepth(value)), 0)
     );
   }
 

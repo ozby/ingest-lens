@@ -11,16 +11,13 @@ import { approvedMappingRevisions, intakeAttempts, messages, queues } from "../d
 import { createDb, type Env } from "../db/client";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
-import {
-  DEFAULT_MAPPING_PROMPT_VERSION,
-  suggestMappings,
-} from "../intake/aiMappingAdapter";
+import { DEFAULT_MAPPING_PROMPT_VERSION, suggestMappings } from "../intake/aiMappingAdapter";
 import { validateIntakeRequest, defaultHashPayload } from "../intake/validateIntakeRequest";
 import { createNormalizedEnvelope } from "../intake/normalizedEnvelope";
 import { normalizeWithMapping } from "../intake/normalizeWithMapping";
 import { recordIntakeLifecycle } from "../telemetry";
 import { requireOwnedQueue, requireOwnedTopic } from "./ownership";
-import { getFixtureReference } from "../intake/contracts";
+import { getAllFixtureReferences, getFixtureReference } from "../intake/contracts";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -41,6 +38,19 @@ export const intakeRoutes = new Hono<{
 
 intakeRoutes.use("*", authenticate);
 intakeRoutes.use("*", rateLimiter);
+
+intakeRoutes.get("/public-fixtures", (c) => {
+  const fixtures = getAllFixtureReferences().map(({ payload: _payload, ...meta }) => meta);
+  return c.json({ status: "success", results: fixtures.length, data: { fixtures } });
+});
+
+intakeRoutes.get("/public-fixtures/:id", (c) => {
+  const fixture = getFixtureReference(c.req.param("id"));
+  if (!fixture) {
+    return c.json({ status: "error", message: "Fixture not found" }, 404);
+  }
+  return c.json({ status: "success", data: { fixture } });
+});
 
 function toAttemptRecord(row: AttemptRow): IntakeAttemptRecord {
   return {
@@ -218,10 +228,7 @@ function getAttemptPayload(attempt: AttemptRow): Record<string, unknown> | null 
     return getFixtureReference(attempt.sourceFixtureId)?.payload ?? null;
   }
 
-  if (
-    attempt.reviewPayloadExpiresAt &&
-    attempt.reviewPayloadExpiresAt.getTime() < Date.now()
-  ) {
+  if (attempt.reviewPayloadExpiresAt && attempt.reviewPayloadExpiresAt.getTime() < Date.now()) {
     return null;
   }
 
@@ -233,14 +240,9 @@ intakeRoutes.get("/mapping-suggestions", async (c) => {
   const statusFilter = c.req.query("status");
   const db = createDb(c.env);
 
-  const rows = await db
-    .select()
-    .from(intakeAttempts)
-    .where(eq(intakeAttempts.ownerId, ownerId));
+  const rows = await db.select().from(intakeAttempts).where(eq(intakeAttempts.ownerId, ownerId));
 
-  const filtered = rows.filter((row) =>
-    statusFilter ? row.status === statusFilter : true,
-  );
+  const filtered = rows.filter((row) => (statusFilter ? row.status === statusFilter : true));
 
   return c.json({
     status: "success",
@@ -269,29 +271,28 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     );
   }
 
-  const mapped = await suggestMappings({
-    payload: validation.value.payload,
-    sourceSystem: validation.value.sourceSystem,
-    contractId: validation.value.contract.id,
-    contractVersion: validation.value.contract.version,
-    promptVersion: DEFAULT_MAPPING_PROMPT_VERSION,
-    targetFields: validation.value.contract.targetFields,
-  }, {
-    env: c.env,
-  });
+  const mapped = await suggestMappings(
+    {
+      payload: validation.value.payload,
+      sourceSystem: validation.value.sourceSystem,
+      contractId: validation.value.contract.id,
+      contractVersion: validation.value.contract.version,
+      promptVersion: DEFAULT_MAPPING_PROMPT_VERSION,
+      targetFields: validation.value.contract.targetFields,
+    },
+    {
+      env: c.env,
+    },
+  );
 
   const now = new Date();
   const attemptId = createId();
-  const mappingTraceId =
-    mapped.kind === "success"
-      ? mapped.batch.mappingTraceId
-      : createId();
+  const mappingTraceId = mapped.kind === "success" ? mapped.batch.mappingTraceId : createId();
   const driftCategory =
     mapped.kind === "success"
       ? (mapped.batch.driftCategories[0] ?? "renamed_field")
       : "ambiguous_mapping";
-  const validationErrors =
-    mapped.kind === "invalid_output" ? mapped.errors : [];
+  const validationErrors = mapped.kind === "invalid_output" ? mapped.errors : [];
 
   const db = createDb(c.env);
   const [row] = await db
@@ -378,10 +379,7 @@ intakeRoutes.post("/mapping-suggestions/:id/reject", async (c) => {
   }
 
   if (existing.status === "approved" || existing.status === "ingested") {
-    return c.json(
-      { status: "error", message: "Approved attempts cannot be rejected." },
-      409,
-    );
+    return c.json({ status: "error", message: "Approved attempts cannot be rejected." }, 409);
   }
 
   const [updated] = await db
@@ -424,9 +422,7 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
       status: "success",
       data: {
         attempt: toAttemptRecord(attemptRow),
-        mappingVersion: mappingVersionRow
-          ? toMappingRevision(mappingVersionRow)
-          : undefined,
+        mappingVersion: mappingVersionRow ? toMappingRevision(mappingVersionRow) : undefined,
       },
     });
   }
@@ -506,7 +502,11 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
   });
 
   try {
-    await publishToTarget(c, normalizedRecord as unknown as Record<string, unknown>, approvedAttempt.deliveryTarget);
+    await publishToTarget(
+      c,
+      normalizedRecord as unknown as Record<string, unknown>,
+      approvedAttempt.deliveryTarget,
+    );
   } catch (error) {
     const [failedAttemptRow] = await db
       .update(intakeAttempts)

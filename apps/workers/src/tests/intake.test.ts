@@ -1,20 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
 import { createDb } from "../db/client";
-import {
-  approvedMappingRevisions,
-  intakeAttempts,
-  messages,
-  queues,
-  topics,
-} from "../db/schema";
+import { approvedMappingRevisions, intakeAttempts, messages, queues, topics } from "../db/schema";
 import { authenticate } from "../middleware/auth";
-import {
-  AUTH_HEADER,
-  bypassAuth,
-  createMockEnv,
-  post,
-} from "./helpers";
+import { AUTH_HEADER, bypassAuth, createMockEnv, get, post } from "./helpers";
 import { suggestMappings } from "../intake/aiMappingAdapter";
 
 vi.mock("../middleware/auth", () => ({
@@ -140,7 +129,8 @@ function createAttemptRow(overrides: Partial<AttemptRow> = {}): AttemptRow {
     modelName: "test-model",
     promptVersion: "payload-mapper-v1",
     overallConfidence: 0.92,
-    redactedSummary: "Payload captured with top-level fields: apply_url, department, employment_type, locations, title.",
+    redactedSummary:
+      "Payload captured with top-level fields: apply_url, department, employment_type, locations, title.",
     validationErrors: [],
     suggestionBatch: {
       mappingTraceId: "trace-1",
@@ -211,13 +201,15 @@ describe("intake routes", () => {
 
   it("returns 429 when the authenticated user is rate limited", async () => {
     bypassAuth(vi.mocked(authenticate));
-    vi.mocked(createDb).mockReturnValue(createFakeDb({
-      attempts: [],
-      mappingVersions: [],
-      messages: [],
-      queues: [],
-      topics: [],
-    }) as never);
+    vi.mocked(createDb).mockReturnValue(
+      createFakeDb({
+        attempts: [],
+        mappingVersions: [],
+        messages: [],
+        queues: [],
+        topics: [],
+      }) as never,
+    );
 
     const response = await app.fetch(
       post(
@@ -230,10 +222,7 @@ describe("intake routes", () => {
         },
         AUTH_HEADER,
       ),
-      createMockEnv(
-        deliveryQueue,
-        { limit: vi.fn().mockResolvedValue({ success: false }) },
-      ),
+      createMockEnv(deliveryQueue, { limit: vi.fn().mockResolvedValue({ success: false }) }),
     );
 
     expect(response.status).toBe(429);
@@ -242,13 +231,15 @@ describe("intake routes", () => {
 
   it("rejects invalid payloads before AI execution", async () => {
     bypassAuth(vi.mocked(authenticate));
-    vi.mocked(createDb).mockReturnValue(createFakeDb({
-      attempts: [],
-      mappingVersions: [],
-      messages: [],
-      queues: [],
-      topics: [],
-    }) as never);
+    vi.mocked(createDb).mockReturnValue(
+      createFakeDb({
+        attempts: [],
+        mappingVersions: [],
+        messages: [],
+        queues: [],
+        topics: [],
+      }) as never,
+    );
 
     const response = await app.fetch(
       post(
@@ -399,5 +390,85 @@ describe("intake routes", () => {
 
     expect(response.status).toBe(410);
     expect(deliveryQueue.send).not.toHaveBeenCalled();
+  });
+});
+
+describe("public fixture catalog routes", () => {
+  it("lists all fixtures without exposing payload bodies", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    const response = await app.fetch(
+      get("/api/intake/public-fixtures", AUTH_HEADER),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      status: string;
+      results: number;
+      data: { fixtures: { id: string; sourceSystem: string; contractHint: string }[] };
+    };
+    expect(body.status).toBe("success");
+    expect(body.results).toBeGreaterThanOrEqual(3);
+    expect(body.data.fixtures).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ashby-job-001",
+          sourceSystem: "ashby",
+          contractHint: "job-posting-v1",
+        }),
+        expect.objectContaining({
+          id: "greenhouse-job-001",
+          sourceSystem: "greenhouse",
+          contractHint: "job-posting-v1",
+        }),
+        expect.objectContaining({
+          id: "lever-posting-001",
+          sourceSystem: "lever",
+          contractHint: "job-posting-v1",
+        }),
+      ]),
+    );
+    expect(body.data.fixtures.every((f) => !("payload" in f))).toBe(true);
+  });
+
+  it("returns a single fixture with its payload by id", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    const response = await app.fetch(
+      get("/api/intake/public-fixtures/ashby-job-001", AUTH_HEADER),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      status: string;
+      data: {
+        fixture: {
+          id: string;
+          sourceSystem: string;
+          contractHint: string;
+          payload: Record<string, unknown>;
+        };
+      };
+    };
+    expect(body.status).toBe("success");
+    expect(body.data.fixture).toMatchObject({
+      id: "ashby-job-001",
+      sourceSystem: "ashby",
+      contractHint: "job-posting-v1",
+      payload: { title: expect.any(String) },
+    });
+  });
+
+  it("returns 404 for an unknown fixture id", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    const response = await app.fetch(
+      get("/api/intake/public-fixtures/does-not-exist", AUTH_HEADER),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(404);
+    const body = (await response.json()) as { status: string; message: string };
+    expect(body.status).toBe("error");
+    expect(body.message).toBe("Fixture not found");
   });
 });
