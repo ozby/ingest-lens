@@ -39,6 +39,7 @@ function makeEnv(runnerStub: DurableObjectStub): Env {
     S1A_RUNNER: makeNs(runnerStub),
     S1B_RUNNER: makeNs({} as DurableObjectStub),
     LAB_SESSION_SECRET,
+    LAB_RUN_TOKEN: "test-run-token",
     NODE_ENV: "test",
     LAB_S1A_QUEUE: {} as unknown as Queue,
     LAB_S1B_QUEUE: {} as unknown as Queue,

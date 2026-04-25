@@ -58,9 +58,10 @@ beforeEach(() => {
 
 describe("Dashboard routes", () => {
   describe("GET /api/dashboard/server", () => {
-    it("counts only currently leased messages as active", async () => {
+    it("counts only currently leased messages as active and scopes to owner (FIX-3)", async () => {
       bypassAuth(vi.mocked(authenticate));
 
+      // Call 1: serverMetrics
       const limitMock = vi.fn().mockResolvedValue([
         {
           id: "server-metrics-1",
@@ -74,16 +75,24 @@ describe("Dashboard routes", () => {
       ]);
       const metricsFromMock = vi.fn().mockReturnValue({ limit: limitMock });
 
-      const totalQueuesFromMock = vi.fn().mockResolvedValue([{ totalQueues: 2 }]);
-      const totalMessagesFromMock = vi.fn().mockResolvedValue([{ totalMessages: 4 }]);
+      // Call 2: owner-scoped queues (FIX-3 — replaces global totalQueues count)
+      const ownedQueuesWhereMock = vi
+        .fn()
+        .mockResolvedValue([{ id: "queue-1" }, { id: "queue-2" }]);
+      const ownedQueuesFromMock = vi.fn().mockReturnValue({ where: ownedQueuesWhereMock });
 
+      // Call 3: total messages (scoped via inArray)
+      const totalMessagesWhereMock = vi.fn().mockResolvedValue([{ totalMessages: 4 }]);
+      const totalMessagesFromMock = vi.fn().mockReturnValue({ where: totalMessagesWhereMock });
+
+      // Call 4: active messages (scoped via inArray + received + visibility)
       const activeMessagesWhereMock = vi.fn().mockResolvedValue([{ activeMessages: 1 }]);
       const activeMessagesFromMock = vi.fn().mockReturnValue({ where: activeMessagesWhereMock });
 
       const selectMock = vi
         .fn()
         .mockImplementationOnce(() => ({ from: metricsFromMock }))
-        .mockImplementationOnce(() => ({ from: totalQueuesFromMock }))
+        .mockImplementationOnce(() => ({ from: ownedQueuesFromMock }))
         .mockImplementationOnce(() => ({ from: totalMessagesFromMock }))
         .mockImplementationOnce(() => ({ from: activeMessagesFromMock }));
 
@@ -103,6 +112,8 @@ describe("Dashboard routes", () => {
         };
       };
       expect(body.status).toBe("success");
+      // totalQueues is derived from the length of the user-owned queues array
+      expect(body.data.stats.totalQueues).toBe(2);
       expect(body.data.stats.activeMessages).toBe(1);
 
       const activeMessagesWhereSql = renderSql(activeMessagesWhereMock.mock.calls[0]?.[0]);

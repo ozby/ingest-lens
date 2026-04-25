@@ -48,6 +48,7 @@ export interface Env {
   LAB_SESSION_SECRET: string; // dedicated; NOT JWT_SECRET (F-08)
   HEARTBEAT_WEBHOOK_URL?: string; // wired by Lane E (consistency-lab-ops)
   LAB_ADMIN_SECRET?: string; // admin bypass token for crons (F-06)
+  LAB_RUN_TOKEN: string; // bearer token required on all /lab/*/run endpoints (FIX-4)
 
   // Analytics Engine (F9T cost estimation)
   ANALYTICS?: AnalyticsEngineDataset;

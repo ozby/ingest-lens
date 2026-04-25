@@ -45,8 +45,11 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=0 -f apps/workers/src/db/migrations/0001_add_message_seq.sql || true
 
       - name: Start workers runtime
+        # FIX-8 (CSO audit): JWT_SECRET is now sourced from GitHub Actions secrets.
+        # Set E2E_JWT_SECRET in repository Settings → Secrets and variables → Actions.
+        # Any non-empty string works for testing purposes.
         run: |
-          pnpm --filter @repo/workers exec wrangler dev --port 8787 --var JWT_SECRET:e2e-test-secret > worker.log 2>&1 &
+          pnpm --filter @repo/workers exec wrangler dev --port 8787 --var JWT_SECRET:${{ secrets.E2E_JWT_SECRET }} > worker.log 2>&1 &
           echo $! > worker.pid
 
       - name: Wait for worker health

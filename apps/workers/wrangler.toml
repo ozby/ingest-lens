@@ -20,6 +20,11 @@ account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret;
 # Custom domain: api.dev.ozby.dev (wrangler atomically creates Worker +
 # route + DNS + cert when `custom_domain = true`).
 
+[[rate_limiting]]
+binding = "RATE_LIMITER"
+namespace_id = "1"
+simple = { limit = 100, period = 60 }
+
 [env.dev]
 workers_dev = false
 routes = [{ pattern = "api.dev.ozby.dev", custom_domain = true }]
@@ -27,6 +32,11 @@ routes = [{ pattern = "api.dev.ozby.dev", custom_domain = true }]
 [env.dev.vars]
 NODE_ENV = "development"
 ALLOWED_ORIGIN = "https://dev.ozby.dev"
+
+[[env.dev.rate_limiting]]
+binding = "RATE_LIMITER"
+namespace_id = "1"
+simple = { limit = 100, period = 60 }
 
 [[env.dev.hyperdrive]]
 binding = "HYPERDRIVE"
@@ -79,6 +89,11 @@ routes = [{ pattern = "api.ozby.dev", custom_domain = true }]
 [env.prd.vars]
 NODE_ENV = "production"
 ALLOWED_ORIGIN = "https://ozby.dev"
+
+[[env.prd.rate_limiting]]
+binding = "RATE_LIMITER"
+namespace_id = "1"
+simple = { limit = 100, period = 60 }
 
 [env.prd.ai]
 binding = "AI"

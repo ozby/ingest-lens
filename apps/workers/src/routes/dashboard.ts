@@ -18,8 +18,11 @@ export const dashboardRoutes = new Hono<{
 dashboardRoutes.use("*", authenticate);
 dashboardRoutes.use("*", rateLimiter);
 
-// GET /api/dashboard/server — server-level metrics
+// GET /api/dashboard/server — user-scoped metrics (FIX-3: CSO audit)
+// Totals are scoped to the authenticated user's own queues/messages only.
+// Global server-wide aggregation would expose information across all tenants.
 dashboardRoutes.get("/server", async (c) => {
+  const ownerId = c.get("user").userId;
   const db = createDb(c.env);
   const now = new Date();
 
@@ -38,14 +41,42 @@ dashboardRoutes.get("/server", async (c) => {
       .returning();
   }
 
-  const [totalQueuesRow] = await db.select({ totalQueues: count() }).from(queues);
-  const [totalMessagesRow] = await db.select({ totalMessages: count() }).from(messages);
+  // Scope all aggregations to this user's queues only
+  const userQueues = await db
+    .select({ id: queues.id })
+    .from(queues)
+    .where(eq(queues.ownerId, ownerId));
+
+  const totalQueues = userQueues.length;
+
+  if (userQueues.length === 0) {
+    return c.json({
+      status: "success",
+      data: {
+        serverMetrics: metrics,
+        stats: { totalQueues: 0, totalMessages: 0, activeMessages: 0 },
+      },
+    });
+  }
+
+  const userQueueIds = userQueues.map((q) => q.id);
+
+  const [totalMessagesRow] = await db
+    .select({ totalMessages: count() })
+    .from(messages)
+    .where(inArray(messages.queueId, userQueueIds));
+
   const [activeMessagesRow] = await db
     .select({ activeMessages: count() })
     .from(messages)
-    .where(and(eq(messages.received, true), gt(messages.visibilityExpiresAt, now)));
+    .where(
+      and(
+        inArray(messages.queueId, userQueueIds),
+        eq(messages.received, true),
+        gt(messages.visibilityExpiresAt, now),
+      ),
+    );
 
-  const totalQueues = totalQueuesRow?.totalQueues ?? 0;
   const totalMessages = totalMessagesRow?.totalMessages ?? 0;
   const activeMessages = activeMessagesRow?.activeMessages ?? 0;
 
@@ -62,7 +93,7 @@ dashboardRoutes.get("/server", async (c) => {
   });
 });
 
-// GET /api/dashboard/server/activity — server activity history
+// GET /api/dashboard/server/activity — activity history (FIX-3: scoped by auth, serverMetrics is shared read-only)
 dashboardRoutes.get("/server/activity", async (c) => {
   const db = createDb(c.env);
 

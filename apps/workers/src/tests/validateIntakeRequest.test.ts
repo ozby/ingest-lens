@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { defaultHashPayload, validateIntakeRequest } from "../intake/validateIntakeRequest";
+import {
+  defaultHashPayload,
+  SOURCE_SYSTEM_MAX_LENGTH,
+  validateIntakeRequest,
+} from "../intake/validateIntakeRequest";
 
 const fixedNow = new Date("2026-04-24T00:00:00.000Z");
 const deps = {
@@ -81,6 +85,39 @@ describe("validateIntakeRequest", () => {
     });
     expect(result.value.reviewPayloadExpiresAt).toBe("2026-04-25T00:00:00.000Z");
     expect(result.value.sourceKind).toBe("inline_payload");
+  });
+
+  it("rejects sourceSystem longer than 100 characters (FIX-9)", () => {
+    const longSourceSystem = "a".repeat(SOURCE_SYSTEM_MAX_LENGTH + 1);
+    const result = validateIntakeRequest(
+      {
+        contractId: "job-posting-v1",
+        payload: { name: "Demo Job" },
+        queueId: "queue-1",
+        sourceSystem: longSourceSystem,
+      },
+      deps,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.errors).toContain(
+      `sourceSystem must be at most ${SOURCE_SYSTEM_MAX_LENGTH} characters.`,
+    );
+  });
+
+  it("accepts sourceSystem exactly at the 100-character limit", () => {
+    const boundarySourceSystem = "a".repeat(SOURCE_SYSTEM_MAX_LENGTH);
+    const result = validateIntakeRequest(
+      {
+        contractId: "job-posting-v1",
+        payload: { name: "Demo Job", post_url: "https://example.com" },
+        queueId: "queue-1",
+        sourceSystem: boundarySourceSystem,
+      },
+      deps,
+    );
+
+    expect(result.ok).toBe(true);
   });
 
   it("accepts fixture references without storing raw review payload", () => {

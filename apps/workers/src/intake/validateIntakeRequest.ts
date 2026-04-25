@@ -38,6 +38,8 @@ export interface IntakeValidationFailure {
 
 export type IntakeValidationResult = IntakeValidationFailure | IntakeValidationSuccess;
 
+export const SOURCE_SYSTEM_MAX_LENGTH = 100;
+
 export interface ValidateIntakeRequestInput {
   contractId: string;
   fixtureId?: string;
@@ -80,6 +82,12 @@ export function validateIntakeRequest(
   dependencies: ValidateIntakeRequestDependencies,
 ): IntakeValidationResult {
   const errors: string[] = [];
+
+  // FIX-9 (CSO audit): guard against unbounded sourceSystem strings
+  if (input.sourceSystem.length > SOURCE_SYSTEM_MAX_LENGTH) {
+    errors.push(`sourceSystem must be at most ${SOURCE_SYSTEM_MAX_LENGTH} characters.`);
+  }
+
   const resolvedContractId = resolveContractId(input.contractId);
   const contract: TargetContractDefinition | undefined =
     resolvedContractId === undefined ? undefined : getTargetContract(resolvedContractId);

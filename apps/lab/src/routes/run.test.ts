@@ -65,6 +65,7 @@ function makeEnv(
     S1A_RUNNER: makeNs(runnerStub),
     S1B_RUNNER: makeNs(runnerStub),
     LAB_SESSION_SECRET: "lab-session-test-secret",
+    LAB_RUN_TOKEN: "test-run-token",
     NODE_ENV: "test",
     LAB_S1A_QUEUE: {} as unknown as Queue,
     LAB_S1B_QUEUE: {} as unknown as Queue,
@@ -74,6 +75,8 @@ function makeEnv(
   };
 }
 
+const VALID_AUTH = { Authorization: "Bearer test-run-token" } as const;
+
 function makeApp(): Hono<{ Bindings: Env }> {
   const app = new Hono<{ Bindings: Env }>();
   app.route("/lab", runRoutes);
@@ -82,11 +85,37 @@ function makeApp(): Hono<{ Bindings: Env }> {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
+describe("POST /lab/s1a/run — unauthorized (FIX-4)", () => {
+  it("returns 401 when Authorization header is missing", async () => {
+    const app = makeApp();
+    const env = makeEnv();
+    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const res = await app.request(req, undefined, env);
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("unauthorized");
+  });
+
+  it("returns 401 when token is wrong", async () => {
+    const app = makeApp();
+    const env = makeEnv();
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: { Authorization: "Bearer wrong-token" },
+    });
+    const res = await app.request(req, undefined, env);
+    expect(res.status).toBe(401);
+  });
+});
+
 describe("POST /lab/s1a/run — happy path", () => {
   it("returns 200 with sessionId and streamUrl when lock and gauge granted", async () => {
     const app = makeApp();
     const env = makeEnv();
-    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     const res = await app.request(req, undefined, env);
     expect(res.status).toBe(200);
     const body = (await res.json()) as { ok: boolean; sessionId: string; streamUrl: string };
@@ -98,7 +127,10 @@ describe("POST /lab/s1a/run — happy path", () => {
   it("sets a session cookie on success", async () => {
     const app = makeApp();
     const env = makeEnv();
-    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     const res = await app.request(req, undefined, env);
     expect(res.status).toBe(200);
     const setCookieHeader = res.headers.get("set-cookie");
@@ -110,7 +142,10 @@ describe("POST /lab/s1a/run — happy path", () => {
     const runnerStub = makeRunnerStub();
     const env = makeEnv({ runnerStub });
     const app = makeApp();
-    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     await app.request(req, undefined, env);
     const fetchMock = runnerStub.fetch as ReturnType<typeof vi.fn>;
     expect(fetchMock.mock.calls.length).toBe(1);
@@ -123,7 +158,10 @@ describe("POST /lab/s1a/run — lock held (waiting room)", () => {
     const gaugeStub = makeGaugeStub({ granted: true, activeCount: 1 });
     const env = makeEnv({ lockStub, gaugeStub });
     const app = makeApp();
-    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     const res = await app.request(req, undefined, env);
     expect(res.status).toBe(200);
     const html = await res.text();
@@ -135,7 +173,10 @@ describe("POST /lab/s1a/run — lock held (waiting room)", () => {
     const gaugeStub = makeGaugeStub({ granted: true, activeCount: 1 });
     const env = makeEnv({ lockStub, gaugeStub });
     const app = makeApp();
-    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     await app.request(req, undefined, env);
     const gaugeNs = env.CONCURRENCY_GAUGE as unknown as { get: ReturnType<typeof vi.fn> };
     expect(gaugeNs.get.mock.calls.length).toBe(0);
@@ -147,7 +188,10 @@ describe("POST /lab/s1a/run — gauge full (429)", () => {
     const gaugeStub = makeGaugeStub({ granted: false, activeCount: 100, retryAfter: 5000 });
     const env = makeEnv({ gaugeStub });
     const app = makeApp();
-    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     const res = await app.request(req, undefined, env);
     expect(res.status).toBe(429);
     const body = (await res.json()) as { error: string; retryAfter: number };
@@ -160,7 +204,10 @@ describe("POST /lab/s1a/run — gauge full (429)", () => {
     const gaugeStub = makeGaugeStub({ granted: false, activeCount: 100, retryAfter: 5000 });
     const env = makeEnv({ lockStub, gaugeStub });
     const app = makeApp();
-    const req = new Request("http://localhost/lab/s1a/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1a/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     await app.request(req, undefined, env);
     const lockFetchMock = lockStub.fetch as ReturnType<typeof vi.fn>;
     const releaseCalls = lockFetchMock.mock.calls.filter((call: unknown[]) =>
@@ -170,11 +217,24 @@ describe("POST /lab/s1a/run — gauge full (429)", () => {
   });
 });
 
+describe("POST /lab/s1b/run — unauthorized (FIX-4)", () => {
+  it("returns 401 when Authorization header is missing", async () => {
+    const app = makeApp();
+    const env = makeEnv();
+    const req = new Request("http://localhost/lab/s1b/run", { method: "POST" });
+    const res = await app.request(req, undefined, env);
+    expect(res.status).toBe(401);
+  });
+});
+
 describe("POST /lab/s1b/run — happy path", () => {
   it("returns 200 with sessionId and streamUrl", async () => {
     const app = makeApp();
     const env = makeEnv();
-    const req = new Request("http://localhost/lab/s1b/run", { method: "POST" });
+    const req = new Request("http://localhost/lab/s1b/run", {
+      method: "POST",
+      headers: VALID_AUTH,
+    });
     const res = await app.request(req, undefined, env);
     expect(res.status).toBe(200);
     const body = (await res.json()) as { ok: boolean; sessionId: string; streamUrl: string };

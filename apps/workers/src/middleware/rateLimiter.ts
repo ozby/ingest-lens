@@ -10,15 +10,29 @@ export const rateLimiter = createMiddleware<{
   Bindings: Env;
   Variables: RateLimiterVariables;
 }>(async (c, next) => {
-  const user = c.get("user");
   const rateLimiterBinding = c.env.RATE_LIMITER;
 
   if (!rateLimiterBinding) {
+    // FIX-7 (CSO audit): warn loudly so the absence doesn't go unnoticed in
+    // staging/production logs.  In local wrangler dev the binding is absent by
+    // design; in deployed envs it must always be present.
+    console.warn(
+      "[rateLimiter] RATE_LIMITER binding is absent — rate limiting is DISABLED for this request.",
+    );
     await next();
     return;
   }
 
-  const { success } = await rateLimiterBinding.limit({ key: user.userId });
+  // Use the authenticated userId when available; fall back to the client IP for
+  // unauthenticated routes (e.g. /api/auth/register, /api/auth/login).
+  const user = c.get("user") as DecodedToken | undefined;
+  const key =
+    user?.userId ??
+    c.req.raw.headers.get("CF-Connecting-IP") ??
+    c.req.raw.headers.get("X-Forwarded-For") ??
+    "anonymous";
+
+  const { success } = await rateLimiterBinding.limit({ key });
 
   if (!success) {
     return c.json({ status: "error", message: "Rate limit exceeded" }, 429, {

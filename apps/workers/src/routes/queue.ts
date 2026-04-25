@@ -5,6 +5,7 @@ import { queues, queueMetrics } from "../db/schema";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 import { requireOwnedQueue } from "./ownership";
+import { validatePushEndpoint } from "../lib/validate-push-endpoint";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -31,6 +32,13 @@ queueRoutes.post("/", async (c) => {
 
   if (!name) {
     return c.json({ status: "error", message: "Queue name is required" }, 400);
+  }
+
+  if (pushEndpoint !== undefined && pushEndpoint !== null) {
+    const endpointCheck = validatePushEndpoint(pushEndpoint);
+    if (!endpointCheck.valid) {
+      return c.json({ status: "error", message: endpointCheck.reason }, 400);
+    }
   }
 
   const ownerId = c.get("user").userId;

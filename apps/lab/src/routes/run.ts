@@ -23,6 +23,45 @@ export const runRoutes = new Hono<{ Bindings: Env }>();
 
 const DEFAULT_WORKLOAD_SIZE = 1000;
 
+/**
+ * Verify the incoming Authorization: Bearer <token> header against the
+ * LAB_RUN_TOKEN env var using a timing-safe comparison (FIX-4 / CSO audit).
+ *
+ * Returns true when the token is valid, false otherwise.
+ */
+/**
+ * Constant-time string comparison to prevent timing attacks (FIX-4 / CSO audit).
+ * crypto.subtle.timingSafeEqual is Cloudflare-only; fall back to a manual
+ * bitwise XOR loop so the function also works in Vitest (Node.js) environments.
+ */
+function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
+  // Try the CF Workers built-in first; fall back to manual XOR
+  if (typeof (crypto.subtle as unknown as Record<string, unknown>).timingSafeEqual === "function") {
+    if (a.byteLength !== b.byteLength) return false;
+    return (
+      crypto.subtle as unknown as {
+        timingSafeEqual(a: ArrayBufferView, b: ArrayBufferView): boolean;
+      }
+    ).timingSafeEqual(a, b);
+  }
+  // Manual constant-time XOR (safe fallback)
+  let mismatch = a.length ^ b.length;
+  const length = Math.max(a.length, b.length);
+  for (let i = 0; i < length; i++) {
+    mismatch |= (a[i] ?? 0) ^ (b[i] ?? 0);
+  }
+  return mismatch === 0;
+}
+
+function verifyRunToken(request: Request, expectedToken: string): boolean {
+  const authHeader = request.headers.get("Authorization") ?? "";
+  if (!authHeader.startsWith("Bearer ")) return false;
+  const incoming = authHeader.slice("Bearer ".length);
+
+  const encoder = new TextEncoder();
+  return constantTimeEqual(encoder.encode(incoming), encoder.encode(expectedToken));
+}
+
 async function getOrCreateSessionId(c: { env: Env; req: { raw: Request } }): Promise<string> {
   // Try to read existing cookie
   const raw = c.req.raw.headers.get("cookie") ?? "";
@@ -109,6 +148,10 @@ async function startS1bRunner(ns: DurableObjectNamespace, sessionId: string): Pr
 // ─── POST /lab/s1a/run ────────────────────────────────────────────────────────
 
 runRoutes.post("/s1a/run", async (c) => {
+  if (!verifyRunToken(c.req.raw, c.env.LAB_RUN_TOKEN)) {
+    return c.json({ error: "unauthorized" }, 401);
+  }
+
   const sessionId = await getOrCreateSessionId({ env: c.env, req: { raw: c.req.raw } });
 
   // Step 1: acquire SESSION_LOCK first (F-02)
@@ -157,6 +200,10 @@ runRoutes.post("/s1a/run", async (c) => {
 // ─── POST /lab/s1b/run ────────────────────────────────────────────────────────
 
 runRoutes.post("/s1b/run", async (c) => {
+  if (!verifyRunToken(c.req.raw, c.env.LAB_RUN_TOKEN)) {
+    return c.json({ error: "unauthorized" }, 401);
+  }
+
   const sessionId = await getOrCreateSessionId({ env: c.env, req: { raw: c.req.raw } });
 
   // Step 1: acquire SESSION_LOCK first (F-02)

@@ -35,8 +35,8 @@ authRoutes.post("/register", async (c) => {
   if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
     return c.json({ status: "error", message: "Email must be valid" }, 400);
   }
-  if (!password || password.length < 6) {
-    return c.json({ status: "error", message: "Password must be at least 6 characters" }, 400);
+  if (!password || password.length < 12) {
+    return c.json({ status: "error", message: "Password must be at least 12 characters" }, 400);
   }
 
   const db = createDb(c.env);
@@ -104,6 +104,14 @@ authRoutes.post("/login", async (c) => {
   };
 
   return c.json({ status: "success", data: { user: safeUser, token } });
+});
+
+// POST /api/auth/logout — client-side logout signal (FIX-5 / CSO audit).
+// The token remains technically valid until its exp claim, but this endpoint
+// provides a hook for future server-side revocation via a jti blocklist.
+// TODO: implement jti blocklist for true server-side revocation
+authRoutes.post("/logout", authenticate, async (c) => {
+  return c.json({ ok: true });
 });
 
 authRoutes.get("/me", authenticate, async (c) => {

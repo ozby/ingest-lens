@@ -106,7 +106,7 @@ describe("Auth routes", () => {
       const res = await app.fetch(
         post("/api/auth/register", {
           email: "a@b.com",
-          password: "password123",
+          password: "password123abc",
         }),
         mockEnv,
       );
@@ -118,7 +118,7 @@ describe("Auth routes", () => {
         post("/api/auth/register", {
           username: "testuser",
           email: "not-an-email",
-          password: "password123",
+          password: "password123abc",
         }),
         mockEnv,
       );
@@ -142,7 +142,7 @@ describe("Auth routes", () => {
         post("/api/auth/register", {
           username: "testuser",
           email: "test@example.com",
-          password: "password123",
+          password: "password123abc",
         }),
         mockEnv,
       );
@@ -194,7 +194,7 @@ describe("Auth routes", () => {
         post("/api/auth/register", {
           username: "testuser",
           email: "test@example.com",
-          password: "password123",
+          password: "password123abc",
         }),
         mockEnv,
       );
@@ -210,7 +210,7 @@ describe("Auth routes", () => {
         post("/api/auth/register", {
           username: "testuser",
           email: "test@example.com",
-          password: "password123",
+          password: "password123abc",
         }),
         mockEnv,
       );
@@ -234,7 +234,7 @@ describe("Auth routes", () => {
     it("returns the shared auth user payload including updatedAt", async () => {
       const loginUser = {
         ...mockRegisteredUser(),
-        password: await hashPasswordAsync("password123"),
+        password: await hashPasswordAsync("password123abc"),
       };
       const { selectMock } = buildSelectChain([loginUser]);
 
@@ -245,7 +245,7 @@ describe("Auth routes", () => {
       const res = await app.fetch(
         post("/api/auth/login", {
           username: "testuser",
-          password: "password123",
+          password: "password123abc",
         }),
         mockEnv,
       );

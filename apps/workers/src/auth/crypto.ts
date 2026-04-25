@@ -52,7 +52,10 @@ export function generateToken(
   userId: string,
   username: string,
   secret: string,
-  expiresInSeconds = 86400,
+  // FIX-5 (CSO audit): reduced from 86400 (24h) to 3600 (1h).
+  // Trade-off: shorter sessions reduce the blast radius of a stolen token.
+  // True revocation requires a jti blocklist (see logout route TODO).
+  expiresInSeconds = 3600,
 ): Promise<string> {
   return (async () => {
     const encoder = new TextEncoder();
