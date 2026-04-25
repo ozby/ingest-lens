@@ -15,9 +15,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["pubsub", "smoke"],
         fileMatchers: ["journeys/worker-health.e2e.ts"],
         batchKey: "foundation",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -36,9 +34,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["identity"],
         fileMatchers: ["journeys/auth-session.e2e.ts"],
         batchKey: "auth",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -57,9 +53,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["queue", "topic"],
         fileMatchers: ["journeys/queue-message-flow.e2e.ts", "journeys/topic-publish-flow.e2e.ts"],
         batchKey: "messaging",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -81,9 +75,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["security", "ownership"],
         fileMatchers: ["journeys/ownership-hardening.e2e.ts"],
         batchKey: "hardening",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -102,9 +94,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["ai", "review"],
         fileMatchers: ["journeys/intake-mapping-flow.e2e.ts"],
         batchKey: "intake",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -123,9 +113,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["public", "fixtures"],
         fileMatchers: ["journeys/public-fixture-demo-flow.e2e.ts"],
         batchKey: "demo",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -144,9 +132,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["bundle", "splitting"],
         fileMatchers: ["journeys/client-route-code-splitting.e2e.ts"],
         batchKey: "client",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -165,9 +151,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["rebrand", "ui"],
         fileMatchers: ["journeys/ingestlens-branding.e2e.ts"],
         batchKey: "branding",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",
@@ -186,9 +170,7 @@ describe("e2e-suite-manifest", () => {
         aliases: ["all", "backend", "blueprints"],
         fileMatchers: [],
         batchKey: "full",
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         steps: [
           {
             runner: "vitest",

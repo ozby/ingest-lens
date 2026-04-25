@@ -23,10 +23,6 @@ export interface E2ESuiteDefinition {
   env?: Record<string, string>;
 }
 
-const DEFAULT_E2E_ENV = {
-  E2E_BASE_URL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:8787",
-} as const;
-
 const VITEST_JOURNEYS_CONFIG = "vitest.journeys.config.ts";
 
 export function createVitestStep(id: string, files: readonly string[]): E2ESuiteStep {
@@ -67,7 +63,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["pubsub", "smoke"],
     fileMatchers: FOUNDATION_FILES,
     batchKey: "foundation",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("foundation", FOUNDATION_FILES)],
   },
   {
@@ -75,7 +70,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["identity"],
     fileMatchers: AUTH_FILES,
     batchKey: "auth",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("auth", AUTH_FILES)],
   },
   {
@@ -83,7 +77,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["queue", "topic"],
     fileMatchers: MESSAGING_FILES,
     batchKey: "messaging",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("messaging", MESSAGING_FILES)],
   },
   {
@@ -91,7 +84,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["security", "ownership"],
     fileMatchers: HARDENING_FILES,
     batchKey: "hardening",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("hardening", HARDENING_FILES)],
   },
   {
@@ -99,7 +91,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["ai", "review"],
     fileMatchers: INTAKE_FILES,
     batchKey: "intake",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("intake", INTAKE_FILES)],
   },
   {
@@ -107,7 +98,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["public", "fixtures"],
     fileMatchers: DEMO_FILES,
     batchKey: "demo",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("demo", DEMO_FILES)],
   },
   {
@@ -115,7 +105,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["bundle", "splitting"],
     fileMatchers: CLIENT_FILES,
     batchKey: "client",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("client", CLIENT_FILES)],
   },
   {
@@ -123,7 +112,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["rebrand", "ui"],
     fileMatchers: BRANDING_FILES,
     batchKey: "branding",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("branding", BRANDING_FILES)],
   },
   {
@@ -131,7 +119,6 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["all", "backend", "blueprints"],
     fileMatchers: [],
     batchKey: "full",
-    env: DEFAULT_E2E_ENV,
     steps: [createVitestStep("full", FULL_FILES)],
   },
 ];

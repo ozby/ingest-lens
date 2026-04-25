@@ -37,9 +37,7 @@ describe("nodePubsubE2eHostAdapter", () => {
       {
         batchKey: "node-pubsub-e2e-host",
         envProfile: undefined,
-        env: {
-          E2E_BASE_URL: "http://127.0.0.1:8787",
-        },
+        env: undefined,
         runs: [
           {
             suiteId: "full",

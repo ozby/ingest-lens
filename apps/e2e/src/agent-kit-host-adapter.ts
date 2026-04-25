@@ -33,9 +33,6 @@ export const agentKitE2eHostAdapter: E2eHostAdapter = createCommandE2eHostAdapte
   buildCommandGroup(request) {
     return {
       batchKey: "node-pubsub-e2e-host",
-      env: {
-        E2E_BASE_URL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:8787",
-      },
       run: {
         suiteId: request.suite ?? "foundation",
         batchKey: "node-pubsub-e2e-host",
