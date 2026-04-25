@@ -26,6 +26,143 @@ import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ui/components";
 import { Label } from "@repo/ui/components";
 
+function parseJsonPayload(raw: string): { ok: true; data: unknown } | { ok: false } {
+  try {
+    return { ok: true, data: JSON.parse(raw) };
+  } catch {
+    return { ok: false };
+  }
+}
+
+function nextQueueIdAfterRemoval(availableQueues: IQueue[], removedId: string): string {
+  if (availableQueues.length <= 1) return "";
+  const next = availableQueues.find((q) => q.id !== removedId);
+  return next?.id ?? "";
+}
+
+function applyLoadedTopicData(
+  data: { topic: ITopic; queues: IQueue[] },
+  setTopic: (t: ITopic) => void,
+  setQueues: (q: IQueue[]) => void,
+  setAvailableQueues: (q: IQueue[]) => void,
+  setSelectedQueueId: (id: string) => void,
+): void {
+  setTopic(data.topic);
+  setQueues(data.queues);
+  const available = data.queues.filter((q) => !data.topic.subscribedQueues.includes(q.id));
+  setAvailableQueues(available);
+  if (available.length > 0 && available[0]) {
+    setSelectedQueueId(available[0].id);
+  }
+}
+
+function PublishTab({
+  publishData,
+  isPublishing,
+  setPublishData,
+  handlePublish,
+}: {
+  publishData: string;
+  isPublishing: boolean;
+  setPublishData: (v: string) => void;
+  handlePublish: () => Promise<void>;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Publish Message</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground mb-4">
+          Publish a message to this topic. The message will be delivered to all subscribed queues.
+        </p>
+        <Textarea
+          placeholder='{"example": "Enter your JSON message here"}'
+          className="font-mono resize-y h-32"
+          value={publishData}
+          onChange={(e) => setPublishData(e.target.value)}
+        />
+      </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button onClick={handlePublish} disabled={isPublishing || !publishData.trim()}>
+          <SendHorizontal className="mr-2 h-4 w-4" />
+          {isPublishing ? "Publishing..." : "Publish Message"}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+async function subscribeQueueToTopic(
+  id: string,
+  selectedQueueId: string,
+  availableQueues: IQueue[],
+  setIsSubscribing: (v: boolean) => void,
+  setTopic: (t: ITopic) => void,
+  setAvailableQueues: (q: IQueue[]) => void,
+  setSelectedQueueId: (id: string) => void,
+): Promise<void> {
+  try {
+    setIsSubscribing(true);
+    const payload: SubscribeTopicRequest = { queueId: selectedQueueId };
+    const updatedTopic = await apiService.subscribeTopic(id, payload);
+    setTopic(updatedTopic);
+    setAvailableQueues(availableQueues.filter((q) => q.id !== selectedQueueId));
+    setSelectedQueueId(nextQueueIdAfterRemoval(availableQueues, selectedQueueId));
+    toast.success("Queue subscribed successfully");
+  } catch (error) {
+    console.error("Failed to subscribe queue", error);
+    toast.error("Failed to subscribe queue");
+  } finally {
+    setIsSubscribing(false);
+  }
+}
+
+async function deleteTopicById(
+  _id: string,
+  setIsDeleting: (v: boolean) => void,
+  setDeleteDialogOpen: (v: boolean) => void,
+  navigate: (path: string) => void,
+): Promise<void> {
+  try {
+    setIsDeleting(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    toast.success("Topic deleted successfully");
+    navigate("/topics");
+  } catch (error) {
+    console.error("Failed to delete topic", error);
+    toast.error("Failed to delete topic");
+  } finally {
+    setIsDeleting(false);
+    setDeleteDialogOpen(false);
+  }
+}
+
+async function publishToTopicById(
+  id: string,
+  publishData: string,
+  setIsPublishing: (v: boolean) => void,
+  setPublishData: (v: string) => void,
+): Promise<void> {
+  const parsed = parseJsonPayload(publishData);
+  if (!parsed.ok) {
+    toast.error("Invalid JSON format");
+    return;
+  }
+  try {
+    setIsPublishing(true);
+    const payload: PublishTopicRequest = { data: parsed.data };
+    await apiService.publishToTopic(id, payload);
+    toast.success("Message published successfully");
+    setPublishData("");
+  } catch (error) {
+    console.error("Failed to publish message", error);
+    toast.error("Failed to publish message");
+  } finally {
+    setIsPublishing(false);
+  }
+}
+
 const TopicDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -56,15 +193,7 @@ const TopicDetail = () => {
 
   useEffect(() => {
     if (!loadedData) return;
-    setTopic(loadedData.topic);
-    setQueues(loadedData.queues);
-    const available = loadedData.queues.filter(
-      (queue) => !loadedData.topic.subscribedQueues.includes(queue.id),
-    );
-    setAvailableQueues(available);
-    if (available.length > 0) {
-      setSelectedQueueId(available[0].id);
-    }
+    applyLoadedTopicData(loadedData, setTopic, setQueues, setAvailableQueues, setSelectedQueueId);
   }, [loadedData]);
 
   useEffect(() => {
@@ -74,83 +203,26 @@ const TopicDetail = () => {
   }, [loadError]);
 
   const handleDeleteTopic = async () => {
-    // Note: The API doesn't actually provide a deleteTopic endpoint in the spec,
-    // so this is just a placeholder
     if (!id) return;
-
-    try {
-      setIsDeleting(true);
-      // Simulating delete operation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("Topic deleted successfully");
-      navigate("/topics");
-    } catch (error) {
-      console.error("Failed to delete topic", error);
-      toast.error("Failed to delete topic");
-    } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-    }
+    await deleteTopicById(id, setIsDeleting, setDeleteDialogOpen, navigate);
   };
 
   const handlePublish = async () => {
     if (!id || !publishData.trim()) return;
-
-    try {
-      setIsPublishing(true);
-
-      let parsedData;
-      try {
-        parsedData = JSON.parse(publishData);
-      } catch (error) {
-        console.error("Invalid JSON format", error);
-        toast.error("Invalid JSON format");
-        return;
-      }
-
-      const payload: PublishTopicRequest = { data: parsedData };
-      await apiService.publishToTopic(id, payload);
-      toast.success("Message published successfully");
-      setPublishData("");
-    } catch (error) {
-      console.error("Failed to publish message", error);
-      toast.error("Failed to publish message");
-    } finally {
-      setIsPublishing(false);
-    }
+    await publishToTopicById(id, publishData, setIsPublishing, setPublishData);
   };
 
   const handleSubscribe = async () => {
     if (!id || !selectedQueueId) return;
-
-    try {
-      setIsSubscribing(true);
-      const payload: SubscribeTopicRequest = { queueId: selectedQueueId };
-      const updatedTopic = await apiService.subscribeTopic(id, payload);
-      setTopic(updatedTopic);
-
-      // Update available queues
-      setAvailableQueues(availableQueues.filter((q) => q.id !== selectedQueueId));
-
-      // Reset selection if possible
-      if (availableQueues.length > 1) {
-        const nextAvailable = availableQueues.find((q) => q.id !== selectedQueueId);
-        if (nextAvailable) {
-          setSelectedQueueId(nextAvailable.id);
-        } else {
-          setSelectedQueueId("");
-        }
-      } else {
-        setSelectedQueueId("");
-      }
-
-      toast.success("Queue subscribed successfully");
-    } catch (error) {
-      console.error("Failed to subscribe queue", error);
-      toast.error("Failed to subscribe queue");
-    } finally {
-      setIsSubscribing(false);
-    }
+    await subscribeQueueToTopic(
+      id,
+      selectedQueueId,
+      availableQueues,
+      setIsSubscribing,
+      setTopic,
+      setAvailableQueues,
+      setSelectedQueueId,
+    );
   };
 
   if (isLoading) {
@@ -324,29 +396,12 @@ const TopicDetail = () => {
             </TabsContent>
 
             <TabsContent value="publish" className="animate-fade-in">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Publish Message</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Publish a message to this topic. The message will be delivered to all subscribed
-                    queues.
-                  </p>
-                  <Textarea
-                    placeholder='{"example": "Enter your JSON message here"}'
-                    className="font-mono resize-y h-32"
-                    value={publishData}
-                    onChange={(e) => setPublishData(e.target.value)}
-                  />
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button onClick={handlePublish} disabled={isPublishing || !publishData.trim()}>
-                    <SendHorizontal className="mr-2 h-4 w-4" />
-                    {isPublishing ? "Publishing..." : "Publish Message"}
-                  </Button>
-                </CardFooter>
-              </Card>
+              <PublishTab
+                publishData={publishData}
+                isPublishing={isPublishing}
+                setPublishData={setPublishData}
+                handlePublish={handlePublish}
+              />
             </TabsContent>
 
             <TabsContent value="subscriptions" id="subscriptions-tab" className="animate-fade-in">

@@ -2,6 +2,15 @@ import { createMiddleware } from "hono/factory";
 import { base64UrlDecode } from "../auth/crypto";
 import type { Env } from "../db/client";
 
+async function isJtiRevoked(
+  kv: { get(key: string): Promise<string | null> },
+  jti: string | undefined,
+): Promise<boolean> {
+  if (!jti) return false;
+  const revoked = await kv.get(`revoked:${jti}`);
+  return revoked !== null;
+}
+
 export interface DecodedToken {
   jti: string;
   userId: string;
@@ -11,6 +20,75 @@ export interface DecodedToken {
 type AuthVariables = {
   user: DecodedToken;
 };
+
+async function verifyJwtSignature(
+  token: string,
+  secret: string,
+): Promise<{ ok: false } | { ok: true; headerB64: string; payloadB64: string }> {
+  const [headerB64, payloadB64, signatureB64] = token.split(".") as [
+    string | undefined,
+    string | undefined,
+    string | undefined,
+  ];
+  if (!headerB64 || !payloadB64 || !signatureB64) {
+    return { ok: false };
+  }
+
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"],
+  );
+
+  const signingInput = `${headerB64}.${payloadB64}`;
+  const signatureBytes = base64UrlDecode(signatureB64);
+  const valid = await crypto.subtle.verify(
+    "HMAC",
+    cryptoKey,
+    signatureBytes,
+    encoder.encode(signingInput),
+  );
+
+  if (!valid) return { ok: false };
+  return { ok: true, headerB64, payloadB64 };
+}
+
+function isTokenExpired(payload: Record<string, unknown>): boolean {
+  if (payload.exp && typeof payload.exp === "number") {
+    return Date.now() / 1000 > payload.exp;
+  }
+  return false;
+}
+
+async function validatePayload(
+  payloadB64: string,
+  kv: { get(key: string): Promise<string | null> },
+): Promise<
+  { ok: false; reason: string } | { ok: true; jti: string; userId: string; username: string }
+> {
+  const payloadStr = new TextDecoder().decode(base64UrlDecode(payloadB64));
+  const payload = JSON.parse(payloadStr) as Record<string, unknown>;
+
+  if (isTokenExpired(payload)) {
+    return { ok: false, reason: "Token expired" };
+  }
+
+  const jti = payload.jti as string | undefined;
+  if (await isJtiRevoked(kv, jti)) {
+    return { ok: false, reason: "Token has been revoked" };
+  }
+
+  return {
+    ok: true,
+    jti: jti ?? "",
+    userId: payload.userId as string,
+    username: payload.username as string,
+  };
+}
 
 export const authenticate = createMiddleware<{
   Bindings: Env;
@@ -29,62 +107,17 @@ export const authenticate = createMiddleware<{
   }
 
   try {
-    // Use Web Crypto API (available in Workers runtime)
-    const [headerB64, payloadB64, signatureB64] = token.split(".");
-    if (!headerB64 || !payloadB64 || !signatureB64) {
+    const verified = await verifyJwtSignature(token, secret);
+    if (!verified.ok) {
       return c.json({ status: "error", message: "Invalid token" }, 401);
     }
 
-    // Verify HMAC-SHA256 signature
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(secret);
-    const cryptoKey = await crypto.subtle.importKey(
-      "raw",
-      keyData,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["verify"],
-    );
-
-    const signingInput = `${headerB64}.${payloadB64}`;
-    const signatureBytes = base64UrlDecode(signatureB64);
-    const valid = await crypto.subtle.verify(
-      "HMAC",
-      cryptoKey,
-      signatureBytes,
-      encoder.encode(signingInput),
-    );
-
-    if (!valid) {
-      return c.json({ status: "error", message: "Invalid token" }, 401);
+    const result = await validatePayload(verified.payloadB64, c.env.KV);
+    if (!result.ok) {
+      return c.json({ status: "error", message: result.reason }, 401);
     }
 
-    // Decode payload
-    const payloadStr = new TextDecoder().decode(base64UrlDecode(payloadB64));
-    const payload = JSON.parse(payloadStr) as Record<string, unknown>;
-
-    // Check expiry
-    if (payload.exp && typeof payload.exp === "number") {
-      if (Date.now() / 1000 > payload.exp) {
-        return c.json({ status: "error", message: "Token expired" }, 401);
-      }
-    }
-
-    // Check jti revocation list in KV
-    const jti = payload.jti as string | undefined;
-    if (jti) {
-      const revoked = await c.env.KV.get(`revoked:${jti}`);
-      if (revoked !== null) {
-        return c.json({ status: "error", message: "Token has been revoked" }, 401);
-      }
-    }
-
-    c.set("user", {
-      jti: jti ?? "",
-      userId: payload.userId as string,
-      username: payload.username as string,
-    });
-
+    c.set("user", { jti: result.jti, userId: result.userId, username: result.username });
     await next();
   } catch {
     return c.json({ status: "error", message: "Invalid token" }, 401);

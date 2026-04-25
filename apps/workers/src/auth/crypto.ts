@@ -114,6 +114,18 @@ async function derivePbkdf2Hash(
   return new Uint8Array(derivedBits);
 }
 
+function isValidHashFormat(
+  prefix: string | undefined,
+  iterationsValue: string | undefined,
+  saltValue: string | undefined,
+  hashValue: string | undefined,
+  rest: string[],
+): boolean {
+  return (
+    prefix === PBKDF2_PREFIX && !!iterationsValue && !!saltValue && !!hashValue && rest.length === 0
+  );
+}
+
 function parsePbkdf2Hash(storedHash: string): {
   iterations: number;
   salt: Uint8Array;
@@ -121,17 +133,18 @@ function parsePbkdf2Hash(storedHash: string): {
 } | null {
   const [prefix, iterationsValue, saltValue, hashValue, ...rest] = storedHash.split("$");
 
-  if (prefix !== PBKDF2_PREFIX || !iterationsValue || !saltValue || !hashValue || rest.length > 0) {
+  if (!isValidHashFormat(prefix, iterationsValue, saltValue, hashValue, rest)) {
     return null;
   }
 
-  const iterations = Number.parseInt(iterationsValue, 10);
+  const [iv, sv, hv] = [iterationsValue as string, saltValue as string, hashValue as string];
+  const iterations = Number.parseInt(iv, 10);
   if (!Number.isInteger(iterations) || iterations <= 0) {
     return null;
   }
 
-  const salt = decodeBase64UrlBytes(saltValue);
-  const hash = decodeBase64UrlBytes(hashValue);
+  const salt = decodeBase64UrlBytes(sv);
+  const hash = decodeBase64UrlBytes(hv);
 
   if (!salt || !hash || hash.length === 0) {
     return null;

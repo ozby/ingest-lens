@@ -52,6 +52,43 @@ const CONSECUTIVE_FAIL_THRESHOLD = 3;
  * Run a heartbeat tick.
  * Returns the row that was written.
  */
+async function pingHealthEndpoint(
+  baseUrl: string,
+  workloadSize: number,
+  adminSecret: string,
+  isConfigured: boolean,
+  fetcher: (url: string, init?: RequestInit) => Promise<{ ok: boolean; status: number }>,
+): Promise<{ status: "OK" | "FAILED"; failureReason?: string }> {
+  try {
+    const url = `${baseUrl}/lab/health?workloadSize=${workloadSize}`;
+    const headers: Record<string, string> = {};
+    if (isConfigured) {
+      headers["X-Lab-Admin-Token"] = adminSecret;
+    }
+    const res = await fetcher(url, { headers });
+    if (res.ok) return { status: "OK" };
+    return { status: "FAILED", failureReason: `HTTP ${res.status}` };
+  } catch (err) {
+    return { status: "FAILED", failureReason: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+async function checkAndNotify(
+  row: HeartbeatRow,
+  store: HeartbeatStore,
+  webhookUrl: string,
+  fetcher: (url: string, init?: RequestInit) => Promise<{ ok: boolean; status: number }>,
+): Promise<void> {
+  const recent = await store.getRecent(CONSECUTIVE_FAIL_THRESHOLD);
+  const allFailed =
+    recent.length === CONSECUTIVE_FAIL_THRESHOLD &&
+    recent.every((r) => r.status === "FAILED") &&
+    recent[0]?.runId === row.runId;
+  if (allFailed) {
+    await sendWebhookAlert(webhookUrl, recent, fetcher);
+  }
+}
+
 export async function runHeartbeat(
   deps: HeartbeatDeps,
   kind: "daily" | "weekly",
@@ -78,25 +115,13 @@ export async function runHeartbeat(
   const isConfigured = adminSecret.length > 0 && hasValidSecret;
 
   const startMs = Date.now();
-  let status: "OK" | "FAILED" = "FAILED";
-  let failureReason: string | undefined;
-
-  try {
-    const url = `${deps.baseUrl}/lab/health?workloadSize=${workloadSize}`;
-    const headers: Record<string, string> = {};
-    if (isConfigured) {
-      headers["X-Lab-Admin-Token"] = adminSecret;
-    }
-    const res = await fetcher(url, { headers });
-    if (res.ok) {
-      status = "OK";
-    } else {
-      failureReason = `HTTP ${res.status}`;
-    }
-  } catch (err) {
-    failureReason = err instanceof Error ? err.message : String(err);
-  }
-
+  const { status, failureReason } = await pingHealthEndpoint(
+    deps.baseUrl,
+    workloadSize,
+    adminSecret,
+    isConfigured,
+    fetcher,
+  );
   const durationMs = Date.now() - startMs;
 
   const row: HeartbeatRow = {
@@ -110,17 +135,8 @@ export async function runHeartbeat(
 
   await deps.store.append(row);
 
-  // Check for 3 consecutive FAILs
   if (status === "FAILED" && deps.webhookUrl) {
-    const recent = await deps.store.getRecent(CONSECUTIVE_FAIL_THRESHOLD);
-    const allFailed =
-      recent.length === CONSECUTIVE_FAIL_THRESHOLD &&
-      recent.every((r) => r.status === "FAILED") &&
-      recent[0]?.runId === row.runId; // newest row is the one just appended
-
-    if (allFailed) {
-      await sendWebhookAlert(deps.webhookUrl, recent, fetcher);
-    }
+    await checkAndNotify(row, deps.store, deps.webhookUrl, fetcher);
   }
 
   return row;

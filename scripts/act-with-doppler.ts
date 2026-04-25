@@ -135,68 +135,86 @@ function assertBinary(name: string, installHint: string): void {
   }
 }
 
+interface ParsedArgState {
+  actArgs: string[];
+  strictSecrets: boolean;
+  explicitSources: DopplerSource[];
+  explicitProfileId: ActSecretProfile["id"] | undefined;
+  workflowPath: string | undefined;
+  jobName: string | undefined;
+}
+
+function processCustomFlag(state: ParsedArgState, argv: string[], index: number): number | null {
+  const arg = argv[index];
+  if (arg === "--strict-secrets") {
+    state.strictSecrets = true;
+    return index;
+  }
+  if (arg === "--doppler-source") {
+    const spec = argv[index + 1];
+    if (!spec) throw new Error("--doppler-source requires a value like <project>:<config>.");
+    state.explicitSources.push(parseDopplerSource(spec));
+    return index + 1;
+  }
+  if (arg === "--secret-profile") {
+    const profileId = argv[index + 1];
+    if (!profileId || !isActSecretProfileId(profileId)) {
+      throw new Error("--secret-profile requires one of: none, github-api, neon-control-plane.");
+    }
+    state.explicitProfileId = profileId;
+    return index + 1;
+  }
+  if (arg === "--secret-file") {
+    throw new Error(
+      "Do not pass --secret-file directly to act-with-doppler.ts. It generates the file automatically.",
+    );
+  }
+  return null;
+}
+
+function processOneArg(state: ParsedArgState, argv: string[], index: number): number {
+  const customResult = processCustomFlag(state, argv, index);
+  if (customResult !== null) return customResult;
+  const arg = argv[index];
+  if ((arg === "-W" || arg === "--workflows") && argv[index + 1]) {
+    state.workflowPath = argv[index + 1];
+  }
+  if ((arg === "-j" || arg === "--job") && argv[index + 1]) {
+    state.jobName = argv[index + 1];
+  }
+  state.actArgs.push(arg);
+  return index;
+}
+
 function parseCliArgs(argv: string[]): {
   actArgs: string[];
   strictSecrets: boolean;
   sources: DopplerSource[];
   secretProfile: ActSecretProfile;
 } {
-  const actArgs: string[] = [];
-  let strictSecrets = false;
-  const explicitSources: DopplerSource[] = [];
-  let explicitProfileId: ActSecretProfile["id"] | undefined;
-  let workflowPath: string | undefined;
-  let jobName: string | undefined;
+  const state: ParsedArgState = {
+    actArgs: [],
+    strictSecrets: false,
+    explicitSources: [],
+    explicitProfileId: undefined,
+    workflowPath: undefined,
+    jobName: undefined,
+  };
 
   for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    if (arg === "--strict-secrets") {
-      strictSecrets = true;
-      continue;
-    }
-    if (arg === "--doppler-source") {
-      const spec = argv[index + 1];
-      if (!spec) {
-        throw new Error("--doppler-source requires a value like <project>:<config>.");
-      }
-      explicitSources.push(parseDopplerSource(spec));
-      index += 1;
-      continue;
-    }
-    if (arg === "--secret-profile") {
-      const profileId = argv[index + 1];
-      if (!profileId || !isActSecretProfileId(profileId)) {
-        throw new Error("--secret-profile requires one of: none, github-api, neon-control-plane.");
-      }
-      explicitProfileId = profileId;
-      index += 1;
-      continue;
-    }
-    if (arg === "--secret-file") {
-      throw new Error(
-        "Do not pass --secret-file directly to act-with-doppler.ts. It generates the file automatically.",
-      );
-    }
-    if ((arg === "-W" || arg === "--workflows") && argv[index + 1]) {
-      workflowPath = argv[index + 1];
-    }
-    if ((arg === "-j" || arg === "--job") && argv[index + 1]) {
-      jobName = argv[index + 1];
-    }
-    actArgs.push(arg);
+    index = processOneArg(state, argv, index);
   }
 
   const secretProfile = resolveActSecretProfile({
-    workflowPath,
-    jobName,
-    explicitProfileId,
+    workflowPath: state.workflowPath,
+    jobName: state.jobName,
+    explicitProfileId: state.explicitProfileId,
   });
-  const sourceSpecs = resolveDopplerSources(secretProfile, explicitSources);
 
   return {
-    actArgs,
-    strictSecrets,
-    sources: sourceSpecs,
+    actArgs: state.actArgs,
+    strictSecrets: state.strictSecrets,
+    sources: resolveDopplerSources(secretProfile, state.explicitSources),
     secretProfile,
   };
 }

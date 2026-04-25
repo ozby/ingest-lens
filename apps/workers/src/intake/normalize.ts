@@ -45,44 +45,41 @@ function setNestedValue(record: Record<string, unknown>, fieldPath: string, valu
   });
 }
 
+function applyParseNumber(value: unknown): unknown {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && value.trim().length > 0) return Number(value);
+  return value;
+}
+
+function applyParseBoolean(value: unknown): unknown {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return value;
+}
+
+type TransformFn = (value: unknown) => unknown;
+
+const TRANSFORM_FNS: Record<string, TransformFn> = {
+  copy: (v) => v,
+  trim: (v) => (typeof v === "string" ? v.trim() : v),
+  normalize_whitespace: (v) => (typeof v === "string" ? normalizeWhitespace(v) : v),
+  lowercase: (v) => (typeof v === "string" ? v.toLowerCase() : v),
+  uppercase: (v) => (typeof v === "string" ? v.toUpperCase() : v),
+  parse_number: applyParseNumber,
+  parse_boolean: applyParseBoolean,
+  join_text: (v) => (Array.isArray(v) ? v.join(", ") : v),
+  to_array: (v) => (Array.isArray(v) ? v : [v]),
+};
+
 function applyTransform(
   value: unknown,
   transformKind: MappingSuggestion["transformKind"],
 ): unknown {
-  switch (transformKind) {
-    case "copy":
-      return value;
-    case "trim":
-      return typeof value === "string" ? value.trim() : value;
-    case "normalize_whitespace":
-      return typeof value === "string" ? normalizeWhitespace(value) : value;
-    case "lowercase":
-      return typeof value === "string" ? value.toLowerCase() : value;
-    case "uppercase":
-      return typeof value === "string" ? value.toUpperCase() : value;
-    case "parse_number":
-      return typeof value === "number"
-        ? value
-        : typeof value === "string" && value.trim().length > 0
-          ? Number(value)
-          : value;
-    case "parse_boolean":
-      if (typeof value === "boolean") {
-        return value;
-      }
-      if (typeof value === "string") {
-        const normalized = value.trim().toLowerCase();
-        if (normalized === "true") return true;
-        if (normalized === "false") return false;
-      }
-      return value;
-    case "join_text":
-      return Array.isArray(value) ? value.join(", ") : value;
-    case "to_array":
-      return Array.isArray(value) ? value : [value];
-    default:
-      return value;
-  }
+  return (TRANSFORM_FNS[transformKind] ?? ((v) => v))(value);
 }
 
 export function normalizeWithMapping(input: NormalizeWithMappingInput): Record<string, unknown> {

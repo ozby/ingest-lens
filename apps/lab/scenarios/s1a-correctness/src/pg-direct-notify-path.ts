@@ -42,6 +42,116 @@ export interface DirectNotifyStats {
   records: ListenerMessage[];
 }
 
+function openDirectConnection(pgUrl: string): PgDirectConnection & MockPgDirectConnectionHandle {
+  try {
+    return createMockPgDirectConnection(pgUrl);
+  } catch (err) {
+    throw new Error(
+      `pg_direct_connect_failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}
+
+async function listenOnConnection(conn: PgDirectConnection): Promise<void> {
+  try {
+    await conn.listen(LISTEN_CHANNEL);
+  } catch (err) {
+    throw new Error(
+      `pg_direct_connect_failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}
+
+interface DeliveryCounters {
+  dropped: number;
+  reconnects: number;
+  droppedWindow: boolean;
+}
+
+function deliverMessages(
+  messages: Array<{ msg_id: string; seq: number; session_id: string }>,
+  signal: AbortSignal,
+  simulateReconnect: boolean,
+  reconnectAt: number,
+  conn: PgDirectConnection & MockPgDirectConnectionHandle,
+  counters: DeliveryCounters,
+): void {
+  for (let i = 0; i < messages.length; i += BATCH_SIZE) {
+    if (signal.aborted) break;
+    const result = maybeSimulateReconnect(
+      simulateReconnect,
+      counters.droppedWindow,
+      i,
+      reconnectAt,
+      conn,
+    );
+    if (result === "open") {
+      counters.droppedWindow = true;
+      counters.reconnects++;
+    } else if (result === "close") {
+      counters.droppedWindow = false;
+    }
+    for (const m of messages.slice(i, i + BATCH_SIZE)) {
+      const payload = JSON.stringify({ msg_id: m.msg_id, seq: m.seq, session_id: m.session_id });
+      if (!counters.droppedWindow) {
+        conn.sendNotification(payload);
+      } else {
+        counters.dropped++;
+      }
+    }
+  }
+}
+
+function handleNotification(
+  payload: string,
+  sessionId: string,
+  droppedWindow: boolean,
+  received: ListenerMessage[],
+  onDrop: () => void,
+  nextOrder: () => number,
+): void {
+  try {
+    const msg = JSON.parse(payload) as { msg_id: string; seq: number; session_id: string };
+    if (msg.session_id !== sessionId) return;
+    if (droppedWindow) {
+      onDrop();
+      return;
+    }
+    const recvOrder = nextOrder();
+    received.push({
+      sessionId,
+      msgId: msg.msg_id,
+      seq: msg.seq,
+      receivedAt: new Date("2026-01-01").toISOString(),
+      recvOrder,
+    });
+  } catch {
+    // malformed — ignore
+  }
+}
+
+function maybeSimulateReconnect(
+  simulateReconnect: boolean,
+  droppedWindow: boolean,
+  batchStart: number,
+  reconnectAt: number,
+  conn: { triggerError(err: Error): void },
+): "open" | "close" | "none" {
+  if (
+    simulateReconnect &&
+    !droppedWindow &&
+    batchStart >= reconnectAt &&
+    batchStart < reconnectAt + BATCH_SIZE
+  ) {
+    conn.triggerError(new Error("simulated_disconnect"));
+    return "open";
+  }
+  if (droppedWindow && batchStart >= reconnectAt + BATCH_SIZE) {
+    return "close";
+  }
+  return "none";
+}
+
 export class PostgresDirectNotifyPath implements ScenarioRunner {
   private readonly ctx: ScenarioContext;
   private readonly workloadSize: number;
@@ -100,16 +210,7 @@ export class PostgresDirectNotifyPath implements ScenarioRunner {
   }
 
   private async runInternal(sessionId: string, signal: AbortSignal): Promise<DirectNotifyStats> {
-    // Open a direct TCP connection to Postgres (bypasses Hyperdrive — F1T-reversed)
-    let conn: PgDirectConnection & MockPgDirectConnectionHandle;
-    try {
-      conn = createMockPgDirectConnection(this.pgUrl);
-    } catch (err) {
-      throw new Error(
-        `pg_direct_connect_failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-
+    const conn = openDirectConnection(this.pgUrl);
     const received: ListenerMessage[] = [];
     let recvOrder = 0;
     let droppedWindow = false;
@@ -117,82 +218,32 @@ export class PostgresDirectNotifyPath implements ScenarioRunner {
     let reconnects = 0;
 
     conn.onNotification((payload) => {
-      try {
-        const msg = JSON.parse(payload) as { msg_id: string; seq: number; session_id: string };
-        if (msg.session_id !== sessionId) return; // scope guard — never write outside session_id
-
-        if (droppedWindow) {
-          // In reconnect window — count as dropped
+      handleNotification(
+        payload,
+        sessionId,
+        droppedWindow,
+        received,
+        () => {
           dropped++;
-          return;
-        }
-
-        recvOrder++;
-        received.push({
-          sessionId,
-          msgId: msg.msg_id,
-          seq: msg.seq,
-          receivedAt: new Date("2026-01-01").toISOString(),
-          recvOrder,
-        });
-      } catch {
-        // malformed — ignore
-      }
+        },
+        () => {
+          recvOrder++;
+          return recvOrder;
+        },
+      );
     });
-
     conn.onError(() => {
       reconnects++;
     });
-
-    try {
-      await conn.listen(LISTEN_CHANNEL);
-    } catch (err) {
-      throw new Error(
-        `pg_direct_connect_failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
+    await listenOnConnection(conn);
 
     const messages = Array.from(buildWorkload(sessionId, this.workloadSize));
     const reconnectAt = Math.floor(this.workloadSize * RECONNECT_AT_FRACTION);
+    const counters = { dropped, reconnects, droppedWindow };
 
-    // Producer: INSERT + NOTIFY per batch
-    // Producer can use Hyperdrive (one-shot queries); subscriber stays on direct conn
-    for (let i = 0; i < messages.length; i += BATCH_SIZE) {
-      if (signal.aborted) break;
-
-      const batchStart = i;
-
-      // Simulate disconnect at the reconnect boundary
-      if (
-        this.simulateReconnect &&
-        !droppedWindow &&
-        batchStart >= reconnectAt &&
-        batchStart < reconnectAt + BATCH_SIZE
-      ) {
-        droppedWindow = true;
-        conn.triggerError(new Error("simulated_disconnect"));
-        // After one batch worth of drops, "reconnect"
-        reconnects++;
-      } else if (droppedWindow && batchStart >= reconnectAt + BATCH_SIZE) {
-        droppedWindow = false;
-      }
-
-      const batch = messages.slice(i, i + BATCH_SIZE);
-      for (const m of batch) {
-        const notifyPayload = JSON.stringify({
-          msg_id: m.msg_id,
-          seq: m.seq,
-          session_id: m.session_id,
-        });
-
-        if (!droppedWindow) {
-          // Deliver directly to the subscriber (in-process for testing)
-          conn.sendNotification(notifyPayload);
-        } else {
-          dropped++;
-        }
-      }
-    }
+    deliverMessages(messages, signal, this.simulateReconnect, reconnectAt, conn, counters);
+    dropped = counters.dropped;
+    reconnects = counters.reconnects;
 
     await conn.unlisten(LISTEN_CHANNEL);
     await conn.close();

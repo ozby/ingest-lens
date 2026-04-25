@@ -38,6 +38,33 @@ function resolvePriceEntry(pathId: string) {
   return PRICING_TABLE.find((e) => e.service === "Postgres egress (Neon)");
 }
 
+function computePricing(
+  pathId: string,
+  count: number,
+): {
+  effectiveDate: string;
+  pricingSource: string;
+  costPerMillion: number;
+  pricingStaleWarning: string | null;
+} {
+  const entry = resolvePriceEntry(pathId);
+  const effectiveDate = entry?.effectiveDate ?? "2024-09-01";
+  const pricingSource = entry?.source ?? "unknown";
+  const totalCost = entry !== undefined ? calculateCost(entry, count) : 0;
+  const costPerMillion = count > 0 ? (totalCost / count) * 1_000_000 : 0;
+  const stale = entry !== undefined ? isPriceStale(effectiveDate) : false;
+  const pricingStaleWarning = stale
+    ? `Pricing entry for "${entry?.service}" is older than 90 days (${effectiveDate}). Review https://developers.cloudflare.com for updates.`
+    : null;
+  return { effectiveDate, pricingSource, costPerMillion, pricingStaleWarning };
+}
+
+function resolveStatus(failed: boolean, count: number): PathStatus {
+  if (failed) return "FAILED";
+  if (count === 0) return "FAILED";
+  return "OK";
+}
+
 export function summarize(
   pathId: string,
   events: ScenarioEvent[],
@@ -46,7 +73,6 @@ export function summarize(
   const delivered: MessageDeliveredEvent[] = events.filter(
     (e): e is MessageDeliveredEvent => e.type === "message_delivered" && e.pathId === pathId,
   );
-
   const failed = events.some(
     (e): e is PathFailedEvent => e.type === "path_failed" && e.pathId === pathId,
   );
@@ -61,20 +87,10 @@ export function summarize(
   const p95Ms = hist.percentile(0.95);
   const p99Ms = hist.percentile(0.99);
   const throughputPerSec = wallMs > 0 ? (count / wallMs) * 1000 : 0;
-
-  const entry = resolvePriceEntry(pathId);
-  const effectiveDate = entry?.effectiveDate ?? "2024-09-01";
-  const pricingSource = entry?.source ?? "unknown";
-  const totalCost = entry !== undefined ? calculateCost(entry, count) : 0;
-  const costPerMillion = count > 0 ? (totalCost / count) * 1_000_000 : 0;
-  const stale = entry !== undefined ? isPriceStale(effectiveDate) : false;
-  const pricingStaleWarning = stale
-    ? `Pricing entry for "${entry?.service}" is older than 90 days (${effectiveDate}). Review https://developers.cloudflare.com for updates.`
-    : null;
-
-  let status: PathStatus = "OK";
-  if (failed) status = "FAILED";
-  else if (count === 0) status = "FAILED";
+  const { effectiveDate, pricingSource, costPerMillion, pricingStaleWarning } = computePricing(
+    pathId,
+    count,
+  );
 
   return {
     pathId,
@@ -87,6 +103,6 @@ export function summarize(
     pricingEffectiveDate: effectiveDate,
     pricingSource,
     pricingStaleWarning,
-    status,
+    status: resolveStatus(failed, count),
   };
 }

@@ -38,6 +38,47 @@ export interface SummarizeOptions {
   producers?: number; // default 1
 }
 
+function buildFailedSummary(
+  failed: PathFailedEvent,
+  completed: PathCompletedEvent | undefined,
+  sent: number,
+): PathSummary {
+  return {
+    pathId: failed.pathId,
+    delivered: completed?.deliveredCount ?? 0,
+    sent,
+    duplicates: 0,
+    inversions: completed?.inversionCount ?? 0,
+    orderingProperty: "unknown",
+    status: "FAILED",
+    durationMs: completed?.durationMs ?? 0,
+    failureReason: failed.reason,
+  };
+}
+
+function buildIncompleteSummary(events: ScenarioEvent[], sent: number): PathSummary {
+  const first = events[0];
+  const pathId = first?.type === "path_started" ? (first as { pathId: string }).pathId : "unknown";
+  return {
+    pathId,
+    delivered: 0,
+    sent,
+    duplicates: 0,
+    inversions: 0,
+    orderingProperty: "unknown",
+    status: "FAILED",
+    durationMs: 0,
+    failureReason: "no path_completed event",
+  };
+}
+
+function countDuplicates(events: ScenarioEvent[]): number {
+  const ids = events
+    .filter((e) => e.type === "message_delivered")
+    .map((e) => (e as { messageId: string }).messageId);
+  return ids.length - new Set(ids).size;
+}
+
 /**
  * summarize — reduce a flat array of ScenarioEvents for one path
  * into a PathSummary.
@@ -48,53 +89,17 @@ export function summarize(
   opts: SummarizeOptions = {},
 ): PathSummary {
   const producers = opts.producers ?? 1;
-
-  // Find terminal events for the path
   const completed = events.find((e): e is PathCompletedEvent => e.type === "path_completed");
   const failed = events.find((e): e is PathFailedEvent => e.type === "path_failed");
 
-  if (failed !== undefined) {
-    return {
-      pathId: failed.pathId,
-      delivered: completed?.deliveredCount ?? 0,
-      sent,
-      duplicates: 0,
-      inversions: completed?.inversionCount ?? 0,
-      orderingProperty: "unknown",
-      status: "FAILED",
-      durationMs: completed?.durationMs ?? 0,
-      failureReason: failed.reason,
-    };
-  }
-
-  if (completed === undefined) {
-    return {
-      pathId:
-        events[0]?.type === "path_started" ? (events[0] as { pathId: string }).pathId : "unknown",
-      delivered: 0,
-      sent,
-      duplicates: 0,
-      inversions: 0,
-      orderingProperty: "unknown",
-      status: "FAILED",
-      durationMs: 0,
-      failureReason: "no path_completed event",
-    };
-  }
+  if (failed !== undefined) return buildFailedSummary(failed, completed, sent);
+  if (completed === undefined) return buildIncompleteSummary(events, sent);
 
   const delivered = completed.deliveredCount;
   const inversions = completed.inversionCount;
-
-  // Duplicate detection: count message_delivered events with duplicate msg ids
-  const deliveredIds = events
-    .filter((e) => e.type === "message_delivered")
-    .map((e) => (e as { messageId: string }).messageId);
-  const uniqueIds = new Set(deliveredIds);
-  const duplicates = deliveredIds.length - uniqueIds.size;
-
+  const duplicates = countDuplicates(events);
   const status: RunStatus = delivered < sent ? "PARTIAL" : "OK";
-
-  const orderingProperty: OrderingProperty = classifyOrdering(inversions, duplicates, producers);
+  const orderingProperty = classifyOrdering(inversions, duplicates, producers);
 
   return {
     pathId: completed.pathId,

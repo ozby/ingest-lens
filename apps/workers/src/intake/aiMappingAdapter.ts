@@ -370,30 +370,50 @@ async function attachJudgeAssessments(
   };
 }
 
-export async function suggestMappings(
+interface ResolvedOpts {
+  primaryModel: string;
+  timeoutMs: number;
+  primaryMaxAttempts: number;
+  retryDelayMs: number;
+}
+
+function resolveDependencyOpts(
   input: SuggestMappingsInput,
-  dependencies: SuggestMappingsDependencies = {},
-): Promise<SuggestMappingsResult> {
-  let provider: MappingDecisionLog["provider"] = dependencies.primaryRunner
+  dependencies: SuggestMappingsDependencies,
+): ResolvedOpts {
+  return {
+    primaryModel: input.primaryModel ?? DEFAULT_PRIMARY_MODEL,
+    timeoutMs: dependencies.timeoutMs ?? DEFAULT_MODEL_TIMEOUT_MS,
+    primaryMaxAttempts: dependencies.primaryMaxAttempts ?? DEFAULT_PRIMARY_MAX_ATTEMPTS,
+    retryDelayMs: dependencies.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS,
+  };
+}
+
+type RunnerAcquireResult =
+  | { ok: true; runner: StructuredRunner; provider: MappingDecisionLog["provider"] }
+  | { ok: false; result: SuggestMappingsResult };
+
+function acquirePrimaryRunner(
+  input: SuggestMappingsInput,
+  dependencies: SuggestMappingsDependencies,
+  primaryModel: string,
+): RunnerAcquireResult {
+  const provider: MappingDecisionLog["provider"] = dependencies.primaryRunner
     ? "test-runner"
     : "workers-ai";
-  const primaryModel = input.primaryModel ?? DEFAULT_PRIMARY_MODEL;
-  const timeoutMs = dependencies.timeoutMs ?? DEFAULT_MODEL_TIMEOUT_MS;
-  const primaryMaxAttempts = dependencies.primaryMaxAttempts ?? DEFAULT_PRIMARY_MAX_ATTEMPTS;
-  const retryDelayMs = dependencies.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
-
-  let primaryRunner: StructuredRunner;
   try {
-    primaryRunner =
+    const runner =
       dependencies.primaryRunner ?? createWorkersStructuredRunner(dependencies.env ?? {});
+    return { ok: true, runner, provider };
   } catch (error) {
     const fallbackBatch = createDeterministicFallbackBatch(input);
     if (fallbackBatch) {
-      provider = "test-runner";
-      primaryRunner = async () => fallbackBatch;
-    } else {
-      const reason = error instanceof Error ? error.message : "Workers AI binding is unavailable";
-      return {
+      return { ok: true, runner: async () => fallbackBatch, provider: "test-runner" };
+    }
+    const reason = error instanceof Error ? error.message : "Workers AI binding is unavailable";
+    return {
+      ok: false,
+      result: {
         kind: "abstain",
         reason,
         decisionLog: buildDecisionLog(
@@ -404,18 +424,28 @@ export async function suggestMappings(
           undefined,
           { failureReason: "ai_binding_missing" },
         ),
-      };
-    }
+      },
+    };
   }
+}
 
-  let batch: MappingSuggestionBatch;
+type BatchFetchResult =
+  | { ok: true; batch: MappingSuggestionBatch }
+  | { ok: false; result: SuggestMappingsResult };
+
+async function fetchBatch(
+  primaryRunner: StructuredRunner,
+  provider: MappingDecisionLog["provider"],
+  input: SuggestMappingsInput,
+  opts: ResolvedOpts,
+): Promise<BatchFetchResult> {
   try {
-    batch = (await runWithRetry(
+    const batch = (await runWithRetry(
       (attempt) =>
         withTimeout(
           (abortSignal) =>
             primaryRunner<MappingSuggestionBatch>({
-              modelId: primaryModel,
+              modelId: opts.primaryModel,
               prompt: buildMappingPrompt(input),
               schema: MappingSuggestionBatchSchema,
               schemaName: "MappingSuggestionBatch",
@@ -429,50 +459,66 @@ export async function suggestMappings(
               maxRetries: 0,
               abortSignal,
             }) as Promise<MappingSuggestionBatch>,
-          timeoutMs,
+          opts.timeoutMs,
           `Primary model attempt ${attempt}`,
         ),
-      {
-        maxAttempts: primaryMaxAttempts,
-        retryDelayMs,
-        sleep,
-      },
+      { maxAttempts: opts.primaryMaxAttempts, retryDelayMs: opts.retryDelayMs, sleep },
     )) as MappingSuggestionBatch;
+    return { ok: true, batch };
   } catch (error) {
     if (NoObjectGeneratedError.isInstance(error)) {
       return {
-        kind: "invalid_output",
-        reason: "Model output did not satisfy the mapping contract.",
-        errors: [error.message],
-        decisionLog: buildDecisionLog(
-          provider,
-          primaryModel,
-          input.promptVersion,
-          "invalid_output",
-          undefined,
-          { failureReason: "no_object_generated" },
-        ),
+        ok: false,
+        result: {
+          kind: "invalid_output",
+          reason: "Model output did not satisfy the mapping contract.",
+          errors: [error.message],
+          decisionLog: buildDecisionLog(
+            provider,
+            opts.primaryModel,
+            input.promptVersion,
+            "invalid_output",
+            undefined,
+            { failureReason: "no_object_generated" },
+          ),
+        },
       };
     }
-
     return {
-      kind: "runtime_failure",
-      reason: error instanceof Error ? error.message : "Primary model execution failed.",
-      decisionLog: buildDecisionLog(
-        provider,
-        primaryModel,
-        input.promptVersion,
-        "runtime_failure",
-        undefined,
-        {
-          failureReason:
-            error instanceof ModelTimeoutError ? "primary_model_timeout" : "primary_model_failed",
-        },
-      ),
+      ok: false,
+      result: {
+        kind: "runtime_failure",
+        reason: error instanceof Error ? error.message : "Primary model execution failed.",
+        decisionLog: buildDecisionLog(
+          provider,
+          opts.primaryModel,
+          input.promptVersion,
+          "runtime_failure",
+          undefined,
+          {
+            failureReason:
+              error instanceof ModelTimeoutError ? "primary_model_timeout" : "primary_model_failed",
+          },
+        ),
+      },
     };
   }
+}
 
-  const validation = validateMappingSuggestionBatch(batch, {
+export async function suggestMappings(
+  input: SuggestMappingsInput,
+  dependencies: SuggestMappingsDependencies = {},
+): Promise<SuggestMappingsResult> {
+  const opts = resolveDependencyOpts(input, dependencies);
+
+  const runnerResult = acquirePrimaryRunner(input, dependencies, opts.primaryModel);
+  if (!runnerResult.ok) return runnerResult.result;
+  const { runner: primaryRunner, provider } = runnerResult;
+
+  const batchResult = await fetchBatch(primaryRunner, provider, input, opts);
+  if (!batchResult.ok) return batchResult.result;
+
+  const validation = validateMappingSuggestionBatch(batchResult.batch, {
     allowedTargetFields: input.targetFields,
     sourcePayload: input.payload,
   });
@@ -484,10 +530,10 @@ export async function suggestMappings(
       errors: validation.errors,
       decisionLog: buildDecisionLog(
         provider,
-        primaryModel,
+        opts.primaryModel,
         input.promptVersion,
         "invalid_output",
-        batch,
+        batchResult.batch,
         { failureReason: "deterministic_validation_failed" },
       ),
     };
@@ -499,7 +545,7 @@ export async function suggestMappings(
       reason: "Model confidence is too low for review creation.",
       decisionLog: buildDecisionLog(
         provider,
-        primaryModel,
+        opts.primaryModel,
         input.promptVersion,
         "abstained",
         validation.value,
@@ -514,7 +560,7 @@ export async function suggestMappings(
       batch: validation.value,
       decisionLog: buildDecisionLog(
         provider,
-        primaryModel,
+        opts.primaryModel,
         input.promptVersion,
         "passed",
         validation.value,
@@ -530,7 +576,7 @@ export async function suggestMappings(
     batch: judged.batch,
     decisionLog: buildDecisionLog(
       provider,
-      primaryModel,
+      opts.primaryModel,
       input.promptVersion,
       "passed",
       judged.batch,

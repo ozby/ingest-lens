@@ -84,33 +84,39 @@ export class PgListenerDO {
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    const { method, pathname } = { method: request.method, pathname: url.pathname };
 
-    if (request.method === "POST" && url.pathname === "/start") {
-      const body = (await request.json()) as {
-        sessionId: string;
-        pgUrl: string;
-        simulateReconnect?: boolean;
-      };
-      await this.start(body.sessionId, body.pgUrl, body.simulateReconnect ?? false);
-      return Response.json({ ok: true });
+    if (method === "POST" && pathname === "/start") {
+      return this.handleStart(request);
     }
-
-    if (request.method === "POST" && url.pathname === "/stop") {
-      const body = (await request.json()) as { sessionId: string };
-      await this.stop(body.sessionId);
-      return Response.json({ ok: true });
+    if (method === "POST" && pathname === "/stop") {
+      return this.handleStop(request);
     }
-
-    if (request.method === "GET" && url.pathname === "/stats") {
+    if (method === "GET" && pathname === "/stats") {
       return Response.json(this.stats);
     }
-
-    if (request.method === "GET" && url.pathname === "/records") {
+    if (method === "GET" && pathname === "/records") {
       const sessionId = url.searchParams.get("sessionId") ?? "";
       return Response.json(this.records.filter((r) => r.sessionId === sessionId));
     }
 
     return new Response("Not found", { status: 404 });
+  }
+
+  private async handleStart(request: Request): Promise<Response> {
+    const body = (await request.json()) as {
+      sessionId: string;
+      pgUrl: string;
+      simulateReconnect?: boolean;
+    };
+    await this.start(body.sessionId, body.pgUrl, body.simulateReconnect ?? false);
+    return Response.json({ ok: true });
+  }
+
+  private async handleStop(request: Request): Promise<Response> {
+    const body = (await request.json()) as { sessionId: string };
+    await this.stop(body.sessionId);
+    return Response.json({ ok: true });
   }
 
   private async start(sessionId: string, pgUrl: string, simulateReconnect: boolean): Promise<void> {
@@ -127,6 +133,33 @@ export class PgListenerDO {
     await this.persist();
   }
 
+  private handleNotification(payload: string, sessionId: string, nextOrder: () => number): void {
+    try {
+      const msg = JSON.parse(payload) as { msg_id: string; seq: number; session_id: string };
+      if (msg.session_id !== sessionId) return;
+      this.recordMessage(sessionId, msg, nextOrder);
+    } catch {
+      // malformed payload — ignore
+    }
+  }
+
+  private recordMessage(
+    sessionId: string,
+    msg: { msg_id: string; seq: number; session_id: string },
+    nextOrder: () => number,
+  ): void {
+    const recvOrder = nextOrder();
+    const rec: ListenerMessage = {
+      sessionId,
+      msgId: msg.msg_id,
+      seq: msg.seq,
+      receivedAt: new Date("2026-01-01").toISOString(),
+      recvOrder,
+    };
+    this.records.push(rec);
+    if (this.stats) this.stats.received++;
+  }
+
   private async openConnection(sessionId: string, pgUrl: string): Promise<void> {
     // In a real CF Workers environment this would use the TCP connect() API.
     // We model the interface here; the integration test provides a mock.
@@ -134,36 +167,10 @@ export class PgListenerDO {
     let recvOrder = 0;
 
     this.connection.onNotification((payload) => {
-      try {
-        const msg = JSON.parse(payload) as { msg_id: string; seq: number; session_id: string };
-        if (msg.session_id !== sessionId) return; // scope guard
-
-        // Simulate reconnect between batch 40% and 50% (seq 400–500 for 1k workload)
-        if (
-          this.reconnectSimulated &&
-          !this.reconnectSimulated &&
-          this.stats !== null &&
-          this.stats.received >= 400 &&
-          this.stats.received < 500
-        ) {
-          // Drop this message (models reconnect window drop)
-          if (this.stats) this.stats.dropped++;
-          return;
-        }
-
+      this.handleNotification(payload, sessionId, () => {
         recvOrder++;
-        const rec: ListenerMessage = {
-          sessionId,
-          msgId: msg.msg_id,
-          seq: msg.seq,
-          receivedAt: new Date("2026-01-01").toISOString(),
-          recvOrder,
-        };
-        this.records.push(rec);
-        if (this.stats) this.stats.received++;
-      } catch {
-        // malformed payload — ignore
-      }
+        return recvOrder;
+      });
     });
 
     this.connection.onError((err) => {

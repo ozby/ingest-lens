@@ -14,34 +14,27 @@ vi.mock("../db/client", async (importOriginal) => {
 
 const mockEnv = createMockEnv();
 
+function renderSqlObject(fragment: object & Record<string, unknown>): string {
+  if ("queryChunks" in fragment && Array.isArray(fragment.queryChunks)) {
+    return renderSqlFragment(fragment.queryChunks);
+  }
+  if ("value" in fragment) {
+    const value = fragment.value;
+    if (Array.isArray(value)) return value.map((part) => renderSqlFragment(part)).join("");
+    if (value instanceof Date) return value.toISOString();
+    return String(value);
+  }
+  if ("name" in fragment && typeof fragment.name === "string") {
+    return fragment.name;
+  }
+  return String(fragment);
+}
+
 function renderSqlFragment(fragment: unknown): string {
-  if (!fragment) {
-    return "";
-  }
-
-  if (Array.isArray(fragment)) {
-    return fragment.map((part) => renderSqlFragment(part)).join("");
-  }
-
-  if (typeof fragment === "object") {
-    if ("queryChunks" in fragment && Array.isArray(fragment.queryChunks)) {
-      return renderSqlFragment(fragment.queryChunks);
-    }
-
-    if ("value" in fragment) {
-      const value = fragment.value;
-      return Array.isArray(value)
-        ? value.map((part) => renderSqlFragment(part)).join("")
-        : value instanceof Date
-          ? value.toISOString()
-          : String(value);
-    }
-
-    if ("name" in fragment && typeof fragment.name === "string") {
-      return fragment.name;
-    }
-  }
-
+  if (!fragment) return "";
+  if (Array.isArray(fragment)) return fragment.map((part) => renderSqlFragment(part)).join("");
+  if (typeof fragment === "object")
+    return renderSqlObject(fragment as object & Record<string, unknown>);
   return String(fragment);
 }
 

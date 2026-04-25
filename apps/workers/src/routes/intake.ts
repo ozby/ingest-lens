@@ -39,8 +39,10 @@ export const intakeRoutes = new Hono<{
 intakeRoutes.use("*", authenticate);
 intakeRoutes.use("*", rateLimiter);
 
-export function toAttemptRecord(row: AttemptRow): IntakeAttemptRecord {
-  const base = {
+type AttemptBase = Omit<IntakeAttemptRecord, "status" | "mappingVersionId" | "approvedAt">;
+
+function buildAttemptBase(row: AttemptRow): AttemptBase {
+  return {
     intakeAttemptId: row.id,
     mappingTraceId: row.mappingTraceId,
     contractId: row.contractId,
@@ -63,24 +65,34 @@ export function toAttemptRecord(row: AttemptRow): IntakeAttemptRecord {
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
+}
 
+function buildApprovedRecord(
+  base: AttemptBase,
+  row: AttemptRow,
+  status: "approved" | "ingested" | "ingest_failed",
+): IntakeAttemptRecord {
+  if (!row.mappingVersionId || !row.approvedAt) {
+    throw new Error(
+      "toAttemptRecord: approved-family row is missing mappingVersionId or approvedAt",
+    );
+  }
+  return {
+    ...base,
+    status,
+    mappingVersionId: row.mappingVersionId,
+    approvedAt: row.approvedAt.toISOString(),
+  };
+}
+
+export function toAttemptRecord(row: AttemptRow): IntakeAttemptRecord {
+  const base = buildAttemptBase(row);
   const status = row.status as IntakeAttemptRecord["status"];
   switch (status) {
     case "approved":
     case "ingested":
-    case "ingest_failed": {
-      if (!row.mappingVersionId || !row.approvedAt) {
-        throw new Error(
-          "toAttemptRecord: approved-family row is missing mappingVersionId or approvedAt",
-        );
-      }
-      return {
-        ...base,
-        status,
-        mappingVersionId: row.mappingVersionId,
-        approvedAt: row.approvedAt.toISOString(),
-      };
-    }
+    case "ingest_failed":
+      return buildApprovedRecord(base, row, status);
     case "pending_review":
     case "abstained":
     case "invalid_output":
@@ -113,6 +125,99 @@ function toMappingRevision(row: MappingVersionRow): ApprovedMappingRevision {
 
 function createId(): string {
   return crypto.randomUUID();
+}
+
+function deriveMappingStatus(
+  kind: string,
+): "pending_review" | "abstained" | "invalid_output" | "runtime_failure" {
+  if (kind === "success") return "pending_review";
+  if (kind === "abstain") return "abstained";
+  if (kind === "invalid_output") return "invalid_output";
+  return "runtime_failure";
+}
+
+async function handleIdempotentApprove(
+  c: AppContext,
+  db: ReturnType<typeof createDb>,
+  attemptRow: AttemptRow,
+  body: { approvedSuggestionIds?: string[] },
+): Promise<Response> {
+  const existingAttempt = toAttemptRecord(attemptRow);
+  if (
+    existingAttempt.status !== "approved" &&
+    existingAttempt.status !== "ingested" &&
+    existingAttempt.status !== "ingest_failed"
+  ) {
+    throw new Error("approve handler: status narrowed to approved-family but record did not");
+  }
+  const [mappingVersionRow] = await db
+    .select()
+    .from(approvedMappingRevisions)
+    .where(eq(approvedMappingRevisions.id, existingAttempt.mappingVersionId))
+    .limit(1);
+
+  if (body.approvedSuggestionIds !== undefined && mappingVersionRow) {
+    const requested = [...body.approvedSuggestionIds].sort();
+    const existing = [...mappingVersionRow.approvedSuggestionIds].sort();
+    const differs =
+      requested.length !== existing.length || requested.some((id, index) => id !== existing[index]);
+    if (differs) {
+      return c.json(
+        {
+          status: "error",
+          message: `Attempt ${attemptRow.id} has already been approved with a different suggestion set.`,
+        },
+        409,
+      );
+    }
+  }
+
+  return c.json({
+    status: "success",
+    data: {
+      attempt: existingAttempt,
+      mappingVersion: mappingVersionRow ? toMappingRevision(mappingVersionRow) : undefined,
+    },
+  });
+}
+
+async function handlePublishFailure(
+  c: AppContext,
+  db: ReturnType<typeof createDb>,
+  attemptId: string,
+  error: unknown,
+  mappingVersion: ApprovedMappingRevision,
+  normalizedRecord: unknown,
+): Promise<Response> {
+  const [failedAttemptRow] = await db
+    .update(intakeAttempts)
+    .set({
+      status: "ingest_failed",
+      ingestStatus: "failed",
+      ingestError: error instanceof Error ? error.message : "Publish failed",
+      updatedAt: new Date(),
+    })
+    .where(eq(intakeAttempts.id, attemptId))
+    .returning();
+
+  if (!failedAttemptRow) {
+    return c.json({ status: "error", message: "Failed to record ingest failure" }, 500);
+  }
+
+  const failedAttempt = toAttemptRecord(failedAttemptRow);
+  recordIntakeLifecycle(
+    c.env,
+    buildIntakeLifecycleEvent(failedAttempt, "suggestion.ingest_failed"),
+  );
+
+  return c.json(
+    {
+      status: "error",
+      message: error instanceof Error ? error.message : "Publish failed",
+      data: { attempt: failedAttempt, mappingVersion, normalizedRecord },
+    },
+    502,
+  );
 }
 
 async function loadAttemptForOwner(
@@ -377,14 +482,7 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
       sourceFixtureId: validation.value.sourceFixture?.id,
       sourceHash: validation.value.sourceHash,
       deliveryTarget: validation.value.deliveryTarget,
-      status:
-        mapped.kind === "success"
-          ? "pending_review"
-          : mapped.kind === "abstain"
-            ? "abstained"
-            : mapped.kind === "invalid_output"
-              ? "invalid_output"
-              : "runtime_failure",
+      status: deriveMappingStatus(mapped.kind),
       ingestStatus: "not_started",
       driftCategory,
       modelName: mapped.decisionLog.model,
@@ -469,44 +567,7 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     attemptRow.status === "ingest_failed";
 
   if (alreadyApproved) {
-    const existingAttempt = toAttemptRecord(attemptRow);
-    if (
-      existingAttempt.status !== "approved" &&
-      existingAttempt.status !== "ingested" &&
-      existingAttempt.status !== "ingest_failed"
-    ) {
-      throw new Error("approve handler: status narrowed to approved-family but record did not");
-    }
-    const [mappingVersionRow] = await db
-      .select()
-      .from(approvedMappingRevisions)
-      .where(eq(approvedMappingRevisions.id, existingAttempt.mappingVersionId))
-      .limit(1);
-
-    if (body.approvedSuggestionIds !== undefined && mappingVersionRow) {
-      const requested = [...body.approvedSuggestionIds].sort();
-      const existing = [...mappingVersionRow.approvedSuggestionIds].sort();
-      const differs =
-        requested.length !== existing.length ||
-        requested.some((id, index) => id !== existing[index]);
-      if (differs) {
-        return c.json(
-          {
-            status: "error",
-            message: `Attempt ${attemptRow.id} has already been approved with a different suggestion set.`,
-          },
-          409,
-        );
-      }
-    }
-
-    return c.json({
-      status: "success",
-      data: {
-        attempt: existingAttempt,
-        mappingVersion: mappingVersionRow ? toMappingRevision(mappingVersionRow) : undefined,
-      },
-    });
+    return handleIdempotentApprove(c, db, attemptRow, body);
   }
 
   if (!attemptRow.suggestionBatch) {
@@ -599,39 +660,7 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
       approvedAttempt.deliveryTarget,
     );
   } catch (error) {
-    const [failedAttemptRow] = await db
-      .update(intakeAttempts)
-      .set({
-        status: "ingest_failed",
-        ingestStatus: "failed",
-        ingestError: error instanceof Error ? error.message : "Publish failed",
-        updatedAt: new Date(),
-      })
-      .where(eq(intakeAttempts.id, attemptRow.id))
-      .returning();
-
-    if (!failedAttemptRow) {
-      return c.json({ status: "error", message: "Failed to record ingest failure" }, 500);
-    }
-
-    const failedAttempt = toAttemptRecord(failedAttemptRow);
-    recordIntakeLifecycle(
-      c.env,
-      buildIntakeLifecycleEvent(failedAttempt, "suggestion.ingest_failed"),
-    );
-
-    return c.json(
-      {
-        status: "error",
-        message: error instanceof Error ? error.message : "Publish failed",
-        data: {
-          attempt: failedAttempt,
-          mappingVersion,
-          normalizedRecord,
-        },
-      },
-      502,
-    );
+    return handlePublishFailure(c, db, attemptRow.id, error, mappingVersion, normalizedRecord);
   }
 
   const [ingestedAttemptRow] = await db

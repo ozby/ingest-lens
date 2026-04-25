@@ -19,6 +19,29 @@ const CLAIM = "@neondatabase/serverless supports LISTEN/NOTIFY from CF Workers (
 const NPM_URL = "https://registry.npmjs.org/@neondatabase/serverless/latest";
 const NEON_DOCS_URL = "https://neon.com/docs/serverless/serverless-driver";
 
+async function checkDocs(docsRes: Response): Promise<{
+  docsHasListen: boolean;
+  docsMentionsWebSocket: boolean;
+}> {
+  if (!docsRes.ok) return { docsHasListen: false, docsMentionsWebSocket: false };
+  const docsHtml = await docsRes.text();
+  return {
+    docsHasListen: /\bLISTEN\b|notification[\s\S]{0,60}channel|\bon\s*\(\s*['"]notification/i.test(
+      docsHtml,
+    ),
+    docsMentionsWebSocket: /WebSocket|wss:\/\//i.test(docsHtml),
+  };
+}
+
+function resolveVerdict(
+  confirmedListen: boolean,
+  confirmedTransport: boolean,
+): "CONFIRMED" | "PARTIAL" | "WRONG" {
+  if (confirmedListen && confirmedTransport) return "CONFIRMED";
+  if (confirmedTransport) return "PARTIAL";
+  return "WRONG";
+}
+
 async function run(): Promise<void> {
   try {
     const [npmRes, docsRes] = await Promise.all([
@@ -43,27 +66,16 @@ async function run(): Promise<void> {
     const version = npmMeta.version ?? "?";
     const readme = (npmMeta.readme ?? "") + " " + (npmMeta.description ?? "");
 
-    // LISTEN can be spelled many ways in docs; also look for pg-style query support.
     const readmeHasListen =
       /\bLISTEN\b|pg[_-]?listen|\bnotifies?\b|\.on\(['"]notification['"]/i.test(readme);
     const readmeMentionsWebSocket = /WebSocket|wss:\/\//i.test(readme);
 
-    let docsHasListen = false;
-    let docsMentionsWebSocket = false;
-    if (docsRes.ok) {
-      const docsHtml = await docsRes.text();
-      docsHasListen =
-        /\bLISTEN\b|notification[\s\S]{0,60}channel|\bon\s*\(\s*['"]notification/i.test(docsHtml);
-      docsMentionsWebSocket = /WebSocket|wss:\/\//i.test(docsHtml);
-    }
+    const { docsHasListen, docsMentionsWebSocket } = await checkDocs(docsRes);
 
-    const confirmedListen = readmeHasListen || docsHasListen;
-    const confirmedTransport = readmeMentionsWebSocket || docsMentionsWebSocket;
-
-    let verdict: "CONFIRMED" | "PARTIAL" | "WRONG";
-    if (confirmedListen && confirmedTransport) verdict = "CONFIRMED";
-    else if (confirmedTransport) verdict = "PARTIAL";
-    else verdict = "WRONG";
+    const verdict = resolveVerdict(
+      readmeHasListen || docsHasListen,
+      readmeMentionsWebSocket || docsMentionsWebSocket,
+    );
 
     await emit({
       probe: PROBE,

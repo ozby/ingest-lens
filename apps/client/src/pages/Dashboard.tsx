@@ -14,6 +14,233 @@ import { toast } from "sonner";
 import QueueForm from "@/components/QueueForm";
 import TopicForm from "@/components/TopicForm";
 
+async function loadDashboardData(): Promise<{
+  queuesData: IQueue[];
+  topicsData: ITopic[];
+  queueMetricsData: IQueueMetrics[];
+  serverMetricsData: IServerMetrics;
+}> {
+  const [queuesData, topicsData, queueMetricsData, serverMetricsData] = await Promise.all([
+    apiService.getQueues(),
+    apiService.getTopics(),
+    apiService.getAllQueueMetrics(),
+    apiService.getServerMetrics(),
+  ]);
+  return { queuesData, topicsData, queueMetricsData, serverMetricsData };
+}
+
+async function applyDashboardData(
+  setIsLoading: (v: boolean) => void,
+  setQueues: (v: IQueue[]) => void,
+  setTopics: (v: ITopic[]) => void,
+  setQueueMetrics: (v: IQueueMetrics[]) => void,
+  setServerMetrics: (v: IServerMetrics) => void,
+): Promise<void> {
+  try {
+    setIsLoading(true);
+    const { queuesData, topicsData, queueMetricsData, serverMetricsData } =
+      await loadDashboardData();
+    setQueues(queuesData);
+    setTopics(topicsData);
+    setQueueMetrics(queueMetricsData);
+    setServerMetrics(serverMetricsData);
+  } catch (error) {
+    console.error("Failed to fetch dashboard data", error);
+    toast.error("Failed to load dashboard data");
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+function QueuesCardContent({
+  isLoading,
+  queues,
+  isCreatingQueue,
+  handleCreateQueue,
+}: {
+  isLoading: boolean;
+  queues: IQueue[];
+  isCreatingQueue: boolean;
+  handleCreateQueue: (v: CreateQueueRequest) => Promise<void>;
+}) {
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-4">
+        {[...Array(3)].map((_, index) => (
+          <div key={index} className="animate-pulse flex items-center justify-between">
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
+            <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-24"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (queues.length === 0) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-muted-foreground">No delivery queues configured yet</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Create a queue to route delivery traffic and retries while intake tooling remains planned.
+        </p>
+        <QueueForm
+          onSubmit={handleCreateQueue}
+          isLoading={isCreatingQueue}
+          trigger={
+            <Button variant="outline" className="mt-4">
+              Create your first delivery queue
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="divide-y">
+      {queues.slice(0, 5).map((queue) => (
+        <div key={queue.id} className="flex items-center justify-between p-4">
+          <div>
+            <h4 className="font-medium">{queue.name}</h4>
+            <p className="text-sm text-muted-foreground">
+              Created {new Date(queue.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <Button asChild variant="ghost" size="sm">
+            <Link to={`/queues/${queue.id}`}>
+              View
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      ))}
+      {queues.length > 5 && (
+        <div className="p-4 text-center">
+          <Button asChild variant="link">
+            <Link to="/queues">View all queues</Link>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TopicsCardContent({
+  isLoading,
+  topics,
+  isCreatingTopic,
+  handleCreateTopic,
+  availableQueues,
+}: {
+  isLoading: boolean;
+  topics: ITopic[];
+  isCreatingTopic: boolean;
+  handleCreateTopic: (v: CreateTopicRequest, s: string[]) => Promise<void>;
+  availableQueues: { id: string; name: string }[];
+}) {
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-4">
+        {[...Array(3)].map((_, index) => (
+          <div key={index} className="animate-pulse flex items-center justify-between">
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
+            <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-24"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (topics.length === 0) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-muted-foreground">No delivery topics configured yet</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Create a topic when one delivery event should fan out across multiple delivery rails.
+        </p>
+        <TopicForm
+          onSubmit={handleCreateTopic}
+          isLoading={isCreatingTopic}
+          availableQueues={availableQueues}
+          trigger={
+            <Button variant="outline" className="mt-4">
+              Create your first delivery topic
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="divide-y">
+      {topics.slice(0, 5).map((topic) => (
+        <div key={topic.id} className="flex items-center justify-between p-4">
+          <div>
+            <h4 className="font-medium">{topic.name}</h4>
+            <p className="text-sm text-muted-foreground">
+              {topic.subscribedQueues.length} subscribed delivery queues
+            </p>
+          </div>
+          <Button asChild variant="ghost" size="sm">
+            <Link to={`/topics/${topic.id}`}>
+              View
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      ))}
+      {topics.length > 5 && (
+        <div className="p-4 text-center">
+          <Button asChild variant="link">
+            <Link to="/topics">View all topics</Link>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+async function createQueueAndUpdate(
+  values: CreateQueueRequest,
+  queues: IQueue[],
+  setIsCreatingQueue: (v: boolean) => void,
+  setQueues: (v: IQueue[]) => void,
+): Promise<void> {
+  try {
+    setIsCreatingQueue(true);
+    const newQueue = await apiService.createQueue(values);
+    setQueues([...queues, newQueue]);
+    toast.success(`Queue "${values.name}" created successfully`);
+  } catch (error) {
+    console.error("Failed to create queue", error);
+    toast.error("Failed to create queue");
+  } finally {
+    setIsCreatingQueue(false);
+  }
+}
+
+async function createTopicWithSubscribers(
+  values: CreateTopicRequest,
+  subscribers: string[],
+  setIsCreatingTopic: (v: boolean) => void,
+  setTopics: (v: ITopic[]) => void,
+): Promise<void> {
+  try {
+    setIsCreatingTopic(true);
+    const newTopic = await apiService.createTopic(values);
+    await Promise.all(
+      subscribers.map((queueId) =>
+        apiService.subscribeTopic(newTopic.id, { queueId } as SubscribeTopicRequest),
+      ),
+    );
+    const updatedTopics = await apiService.getTopics();
+    setTopics(updatedTopics);
+    toast.success(`Topic "${values.name}" created with ${subscribers.length} subscribers`);
+  } catch (error) {
+    console.error("Failed to create topic or subscribe queues", error);
+    toast.error("Failed to create topic or add subscribers");
+  } finally {
+    setIsCreatingTopic(false);
+  }
+}
+
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [queues, setQueues] = useState<IQueue[]>([]);
@@ -25,70 +252,19 @@ const Dashboard = () => {
   const [isCreatingTopic, setIsCreatingTopic] = useState(false);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        const [queuesData, topicsData, queueMetricsData, serverMetricsData] = await Promise.all([
-          apiService.getQueues(),
-          apiService.getTopics(),
-          apiService.getAllQueueMetrics(),
-          apiService.getServerMetrics(),
-        ]);
-
-        setQueues(queuesData);
-        setTopics(topicsData);
-        setQueueMetrics(queueMetricsData);
-        setServerMetrics(serverMetricsData);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
-        toast.error("Failed to load dashboard data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-    const intervalId = setInterval(fetchDashboardData, 30000); // Refresh every 30 seconds
-
+    const fetchData = () =>
+      applyDashboardData(setIsLoading, setQueues, setTopics, setQueueMetrics, setServerMetrics);
+    fetchData();
+    const intervalId = setInterval(fetchData, 30000);
     return () => clearInterval(intervalId);
   }, []);
 
   const handleCreateQueue = async (values: CreateQueueRequest) => {
-    try {
-      setIsCreatingQueue(true);
-      const newQueue = await apiService.createQueue(values);
-      setQueues([...queues, newQueue]);
-      toast.success(`Queue "${values.name}" created successfully`);
-    } catch (error) {
-      console.error("Failed to create queue", error);
-      toast.error("Failed to create queue");
-    } finally {
-      setIsCreatingQueue(false);
-    }
+    await createQueueAndUpdate(values, queues, setIsCreatingQueue, setQueues);
   };
 
   const handleCreateTopic = async (values: CreateTopicRequest, subscribers: string[]) => {
-    try {
-      setIsCreatingTopic(true);
-      const newTopic = await apiService.createTopic(values);
-
-      const subscribePromises = subscribers.map((queueId) => {
-        const subscribeRequest: SubscribeTopicRequest = { queueId };
-        return apiService.subscribeTopic(newTopic.id, subscribeRequest);
-      });
-
-      await Promise.all(subscribePromises);
-
-      const updatedTopics = await apiService.getTopics();
-      setTopics(updatedTopics);
-
-      toast.success(`Topic "${values.name}" created with ${subscribers.length} subscribers`);
-    } catch (error) {
-      console.error("Failed to create topic or subscribe queues", error);
-      toast.error("Failed to create topic or add subscribers");
-    } finally {
-      setIsCreatingTopic(false);
-    }
+    await createTopicWithSubscribers(values, subscribers, setIsCreatingTopic, setTopics);
   };
 
   const totalMessages = queueMetrics.reduce((sum, metric) => sum + metric.messageCount, 0);
@@ -205,59 +381,12 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                {isLoading ? (
-                  <div className="p-6 space-y-4">
-                    {[...Array(3)].map((_, index) => (
-                      <div key={index} className="animate-pulse flex items-center justify-between">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
-                        <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-24"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : queues.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <p className="text-muted-foreground">No delivery queues configured yet</p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Create a queue to route delivery traffic and retries while intake tooling
-                      remains planned.
-                    </p>
-                    <QueueForm
-                      onSubmit={handleCreateQueue}
-                      isLoading={isCreatingQueue}
-                      trigger={
-                        <Button variant="outline" className="mt-4">
-                          Create your first delivery queue
-                        </Button>
-                      }
-                    />
-                  </div>
-                ) : (
-                  <div className="divide-y">
-                    {queues.slice(0, 5).map((queue) => (
-                      <div key={queue.id} className="flex items-center justify-between p-4">
-                        <div>
-                          <h4 className="font-medium">{queue.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Created {new Date(queue.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link to={`/queues/${queue.id}`}>
-                            View
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
-                    {queues.length > 5 && (
-                      <div className="p-4 text-center">
-                        <Button asChild variant="link">
-                          <Link to="/queues">View all queues</Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <QueuesCardContent
+                  isLoading={isLoading}
+                  queues={queues}
+                  isCreatingQueue={isCreatingQueue}
+                  handleCreateQueue={handleCreateQueue}
+                />
               </CardContent>
             </Card>
 
@@ -267,60 +396,13 @@ const Dashboard = () => {
                 <CardDescription>Fan-out rails for current delivery events</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                {isLoading ? (
-                  <div className="p-6 space-y-4">
-                    {[...Array(3)].map((_, index) => (
-                      <div key={index} className="animate-pulse flex items-center justify-between">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/3"></div>
-                        <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-24"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : topics.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <p className="text-muted-foreground">No delivery topics configured yet</p>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Create a topic when one delivery event should fan out across multiple delivery
-                      rails.
-                    </p>
-                    <TopicForm
-                      onSubmit={handleCreateTopic}
-                      isLoading={isCreatingTopic}
-                      availableQueues={availableQueues}
-                      trigger={
-                        <Button variant="outline" className="mt-4">
-                          Create your first delivery topic
-                        </Button>
-                      }
-                    />
-                  </div>
-                ) : (
-                  <div className="divide-y">
-                    {topics.slice(0, 5).map((topic) => (
-                      <div key={topic.id} className="flex items-center justify-between p-4">
-                        <div>
-                          <h4 className="font-medium">{topic.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {topic.subscribedQueues.length} subscribed delivery queues
-                          </p>
-                        </div>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link to={`/topics/${topic.id}`}>
-                            View
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
-                    {topics.length > 5 && (
-                      <div className="p-4 text-center">
-                        <Button asChild variant="link">
-                          <Link to="/topics">View all topics</Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <TopicsCardContent
+                  isLoading={isLoading}
+                  topics={topics}
+                  isCreatingTopic={isCreatingTopic}
+                  handleCreateTopic={handleCreateTopic}
+                  availableQueues={availableQueues}
+                />
               </CardContent>
             </Card>
           </div>

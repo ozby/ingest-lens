@@ -18,56 +18,54 @@ export class TopicRoom {
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
-
     if (request.method === "GET" && url.pathname === "/ws") {
-      const cursor = this.parseCursor(url.searchParams.get("cursor"));
-      if (cursor === null && url.searchParams.has("cursor")) {
-        return new Response(
-          JSON.stringify({ status: "error", message: "cursor must be a decimal string" }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-      }
-
-      const pair = new WebSocketPair();
-      const [client, server] = Object.values(pair) as [WebSocket, WebSocket];
-      this.ctx.acceptWebSocket(server);
-      if (cursor !== null) {
-        for (const replay of this.loadReplayRows(cursor)) {
-          server.send(this.serializeReplayPayload(replay.payload, String(replay.replayCursor)));
-        }
-      }
-      return new Response(null, { status: 101, webSocket: client });
+      return this.handleGetWs(url);
     }
-
     if (request.method === "POST" && url.pathname === "/notify") {
-      const payload = await request.json<Record<string, unknown>>();
-      const seq = this.parseSeq(payload.seq);
-      if (seq === null) {
-        return new Response(
-          JSON.stringify({ status: "error", message: "seq must be a decimal string" }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-      }
+      return this.handlePostNotify(request);
+    }
+    return new Response("Not found", { status: 404 });
+  }
 
-      const now = Date.now();
-      const payloadJson = JSON.stringify(payload);
-      const replayCursor = this.persistReplayRow(seq, payloadJson, now);
-      const replayPayload = this.serializeReplayPayload(payloadJson, replayCursor);
-
-      const sockets = this.ctx.getWebSockets();
-      for (const ws of sockets) {
-        ws.send(replayPayload);
-      }
-      return new Response(null, { status: 200 });
+  private handleGetWs(url: URL): Response {
+    const cursor = this.parseCursor(url.searchParams.get("cursor"));
+    if (cursor === null && url.searchParams.has("cursor")) {
+      return new Response(
+        JSON.stringify({ status: "error", message: "cursor must be a decimal string" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
     }
 
-    return new Response("Not found", { status: 404 });
+    const pair = new WebSocketPair();
+    const [client, server] = Object.values(pair) as [WebSocket, WebSocket];
+    this.ctx.acceptWebSocket(server);
+    if (cursor !== null) {
+      for (const replay of this.loadReplayRows(cursor)) {
+        server.send(this.serializeReplayPayload(replay.payload, String(replay.replayCursor)));
+      }
+    }
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  private async handlePostNotify(request: Request): Promise<Response> {
+    const payload = await request.json<Record<string, unknown>>();
+    const seq = this.parseSeq(payload.seq);
+    if (seq === null) {
+      return new Response(
+        JSON.stringify({ status: "error", message: "seq must be a decimal string" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const now = Date.now();
+    const payloadJson = JSON.stringify(payload);
+    const replayCursor = this.persistReplayRow(seq, payloadJson, now);
+    const replayPayload = this.serializeReplayPayload(payloadJson, replayCursor);
+
+    for (const ws of this.ctx.getWebSockets()) {
+      ws.send(replayPayload);
+    }
+    return new Response(null, { status: 200 });
   }
 
   webSocketMessage(_ws: WebSocket, _message: string | ArrayBuffer): void {

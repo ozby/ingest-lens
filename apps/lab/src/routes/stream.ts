@@ -19,6 +19,35 @@ export const streamRoutes = new Hono<{ Bindings: Env }>();
 
 const KEEPALIVE_INTERVAL_MS = 15_000; // 15s (F-09)
 
+async function pollRunnerEvents(
+  runnerStub: { fetch(url: string): Promise<Response> },
+  write: (chunk: string) => Promise<void>,
+): Promise<void> {
+  let closed = false;
+  while (!closed) {
+    const pollRes = await runnerStub.fetch("https://do/status");
+    if (!pollRes.ok) break;
+    const pollBody = await pollRes.json<{
+      state: { phase?: string } | null;
+      events: Array<{ type: string; eventId: string }>;
+    }>();
+    if (pollBody.state === null) break;
+    const phase = pollBody.state.phase;
+    if (phase === "completed" || phase === "aborted") {
+      const completedEvent = pollBody.events.findLast?.((e) => e.type === "run_completed");
+      if (completedEvent) {
+        const sanitized = sanitize(completedEvent as Parameters<typeof sanitize>[0]);
+        await write(
+          `id: ${completedEvent.eventId}\nevent: run_completed\ndata: ${JSON.stringify(sanitized)}\n\n`,
+        );
+      }
+      closed = true;
+    } else {
+      await new Promise<void>((resolve) => setTimeout(resolve, 50));
+    }
+  }
+}
+
 /**
  * Get session cookie from request headers.
  */
@@ -96,35 +125,7 @@ streamRoutes.get("/sessions/:id/stream", async (c) => {
         void write(`: keepalive\n\n`);
       }, KEEPALIVE_INTERVAL_MS);
 
-      // Poll runner DO for live events
-      let closed = false;
-      while (!closed) {
-        const pollRes = await runnerStub.fetch("https://do/status");
-        if (!pollRes.ok) break;
-        const pollBody = await pollRes.json<{
-          state: { phase?: string } | null;
-          events: Array<{ type: string; eventId: string }>;
-        }>();
-
-        if (pollBody.state === null) break;
-
-        const phase = pollBody.state.phase;
-        if (phase === "completed" || phase === "aborted") {
-          // Emit run_completed then close
-          const completedEvent = pollBody.events.findLast?.((e) => e.type === "run_completed");
-          if (completedEvent) {
-            const sanitized = sanitize(completedEvent as Parameters<typeof sanitize>[0]);
-            await write(
-              `id: ${completedEvent.eventId}\nevent: run_completed\ndata: ${JSON.stringify(sanitized)}\n\n`,
-            );
-          }
-          closed = true;
-          break;
-        }
-
-        // Small sleep between polls (50ms) to avoid busy-loop
-        await new Promise<void>((resolve) => setTimeout(resolve, 50));
-      }
+      await pollRunnerEvents(runnerStub, write);
 
       clearInterval(keepaliveHandle);
       await writer.close();

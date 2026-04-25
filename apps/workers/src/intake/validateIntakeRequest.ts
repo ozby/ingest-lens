@@ -77,6 +77,78 @@ export function defaultHashPayload(payload: unknown): string {
   return `payload_${(hash >>> 0).toString(16)}`;
 }
 
+interface SourceResolution {
+  sourceFixture?: FixtureReference;
+  payload?: Record<string, unknown>;
+  errors: string[];
+}
+
+function resolveSource(input: ValidateIntakeRequestInput): SourceResolution {
+  const hasFixtureId = typeof input.fixtureId === "string" && input.fixtureId.trim().length > 0;
+  const hasPayload = input.payload !== undefined;
+
+  if (hasFixtureId === hasPayload) {
+    return { errors: ["Provide exactly one source input: fixtureId xor payload."] };
+  }
+
+  if (hasFixtureId) {
+    const sourceFixture = getFixtureReference(input.fixtureId as string);
+    if (!sourceFixture) {
+      return { errors: ["Unknown fixture id."] };
+    }
+    return { sourceFixture, payload: sourceFixture.payload, errors: [] };
+  }
+
+  if (!isObjectRecord(input.payload)) {
+    return { errors: ["Payload must be a JSON object."] };
+  }
+  return { payload: input.payload, errors: [] };
+}
+
+function validatePayloadConstraints(payload: Record<string, unknown>): string[] {
+  const errors: string[] = [];
+  const payloadDepth = calculatePayloadDepth(payload);
+  if (payloadDepth > MAX_PAYLOAD_DEPTH) {
+    errors.push(`Payload depth must be <= ${MAX_PAYLOAD_DEPTH}.`);
+  }
+  const payloadBytes = calculatePayloadBytes(payload);
+  if (payloadBytes > MAX_PAYLOAD_BYTES) {
+    errors.push(`Payload size must be <= ${MAX_PAYLOAD_BYTES} bytes.`);
+  }
+  return errors;
+}
+
+function buildSuccessValue(
+  input: ValidateIntakeRequestInput,
+  contract: TargetContractDefinition,
+  payload: Record<string, unknown>,
+  sourceFixture: FixtureReference | undefined,
+  dependencies: ValidateIntakeRequestDependencies,
+): IntakeValidationSuccess["value"] {
+  const reviewPayloadExpiresAt =
+    sourceFixture === undefined
+      ? new Date(
+          dependencies.clock().getTime() +
+            (dependencies.reviewPayloadTtlHours ?? DEFAULT_REVIEW_PAYLOAD_TTL_HOURS) *
+              60 *
+              60 *
+              1000,
+        ).toISOString()
+      : undefined;
+  return {
+    contract,
+    deliveryTarget: { queueId: input.queueId, topicId: input.topicId },
+    payload,
+    redactedSummary: summarizePayload(payload),
+    reviewPayload: sourceFixture ? null : payload,
+    reviewPayloadExpiresAt,
+    sourceFixture,
+    sourceHash: dependencies.hashPayload(payload),
+    sourceKind: sourceKindFromFixtureId(sourceFixture?.id),
+    sourceSystem: sourceFixture?.sourceSystem ?? input.sourceSystem,
+  };
+}
+
 export function validateIntakeRequest(
   input: ValidateIntakeRequestInput,
   dependencies: ValidateIntakeRequestDependencies,
@@ -91,96 +163,27 @@ export function validateIntakeRequest(
   const resolvedContractId = resolveContractId(input.contractId);
   const contract: TargetContractDefinition | undefined =
     resolvedContractId === undefined ? undefined : getTargetContract(resolvedContractId);
-
   if (!contract) {
     errors.push("Unknown contract id.");
   }
 
-  const deliveryTargetErrors = validateDeliveryTarget({
-    queueId: input.queueId,
-    topicId: input.topicId,
-  });
-  errors.push(...deliveryTargetErrors);
+  errors.push(...validateDeliveryTarget({ queueId: input.queueId, topicId: input.topicId }));
 
-  const hasFixtureId = typeof input.fixtureId === "string" && input.fixtureId.trim().length > 0;
-  const hasPayload = input.payload !== undefined;
+  const { sourceFixture, payload, errors: sourceErrors } = resolveSource(input);
+  errors.push(...sourceErrors);
 
-  if (hasFixtureId === hasPayload) {
-    errors.push("Provide exactly one source input: fixtureId xor payload.");
+  if (!payload || errors.length > 0) {
+    return { ok: false, errors };
   }
 
-  let sourceFixture: FixtureReference | undefined;
-  if (hasFixtureId) {
-    sourceFixture = getFixtureReference(input.fixtureId as string);
-    if (!sourceFixture) {
-      errors.push("Unknown fixture id.");
-    }
-  }
-
-  let payload: Record<string, unknown> | undefined;
-  if (hasPayload) {
-    if (!isObjectRecord(input.payload)) {
-      errors.push("Payload must be a JSON object.");
-    } else {
-      payload = input.payload;
-    }
-  }
-
-  if (sourceFixture) {
-    payload = sourceFixture.payload;
-  }
-
-  if (!payload) {
-    return {
-      ok: false,
-      errors,
-    };
-  }
-
-  const payloadDepth = calculatePayloadDepth(payload);
-  if (payloadDepth > MAX_PAYLOAD_DEPTH) {
-    errors.push(`Payload depth must be <= ${MAX_PAYLOAD_DEPTH}.`);
-  }
-
-  const payloadBytes = calculatePayloadBytes(payload);
-  if (payloadBytes > MAX_PAYLOAD_BYTES) {
-    errors.push(`Payload size must be <= ${MAX_PAYLOAD_BYTES} bytes.`);
-  }
+  errors.push(...validatePayloadConstraints(payload));
 
   if (errors.length > 0 || !contract) {
-    return {
-      ok: false,
-      errors,
-    };
+    return { ok: false, errors };
   }
-
-  const reviewPayloadExpiresAt =
-    sourceFixture === undefined
-      ? new Date(
-          dependencies.clock().getTime() +
-            (dependencies.reviewPayloadTtlHours ?? DEFAULT_REVIEW_PAYLOAD_TTL_HOURS) *
-              60 *
-              60 *
-              1000,
-        ).toISOString()
-      : undefined;
 
   return {
     ok: true,
-    value: {
-      contract,
-      deliveryTarget: {
-        queueId: input.queueId,
-        topicId: input.topicId,
-      },
-      payload,
-      redactedSummary: summarizePayload(payload),
-      reviewPayload: sourceFixture ? null : payload,
-      reviewPayloadExpiresAt,
-      sourceFixture,
-      sourceHash: dependencies.hashPayload(payload),
-      sourceKind: sourceKindFromFixtureId(sourceFixture?.id),
-      sourceSystem: sourceFixture?.sourceSystem ?? input.sourceSystem,
-    },
+    value: buildSuccessValue(input, contract, payload, sourceFixture, dependencies),
   };
 }
