@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: M
 created: "2026-04-25"
 last_updated: "2026-04-25"
-progress: "0% — drafted after webpresso sync on 2026-04-25"
+progress: "100% — merged to main on 2026-04-25"
 depends_on: []
 tags:
   - workers

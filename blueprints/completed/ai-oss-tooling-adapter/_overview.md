@@ -1,18 +1,18 @@
 ---
 type: blueprint
 title: "Blueprint: AI OSS Tooling Adapter"
-status: "planned"
+status: "completed"
 priority: "P1"
 owners: ["agent"]
 created: "2026-04-24"
-updated: "2026-04-24"
+updated: "2026-04-25"
 depends_on:
   - rebrand-ingestlens
 unblocks:
   - ai-payload-intake-mapper
   - admin-review-replay-console
   - public-dataset-demo-ingestion
-progress: "0% planned; technology fact-check complete"
+progress: "100% — merged to main on 2026-04-25"
 ---
 
 # Blueprint: AI OSS Tooling Adapter

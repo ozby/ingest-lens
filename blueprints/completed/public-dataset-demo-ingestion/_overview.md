@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: M
 created: "2026-04-23"
-last_updated: "2026-04-24"
-progress: "0% planned; refined against local dataset and intake API paths"
+last_updated: "2026-04-25"
+progress: "100% — merged to main on 2026-04-25"
 depends_on:
   - showcase-hardening-100
   - rebrand-ingestlens
