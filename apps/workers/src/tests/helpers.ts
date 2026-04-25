@@ -69,7 +69,7 @@ export function createMockEnv(
 
 export function bypassAuth(authenticateMock: ReturnType<typeof vi.fn>): void {
   authenticateMock.mockImplementation(async (c: AuthenticateContext, next: Next) => {
-    c.set("user", { userId: "user-123", username: "testuser" });
+    c.set("user", { jti: "bypass-jti", userId: "user-123", username: "testuser" });
     await next();
   });
 }

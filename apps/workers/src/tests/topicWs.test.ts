@@ -29,7 +29,7 @@ describe("GET /:topicId/ws", () => {
 
   it("rejects WebSocket upgrades for topics owned by another user", async () => {
     vi.mocked(authenticate).mockImplementation(async (c: any, next: any) => {
-      c.set("user", { userId: "user-123", username: "testuser" });
+      c.set("user", { jti: "bypass-jti", userId: "user-123", username: "testuser" });
       await next();
     });
 
@@ -56,7 +56,7 @@ describe("GET /:topicId/ws", () => {
 
   it("proxies WebSocket upgrade to TopicRoom DO when authenticated", async () => {
     vi.mocked(authenticate).mockImplementation(async (c: any, next: any) => {
-      c.set("user", { userId: "user-123", username: "testuser" });
+      c.set("user", { jti: "bypass-jti", userId: "user-123", username: "testuser" });
       await next();
     });
 

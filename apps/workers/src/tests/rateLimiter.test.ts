@@ -5,14 +5,14 @@ import { rateLimiter } from "../middleware/rateLimiter";
 import { createMockEnv } from "./helpers";
 
 type TestVariables = {
-  user: { userId: string; username: string };
+  user: { jti: string; userId: string; username: string };
 };
 
 function buildTestApp(mockEnv: Env) {
   const app = new Hono<{ Bindings: Env; Variables: TestVariables }>();
 
   app.use("*", (c, next) => {
-    c.set("user", { userId: "user-1", username: "testuser" });
+    c.set("user", { jti: "bypass-jti", userId: "user-1", username: "testuser" });
     return next();
   });
   app.use("*", rateLimiter);
