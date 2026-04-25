@@ -1,0 +1,12 @@
+{
+  "extends": "@webpresso/typescript-config/base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "types": ["vitest/globals", "node"],
+    "noUncheckedIndexedAccess": false,
+    "verbatimModuleSyntax": false
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,1 +1,1 @@
-export {};
+export { deepFreeze } from "./deep-freeze";
