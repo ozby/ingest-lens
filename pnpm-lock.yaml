@@ -163,8 +163,8 @@ importers:
         specifier: ^9.3.0
         version: 9.3.4
       '@webpresso/agent-kit':
-        specifier: github:webpresso/agent-kit#e869a333dde35a8a47c179b51e21e8d2079cf3b5
-        version: git+https://git@github.com:webpresso/agent-kit.git#e869a333dde35a8a47c179b51e21e8d2079cf3b5
+        specifier: github:webpresso/agent-kit#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba
+        version: git+https://git@github.com:webpresso/agent-kit.git#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba
       '@webpresso/stryker-config':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
@@ -4329,8 +4329,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#e869a333dde35a8a47c179b51e21e8d2079cf3b5':
-    resolution: {commit: e869a333dde35a8a47c179b51e21e8d2079cf3b5, repo: git@github.com:webpresso/agent-kit.git, type: git}
+  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba':
+    resolution: {commit: d3922c52419b5af57fdb68d3b9aa8b8c2db083ba, repo: git@github.com:webpresso/agent-kit.git, type: git}
     version: 0.1.0
     engines: {node: '>=20'}
     hasBin: true
@@ -9897,7 +9897,7 @@ snapshots:
   '@voidzero-dev/vite-plus-win32-x64-msvc@0.1.19':
     optional: true
 
-  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#e869a333dde35a8a47c179b51e21e8d2079cf3b5':
+  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba':
     dependencies:
       cac: 6.7.14
       gray-matter: 4.0.3
