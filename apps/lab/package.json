@@ -18,8 +18,6 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:workers",
-    "@fontsource/inter-tight": "^5.2.7",
-    "@fontsource/jetbrains-mono": "^5.2.8",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
