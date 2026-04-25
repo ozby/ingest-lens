@@ -106,11 +106,14 @@ authRoutes.post("/login", async (c) => {
   return c.json({ status: "success", data: { user: safeUser, token } });
 });
 
-// POST /api/auth/logout — client-side logout signal (FIX-5 / CSO audit).
-// The token remains technically valid until its exp claim, but this endpoint
-// provides a hook for future server-side revocation via a jti blocklist.
-// TODO: implement jti blocklist for true server-side revocation
+// POST /api/auth/logout — revokes the token immediately by storing jti in KV.
+// The KV entry expires after 3600s (matching JWT TTL), so no persistent blocklist
+// cleanup is needed after the token's natural expiry window.
 authRoutes.post("/logout", authenticate, async (c) => {
+  const { jti } = c.get("user");
+  if (jti) {
+    await c.env.KV.put(`revoked:${jti}`, "1", { expirationTtl: 3600 });
+  }
   return c.json({ ok: true });
 });
 

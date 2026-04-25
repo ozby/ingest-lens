@@ -62,6 +62,7 @@ export function generateToken(
     const header = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
     const payload = base64UrlEncode(
       JSON.stringify({
+        jti: crypto.randomUUID(),
         userId,
         username,
         exp: Math.floor(Date.now() / 1000) + expiresInSeconds,

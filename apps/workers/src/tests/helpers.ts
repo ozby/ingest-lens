@@ -29,12 +29,26 @@ function deepFreeze<T extends object>(obj: T): Readonly<T> {
   return obj as Readonly<T>;
 }
 
+export function createMockKv(store: Map<string, string> = new Map()): {
+  get: ReturnType<typeof vi.fn>;
+  put: ReturnType<typeof vi.fn>;
+} {
+  return {
+    get: vi.fn().mockImplementation((key: string) => Promise.resolve(store.get(key) ?? null)),
+    put: vi.fn().mockImplementation((key: string, value: string) => {
+      store.set(key, value);
+      return Promise.resolve();
+    }),
+  };
+}
+
 export function createMockEnv(
   deliveryQueue?: { send: ReturnType<typeof vi.fn> },
   rateLimiter?: { limit: ReturnType<typeof vi.fn> },
   analytics?: { writeDataPoint: ReturnType<typeof vi.fn> },
   topicRooms?: { idFromName: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> },
   ai?: Ai,
+  kv?: { get: ReturnType<typeof vi.fn>; put: ReturnType<typeof vi.fn> },
 ): Env {
   return {
     HYPERDRIVE: createMockHyperdrive(),
@@ -49,6 +63,7 @@ export function createMockEnv(
     ANALYTICS: (analytics ?? { writeDataPoint: vi.fn() }) as unknown as Env["ANALYTICS"],
     TOPIC_ROOMS: (topicRooms ??
       createMockDurableObjectNamespace()) as unknown as Env["TOPIC_ROOMS"],
+    KV: (kv ?? createMockKv()) as unknown as Env["KV"],
   };
 }
 

@@ -3,6 +3,7 @@ import { base64UrlDecode } from "../auth/crypto";
 import type { Env } from "../db/client";
 
 export interface DecodedToken {
+  jti: string;
   userId: string;
   username: string;
 }
@@ -69,7 +70,17 @@ export const authenticate = createMiddleware<{
       }
     }
 
+    // Check jti revocation list in KV
+    const jti = payload.jti as string | undefined;
+    if (jti) {
+      const revoked = await c.env.KV.get(`revoked:${jti}`);
+      if (revoked !== null) {
+        return c.json({ status: "error", message: "Token has been revoked" }, 401);
+      }
+    }
+
     c.set("user", {
+      jti: jti ?? "",
       userId: payload.userId as string,
       username: payload.username as string,
     });

@@ -23,6 +23,7 @@ export type Env = {
   AUTH_RATE_LIMITER?: RateLimit; // tighter limit (5 req/60s) for login + register
   ANALYTICS: AnalyticsEngineDataset;
   TOPIC_ROOMS: DurableObjectNamespace;
+  KV: KVNamespace;
 };
 
 export function createDb(env: Env) {
