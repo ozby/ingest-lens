@@ -16,6 +16,8 @@ GitHub Actions setup.
 
 ## Current suites
 
+Suites are defined in `apps/e2e/src/e2e-suite-manifest.ts`.
+
 - `foundation`
   - `journeys/worker-health.e2e.ts`
   - validates the live worker runtime responds on `/health`
@@ -26,15 +28,29 @@ GitHub Actions setup.
   - `journeys/queue-message-flow.e2e.ts`
   - `journeys/topic-publish-flow.e2e.ts`
   - validates queue send/receive/ack plus topic publish fanout to subscribed queues
+- `hardening`
+  - `journeys/ownership-hardening.e2e.ts`
+  - validates ownership and authorization edges across queue/topic surfaces
+- `intake`
+  - `journeys/intake-mapping-flow.e2e.ts`
+  - validates the AI intake mapping suggestion + review flow end to end
+- `demo`
+  - `journeys/public-fixture-demo-flow.e2e.ts`
+  - validates the public fixture demo ingestion path
+- `client`
+  - `journeys/client-route-code-splitting.e2e.ts`
+  - validates client route code-splitting and bundle-budget gates
+- `branding`
+  - `journeys/ingestlens-branding.e2e.ts`
+  - validates IngestLens public UI branding surfaces
 - `full`
-  - runs the full live HTTP journey set above in one `ak e2e` invocation
+  - runs every live HTTP journey above in one invocation
 
-All suites use `E2E_BASE_URL` and default to `http://127.0.0.1:8787` via the host adapter.
+All suites read `E2E_BASE_URL` from the environment (no fallback default).
 
-The host adapter is built from the shared `createCommandE2eHostAdapter()` helper
-exported by `@webpresso/agent-kit/e2e`, so `node-pubsub` and Webpresso share
-the same adapter contract while keeping repo-specific suite manifests and run
-commands local.
+The runner lives at `apps/e2e/src/cli/run-e2e.ts` and resolves suites from the
+local manifest in `apps/e2e/src/e2e-suite-manifest.ts`. Both `pnpm exec ak e2e`
+and `pnpm --filter @repo/e2e run e2e:run` route through the same manifest.
 
 ## Local worker prerequisites for `auth`, `messaging`, and `full`
 

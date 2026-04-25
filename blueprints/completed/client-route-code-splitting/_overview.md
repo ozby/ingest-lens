@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: S
 created: "2026-04-23"
-last_updated: "2026-04-24"
-progress: "Refined 2026-04-23; reframed 2026-04-24 after Workers Assets decision; 0% implementation"
+last_updated: "2026-04-25"
+progress: "Shipped 2026-04-25; chunk-load recovery inlined in apps/client/src/main.tsx instead of an Agent Kit helper, so the @webpresso/agent-kit/vite library import was dropped from the final shape"
 depends_on: []
 tags:
   - client
@@ -16,6 +16,16 @@ tags:
 ---
 
 # Client route code splitting
+
+> **Implementation divergence (2026-04-25).** The plan below specifies
+> consuming `installChunkLoadRecovery()` from `@webpresso/agent-kit/vite` and
+> `ak audit bundle-budget` from the same package. Only the CLI path shipped:
+> `package.json` calls `ak audit bundle-budget apps/client/dist ...` for build
+> enforcement. The runtime helper was inlined directly in
+> `apps/client/src/main.tsx` as a small `vite:preloadError` listener with a
+> `sessionStorage` once-per-session reload guard, removing the
+> `@webpresso/agent-kit/vite` library import. Treat references to the helper
+> import below as historical planning context, not the shipped contract.
 
 **Goal:** Reduce the SPA's initial browser payload by splitting `apps/client`
 at route boundaries, so chart-heavy dashboard code is no longer shipped on

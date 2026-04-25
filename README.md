@@ -89,12 +89,17 @@ pnpm --filter client dev
 The repo-owned E2E runner lives in `apps/e2e` and executes live HTTP journeys
 through the package-local CLI.
 
-Current live suites:
+Current live suites (defined in `apps/e2e/src/e2e-suite-manifest.ts`):
 
 - `foundation` — worker health smoke
 - `auth` — register / login / session recovery
 - `messaging` — queue send/receive/ack and topic publish fanout
-- `full` — runs the full live HTTP suite in one invocation
+- `hardening` — ownership and authorization hardening
+- `intake` — AI intake mapping suggestion + review flow
+- `demo` — public fixture demo ingestion
+- `client` — client route code-splitting and bundle budgets
+- `branding` — IngestLens UI branding surfaces
+- `full` — runs every live HTTP suite above in one invocation
 
 ```bash
 pnpm --dir apps/e2e run e2e:run -- --suite foundation

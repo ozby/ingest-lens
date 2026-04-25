@@ -1,6 +1,6 @@
 # Execution Roadmap
 
-Current as of: 2026-04-24
+Current as of: 2026-04-25
 
 Vision and public positioning live in [`docs/research/product/VISION.md`](docs/research/product/VISION.md); this file is execution sequencing only.
 
@@ -23,15 +23,15 @@ Vision and public positioning live in [`docs/research/product/VISION.md`](docs/r
 | analytics-engine-telemetry         | Delivery-attempt telemetry via Analytics Engine |
 | durable-objects-fan-out            | TopicRoom DO for WebSocket fan-out              |
 | message-replay-cursor              | Postgres seq + DO cursor replay                 |
+| client-route-code-splitting        | Route-level lazy + bundle-budget audit gate     |
 
 ## Wave 1 — Engineering rigor first
 
 Objective: prove the substrate is trustworthy before public polish or AI features.
 
-| Blueprint                                                                                    | Goal                                                                            | Why first                                                                   |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [`showcase-hardening-100`](blueprints/planned/showcase-hardening-100/_overview.md)           | Close security, contract, typecheck, CI, dependency, test, and metrics blockers | AI/branding polish over broken fundamentals would hurt the interview signal |
-| [`client-route-code-splitting`](blueprints/planned/client-route-code-splitting/_overview.md) | Remove the Vite large-chunk warning and add a bundle budget gate                | Can run in parallel with hardening if file conflicts are managed            |
+| Blueprint                                                                          | Goal                                                                            | Why first                                                                   |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [`showcase-hardening-100`](blueprints/planned/showcase-hardening-100/_overview.md) | Close security, contract, typecheck, CI, dependency, test, and metrics blockers | AI/branding polish over broken fundamentals would hurt the interview signal |
 
 ## Wave 2 — Public identity
 
@@ -54,19 +54,17 @@ Objective: deliver the intake → mapping → approval → normalized event → 
 ## Active execution DAG
 
 Source of truth: direct edges below come from active blueprint frontmatter
-(`depends_on`) as of 2026-04-24. The wave tables above are the human execution
+(`depends_on`) as of 2026-04-25. The wave tables above are the human execution
 grouping; this DAG is the machine-friendly dependency view for parallel lane
 planning.
 
 ```mermaid
 flowchart TD
   SH["showcase-hardening-100"]
-  CRS["client-route-code-splitting"]
   RB["rebrand-ingestlens"]
   AIOSS["ai-oss-tooling-adapter"]
   AIPM["ai-payload-intake-mapper"]
   PDDI["public-dataset-demo-ingestion"]
-  E2E["e2e-neon (draft)"]
 
   SH --> RB
   SH --> AIPM
@@ -80,13 +78,10 @@ flowchart TD
 
 ## Parallel execution read
 
-- **Ready now:** `showcase-hardening-100`, `client-route-code-splitting`
+- **Ready now:** `showcase-hardening-100`
 - **Blocked until predecessors land:** `rebrand-ingestlens`,
   `ai-oss-tooling-adapter`, `ai-payload-intake-mapper`,
   `public-dataset-demo-ingestion`
-- **Not yet schedulable as an execution lane:** `e2e-neon` remains `draft` and
-  is intentionally excluded from the runnable DAG until promoted to
-  `planned`/`in-progress`
 
 ### Shared-file choke points
 
@@ -100,10 +95,6 @@ flowchart TD
 - `rebrand-ingestlens` and `showcase-hardening-100` both touch
   `apps/client/src/components/Sidebar.tsx` and docs/template cleanup surfaces,
   so rebrand should wait for hardening completion as already modeled above.
-- `client-route-code-splitting` is mostly independent, but it shares
-  `apps/client/src/App.tsx` with `ai-payload-intake-mapper` and root manifest
-  surfaces with hardening, so it is safest either alongside hardening or before
-  the AI intake wave.
 
 ## Key constraints
 

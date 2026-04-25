@@ -3,14 +3,23 @@ type: research
 title: "Cross-repo Vite bundle guardrails and route-splitting abstraction"
 subject: "Abstracting Vite/React bundle-budget checks and stale dynamic-import recovery across node-pubsub and Webpresso while keeping route splitting app-specific"
 date: 2026-04-23
-last_updated: "2026-04-23"
+last_updated: "2026-04-25"
 confidence: high
-verdict: adopt-agent-kit-guardrails
+verdict: adopt-agent-kit-budget-cli-only
 ---
 
 # Cross-repo Vite bundle guardrails and route-splitting abstraction
 
-> Put the bundle-budget and dynamic-import recovery utilities in Agent Kit; do not share the route-splitting patch itself.
+> **Status update (2026-04-25):** Only the bundle-budget CLI path shipped
+> (`ak audit bundle-budget`). The dynamic-import recovery helper was inlined
+> directly in `apps/client/src/main.tsx` instead of being consumed from
+> `@webpresso/agent-kit/vite`, so this repo no longer imports the library
+> form. The original analysis below is preserved as a record; treat the
+> "import `installChunkLoadRecovery` from Agent Kit" prescription as
+> superseded.
+
+> Put the bundle-budget utilities in Agent Kit; do not share the
+> route-splitting patch itself.
 
 ## TL;DR
 
