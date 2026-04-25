@@ -53,6 +53,7 @@ catalog:
   "@webpresso/stryker-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config"
 
   # Webpresso standalone packages (git-pointer to individual repos on GitHub)
+  "@webpresso/agent-kit": "git+ssh://git@github.com/webpresso/agent-kit.git#main"
   "@webpresso/workers-test-kit": "git+ssh://git@github.com/webpresso/workers-test-kit.git#main"
   "@webpresso/db-branching": "git+ssh://git@github.com/webpresso/db-branching.git#main"
 

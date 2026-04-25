@@ -54,6 +54,9 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: ^6.0.1
       version: 6.0.1
+    '@webpresso/agent-kit':
+      specifier: git+ssh://git@github.com/webpresso/agent-kit.git#main
+      version: 0.1.0
     '@webpresso/db-branching':
       specifier: git+ssh://git@github.com/webpresso/db-branching.git#main
       version: 0.1.0
@@ -169,8 +172,8 @@ importers:
         specifier: ^9.3.0
         version: 9.3.4
       '@webpresso/agent-kit':
-        specifier: github:webpresso/agent-kit#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba
-        version: git+https://git@github.com:webpresso/agent-kit.git#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/agent-kit.git#286ef37c00d7b2b5cc43170f45cbd0310881c184
       '@webpresso/stryker-config':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
@@ -4335,8 +4338,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba':
-    resolution: {commit: d3922c52419b5af57fdb68d3b9aa8b8c2db083ba, repo: git@github.com:webpresso/agent-kit.git, type: git}
+  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#286ef37c00d7b2b5cc43170f45cbd0310881c184':
+    resolution: {commit: 286ef37c00d7b2b5cc43170f45cbd0310881c184, repo: git@github.com:webpresso/agent-kit.git, type: git}
     version: 0.1.0
     engines: {node: '>=20'}
     hasBin: true
@@ -9908,7 +9911,7 @@ snapshots:
   '@voidzero-dev/vite-plus-win32-x64-msvc@0.1.19':
     optional: true
 
-  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba':
+  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#286ef37c00d7b2b5cc43170f45cbd0310881c184':
     dependencies:
       cac: 6.7.14
       gray-matter: 4.0.3

@@ -32,7 +32,7 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
-    "@webpresso/agent-kit": "github:webpresso/agent-kit#d3922c52419b5af57fdb68d3b9aa8b8c2db083ba",
+    "@webpresso/agent-kit": "catalog:",
     "@webpresso/stryker-config": "catalog:",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
