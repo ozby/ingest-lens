@@ -423,6 +423,34 @@ importers:
         specifier: catalog:tooling
         version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
 
+  apps/lab/scenarios/s1b-latency:
+    dependencies:
+      '@repo/lab-core':
+        specifier: workspace:*
+        version: link:../../../../packages/lab-core
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: catalog:workers
+        version: 4.20260423.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.6.0
+      '@typescript/native-preview':
+        specifier: catalog:tooling
+        version: 7.0.0-dev.20260421.2
+      '@webpresso/typescript-config':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+      '@webpresso/vitest-config':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      oxlint:
+        specifier: catalog:tooling
+        version: 1.61.0(oxlint-tsgolint@0.21.1)
+      vitest:
+        specifier: catalog:tooling
+        version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+
   apps/workers:
     dependencies:
       '@repo/types':

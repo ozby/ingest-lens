@@ -57,6 +57,10 @@ const FULL_FILES = [
   ...BRANDING_FILES,
 ] as const;
 
+const S1B_LATENCY_FILES = [
+  "../../apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts",
+] as const;
+
 const E2E_SUITES: readonly E2ESuiteDefinition[] = [
   {
     id: "foundation",
@@ -113,6 +117,23 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: BRANDING_FILES,
     batchKey: "branding",
     steps: [createVitestStep("branding", BRANDING_FILES)],
+  },
+  {
+    id: "s1b-latency",
+    aliases: ["latency-lab"],
+    fileMatchers: S1B_LATENCY_FILES,
+    batchKey: "s1b-latency",
+    env: { SKIP_REASON: "shell-not-wired" },
+    steps: [
+      {
+        runner: "vitest",
+        logName: "s1b-latency",
+        configPath: "../../apps/lab/scenarios/s1b-latency/vitest.config.ts",
+        fixedFiles: S1B_LATENCY_FILES,
+        batchKey: "s1b-latency",
+        env: { SKIP_REASON: "shell-not-wired" },
+      },
+    ],
   },
   {
     id: "full",
