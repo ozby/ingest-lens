@@ -85,3 +85,9 @@ Thumbs.db
 .test-reports/
 .neon
 scripts/probes/consistency-lab/verdicts.jsonl
+
+# Claude Code agent runtime worktrees (locked by the agent host)
+.claude/worktrees/
+
+# Stryker mutation reports (per-run artifact, ~1 MB)
+apps/workers/reports/
