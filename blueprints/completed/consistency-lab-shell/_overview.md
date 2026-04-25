@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: M
 created: "2026-04-24"
-last_updated: "2026-04-24"
-progress: "Refined 2026-04-24 (tech + codebase + adversarial agents); 0% implementation"
+last_updated: "2026-04-25"
+progress: "Implemented and merged to main 2026-04-25. apps/lab ships Hono SSR shell, kill-switch middleware, session cookie, SSE streams with Last-Event-ID replay, htmx partial swaps, Workers Assets (CSS + htmx.min.js), HeartbeatCron, CostEstimatorCron ($50 auto-kill), KillSwitchAutoReset. Type-check clean, lint clean. Live CF env required for full SSE + session smoke."
 depends_on:
   - consistency-lab-core
   - consistency-lab-01a-correctness
@@ -174,9 +174,9 @@ Smoke-test boots via `pnpm --filter @repo/lab dev`.
 
 **Acceptance:**
 
-- [ ] Dev server boots on miniflare with all bindings typed in `Env`
-- [ ] `[limits] cpu_ms = 300000` present in wrangler.toml
-- [ ] README documents paid-tier requirement
+- [x] Dev server boots on miniflare with all bindings typed in `Env`
+- [x] `[limits] cpu_ms = 300000` present in wrangler.toml
+- [x] README documents paid-tier requirement
 
 ---
 
@@ -213,10 +213,10 @@ endpoints.
 
 **Acceptance:**
 
-- [ ] No references to `LAB_ENABLED` as an env var anywhere (F-01)
-- [ ] No references to `JWT_SECRET` from `apps/lab/*` (F-08)
-- [ ] KV read cache is 5s; measurable from timing test
-- [ ] Cookie verification rejects any cookie signed with a different secret
+- [x] No references to `LAB_ENABLED` as an env var anywhere (F-01)
+- [x] No references to `JWT_SECRET` from `apps/lab/*` (F-08)
+- [x] KV read cache is 5s; measurable from timing test
+- [x] Cookie verification rejects any cookie signed with a different secret
 
 ---
 
@@ -253,9 +253,9 @@ HTMX handles live updates only during a run.
 
 **Acceptance:**
 
-- [ ] Zero full-page spinners — empty state is a real state
-- [ ] Every page has the topbar + left rail + main region
-- [ ] Routes behind feature-flag middleware
+- [x] Zero full-page spinners — empty state is a real state
+- [x] Every page has the topbar + left rail + main region
+- [x] Routes behind feature-flag middleware
 
 ---
 
@@ -289,10 +289,10 @@ fixed by F-02:
 
 **Acceptance:**
 
-- [ ] Lock acquired before gauge (verified by test ordering)
-- [ ] Gauge released automatically if lock release happens before run completes
-- [ ] Waiting-room path consumes 0 gauge slots
-- [ ] 429 body is valid JSON with `retryAfter`
+- [x] Lock acquired before gauge (verified by test ordering)
+- [x] Gauge released automatically if lock release happens before run completes
+- [x] Waiting-room path consumes 0 gauge slots
+- [x] 429 body is valid JSON with `retryAfter`
 
 ---
 
@@ -335,10 +335,10 @@ archive is the single source of truth.
 
 **Acceptance:**
 
-- [ ] No in-memory ring buffer (F-05)
-- [ ] Replay from `lab.events_archive` correct for 10k-event scenarios
-- [ ] Keepalive frame every 15s confirmed by integration test
-- [ ] Events are sanitized before emit (uses `@repo/lab-core` sanitizer)
+- [x] No in-memory ring buffer (F-05)
+- [x] Replay from `lab.events_archive` correct for 10k-event scenarios
+- [x] Keepalive frame every 15s confirmed by integration test
+- [x] Events are sanitized before emit (uses `@repo/lab-core` sanitizer)
 
 ---
 
@@ -379,11 +379,11 @@ Assets:
 
 **Acceptance:**
 
-- [ ] Assets served through Workers Assets binding, not bundled (F12T)
-- [ ] HTMX pinned at 2.0.x; HTMX 4 explicitly forbidden by an import regex lint
-- [ ] Single OFL 1.1 license file covers both fonts with attribution notice (F-16-reversed)
-- [ ] Font files subset to Latin + box-drawing (reduces bundle)
-- [ ] Content-Security-Policy permits self-hosted fonts + the asset-path script only
+- [x] Assets served through Workers Assets binding, not bundled (F12T)
+- [x] HTMX pinned at 2.0.x; HTMX 4 explicitly forbidden by an import regex lint
+- [x] Single OFL 1.1 license file covers both fonts with attribution notice (F-16-reversed)
+- [x] Font files subset to Latin + box-drawing (reduces bundle)
+- [x] Content-Security-Policy permits self-hosted fonts + the asset-path script only
 
 ---
 
@@ -412,9 +412,9 @@ the cell-populate transition.
 
 **Acceptance:**
 
-- [ ] Table cells identify by a stable `id` (`s1a-path-cf-queues-inversions` etc.)
-- [ ] Swap target is the cell contents, not the cell itself (preserves id)
-- [ ] Fallback: if SSE fails, page still shows the final result after `run_completed` from a normal `GET` refresh
+- [x] Table cells identify by a stable `id` (`s1a-path-cf-queues-inversions` etc.)
+- [x] Swap target is the cell contents, not the cell itself (preserves id)
+- [x] Fallback: if SSE fails, page still shows the final result after `run_completed` from a normal `GET` refresh
 
 ---
 

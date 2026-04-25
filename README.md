@@ -39,6 +39,19 @@ flowchart TD
     B -. planned .-> I[AI-assisted mapping suggestion + approval flow]
 ```
 
+## Consistency Lab
+
+`apps/lab` is a shipped observability tool that runs controlled workloads through all three delivery paths (Cloudflare Queues, Postgres polling, Postgres LISTEN/NOTIFY via direct TCP) and surfaces concrete measurements:
+
+- **Scenario 1a (correctness):** inversion count, duplicate count, Kendall-tau ordering score per path
+- **Scenario 1b (latency):** p50 / p95 / p99 end-to-end delivery time + cost-per-million annotation
+
+The lab is gated by a runtime kill switch (`KillSwitchKV` over CF KV) and a `$50/day` cost ceiling. A `HeartbeatCron` runs synthetic 100-message checks every 15 minutes. Results are streamed live over SSE with `Last-Event-ID` replay backed by `lab.events_archive`.
+
+Key packages: `packages/lab-core` (SessionLock DO, LabConcurrencyGauge DO, Sanitizer, TelemetryCollector, KillSwitchKV, Histogram, PricingTable, Drizzle `lab.*` schema), `packages/test-utils` (deepFreeze extraction), `apps/lab` (Hono SSR + htmx + Workers Assets).
+
+See [architecture.md](docs/architecture.md) for the full component breakdown and [delivery-guarantees.md](docs/delivery-guarantees.md) for how lab measurements relate to stated delivery guarantees.
+
 ## Demo path
 
 1. Register and log in.

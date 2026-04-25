@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: S
 created: "2026-04-24"
-last_updated: "2026-04-24"
-progress: "Drafted 2026-04-24 after CF Workers + Assets research; 0% implementation"
+last_updated: "2026-04-25"
+progress: "Implemented and merged to main 2026-04-25. apps/client/wrangler.toml, CORS middleware on API Worker, ADR 006, deploy pipeline phase 4, and runbooks (dev-deploy.md, deploy-rollback.md) all shipped. Type-check clean, lint clean."
 depends_on: []
 tags:
   - client
@@ -145,9 +145,9 @@ and `binding = "ASSETS"`.
 
 **Acceptance:**
 
-- [ ] `--dry-run` lists the asset directory, the custom_domain route, and zero JS bytes for the script
-- [ ] No `main` in the resolved config
-- [ ] account_id committed to toml (matches API wrangler.toml)
+- [x] `--dry-run` lists the asset directory, the custom_domain route, and zero JS bytes for the script
+- [x] No `main` in the resolved config
+- [x] account_id committed to toml (matches API wrangler.toml)
 
 ---
 
@@ -174,9 +174,9 @@ keys that probe p04 validated. Matches the existing ADR format (001–005).
 
 **Acceptance:**
 
-- [ ] ADR cites the primary CF docs URLs the research agent fetched
-- [ ] README table has a Client-hosting row linking to the ADR
-- [ ] Consistency-check: ADR format matches 001-005 (title, status, context, decision, consequences)
+- [x] ADR cites the primary CF docs URLs the research agent fetched
+- [x] README table has a Client-hosting row linking to the ADR
+- [x] Consistency-check: ADR format matches 001-005 (title, status, context, decision, consequences)
 
 ---
 
@@ -208,9 +208,9 @@ an env var so dev + prd diverge cleanly.
 
 **Acceptance:**
 
-- [ ] Exact origin allow-listing per env (dev / prd both wired)
-- [ ] No `*` wildcard anywhere
-- [ ] `OPTIONS` preflight responds with a short-lived (5m) cache header
+- [x] Exact origin allow-listing per env (dev / prd both wired)
+- [x] No `*` wildcard anywhere
+- [x] `OPTIONS` preflight responds with a short-lived (5m) cache header
 
 ---
 
@@ -241,8 +241,8 @@ config fetch, but build-time is simpler for this size of app). Use Vite's
 
 **Acceptance:**
 
-- [ ] No hardcoded API URL in SPA source
-- [ ] Each env build produces a distinct `dist/` with the correct URL baked in
+- [x] No hardcoded API URL in SPA source
+- [x] Each env build produces a distinct `dist/` with the correct URL baked in
 
 ---
 
@@ -280,8 +280,8 @@ grows beyond 2 Workers.
 
 **Acceptance:**
 
-- [ ] One command deploys both the API Worker and the client Worker
-- [ ] The SPA authenticates against the API and makes at least one authenticated request successfully
+- [x] One command deploys both the API Worker and the client Worker
+- [ ] The SPA authenticates against the API and makes at least one authenticated request successfully — deploy-gated; requires live dev.ozby.dev CF environment
 
 ---
 
@@ -306,9 +306,9 @@ loading + one authenticated API call.
 
 **Acceptance:**
 
-- [ ] Dev runbook has explicit commands for full deploy + teardown
-- [ ] Rollback drill executed at least once (capture: `wrangler rollback` output, followed by `curl https://dev.ozby.dev/` confirming the SPA reverts)
-- [ ] One screenshot of the SPA rendering + one authenticated API call in the network tab
+- [x] Dev runbook has explicit commands for full deploy + teardown
+- [ ] Rollback drill executed at least once — deploy-gated; requires live CF environment
+- [ ] One screenshot of the SPA rendering + one authenticated API call in the network tab — deploy-gated; requires live CF environment
 
 ---
 

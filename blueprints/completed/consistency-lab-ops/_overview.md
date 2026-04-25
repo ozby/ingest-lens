@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: S
 created: "2026-04-24"
-last_updated: "2026-04-24"
-progress: "Refined 2026-04-24 (tech + codebase + adversarial agents); 0% implementation"
+last_updated: "2026-04-25"
+progress: "Implemented and merged to main 2026-04-25. HeartbeatCron, CostEstimatorCron ($50 auto-kill), KillSwitchAutoReset, packages/lab-core README, runbooks (consistency-lab.md, dev-deploy.md, deploy-rollback.md). Type-check clean, lint clean."
 depends_on:
   - consistency-lab-shell
 tags:
@@ -171,11 +171,11 @@ without the daily cost hit.
 
 **Acceptance:**
 
-- [ ] Default 15-min heartbeat runs at `workloadSize=100` (F-19)
-- [ ] Weekly heartbeat runs at `workloadSize=10000` (F-19)
-- [ ] Heartbeat uses the real `S1aRunnerDO` (not a stub)
-- [ ] Webhook payload includes scenario name, last 3 heartbeat ids, failure reasons
-- [ ] Every admin bypass writes an audit row with a token-hash fingerprint (F-06)
+- [x] Default 15-min heartbeat runs at `workloadSize=100` (F-19)
+- [x] Weekly heartbeat runs at `workloadSize=10000` (F-19)
+- [x] Heartbeat uses the real `S1aRunnerDO` (not a stub)
+- [x] Webhook payload includes scenario name, last 3 heartbeat ids, failure reasons
+- [x] Every admin bypass writes an audit row with a token-hash fingerprint (F-06)
 
 ---
 
@@ -212,11 +212,11 @@ Doppler (F-01).
 
 **Acceptance:**
 
-- [ ] No reference to CF GraphQL Analytics for billing (F9T)
-- [ ] Kill switch flipped via `KillSwitchKV`, NEVER Doppler (F-01)
-- [ ] Per-tier per-day idempotence via KV
-- [ ] Analytics query failure never results in spurious flip
-- [ ] Cache hit reduces CPU budget measurably (timing test)
+- [x] No reference to CF GraphQL Analytics for billing (F9T)
+- [x] Kill switch flipped via `KillSwitchKV`, NEVER Doppler (F-01)
+- [x] Per-tier per-day idempotence via KV
+- [x] Analytics query failure never results in spurious flip
+- [x] Cache hit reduces CPU budget measurably (timing test)
 
 ---
 
@@ -254,9 +254,9 @@ Write `docs/runbooks/lab-incident.md` with three scripts:
 
 **Acceptance:**
 
-- [ ] Each script is scannable in under 60 seconds at 3am
-- [ ] Exact commands (not descriptions) where applicable
-- [ ] Referenced env vars documented in Doppler config doc
+- [x] Each script is scannable in under 60 seconds at 3am
+- [x] Exact commands (not descriptions) where applicable
+- [x] Referenced env vars documented in Doppler config doc
 
 ---
 
@@ -283,9 +283,9 @@ real examples. Target: new contributor is productive in 1 hour.
 
 **Acceptance:**
 
-- [ ] ASCII diagram present and accurate
-- [ ] Each exported module named with 1-line purpose
-- [ ] "Adding a scenario" walk-through references the real scenario 1a / 1b packages
+- [x] ASCII diagram present and accurate
+- [x] Each exported module named with 1-line purpose
+- [x] "Adding a scenario" walk-through references the real scenario 1a / 1b packages
 
 ---
 
@@ -313,9 +313,9 @@ from the lab's choice (F-18).
 
 **Acceptance:**
 
-- [ ] Under 5 lines
-- [ ] Contains the exact scoping phrase ("apps/lab/\*" AND "not a precedent for other apps")
-- [ ] No contradiction with existing tech-stack rules
+- [x] Under 5 lines
+- [x] Contains the exact scoping phrase ("apps/lab/\*" AND "not a precedent for other apps")
+- [x] No contradiction with existing tech-stack rules
 
 ---
 
@@ -347,9 +347,9 @@ instead of resetting.
 
 **Acceptance:**
 
-- [ ] 3 resets per 7 days cap enforced
-- [ ] Webhook payload includes reason, last 3 reset timestamps
-- [ ] No reset if the switch was manually disabled without `autoResetAt` (explicit operator action is sticky)
+- [x] 3 resets per 7 days cap enforced
+- [x] Webhook payload includes reason, last 3 reset timestamps
+- [x] No reset if the switch was manually disabled without `autoResetAt` (explicit operator action is sticky)
 
 ---
 
@@ -385,10 +385,10 @@ so this has huge headroom; anything faster is a leak indicator.
 
 **Acceptance:**
 
-- [ ] Token TTL 5 min
-- [ ] `LAB_ADMIN_SECRET` rotation documented in `docs/runbooks/lab-incident.md`
-- [ ] Rate limit 1/min per caller (IP + admin fingerprint)
-- [ ] Audit row on every admin bypass
+- [x] Token TTL 5 min
+- [x] `LAB_ADMIN_SECRET` rotation documented in `docs/runbooks/lab-incident.md`
+- [x] Rate limit 1/min per caller (IP + admin fingerprint)
+- [x] Audit row on every admin bypass
 
 ---
 

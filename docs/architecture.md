@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-24"
+last_updated: "2026-04-25"
 ---
 
 # Architecture
@@ -211,6 +211,65 @@ At-least-once. Full contract in [delivery-guarantees.md](delivery-guarantees.md)
 
 Short version: messages may be delivered more than once. Use the `Idempotency-Key` header on
 publish to deduplicate at the storage layer. Receivers must be idempotent regardless.
+
+## Consistency Lab (`apps/lab`)
+
+The Consistency Lab is a shipped observability tool that empirically measures and visualizes the
+ordering and latency characteristics of IngestLens's delivery paths. It is separate from the
+production delivery substrate and is gated by a runtime kill switch (`KillSwitchKV` over CF KV).
+
+### Purpose
+
+Rather than asserting delivery properties by inspection alone, the lab runs controlled workloads
+through each delivery path and surfaces concrete evidence: inversion counts, p50/p95/p99 latencies,
+duplicate counts, and per-path cost estimates.
+
+### Architecture
+
+```text
+Browser ──▶ apps/lab (Hono SSR + htmx)
+              │
+              ├─ KillSwitchKV middleware — 404s the entire surface when the switch is off
+              ├─ Session cookie + SessionLock DO — single-writer concurrency per scenario
+              ├─ LabConcurrencyGauge DO — global cap (100 active sessions)
+              │
+              ├─ Scenario 1a (S1aRunnerDO) — correctness across 3 delivery paths
+              │     CfQueues path | PgPolling path | PgDirectNotify path (direct TCP from DO)
+              │     Output: delivered count, duplicate count, inversion count, Kendall-tau classifier
+              │
+              ├─ Scenario 1b (S1bRunnerDO) — latency across 3 delivery paths
+              │     Output: p50 / p95 / p99 per path + pricing annotation (PricingTable)
+              │
+              ├─ TelemetryCollector — batches ScenarioEvents at ~10Hz for SSE fan-out
+              │     Persists every event to lab.events_archive for Last-Event-ID replay
+              │
+              ├─ HeartbeatCron (15-min synthetic run, 10k-message weekly run)
+              ├─ CostEstimatorCron ($50/day auto-kill via KillSwitchKV)
+              └─ Workers Assets — CSS + htmx.min.js served as pure static assets
+```
+
+Key design choices:
+
+- **Hono SSR + htmx**: server-rendered pages with partial DOM swaps over SSE; no client-side JS framework.
+- **SessionLock DO**: alarm-backed TTL (300s default) prevents stale locks on crash; `blockConcurrencyWhile` init + `getAlarm()` check before `setAlarm`.
+- **PgDirectNotify path**: Hyperdrive does not support LISTEN/NOTIFY (probe p01 confirmed). The third delivery path uses a direct TCP connection from a Durable Object via the CF Workers `connect()` API.
+- **Inline t-digest**: `@thi.ng/tdigest` does not exist; the Histogram module uses a ~200-line inline implementation (Dunning 2019 reference design), validated to ±2% against known distributions.
+- **`lab.*` Postgres schema**: all lab tables live in the `lab` schema, never `public`. A CI guard (`scripts/check-lab-migrations.ts`) rejects any migration containing `public.` DDL.
+
+### Packages
+
+| Package               | What it provides                                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `packages/lab-core`   | SessionLock, LabConcurrencyGauge, Sanitizer, TelemetryCollector, KillSwitchKV, Histogram, PricingTable, Drizzle schema |
+| `packages/test-utils` | `deepFreeze` + `createMockEnv` extracted from `apps/workers` for cross-package test use                                |
+| `apps/lab`            | Hono SSR shell, Workers Assets, HeartbeatCron, CostEstimatorCron, scenario 1a + 1b runner DOs                          |
+
+### Operational posture
+
+- Kill switch (`lab:kill-switch` KV key) can be flipped at runtime without a deploy.
+- A `$50/day` cost ceiling triggers an automatic flip via `CostEstimatorCron`.
+- Admin bypass actions write audit rows to `lab.heartbeat_audit` with a constant-time token comparison.
+- All events are sanitized by `Sanitizer` (allowlist-only, default-deny) before leaving the server.
 
 ## What this is not
 

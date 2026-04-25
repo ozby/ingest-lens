@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: M
 created: "2026-04-24"
-last_updated: "2026-04-24"
-progress: "Refined 2026-04-24 (tech + codebase + adversarial agents); 0% implementation"
+last_updated: "2026-04-25"
+progress: "Implemented and merged to main 2026-04-25. packages/lab-core ships SessionLock DO, LabConcurrencyGauge DO, Sanitizer, TelemetryCollector + events_archive, KillSwitchKV (5s cache, autoResetAt), AdminBypassToken, Histogram (inline t-digest), PricingTable (5 CF/Neon entries), and Drizzle lab.* schema. packages/test-utils extracted deepFreeze. Type-check clean, lint clean. Migration apply to live Neon requires deploy-gated step."
 depends_on:
   - consistency-lab-probes
 tags:
@@ -163,9 +163,9 @@ the `SessionContext` type. No implementation, only types.
 
 **Acceptance:**
 
-- [ ] `pnpm --filter @repo/lab-core check-types` passes
-- [ ] `pnpm --filter @repo/lab-core lint` passes
-- [ ] Contract types exported from `@repo/lab-core` barrel
+- [x] `pnpm --filter @repo/lab-core check-types` passes
+- [x] `pnpm --filter @repo/lab-core lint` passes
+- [x] Contract types exported from `@repo/lab-core` barrel
 
 ---
 
@@ -207,10 +207,10 @@ F6T pattern notes (from CF docs):
 
 **Acceptance:**
 
-- [ ] All test cases pass (including idempotence)
-- [ ] No `any` in public API
-- [ ] TTL configurable; default 300_000 ms (F-20)
-- [ ] Init uses `blockConcurrencyWhile`; fetch paths check `getAlarm()` first (F6T)
+- [x] All test cases pass (including idempotence)
+- [x] No `any` in public API
+- [x] TTL configurable; default 300_000 ms (F-20)
+- [x] Init uses `blockConcurrencyWhile`; fetch paths check `getAlarm()` first (F6T)
 
 ---
 
@@ -243,11 +243,11 @@ gauge slots).
 
 **Acceptance:**
 
-- [ ] Cap tunable via constructor option; default 100
-- [ ] Session-id-keyed entries with per-entry `expiresAt`
-- [ ] Alarm reaper runs on interval; idempotent under CF retries
-- [ ] `snapshot()` returns `{activeCount, oldestExpiryAt, capacity}` for heartbeat + metrics
-- [ ] Release is idempotent (call twice → no double-decrement)
+- [x] Cap tunable via constructor option; default 100
+- [x] Session-id-keyed entries with per-entry `expiresAt`
+- [x] Alarm reaper runs on interval; idempotent under CF retries
+- [x] `snapshot()` returns `{activeCount, oldestExpiryAt, capacity}` for heartbeat + metrics
+- [x] Release is idempotent (call twice → no double-decrement)
 
 ---
 
@@ -279,9 +279,9 @@ frames, connection strings) can leak.
 
 **Acceptance:**
 
-- [ ] 100% line coverage on `sanitizer.ts`
-- [ ] Fixture covers: `path_started`, `message_delivered`, `inversion_detected`, `path_completed`, `path_failed`, `run_completed`, plus three deliberately-malformed cases
-- [ ] Sanitizer exports a single `sanitize(event): SanitizedEvent | null`
+- [x] 100% line coverage on `sanitizer.ts`
+- [x] Fixture covers: `path_started`, `message_delivered`, `inversion_detected`, `path_completed`, `path_failed`, `run_completed`, plus three deliberately-malformed cases
+- [x] Sanitizer exports a single `sanitize(event): SanitizedEvent | null`
 
 ---
 
@@ -318,11 +318,11 @@ The collector exposes two surfaces:
 
 **Acceptance:**
 
-- [ ] Cadence configurable; default 100ms
-- [ ] Max batch size configurable; default 64
-- [ ] All events persisted to `lab.events_archive` with monotonic per-session id
-- [ ] `replayFrom` correctly replays 10k events in order (integration test)
-- [ ] Archive failures don't block the live stream
+- [x] Cadence configurable; default 100ms
+- [x] Max batch size configurable; default 64
+- [x] All events persisted to `lab.events_archive` with monotonic per-session id
+- [x] `replayFrom` correctly replays 10k events in order (integration test)
+- [x] Archive failures don't block the live stream
 
 ---
 
@@ -370,12 +370,12 @@ Scope enforcement (F-12):
 
 **Acceptance:**
 
-- [ ] All **five** tables present in `lab` schema (`sessions`, `runs`, `events_archive`, `heartbeat`, `heartbeat_audit`)
-- [ ] `public.*` entirely untouched
-- [ ] Tear-down migration drops the schema in one statement
-- [ ] CI guard script rejects `public.` DDL in lab migrations
-- [ ] Connection helper applies `SET search_path TO lab`
-- [ ] Role-grant ritual documented in `migrations/README.md`
+- [x] All **five** tables present in `lab` schema (`sessions`, `runs`, `events_archive`, `heartbeat`, `heartbeat_audit`)
+- [x] `public.*` entirely untouched
+- [x] Tear-down migration drops the schema in one statement
+- [x] CI guard script rejects `public.` DDL in lab migrations
+- [x] Connection helper applies `SET search_path TO lab`
+- [x] Role-grant ritual documented in `migrations/README.md`
 
 ---
 
@@ -421,10 +421,10 @@ Accurate Quantiles Using t-Digests" (2019).
 
 **Acceptance:**
 
-- [ ] p99 on 10k samples within ±2% of the exact percentile
-- [ ] Pricing entries include `source` URL + `effectiveDate`
-- [ ] Staleness warning implemented (>90 days)
-- [ ] Both types surface through the barrel
+- [x] p99 on 10k samples within ±2% of the exact percentile
+- [x] Pricing entries include `source` URL + `effectiveDate`
+- [x] Staleness warning implemented (>90 days)
+- [x] Both types surface through the barrel
 
 ---
 
@@ -456,10 +456,10 @@ per-request with a 5-second local cache so hot paths don't pay a KV read.
 
 **Acceptance:**
 
-- [ ] Default value (key missing) = `{ enabled: true }`
-- [ ] Per-request cache ≤ 5s
-- [ ] `flip()` is idempotent — repeated flips with same reason are a no-op
-- [ ] Supports `autoResetAt` for Lane E's daily reset feature (F-11)
+- [x] Default value (key missing) = `{ enabled: true }`
+- [x] Per-request cache ≤ 5s
+- [x] `flip()` is idempotent — repeated flips with same reason are a no-op
+- [x] Supports `autoResetAt` for Lane E's daily reset feature (F-11)
 
 ---
 
@@ -494,9 +494,9 @@ local to the workers app; growing the repo now justifies extraction.
 
 **Acceptance:**
 
-- [ ] No breaking change to `apps/workers` tests
-- [ ] `@repo/lab-core` and scenario packages can import `deepFreeze` without touching `apps/workers`
-- [ ] CLAUDE.md updated to point at the new location
+- [x] No breaking change to `apps/workers` tests
+- [x] `@repo/lab-core` and scenario packages can import `deepFreeze` without touching `apps/workers`
+- [x] CLAUDE.md updated to point at the new location
 
 ---
 

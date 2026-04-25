@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-24"
+last_updated: "2026-04-25"
 ---
 
 # Delivery Guarantees
@@ -119,6 +119,30 @@ Operational recovery:
 There is no automated DLQ drain endpoint. Automated replay risks re-triggering a systematic failure
 (e.g., a broken endpoint that would immediately refill the DLQ). Operational recovery is intentionally
 manual.
+
+## Empirical verification — Consistency Lab
+
+The guarantees above describe the design intent. The **Consistency Lab** (`apps/lab`) provides
+empirical verification of ordering and latency across the three delivery paths:
+
+| Path               | Guarantee                              | Lab measure                                    |
+| ------------------ | -------------------------------------- | ---------------------------------------------- |
+| **CfQueues**       | At-least-once; no ordering guarantee   | Inversion count + Kendall-tau ordering score   |
+| **PgPolling**      | Ordered by `ORDER BY seq`; polling lag | p50/p95/p99 latency; inversion count near zero |
+| **PgDirectNotify** | Session-scoped NOTIFY order            | Inversion count; reconnect drop count          |
+
+Scenario 1a (correctness) measures how many messages arrive out-of-order relative to the send
+sequence. Scenario 1b (latency) measures end-to-end delivery time at three percentiles and
+annotates each path with a cost-per-million estimate from the pinned `PricingTable`.
+
+Hyperdrive does not support `LISTEN/NOTIFY` (fact-check probe p01 confirmed this — Hyperdrive
+multiplexes connections). The `PgDirectNotify` path bypasses Hyperdrive and opens a direct TCP
+connection from a Durable Object using the CF Workers `connect()` API.
+
+Results are surfaced as live SSE streams and stored in `lab.events_archive` for replay. The lab
+is gated by `KillSwitchKV` and can be disabled at runtime without a deploy.
+
+See [architecture.md](architecture.md) for the full Consistency Lab component breakdown.
 
 ## What at-least-once means for receivers
 

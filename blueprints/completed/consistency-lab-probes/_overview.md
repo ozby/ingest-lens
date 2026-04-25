@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: S
 created: "2026-04-24"
-last_updated: "2026-04-24"
-progress: "Drafted 2026-04-24 as a fact-check pre-flight for the consistency-lab lanes"
+last_updated: "2026-04-25"
+progress: "Implemented and merged to main 2026-04-25. 11 probes (p01–p11) under scripts/probes/consistency-lab/. Type-check clean, lint clean. Deploy-gated probes (p01 Hyperdrive LISTEN/NOTIFY, p02 CPU 300s, p06 Doppler, p09 CF Queues) require live CF + Neon environment and cannot be confirmed without that context."
 depends_on: []
 tags:
   - lab
@@ -176,8 +176,8 @@ flag for blueprint revision.
 
 **Acceptance:**
 
-- [ ] Probe emits a valid verdict JSON line
-- [ ] Expected verdict `CONFIRMED` matches actual
+- [x] Probe emits a valid verdict JSON line
+- [ ] Expected verdict `CONFIRMED` matches actual — deploy-gated; requires live Neon + CF Hyperdrive binding
 - [ ] If actual ≠ expected: scenario blueprints flagged for revision
 
 ---
@@ -208,7 +208,7 @@ and asserts it completes without `exceeded CPU time` errors.
 
 **Acceptance:**
 
-- [ ] Probe emits verdict; `CONFIRMED` at current CF pricing
+- [ ] Probe emits verdict; `CONFIRMED` at current CF pricing — deploy-gated; requires paid CF account
 - [ ] If `WRONG`: consistency-lab-shell Task 4.1 and both scenario runner DO designs (F-04) must revisit batch sizing
 
 ---
@@ -240,8 +240,8 @@ targets per event type.
 
 **Acceptance:**
 
-- [ ] Probe emits verdict
-- [ ] If `WRONG`: consistency-lab-shell Task 4.5 and 4.7 rewritten (SSE protocol change)
+- [x] Probe emits verdict
+- [x] If `WRONG`: consistency-lab-shell Task 4.5 and 4.7 rewritten (SSE protocol change)
 
 ---
 
@@ -272,7 +272,7 @@ Cache-Control when the Worker is run via `wrangler dev`.
 
 **Acceptance:**
 
-- [ ] If `WRONG` (binding syntax is different in current Wrangler): consistency-lab-shell Task 4.6 is rewritten with the correct syntax
+- [x] If `WRONG` (binding syntax is different in current Wrangler): consistency-lab-shell Task 4.6 is rewritten with the correct syntax
 
 ---
 
@@ -303,8 +303,8 @@ distributions (uniform, Gaussian, Pareto heavy-tail), asserts p99 within
 
 **Acceptance:**
 
-- [ ] If `@thi.ng/tdigest` fails: `consistency-lab-core` Task 1.7 activates the inline fallback as primary, not fallback
-- [ ] p99 accuracy meets ±2% assertion
+- [x] If `@thi.ng/tdigest` fails: `consistency-lab-core` Task 1.7 activates the inline fallback as primary, not fallback
+- [x] p99 accuracy meets ±2% assertion
 
 ---
 
@@ -330,8 +330,8 @@ Token (read-only) and asserts it returns 403.
 
 **Acceptance:**
 
-- [ ] Probe emits verdict
-- [ ] Runbook ritual confirmed to work end-to-end
+- [ ] Probe emits verdict — deploy-gated; requires Doppler sandbox project
+- [ ] Runbook ritual confirmed to work end-to-end — deploy-gated
 
 ---
 
@@ -352,8 +352,8 @@ Inter Tight specifically (not only Inter).
 
 **Acceptance:**
 
-- [ ] Verdict `CONFIRMED` only if OFL 1.1 is explicit + Inter Tight named
-- [ ] If `WRONG` / `PARTIAL`: consistency-lab-shell Task 4.6 swaps the LICENSE file or the font pick
+- [x] Verdict `CONFIRMED` only if OFL 1.1 is explicit + Inter Tight named
+- [x] If `WRONG` / `PARTIAL`: consistency-lab-shell Task 4.6 swaps the LICENSE file or the font pick
 
 ---
 
@@ -375,8 +375,8 @@ the font license is not OFL 1.1.
 
 **Acceptance:**
 
-- [ ] Verdict `CONFIRMED` — JetBrains Mono is Apache 2.0
-- [ ] If `WRONG`: consistency-lab-shell Task 4.6 license bundle revised
+- [x] Verdict `CONFIRMED` — JetBrains Mono is OFL 1.1 (source-verified; Apache 2.0 only covers build scripts repo)
+- [x] If `WRONG`: consistency-lab-shell Task 4.6 license bundle revised
 
 ---
 
@@ -402,7 +402,7 @@ queue per scenario" design stays safe under both.
 
 **Acceptance:**
 
-- [ ] Verdict `CONFIRMED` if second deploy rejected at publish time
+- [ ] Verdict `CONFIRMED` if second deploy rejected at publish time — deploy-gated; requires CF account with Queues enabled
 - [ ] If `WRONG` (CF now allows multiple consumers): scenario blueprints can share queues, simplifying the topology
 
 ---
@@ -425,8 +425,8 @@ self-compute approach.
 
 **Acceptance:**
 
-- [ ] Verdict confirms or denies the negative-existence claim
-- [ ] If `WRONG` (billing API now exists): Lane E Task 5.2 simplifies
+- [x] Verdict confirms or denies the negative-existence claim
+- [x] If `WRONG` (billing API now exists): Lane E Task 5.2 simplifies
 
 ---
 
@@ -456,9 +456,9 @@ recent `verdicts.jsonl` shows all `CONFIRMED`.
 
 **Acceptance:**
 
-- [ ] `pnpm probes:lab` runs all probes and returns a single pass/fail
-- [ ] Verdict log persisted for audit
-- [ ] README documents how to interpret each verdict
+- [x] `pnpm probes:lab` runs all probes and returns a single pass/fail
+- [x] Verdict log persisted for audit
+- [x] README documents how to interpret each verdict
 
 ---
 
