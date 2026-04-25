@@ -1,0 +1,28 @@
+# Static SPA Worker — no main script, no Durable Objects, no KV, no Hyperdrive.
+# Deployed via Workers Assets (pure-static). Wrangler auto-names each env's
+# Worker as `node-pubsub-client-<env>` and atomically creates the Worker +
+# route + DNS + cert via `custom_domain = true`.
+name = "node-pubsub-client"
+compatibility_date = "2024-12-01"
+account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret; CF account IDs are public identifiers
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+binding = "ASSETS"
+
+# ─── dev environment ──────────────────────────────────────────────────────
+# Deployed Worker name: node-pubsub-client-dev
+# Custom domain: dev.ozby.dev
+
+[env.dev]
+workers_dev = false
+routes = [{ pattern = "dev.ozby.dev", custom_domain = true }]
+
+# ─── prd environment ──────────────────────────────────────────────────────
+# Deployed Worker name: node-pubsub-client-prd
+# Custom domain: ozby.dev
+
+[env.prd]
+workers_dev = false
+routes = [{ pattern = "ozby.dev", custom_domain = true }]

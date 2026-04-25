@@ -14,7 +14,18 @@ import { handleScheduled as handleScheduledPurge } from "./cron/purgeExpiredRevi
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.use("*", cors());
+// Per-env exact-origin CORS — no wildcard. ALLOWED_ORIGIN is set in
+// [env.dev.vars] / [env.prd.vars] in wrangler.toml.
+app.use("*", (c, next) => {
+  const allowedOrigin = c.env.ALLOWED_ORIGIN;
+  return cors({
+    origin: allowedOrigin ?? [],
+    allowHeaders: ["Authorization", "Content-Type"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+    maxAge: 300,
+  })(c, next);
+});
 app.use("*", logger());
 
 app.get("/health", (c) => c.json({ status: "ok" }));

@@ -26,6 +26,7 @@ routes = [{ pattern = "api.dev.ozby.dev", custom_domain = true }]
 
 [env.dev.vars]
 NODE_ENV = "development"
+ALLOWED_ORIGIN = "https://dev.ozby.dev"
 
 [[env.dev.hyperdrive]]
 binding = "HYPERDRIVE"
@@ -77,6 +78,7 @@ routes = [{ pattern = "api.ozby.dev", custom_domain = true }]
 
 [env.prd.vars]
 NODE_ENV = "production"
+ALLOWED_ORIGIN = "https://ozby.dev"
 
 [env.prd.ai]
 binding = "AI"

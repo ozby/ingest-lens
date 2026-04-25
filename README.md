@@ -187,6 +187,37 @@ execution primitives behind the product:
 
 See the detailed system docs for the exact guarantees and caveats.
 
+## Deploy
+
+One command deploys both Workers (API + client SPA) in the correct order:
+
+```bash
+bun ./infra/src/deploy/deploy.ts dev   # deploys api.dev.ozby.dev + dev.ozby.dev
+bun ./infra/src/deploy/deploy.ts prd   # deploys api.ozby.dev     + ozby.dev
+```
+
+**Smoke check after deploy:**
+
+```bash
+# SPA index returned
+curl -sI https://dev.ozby.dev | grep -E 'HTTP|content-type'
+
+# Deep link falls back to index.html (SPA mode)
+curl -sI https://dev.ozby.dev/queues/some-id | grep -E 'HTTP|content-type'
+
+# API health
+curl -s https://api.dev.ozby.dev/health
+```
+
+**Rollback:** `wrangler rollback --env <stack>` reverts the previous Worker deployment
+for either `node-pubsub-client-<stack>` or `node-pubsub-<stack>` independently.
+
+**Key design decisions:**
+
+| Decision                                     | ADR                                                        |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| Client hosting: Workers + Assets (not Pages) | [ADR 006](docs/decisions/006-workers-assets-for-client.md) |
+
 ## Docs
 
 - [Architecture](docs/architecture.md) — system design and truth-state notes

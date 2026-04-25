@@ -16,6 +16,10 @@ npm-debug.log*
 .env.local
 .env.*.local
 
+# Client per-env build variables (not secrets, but not reproducible cross-machine)
+apps/client/.env.dev
+apps/client/.env.prd
+
 # Coverage directory
 coverage/
 

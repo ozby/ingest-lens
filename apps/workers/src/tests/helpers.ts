@@ -36,6 +36,7 @@ export function createMockEnv(
     HYPERDRIVE: null as unknown as Env["HYPERDRIVE"],
     DATABASE_URL: "postgresql://localhost/test",
     JWT_SECRET: "test-secret",
+    ALLOWED_ORIGIN: "https://dev.ozby.dev",
     AI: ai,
     DELIVERY_QUEUE: (deliveryQueue ?? { send: vi.fn() }) as unknown as Env["DELIVERY_QUEUE"],
     RATE_LIMITER: (rateLimiter ?? {

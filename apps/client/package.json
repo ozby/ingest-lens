@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "build:dev": "vite build --mode dev",
+    "build:prd": "vite build --mode prd",
     "dev": "vite --host 0.0.0.0 --clearScreen false",
+    "deploy:dev": "pnpm build:dev && wrangler deploy --env dev",
+    "deploy:prd": "pnpm build:prd && wrangler deploy --env prd",
     "check-types": "tsgo --noEmit",
     "lint": "oxlint src/",
     "test": "vitest run",
@@ -83,6 +87,7 @@
     "oxlint": "catalog:tooling",
     "tailwindcss": "catalog:",
     "vite": "^8.0.10",
-    "vitest": "catalog:tooling"
+    "vitest": "catalog:tooling",
+    "wrangler": "catalog:workers"
   }
 }

@@ -39,3 +39,11 @@ execSync(`${doppler} bun ./src/deploy/sync-wrangler-ids.ts ${stack}`, {
 execSync(`${doppler} pnpm --filter @repo/workers exec wrangler deploy --env ${stack}`, {
   stdio: "inherit",
 });
+
+// Phase 4: build the SPA with the per-env API base URL baked in, then deploy
+// the pure-static client Worker. Uses `build:<stack>` so Vite picks up the
+// correct .env.<stack> file (VITE_API_BASE_URL).
+execSync(`${doppler} pnpm --filter client build:${stack}`, { stdio: "inherit" });
+execSync(`${doppler} pnpm --filter client exec wrangler deploy --env ${stack}`, {
+  stdio: "inherit",
+});
