@@ -74,6 +74,33 @@ jobs:
       - uses: ./.github/actions/setup-monorepo
       - run: pnpm blueprints:check
 
+  lore-commits:
+    name: Validate Lore commits
+    runs-on: ubuntu-latest
+    needs: setup
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      - name: Validate Lore commits
+        run: |
+          BASE=${{ github.base_ref || 'main' }}
+          git fetch origin "$BASE" --depth=50 2>/dev/null || true
+          COMMITS=$(git log "origin/$BASE..HEAD" --format="%H" 2>/dev/null || true)
+          if [ -z "$COMMITS" ]; then
+            echo "No branch commits to validate."
+            exit 0
+          fi
+          FAIL=0
+          for SHA in $COMMITS; do
+            git log -1 --format="%B" "$SHA" > /tmp/commit-msg.txt
+            pnpm exec ak audit commit-message --lore-warn --message-file /tmp/commit-msg.txt || FAIL=1
+          done
+          exit $FAIL
+
   mutation:
     name: Mutation (affected)
     runs-on: ubuntu-latest
