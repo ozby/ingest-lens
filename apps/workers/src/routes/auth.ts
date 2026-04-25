@@ -2,12 +2,7 @@ import { Hono } from "hono";
 import { eq, or } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { users } from "../db/schema";
-import {
-  authenticate,
-  generateToken,
-  hashPasswordAsync,
-  verifyPassword,
-} from "../middleware/auth";
+import { authenticate, generateToken, hashPasswordAsync, verifyPassword } from "../middleware/auth";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -40,10 +35,7 @@ authRoutes.post("/register", async (c) => {
     return c.json({ status: "error", message: "Email must be valid" }, 400);
   }
   if (!password || password.length < 6) {
-    return c.json(
-      { status: "error", message: "Password must be at least 6 characters" },
-      400,
-    );
+    return c.json({ status: "error", message: "Password must be at least 6 characters" }, 400);
   }
 
   const db = createDb(c.env);
@@ -55,10 +47,7 @@ authRoutes.post("/register", async (c) => {
     .limit(1);
 
   if (existing.length > 0) {
-    return c.json(
-      { status: "error", message: "Username or email already exists" },
-      400,
-    );
+    return c.json({ status: "error", message: "Username or email already exists" }, 400);
   }
 
   const hashedPassword = await hashPasswordAsync(password);
@@ -83,19 +72,12 @@ authRoutes.post("/login", async (c) => {
   const { username, password } = body;
 
   if (!username || !password) {
-    return c.json(
-      { status: "error", message: "Username and password are required" },
-      400,
-    );
+    return c.json({ status: "error", message: "Username and password are required" }, 400);
   }
 
   const db = createDb(c.env);
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.username, username))
-    .limit(1);
+  const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
 
   if (!user) {
     return c.json({ status: "error", message: "Invalid credentials" }, 401);

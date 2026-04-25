@@ -8,10 +8,10 @@ underlying delivery rails still need honest, observable guarantees.
 
 ## What is shipped vs. partial vs. planned?
 
-| State | What it means here |
-| --- | --- |
-| **Shipped** | Worker auth, owned queues/topics, push delivery, pull receive leases, dashboard metrics, and route/client contract alignment are implemented in this repo today. |
-| **Partial** | The current UI and docs now frame the product as IngestLens, but the intake-mapping review workflow is not fully built yet. |
+| State       | What it means here                                                                                                                                                          |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Shipped** | Worker auth, owned queues/topics, push delivery, pull receive leases, dashboard metrics, and route/client contract alignment are implemented in this repo today.            |
+| **Partial** | The current UI and docs now frame the product as IngestLens, but the intake-mapping review workflow is not fully built yet.                                                 |
 | **Planned** | AI-assisted mapping suggestions, canonical demo-guide flows, and the public dataset ingestion story are tracked as blueprints, not presented as completed product features. |
 
 ## The product in 30 seconds

@@ -29,7 +29,6 @@ This system is built around that constraint rather than fighting it.
 
 Throughout this document, treat **queues and topics as the shipped delivery rails** and **AI-assisted mapping as a planned product layer** unless a section explicitly says otherwise.
 
-
 ### Cloudflare Workers (Hono)
 
 The HTTP layer runs entirely on Workers. No Node.js server, no idle cost, no scaling configuration.

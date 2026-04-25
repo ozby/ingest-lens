@@ -104,7 +104,10 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
               <h1 className="text-3xl font-bold mb-1">IngestLens operations dashboard</h1>
-              <p className="text-muted-foreground">Track delivery rails, queue activity, and observability across your owned queues and topics.</p>
+              <p className="text-muted-foreground">
+                Track delivery rails, queue activity, and observability across your owned queues and
+                topics.
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <QueueForm
@@ -197,7 +200,9 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Delivery Queues</CardTitle>
-                <CardDescription>Owned rails for direct delivery traffic and retries</CardDescription>
+                <CardDescription>
+                  Owned rails for direct delivery traffic and retries
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {isLoading ? (
@@ -213,7 +218,8 @@ const Dashboard = () => {
                   <div className="p-6 text-center">
                     <p className="text-muted-foreground">No delivery queues configured yet</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Create a queue to route delivery traffic and retries while intake tooling remains planned.
+                      Create a queue to route delivery traffic and retries while intake tooling
+                      remains planned.
                     </p>
                     <QueueForm
                       onSubmit={handleCreateQueue}
@@ -274,7 +280,8 @@ const Dashboard = () => {
                   <div className="p-6 text-center">
                     <p className="text-muted-foreground">No delivery topics configured yet</p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Create a topic when one delivery event should fan out across multiple delivery rails.
+                      Create a topic when one delivery event should fan out across multiple delivery
+                      rails.
                     </p>
                     <TopicForm
                       onSubmit={handleCreateTopic}

@@ -115,8 +115,6 @@ describe("landing and dashboard copy", () => {
         "Create a topic when one delivery event should fan out across multiple delivery rails.",
       ),
     ).toBeTruthy();
-    expect(
-      screen.queryByText("Overview of your message queuing system"),
-    ).toBeNull();
+    expect(screen.queryByText("Overview of your message queuing system")).toBeNull();
   });
 });

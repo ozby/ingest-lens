@@ -1,0 +1,25 @@
+{
+  "name": "@repo/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "oxlint journeys/ src/ scripts/",
+    "check-types": "tsgo --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:journeys": "vitest run --config vitest.journeys.config.ts",
+    "e2e:run": "bun src/cli/run-e2e.ts",
+    "db:branch:create": "bun scripts/db-branch-create.ts",
+    "db:branch:delete": "bun scripts/db-branch-delete.ts",
+    "db:branch:list": "bun scripts/db-branch-list.ts",
+    "db:branch:cleanup": "bun scripts/db-branch-cleanup.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:tooling",
+    "@webpresso/typescript-config": "file:/Users/ozby/.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz",
+    "@webpresso/vitest-config": "file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz",
+    "oxlint": "catalog:tooling",
+    "vitest": "catalog:tooling"
+  }
+}

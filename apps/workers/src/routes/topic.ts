@@ -43,10 +43,7 @@ topicRoutes.get("/", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const result = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.ownerId, ownerId));
+  const result = await db.select().from(topics).where(eq(topics.ownerId, ownerId));
 
   return c.json({
     status: "success",
@@ -124,10 +121,7 @@ topicRoutes.post("/:topicId/subscribe", async (c) => {
   }
 
   if (topic.subscribedQueues.includes(queueId)) {
-    return c.json(
-      { status: "error", message: "Queue is already subscribed to this topic" },
-      400,
-    );
+    return c.json({ status: "error", message: "Queue is already subscribed to this topic" }, 400);
   }
 
   const [updated] = await db
@@ -146,10 +140,7 @@ topicRoutes.post("/:topicId/publish", async (c) => {
   const { data } = body;
 
   if (!data || typeof data !== "object") {
-    return c.json(
-      { status: "error", message: "Message data must be an object" },
-      400,
-    );
+    return c.json({ status: "error", message: "Message data must be an object" }, 400);
   }
 
   const db = createDb(c.env);
@@ -162,10 +153,7 @@ topicRoutes.post("/:topicId/publish", async (c) => {
   }
 
   if (topic.subscribedQueues.length === 0) {
-    return c.json(
-      { status: "error", message: "Topic has no subscribers" },
-      400,
-    );
+    return c.json({ status: "error", message: "Topic has no subscribers" }, 400);
   }
 
   const subscribedQueues = await db

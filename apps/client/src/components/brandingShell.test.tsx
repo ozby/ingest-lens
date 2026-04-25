@@ -25,17 +25,13 @@ describe("branding shell", () => {
     );
 
     expect(screen.getByText("IngestLens")).toBeTruthy();
-    expect(
-      screen.getByText("AI-assisted integration observability"),
-    ).toBeTruthy();
+    expect(screen.getByText("AI-assisted integration observability")).toBeTruthy();
     expect(screen.queryByText("PubSub Dashboard")).toBeNull();
 
     expect(screen.getByText("INTEGRATION OBSERVABILITY")).toBeTruthy();
     expect(screen.getByText("DELIVERY PRIMITIVES")).toBeTruthy();
     expect(
-      screen.getByText(
-        "Queues and topics stay visible as the shipped delivery rails.",
-      ),
+      screen.getByText("Queues and topics stay visible as the shipped delivery rails."),
     ).toBeTruthy();
     expect(
       screen.getByText(

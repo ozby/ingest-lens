@@ -32,10 +32,7 @@ type MockQueue =
   | typeof mockQueue
   | (Omit<typeof mockQueue, "pushEndpoint"> & { pushEndpoint: null });
 
-function setupPublishDb(
-  topic: typeof mockTopic | null,
-  subscribedQueues: MockQueue[],
-) {
+function setupPublishDb(topic: typeof mockTopic | null, subscribedQueues: MockQueue[]) {
   const { fromMock: topicFrom } = buildSelectChain(topic ? [topic] : []);
   const { fromMock: queuesFrom } = buildUnboundedSelectChain(subscribedQueues);
   const selectMock = vi
@@ -67,10 +64,7 @@ describe("Topic routes", () => {
 
   describe("POST /api/topics", () => {
     it("returns 401 when not authenticated", async () => {
-      const res = await app.fetch(
-        post("/api/topics", { name: "test-topic" }),
-        mockEnv,
-      );
+      const res = await app.fetch(post("/api/topics", { name: "test-topic" }), mockEnv);
       expect(res.status).toBe(401);
     });
   });
@@ -105,11 +99,7 @@ describe("Topic routes", () => {
       } as any);
 
       const res = await app.fetch(
-        post(
-          "/api/topics/topic-1/subscribe",
-          { queueId: "queue-1" },
-          AUTH_HEADER,
-        ),
+        post("/api/topics/topic-1/subscribe", { queueId: "queue-1" }, AUTH_HEADER),
         mockEnv,
       );
 
@@ -132,11 +122,7 @@ describe("Topic routes", () => {
       setupPublishDb(mockTopic, [mockQueue]);
 
       const res = await app.fetch(
-        post(
-          "/api/topics/topic-1/publish",
-          { data: { key: "value" } },
-          AUTH_HEADER,
-        ),
+        post("/api/topics/topic-1/publish", { data: { key: "value" } }, AUTH_HEADER),
         mockEnv,
       );
 
@@ -157,11 +143,7 @@ describe("Topic routes", () => {
       setupPublishDb(mockTopic, [{ ...mockQueue, pushEndpoint: null }]);
 
       const res = await app.fetch(
-        post(
-          "/api/topics/topic-1/publish",
-          { data: { key: "value" } },
-          AUTH_HEADER,
-        ),
+        post("/api/topics/topic-1/publish", { data: { key: "value" } }, AUTH_HEADER),
         mockEnv,
       );
 
@@ -171,17 +153,13 @@ describe("Topic routes", () => {
 
     it("enqueues only for queues with a pushEndpoint in a mixed batch", async () => {
       bypassAuth(vi.mocked(authenticate));
-      setupPublishDb(
-        { ...mockTopic, subscribedQueues: ["queue-1", "queue-2"] },
-        [mockQueue, { ...mockQueue, id: "queue-2", pushEndpoint: null }],
-      );
+      setupPublishDb({ ...mockTopic, subscribedQueues: ["queue-1", "queue-2"] }, [
+        mockQueue,
+        { ...mockQueue, id: "queue-2", pushEndpoint: null },
+      ]);
 
       const res = await app.fetch(
-        post(
-          "/api/topics/topic-1/publish",
-          { data: { key: "value" } },
-          AUTH_HEADER,
-        ),
+        post("/api/topics/topic-1/publish", { data: { key: "value" } }, AUTH_HEADER),
         mockEnv,
       );
 
@@ -201,11 +179,7 @@ describe("Topic routes", () => {
       setupPublishDb(null, []);
 
       const res = await app.fetch(
-        post(
-          "/api/topics/nonexistent/publish",
-          { data: { key: "value" } },
-          AUTH_HEADER,
-        ),
+        post("/api/topics/nonexistent/publish", { data: { key: "value" } }, AUTH_HEADER),
         mockEnv,
       );
 
@@ -217,10 +191,7 @@ describe("Topic routes", () => {
       bypassAuth(vi.mocked(authenticate));
       setupPublishDb(mockTopic, [mockQueue]);
 
-      const res = await app.fetch(
-        post("/api/topics/topic-1/publish", {}, AUTH_HEADER),
-        mockEnv,
-      );
+      const res = await app.fetch(post("/api/topics/topic-1/publish", {}, AUTH_HEADER), mockEnv);
 
       expect(res.status).toBe(400);
       expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
@@ -231,11 +202,7 @@ describe("Topic routes", () => {
       setupPublishDb({ ...mockTopic, subscribedQueues: [] }, []);
 
       const res = await app.fetch(
-        post(
-          "/api/topics/topic-1/publish",
-          { data: { key: "value" } },
-          AUTH_HEADER,
-        ),
+        post("/api/topics/topic-1/publish", { data: { key: "value" } }, AUTH_HEADER),
         mockEnv,
       );
 

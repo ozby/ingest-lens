@@ -118,7 +118,9 @@ const Topics = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
               <h1 className="text-3xl font-bold mb-1">Delivery Topics</h1>
-              <p className="text-muted-foreground">Broadcast delivery events across subscribed delivery rails.</p>
+              <p className="text-muted-foreground">
+                Broadcast delivery events across subscribed delivery rails.
+              </p>
             </div>
             <TopicForm
               onSubmit={handleCreateTopic}
@@ -181,7 +183,8 @@ const Topics = () => {
                   <>
                     <h3 className="text-lg font-medium mb-2">No delivery topics yet</h3>
                     <p className="text-muted-foreground text-center mb-4">
-                      Create a topic when one delivery event should fan out across multiple delivery queues.
+                      Create a topic when one delivery event should fan out across multiple delivery
+                      queues.
                     </p>
                     <TopicForm
                       onSubmit={handleCreateTopic}

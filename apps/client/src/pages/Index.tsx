@@ -82,7 +82,10 @@ const Index = () => {
             <span className="text-primary-foreground font-bold text-xl">IL</span>
           </div>
           <h1 className="text-3xl font-bold">IngestLens</h1>
-          <p className="text-muted-foreground mt-2">Sign in to inspect delivery rails, monitor observability, and prepare for future intake mapping workflows.</p>
+          <p className="text-muted-foreground mt-2">
+            Sign in to inspect delivery rails, monitor observability, and prepare for future intake
+            mapping workflows.
+          </p>
         </div>
 
         <Tabs defaultValue="login" className="w-full">
@@ -95,7 +98,9 @@ const Index = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Login</CardTitle>
-                <CardDescription>Continue the IngestLens demo with your operator account.</CardDescription>
+                <CardDescription>
+                  Continue the IngestLens demo with your operator account.
+                </CardDescription>
               </CardHeader>
               <form onSubmit={handleLoginSubmit}>
                 <CardContent className="space-y-4">
@@ -140,7 +145,9 @@ const Index = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Create Account</CardTitle>
-                <CardDescription>Create an operator account to own queues, topics, and future mapping reviews.</CardDescription>
+                <CardDescription>
+                  Create an operator account to own queues, topics, and future mapping reviews.
+                </CardDescription>
               </CardHeader>
               <form onSubmit={handleRegisterSubmit}>
                 <CardContent className="space-y-4">

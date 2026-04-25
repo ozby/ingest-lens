@@ -35,9 +35,7 @@ describe("ServerMetrics", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(
-          "Demo sample activity shown until measured history is available.",
-        ),
+        screen.getByText("Demo sample activity shown until measured history is available."),
       ).toBeTruthy(),
     );
 
@@ -62,23 +60,17 @@ describe("ServerMetrics", () => {
           messagesProcessed: 42,
           errorCount: 1,
           avgResponseTime: 12.5,
-          activityHistory: [
-            { time: "10:00", requests: 5, messages: 2, errors: 0 },
-          ],
+          activityHistory: [{ time: "10:00", requests: 5, messages: 2, errors: 0 }],
         }}
       />,
     );
 
     await waitFor(() =>
       expect(
-        screen.getByText(
-          "Activity history is measured from the current dashboard payload.",
-        ),
+        screen.getByText("Activity history is measured from the current dashboard payload."),
       ).toBeTruthy(),
     );
-    expect(
-      screen.getByText("Measured activity history from the worker response."),
-    ).toBeTruthy();
+    expect(screen.getByText("Measured activity history from the worker response.")).toBeTruthy();
     expect(apiMocks.getServerActivityHistory).not.toHaveBeenCalled();
   });
 });

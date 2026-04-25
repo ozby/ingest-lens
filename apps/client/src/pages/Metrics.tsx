@@ -41,9 +41,10 @@ const Metrics = () => {
         <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
-              <h1 className="text-3xl font-bold mb-1">System Metrics</h1>
+              <h1 className="text-3xl font-bold mb-1">Delivery and intake metrics</h1>
               <p className="text-muted-foreground">
-                Monitor the performance of your message queuing system
+                Monitor delivery throughput, queue health, and intake observability for your owned
+                rails.
               </p>
             </div>
           </div>

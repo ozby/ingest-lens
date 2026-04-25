@@ -44,16 +44,10 @@ describe("delivery rail copy", () => {
     await screen.findByText("Delivery Queues");
 
     expect(
-      screen.getByText(
-        "Manage the delivery rails that receive direct messages and retries.",
-      ),
+      screen.getByText("Manage the delivery rails that receive direct messages and retries."),
     ).toBeTruthy();
     expect(screen.getByText("No delivery queues yet")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Create a queue to receive direct messages and retries.",
-      ),
-    ).toBeTruthy();
+    expect(screen.getByText("Create a queue to receive direct messages and retries.")).toBeTruthy();
     expect(screen.queryByText("Manage your message queues")).toBeNull();
   });
 
@@ -70,9 +64,7 @@ describe("delivery rail copy", () => {
     await screen.findByText("Delivery Topics");
 
     expect(
-      screen.getByText(
-        "Broadcast delivery events across subscribed delivery rails.",
-      ),
+      screen.getByText("Broadcast delivery events across subscribed delivery rails."),
     ).toBeTruthy();
     expect(screen.getByText("No delivery topics yet")).toBeTruthy();
     expect(

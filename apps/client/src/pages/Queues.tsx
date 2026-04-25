@@ -108,7 +108,9 @@ const Queues = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div className="mb-4 sm:mb-0">
               <h1 className="text-3xl font-bold mb-1">Delivery Queues</h1>
-              <p className="text-muted-foreground">Manage the delivery rails that receive direct messages and retries.</p>
+              <p className="text-muted-foreground">
+                Manage the delivery rails that receive direct messages and retries.
+              </p>
             </div>
             <QueueForm
               onSubmit={handleCreateQueue}
