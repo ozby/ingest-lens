@@ -1,9 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import {
-  createMockHyperdrive,
-  createMockDurableObjectNamespace,
-} from "@webpresso/workers-test-kit";
+import { createMockHyperdrive } from "@webpresso/workers-test-kit";
 import { runRoutes } from "./run";
 import type { Env } from "../env";
 

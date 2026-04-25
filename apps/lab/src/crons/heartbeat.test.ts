@@ -104,9 +104,7 @@ describe("runHeartbeat — consecutive failure webhook", () => {
     const store = new InMemoryHeartbeatStore();
 
     // Patch: first call (health) fails, no webhook call expected
-    let callCount = 0;
     const combinedFetch = vi.fn().mockImplementation((url: string, _init?: RequestInit) => {
-      callCount++;
       if (url.includes("/lab/health")) {
         return Promise.resolve({ ok: false, status: 503 });
       }
