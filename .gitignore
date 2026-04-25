@@ -91,3 +91,7 @@ scripts/probes/consistency-lab/verdicts.jsonl
 
 # Stryker mutation reports (per-run artifact, ~1 MB)
 apps/workers/reports/
+
+# Local extraction of github.com:webpresso/tooling — installed via pnpm catalog
+# git pointer; never commit a vendored copy.
+/tooling/

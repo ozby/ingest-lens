@@ -1,0 +1,3 @@
+{
+  "extends": "@webpresso/typescript-config/base.json"
+}
