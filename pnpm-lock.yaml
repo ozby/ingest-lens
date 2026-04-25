@@ -54,6 +54,12 @@ catalogs:
     '@vitejs/plugin-react':
       specifier: ^6.0.1
       version: 6.0.1
+    '@webpresso/typescript-config':
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/typescript-config
+      version: 0.1.0
+    '@webpresso/vitest-config':
+      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/vitest-config
+      version: 0.0.1
     axios:
       specifier: ^1.15.2
       version: 1.15.2
@@ -389,6 +395,31 @@ importers:
         specifier: catalog:tooling
         version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
 
+  apps/e2e:
+    dependencies:
+      '@repo/neon':
+        specifier: workspace:*
+        version: link:../../packages/neon
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.6.0
+      '@typescript/native-preview':
+        specifier: catalog:tooling
+        version: 7.0.0-dev.20260421.2
+      '@webpresso/typescript-config':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+      '@webpresso/vitest-config':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      oxlint:
+        specifier: catalog:tooling
+        version: 1.61.0(oxlint-tsgolint@0.21.1)
+      vitest:
+        specifier: catalog:tooling
+        version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+
   apps/workers:
     dependencies:
       '@repo/types':
@@ -503,6 +534,30 @@ importers:
       '@webpresso/vitest-config':
         specifier: file:/Users/ozby/.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz
         version: file:../../../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      bunchee:
+        specifier: 'catalog:'
+        version: 6.10.0(typescript@5.8.2)
+      oxlint:
+        specifier: catalog:tooling
+        version: 1.61.0(oxlint-tsgolint@0.21.1)
+      vitest:
+        specifier: catalog:tooling
+        version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+
+  packages/neon:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.6.0
+      '@typescript/native-preview':
+        specifier: catalog:tooling
+        version: 7.0.0-dev.20260421.2
+      '@webpresso/typescript-config':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config
+      '@webpresso/vitest-config':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'
         version: 6.10.0(typescript@5.8.2)
@@ -4129,7 +4184,7 @@ packages:
     os: [win32]
 
   '@webpresso/agent-kit@file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz':
-    resolution: {integrity: sha512-CiJFqxFguvYOj3VJ8XEXOMNv8shMxyzUtJEjUBfp70E6CDdj8d5EunBS4cpp18aXlv6Whdko+rntsZ0n6RBwfA==, tarball: file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz}
+    resolution: {integrity: sha512-No4FMulextmWoIvofYhtzSgx30Bcng7yV40keCNZvUfUkAvmvq5kY+7rucAU5AynUCPopoIVdm2hbYdgCIFF0Q==, tarball: file:../../../.agent-kit-packs/webpresso-agent-kit-0.1.0.tgz}
     version: 0.1.0
     engines: {node: '>=20'}
     hasBin: true
@@ -4156,6 +4211,10 @@ packages:
     resolution: {integrity: sha512-vKB/FeUnv2UyEueVhrZZJ3vHQMU4ZRWwGxl0XI8YdzPMXiXJFJpZ1aQ3rMewzoSvbPvNpl67ibmsePNzSHEfXg==, tarball: file:../../../.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz}
     version: 0.1.0
 
+  '@webpresso/typescript-config@git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config':
+    resolution: {commit: 05ba190fe36864f708c4eb769f867c1588b212af, path: packages/typescript-config, repo: git@github.com:webpresso/tooling.git, type: git}
+    version: 0.1.0
+
   '@webpresso/vitest-config@file:../../../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz':
     resolution: {integrity: sha512-mBewHguPnW6JR9+i2TrvH4M3K528kY+RbI2c6VUZ6W/JYyBFN0zXhr7kbT3XNcf0H8qwRLj18+RCkWlfoiBw4w==, tarball: file:../../../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz}
     version: 0.0.1
@@ -4172,6 +4231,20 @@ packages:
 
   '@webpresso/vitest-config@file:../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz':
     resolution: {integrity: sha512-mBewHguPnW6JR9+i2TrvH4M3K528kY+RbI2c6VUZ6W/JYyBFN0zXhr7kbT3XNcf0H8qwRLj18+RCkWlfoiBw4w==, tarball: file:../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz}
+    version: 0.0.1
+    peerDependencies:
+      '@cloudflare/vitest-pool-workers': '>=0.14 <1'
+      '@vitejs/plugin-react': '>=5 <7'
+      vite-plus: '>=0.1.19 <1'
+      vitest: '>=4 <5'
+    peerDependenciesMeta:
+      '@cloudflare/vitest-pool-workers':
+        optional: true
+      '@vitejs/plugin-react':
+        optional: true
+
+  '@webpresso/vitest-config@git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config':
+    resolution: {commit: 05ba190fe36864f708c4eb769f867c1588b212af, path: packages/vitest-config, repo: git@github.com:webpresso/tooling.git, type: git}
     version: 0.0.1
     peerDependencies:
       '@cloudflare/vitest-pool-workers': '>=0.14 <1'
@@ -9730,6 +9803,8 @@ snapshots:
 
   '@webpresso/typescript-config@file:../../../.agent-kit-packs/webpresso-typescript-config-0.1.0.tgz': {}
 
+  '@webpresso/typescript-config@git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/typescript-config': {}
+
   '@webpresso/vitest-config@file:../../../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
     dependencies:
       vite-plus: 0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
@@ -9739,6 +9814,14 @@ snapshots:
       '@vitejs/plugin-react': 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
 
   '@webpresso/vitest-config@file:../../../.agent-kit-packs/webpresso-vitest-config-0.0.1.tgz(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
+    dependencies:
+      vite-plus: 0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+    optionalDependencies:
+      '@cloudflare/vitest-pool-workers': 0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@vitejs/plugin-react': 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+
+  '@webpresso/vitest-config@git+https://git@github.com:webpresso/tooling.git#05ba190fe36864f708c4eb769f867c1588b212af&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
     dependencies:
       vite-plus: 0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
       vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
