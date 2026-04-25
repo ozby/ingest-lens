@@ -8,11 +8,11 @@ underlying delivery rails still need honest, observable guarantees.
 
 ## What is shipped vs. partial vs. planned?
 
-| State       | What it means here                                                                                                                                                          |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Shipped** | Worker auth, owned queues/topics, push delivery, pull receive leases, dashboard metrics, and route/client contract alignment are implemented in this repo today.            |
-| **Partial** | The current UI and docs now frame the product as IngestLens, but the intake-mapping review workflow is not fully built yet.                                                 |
-| **Planned** | AI-assisted mapping suggestions, canonical demo-guide flows, and the public dataset ingestion story are tracked as blueprints, not presented as completed product features. |
+| State       | What it means here                                                                                                                                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Shipped** | Worker auth (JWT + KV jti revocation), owned queues/topics, push delivery, pull receive leases, dashboard metrics, IngestLens rebrand, AI-assisted intake mapping with admin review/approval, public ATS fixture demo, and the Consistency Lab observability tool. |
+| **Partial** | Optional allowlisted live ATS fetches and broader demo lenses beyond the seeded ATS fixture catalog.                                                                                                                                                               |
+| **Planned** | Manual replay after approval, durable per-user cursor store, multi-region Postgres, and a global quota system. None are presented as completed product features.                                                                                                   |
 
 ## The product in 30 seconds
 
@@ -36,8 +36,11 @@ flowchart TD
     E --> F[Cloudflare Queues consumer]
     F --> G[Push delivery + retry / DLQ]
     F --> H[TopicRoom Durable Object fan-out]
-    B -. planned .-> I[AI-assisted mapping suggestion + approval flow]
+    B --> I[AI-assisted mapping suggestion + approval flow]
 ```
+
+A full system view (edge workers, DOs, AI intake path, lab) lives in
+[`docs/system-architecture.md`](docs/system-architecture.md).
 
 ## Consistency Lab
 
@@ -58,13 +61,13 @@ See [architecture.md](docs/architecture.md) for the full component breakdown and
 2. Create owned queues/topics and inspect delivery/dashboard behavior.
 3. Publish payloads directly or via topics and observe push + replay-aware
    delivery behavior.
-4. Follow the planned IngestLens roadmap for the next layer:
-   - `rebrand-ingestlens` — align all public surfaces around the product story
-   - `ai-oss-tooling-adapter` — add the adapter boundary for OSS AI/validation
-   - `ai-payload-intake-mapper` — add mapping suggestion + approval
-   - `public-dataset-demo-ingestion` — package the canonical public dataset demo
+4. Walk the shipped IngestLens AI intake flow:
+   - `rebrand-ingestlens` ✅ public surfaces aligned around the product story
+   - `ai-oss-tooling-adapter` ✅ adapter boundary for OSS AI/validation
+   - `ai-payload-intake-mapper` ✅ mapping suggestion + admin review/approval
+   - `public-dataset-demo-ingestion` ✅ canonical public ATS dataset demo
 
-### Public dataset demo (planned, provenance-documented)
+### Public dataset demo (shipped, provenance-documented)
 
 The ATS demo lens is an explicit, public-data boundary and is intentionally
 deterministic:
@@ -79,7 +82,7 @@ deterministic:
   `/api/intake/*` (including mapping suggestions, pending review, approval,
   and rejection).
 
-For a concrete flow, add the canonical walkthrough:
+For a concrete flow, see the canonical walkthrough:
 [`docs/guides/public-dataset-demo.md`](docs/guides/public-dataset-demo.md).
 
 For this workstream, “provenance-correct docs” means:
@@ -233,7 +236,8 @@ for either `node-pubsub-client-<stack>` or `node-pubsub-<stack>` independently.
 
 ## Docs
 
-- [Architecture](docs/architecture.md) — system design and truth-state notes
+- [System architecture](docs/system-architecture.md) — top-level mermaid view (edge, DOs, AI intake, lab)
+- [Architecture](docs/architecture.md) — component-level design and truth-state notes
 - [Delivery guarantees](docs/delivery-guarantees.md) — push and pull delivery behavior
 - [Scale considerations](docs/scale-considerations.md) — where the current design strains
 - [ADR index](docs/adrs/README.md) — durable product and architecture decisions
@@ -255,4 +259,5 @@ It does **not** claim:
 - a finished marketplace of connectors,
 - exactly-once delivery,
 - a production-ready global quota system,
-- or a completed AI ingestion product surface.
+- or live private connector ingestion (the shipped AI intake demo is
+  scoped to public ATS fixtures and human-approved mapping repair).
