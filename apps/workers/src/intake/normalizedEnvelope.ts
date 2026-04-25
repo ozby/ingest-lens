@@ -4,7 +4,7 @@ import type {
   NormalizedRecordEnvelope,
 } from "@repo/types";
 import { brandNormalizedEnvelope } from "@repo/types";
-import { getTargetContract, resolveContractId } from "./contracts";
+import { getFixtureReference, getTargetContract, resolveContractId } from "./contracts";
 
 export interface CreateNormalizedEnvelopeInput {
   attempt: IntakeAttemptRecord;
@@ -21,6 +21,10 @@ export function createNormalizedEnvelope(
   }
   const contract = getTargetContract(contractId);
 
+  const fixtureReference = input.attempt.sourceFixtureId
+    ? getFixtureReference(input.attempt.sourceFixtureId)
+    : undefined;
+
   return brandNormalizedEnvelope({
     eventType: "ingest.record.normalized",
     recordType: contract.targetRecordType,
@@ -35,6 +39,7 @@ export function createNormalizedEnvelope(
       fixtureId: input.attempt.sourceFixtureId,
       sourceHash: input.attempt.sourceHash,
       sourceSystem: input.attempt.sourceSystem,
+      sourceUrl: fixtureReference?.sourceUrl,
       capturedAt: input.attempt.createdAt,
     },
     record: input.record,
