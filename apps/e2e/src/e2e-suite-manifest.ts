@@ -46,6 +46,7 @@ const INTAKE_FILES = ["journeys/intake-mapping-flow.e2e.ts"] as const;
 const DEMO_FILES = ["journeys/public-fixture-demo-flow.e2e.ts"] as const;
 const CLIENT_FILES = ["journeys/client-route-code-splitting.e2e.ts"] as const;
 const BRANDING_FILES = ["journeys/ingestlens-branding.e2e.ts"] as const;
+const NEON_BRANCH_PROVIDER_FILES = ["journeys/neon-branch-provider.e2e.ts"] as const;
 const FULL_FILES = [
   ...FOUNDATION_FILES,
   ...AUTH_FILES,
@@ -117,6 +118,13 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: BRANDING_FILES,
     batchKey: "branding",
     steps: [createVitestStep("branding", BRANDING_FILES)],
+  },
+  {
+    id: "neon-branch-provider",
+    aliases: ["neon", "db-branching"],
+    fileMatchers: NEON_BRANCH_PROVIDER_FILES,
+    batchKey: "neon-branch-provider",
+    steps: [createVitestStep("neon-branch-provider", NEON_BRANCH_PROVIDER_FILES)],
   },
   {
     id: "s1b-latency",

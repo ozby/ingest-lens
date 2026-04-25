@@ -1,6 +1,7 @@
 import type { NeonConfig } from "./config";
 import { generateBranchName } from "./names";
 
+/** @deprecated use Branch from @webpresso/db-branching */
 export interface NeonBranch {
   id: string;
   name: string;
@@ -59,6 +60,7 @@ async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
+/** @deprecated use NeonBranchProvider.createBranch() */
 export async function createEphemeralBranch(
   config: NeonConfig,
   options: CreateBranchOptions = {},
@@ -128,6 +130,7 @@ export async function listE2EBranches(
     .map(projectBranchResponse);
 }
 
+/** @deprecated use NeonBranchProvider.deleteBranch() */
 export async function deleteEphemeralBranch(
   config: NeonConfig,
   branchId: string,

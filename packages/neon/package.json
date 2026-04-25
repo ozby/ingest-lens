@@ -28,6 +28,9 @@
     "check-types": "tsgo --noEmit",
     "test": "vitest run --config vitest.config.ts"
   },
+  "dependencies": {
+    "@webpresso/db-branching": "file:/Users/ozby/repos/webpresso/db-branching"
+  },
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
