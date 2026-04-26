@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { HealStreamDO } from "../consumers/HealStreamDO";
 import { shapeFingerprint } from "../intake/shapeFingerprint";
 import type { MappingSuggestion } from "@repo/types";
+import { createMockEnv } from "./helpers";
 
 // Minimal mock DurableObjectState backed by a Map for synchronous reads/writes.
 function createMockStorage(): DurableObjectStorage {
@@ -99,7 +100,7 @@ describe("HealStreamDO", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     state = createMockState();
-    healDO = new HealStreamDO(state);
+    healDO = new HealStreamDO(state, createMockEnv());
   });
 
   describe("tryHeal()", () => {

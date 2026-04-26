@@ -537,42 +537,6 @@ function selectApprovedSuggestions(
   return suggestions.filter((suggestion) => approvedSet.has(suggestion.id));
 }
 
-/**
- * safeNormalizeWithMapping — used by the auto-heal path (Task 3.1).
- *
- * If normalizeWithMapping() throws (e.g. the LLM hallucinated a field path
- * that doesn't exist in the payload), this wrapper invokes onError and returns
- * null. The caller must check for null and fall through to pending_review
- * without re-throwing — the payload must not be lost.
- *
- * Integration point for Task 3.1:
- *   const normalized = safeNormalizeWithMapping({ payload, suggestions }, (err) => {
- *     console.error("Auto-heal normalize failed — routing to pending_review", {
- *       sourceSystem: validation.value.sourceSystem,
- *       contractId: validation.value.contract.id,
- *       error: err.message,
- *     });
- *   });
- *   if (normalized === null) {
- *     // fall through to pending_review intakeAttempts insert — do NOT return here
- *   }
- *
- * Test expectation (to be wired by Task 3.1):
- *   When normalizeWithMapping() throws on the auto-heal path, the response
- *   must have status "pending_review" (not 500). The payload must be persisted.
- */
-function safeNormalizeWithMapping(
-  input: { payload: unknown; suggestions: readonly MappingSuggestion[] },
-  onError: (err: Error) => void,
-): Record<string, unknown> | null {
-  try {
-    return normalizeWithMapping(input);
-  } catch (e) {
-    onError(e instanceof Error ? e : new Error(String(e)));
-    return null;
-  }
-}
-
 function getAttemptPayload(attempt: AttemptRow): Record<string, unknown> | null {
   if (attempt.sourceFixtureId) {
     return getFixtureReference(attempt.sourceFixtureId)?.payload ?? null;
