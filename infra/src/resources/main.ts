@@ -11,8 +11,10 @@
  */
 import "./exports-database";
 import "./exports-storage";
+import "./exports-queues";
 import { hyperdriveId as _hyperdriveId } from "./exports-database";
 import { kvNamespace, r2Bucket } from "./exports-storage";
+import { deliveryQueue, deliveryDlq } from "./exports-queues";
 
 // Flat stack outputs — each becomes a top-level key in
 // `pulumi stack output --json`, consumed by
@@ -20,3 +22,7 @@ import { kvNamespace, r2Bucket } from "./exports-storage";
 export const hyperdriveId = _hyperdriveId;
 export const kvNamespaceId = kvNamespace.id;
 export const r2BucketName = r2Bucket.name;
+// Queue names are outputs for observability; wrangler.toml references them
+// by the same names, so no ID-sync step is needed.
+export const deliveryQueueName = deliveryQueue.queueName;
+export const deliveryDlqName = deliveryDlq.queueName;

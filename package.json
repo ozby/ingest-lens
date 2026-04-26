@@ -12,7 +12,7 @@
     "check": "vp check",
     "clean": "vp run clean",
     "client:bundle:check": "ak audit bundle-budget apps/client/dist --max-js-asset-bytes 512000 --max-html-eager-js-asset-bytes 262144 --max-html-eager-js-total-bytes 393216",
-    "dev": "bun ./scripts/with-doppler.ts dev vp run dev",
+    "dev": "with-secrets --doppler ozby-shell:dev -- vp run dev",
     "dev:no-doppler": "vp run dev",
     "format": "vp fmt",
     "format:check": "vp fmt --check",
@@ -33,6 +33,7 @@
     "@commitlint/config-conventional": "^19.8.0",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
     "@webpresso/agent-kit": "catalog:",
+    "@webpresso/process-utils": "catalog:",
     "@webpresso/stryker-config": "catalog:",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
@@ -64,7 +65,9 @@
     },
     "onlyBuiltDependencies": [
       "@webpresso/agent-kit",
+      "@webpresso/cli-utils",
       "@webpresso/db-branching",
+      "@webpresso/process-utils",
       "@webpresso/vitest-config",
       "@webpresso/workers-test-kit"
     ]

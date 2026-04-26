@@ -26,20 +26,29 @@ if (!stack) {
   process.exit(1);
 }
 
-const dopplerConfig = stack === "prd" ? "production" : "dev";
-const doppler = `doppler run --project ozby-shell --config ${dopplerConfig} --`;
+// This script runs inside the doppler-injected environment provided by deploy.ts
+// (via secrets.exec(...)). All secrets are already in process.env — no nested
+// `doppler run` needed.
 
 interface StackOutputs {
   hyperdriveId?: string;
   kvNamespaceId?: string;
   r2BucketName?: string;
+  deliveryQueueName?: string;
+  deliveryDlqName?: string;
 }
 
 const outputs: StackOutputs = JSON.parse(
-  execSync(`${doppler} pulumi stack output --json --stack ${stack}`).toString(),
+  execSync(`pulumi stack output --json --stack ${stack}`).toString(),
 );
 
-const required = ["hyperdriveId", "kvNamespaceId", "r2BucketName"] as const;
+const required = [
+  "hyperdriveId",
+  "kvNamespaceId",
+  "r2BucketName",
+  "deliveryQueueName",
+  "deliveryDlqName",
+] as const;
 for (const key of required) {
   if (!outputs[key]) {
     console.error(`missing Pulumi output: ${key}`);
@@ -114,3 +123,21 @@ if (patched === before) {
   writeFileSync(wranglerPath, patched);
   console.log(`wrangler.toml [env.${stack}] bindings updated in place.`);
 }
+
+// Validate queue names match Pulumi outputs. Queue bindings reference queues
+// by name (no ID to sync), but drift between wrangler.toml and Pulumi state
+// would silently route to the wrong queue. Fail loudly here before deploy.
+const wranglerFinal = readFileSync(wranglerPath, "utf8");
+for (const [outputKey, tomlPattern] of [
+  ["deliveryQueueName", `queue = "${outputs.deliveryQueueName}"`],
+  ["deliveryDlqName", `dead_letter_queue = "${outputs.deliveryDlqName}"`],
+] as const) {
+  if (!wranglerFinal.includes(tomlPattern)) {
+    console.error(
+      `wrangler.toml [env.${stack}] does not reference Pulumi-managed queue ` +
+        `(${outputKey} = ${outputs[outputKey]}). Update wrangler.toml to match.`,
+    );
+    process.exit(1);
+  }
+}
+console.log(`Queue names verified: ${outputs.deliveryQueueName}, ${outputs.deliveryDlqName}`);

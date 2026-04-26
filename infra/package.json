@@ -3,17 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "preview": "doppler run --project ozby-shell --config dev -- pulumi preview",
-    "up:dev": "doppler run --project ozby-shell --config dev -- pulumi up --yes",
-    "up:prd": "doppler run --project ozby-shell --config production -- pulumi up --yes",
-    "destroy": "doppler run --project ozby-shell --config dev -- pulumi destroy --yes",
+    "preview": "just run dev pulumi preview",
+    "up:dev": "just deploy dev",
+    "up:prd": "just deploy prd",
+    "destroy": "just run dev pulumi destroy --yes",
     "test": "vitest run --passWithNoTests",
     "check-types": "tsgo --noEmit"
   },
   "dependencies": {
     "@pulumi/cloudflare": "^6.14.0",
     "@pulumi/pulumi": "^3.232.0",
-    "@pulumiverse/doppler": "^0.9.0"
+    "@pulumiverse/doppler": "^0.9.0",
+    "@webpresso/process-utils": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -9,7 +9,7 @@ account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret;
 [assets]
 directory = "./dist"
 not_found_handling = "single-page-application"
-binding = "ASSETS"
+# No `binding` — wrangler 4.x forbids bindings on assets-only Workers (no `main` entry).
 
 # ─── dev environment ──────────────────────────────────────────────────────
 # Deployed Worker name: node-pubsub-client-dev
