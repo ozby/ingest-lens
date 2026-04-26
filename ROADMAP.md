@@ -63,6 +63,12 @@ blueprints, but are load-bearing for the current state:
   `78990b0`.
 - **Catalog migration of `@webpresso/agent-kit` to git+ssh** — commit
   `af1c3b7`; replaces machine-local `file:` paths.
+- **`delivery-consumer-correctness` (blueprint)** — three correctness fixes in
+  the push-delivery consumer: `msg.attempts` for backoff (B1), 4xx/5xx
+  failure classification routing permanents to DLQ (B2), and `justfile` shim
+  for `ak-stop-qa`. Queues and DLQ moved to Pulumi IaC
+  (`infra/src/resources/exports-queues.ts`). B3 (notify-before-ack) deferred
+  pending TopicRoom dedupe.
 
 ## What's next
 

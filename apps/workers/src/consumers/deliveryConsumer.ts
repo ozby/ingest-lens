@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm";
 import { createDb, type DeliveryPayload, type Env } from "../db/client";
 import { messages } from "../db/schema";
+import { retryDelaySeconds } from "./failureClassifier";
 import { recordDelivery } from "../telemetry";
-
-const BACKOFF_SECONDS = [5, 10, 20, 40, 80];
 
 export async function handleDeliveryBatch(
   batch: MessageBatch<DeliveryPayload>,
@@ -12,7 +11,9 @@ export async function handleDeliveryBatch(
   const db = createDb(env);
 
   for (const msg of batch.messages) {
-    const { messageId, queueId, topicId, pushEndpoint, attempt } = msg.body;
+    const { messageId, queueId, topicId, pushEndpoint } = msg.body;
+    // Platform-tracked delivery count (1-indexed). Used for backoff and telemetry.
+    const attempt = msg.attempts;
 
     const [row] = await db.select().from(messages).where(eq(messages.id, messageId)).limit(1);
 
@@ -76,14 +77,12 @@ export async function handleDeliveryBatch(
           }
         }
       } else {
-        const delaySeconds = BACKOFF_SECONDS[Math.min(attempt, BACKOFF_SECONDS.length - 1)];
-        msg.retry({ delaySeconds });
+        msg.retry({ delaySeconds: retryDelaySeconds(res.status, attempt) });
         recordDelivery(env, { queueId, messageId, topicId, status: "retry", latencyMs, attempt });
       }
     } catch {
       const latencyMs = Date.now() - startMs;
-      const delaySeconds = BACKOFF_SECONDS[Math.min(attempt, BACKOFF_SECONDS.length - 1)];
-      msg.retry({ delaySeconds });
+      msg.retry({ delaySeconds: retryDelaySeconds("throw", attempt) });
       recordDelivery(env, { queueId, messageId, topicId, status: "retry", latencyMs, attempt });
     }
   }

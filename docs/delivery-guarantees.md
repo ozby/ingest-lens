@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-25"
+last_updated: "2026-04-26"
 ---
 
 # Delivery Guarantees
@@ -23,7 +23,8 @@ The contract is:
 
 2. The Cloudflare Queue consumer (`apps/workers/src/consumers/deliveryConsumer.ts`) calls
    `msg.ack()` only after receiving a 2xx response from the push endpoint. Non-2xx responses and
-   network errors both call `msg.retry()`, which re-enqueues with the configured backoff.
+   network errors call `msg.retry()` (transient failures use exponential backoff; permanent 4xx
+   failures collapse retries immediately — see [Failure classification](#failure-classification)).
 
 3. If the Worker crashes between a successful push and calling `msg.ack()`, the message is
    re-delivered. This is the fundamental source of duplicates in an at-least-once system.
@@ -85,40 +86,66 @@ across different queues without collision.
 consumer may still deliver the same message more than once if the consumer crashes after a successful
 push but before `msg.ack()`. Receivers must handle this case regardless of whether a key was used.
 
+## Failure classification
+
+Non-2xx responses are classified before deciding how to retry:
+
+| Class         | Status codes                               | Behaviour                                                                                                                         |
+| ------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Transient** | 5xx, 408, 425, 429, network throw          | `msg.retry()` with exponential backoff                                                                                            |
+| **Permanent** | All other 4xx (401, 403, 404, 410, 422, …) | `msg.retry({ delaySeconds: 0 })` — retries collapse immediately, exhausting `max_retries` quickly to route the message to the DLQ |
+
+**Why collapse permanent failures instead of acking?** Acking a permanent failure silently discards
+the message with no operator visibility. Routing to the DLQ gives operators a single place to triage
+all failed deliveries regardless of cause, filterable by the `failure_class` attribute on the DLQ
+message.
+
+**Receivers: do not return 4xx for transient failures.** A `401 Unauthorized` or `410 Gone`
+response tells the system the endpoint is permanently misconfigured. Return `5xx` for transient
+server-side errors.
+
+Source: `apps/workers/src/consumers/failureClassifier.ts`.
+
 ## Retry backoff
 
-The consumer retries failed deliveries with exponential backoff:
+Transient failures use exponential backoff keyed on `msg.attempts` — Cloudflare's platform-tracked
+delivery count (1-indexed, persists across consumer restarts):
 
-```
-Attempt 0: 5s delay
-Attempt 1: 10s delay
-Attempt 2: 20s delay
-Attempt 3: 40s delay
-Attempt 4+: 80s delay (capped)
-```
+| Platform attempt (`msg.attempts`) | Delay         |
+| --------------------------------- | ------------- |
+| 1                                 | 5 s           |
+| 2                                 | 10 s          |
+| 3                                 | 20 s          |
+| 4                                 | 40 s          |
+| 5+                                | 80 s (capped) |
 
-The attempt counter is carried in the queue payload (`DeliveryPayload.attempt`), not stored in
-the database. This is intentional: the DB row represents the message state, not the delivery attempt
-state. Keeping them separate means a failed delivery does not mutate the message record.
+The attempt counter comes from the CF Queues runtime, not the queue payload. This means the backoff
+correctly escalates even after a consumer restart — the platform remembers how many times it has
+attempted delivery regardless of which consumer instance handles the retry.
 
-The `wrangler.toml` consumer configuration sets `max_retries = 5`. After five failed attempts,
-Cloudflare moves the payload to the dead-letter queue.
+The `wrangler.toml` consumer sets `max_retries = 5`. After five attempts, Cloudflare routes the
+message to the dead-letter queue.
 
 ## Dead-letter queue
 
-The `delivery-dlq` queue receives messages that exhausted all retries. At this point the system has
-given up on automatic delivery.
+`delivery-dlq-{dev,prd}` receives messages that exhausted all retries. Both the main queue and
+the DLQ are provisioned via Pulumi (`infra/src/resources/exports-queues.ts`) so they survive
+across deployments and cannot be accidentally recreated empty by `wrangler deploy`.
+
+DLQ messages carry a `failure_class` attribute (`"permanent"` or `"transient"`) so operators can
+distinguish misconfigured endpoints (permanent) from flaky infrastructure (transient) in one place.
 
 Operational recovery:
 
-1. Read the DLQ payload to get the `messageId` and `pushEndpoint`.
-2. Investigate why the endpoint was failing (downtime, schema mismatch, auth failure).
-3. Re-enqueue manually by calling `DELIVERY_QUEUE.send` with the same payload and `attempt: 0`.
-4. The consumer will retry from the beginning of the backoff sequence.
+1. Inspect the DLQ message: read `messageId`, `pushEndpoint`, and `failure_class`.
+2. Investigate the root cause (downtime, auth failure, schema mismatch, etc.).
+3. Re-enqueue by calling `DELIVERY_QUEUE.send` with the same `messageId`, `queueId`, and
+   `pushEndpoint`. The `attempt` field in the payload is optional and ignored — backoff restarts
+   from attempt 1 automatically via `msg.attempts`.
+4. The consumer retries from the beginning of the backoff sequence.
 
-There is no automated DLQ drain endpoint. Automated replay risks re-triggering a systematic failure
-(e.g., a broken endpoint that would immediately refill the DLQ). Operational recovery is intentionally
-manual.
+There is no automated DLQ drain endpoint. Automated replay risks re-triggering a systematic failure.
+Operational recovery is intentionally manual.
 
 ## Empirical verification — Consistency Lab
 
@@ -156,5 +183,8 @@ Your push endpoint should:
    - Use database upserts keyed on the message ID.
    - Design side effects to be naturally idempotent (e.g., setting a value rather than incrementing).
 
-3. Return `5xx` when processing fails transiently. Returning `2xx` for a failure silently drops
-   the message — the consumer will ack it and stop retrying.
+3. Return `5xx` (or 408/425/429) when processing fails transiently. Returning `2xx` for a failure
+   silently drops the message — the consumer will ack it and stop retrying.
+
+4. Do **not** return `4xx` for transient failures. Any 4xx except 408, 425, and 429 is treated as
+   a permanent misconfiguration and routes directly to the DLQ after exhausting `max_retries`.

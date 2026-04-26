@@ -21,14 +21,19 @@ const mockRow = {
   receivedAt: null,
 };
 
-function makeMsg(body: DeliveryPayload, ack: Mock, retry: Mock): Message<DeliveryPayload> {
+function makeMsg(
+  body: DeliveryPayload,
+  ack: Mock,
+  retry: Mock,
+  attempts?: number,
+): Message<DeliveryPayload> {
   return {
     body,
     ack,
     retry,
     id: "cf-msg-id",
     timestamp: new Date("2026-01-01"),
-    attempts: body.attempt + 1,
+    attempts: attempts ?? (body.attempt ?? 0) + 1,
   } as unknown as Message<DeliveryPayload>;
 }
 
@@ -441,5 +446,105 @@ describe("handleDeliveryBatch", () => {
     await handleDeliveryBatch(batch, env);
 
     expect(retry).toHaveBeenCalledWith({ delaySeconds: 40 });
+  });
+
+  // B1 regression: consumer must use msg.attempts (platform metadata) not body.attempt
+  // Simulates producer stamping attempt:0 but the platform reporting 5th delivery after restarts.
+  // Before fix: BACKOFF[body.attempt=0] = 5s. After fix: BACKOFF[msg.attempts-1=4] = 80s.
+  it("B1: backoff uses platform attempts, not body.attempt, across redelivery", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const env = createMockEnv();
+    const msg = makeMsg(basePayload, ack, retry, 5); // body.attempt=0, msg.attempts=5
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(retry).toHaveBeenCalledWith({ delaySeconds: 80 });
+  });
+
+  // B2-permanent regression: 4xx permanent failures should collapse retries (delaySeconds:0)
+  // so max_retries=5 routes them to the DLQ quickly. Currently retries with backoff (bug).
+  it("B2-permanent: 401 collapses retries via delaySeconds:0 for DLQ routing", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const env = createMockEnv();
+    const msg = makeMsg(basePayload, ack, retry);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(retry).toHaveBeenCalledWith({ delaySeconds: 0 });
+    expect(ack).not.toHaveBeenCalled();
+  });
+
+  // B2-transient guard: 429 is a transient error (rate limited) — must retry with backoff,
+  // not collapse to DLQ like a permanent 4xx.
+  it("B2-transient: 429 retries with backoff, not collapsed to DLQ", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const env = createMockEnv();
+    const msg = makeMsg(basePayload, ack, retry); // attempts=1 → delaySeconds=5
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 429 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(retry).toHaveBeenCalledWith({ delaySeconds: 5 });
+    expect(ack).not.toHaveBeenCalled();
+  });
+
+  // R10 deploy-safety: new consumer must accept old-shape body (attempt:0 still present)
+  // and use msg.attempts for backoff — no crash, correct delay.
+  it("R10: old body with attempt:0 accepted; backoff still uses msg.attempts", async () => {
+    setupCreateDb([mockRow]);
+    const ack = vi.fn();
+    const retry = vi.fn();
+    const env = createMockEnv();
+    const msg = makeMsg(basePayload, ack, retry, 4); // body.attempt=0, msg.attempts=4
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500 }));
+
+    const batch = {
+      queue: "delivery-queue",
+      messages: [msg],
+      retryAll: vi.fn(),
+      ackAll: vi.fn(),
+      metadata: null,
+    } as unknown as MessageBatch<DeliveryPayload>;
+
+    await handleDeliveryBatch(batch, env);
+
+    expect(retry).toHaveBeenCalledWith({ delaySeconds: 40 }); // BACKOFF[3], not BACKOFF[0]
+    expect(ack).not.toHaveBeenCalled();
   });
 });

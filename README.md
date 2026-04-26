@@ -198,10 +198,15 @@ execution primitives behind the product:
 - **Topics** fan out to subscribed queues.
 - **Pull receive leases** are at-least-once and currently non-atomic under
   concurrent consumers.
-- **Push delivery** retries with backoff and DLQ behavior.
+- **Push delivery** classifies failures before retrying: transient errors (5xx, 408, 425, 429,
+  network throw) use exponential backoff (5 s → 10 s → 20 s → 40 s → 80 s); permanent
+  misconfiguration (all other 4xx) collapses retries immediately so `max_retries = 5` routes the
+  message to the DLQ quickly. All failed deliveries land in `delivery-dlq` tagged with
+  `failure_class` — one console, filterable.
 - **Durable Objects** provide topic fan-out and short reconnect replay.
 
-See the detailed system docs for the exact guarantees and caveats.
+See [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md) for the full contract including
+idempotency keys, pull-lease semantics, and DLQ recovery steps.
 
 ## Deploy
 

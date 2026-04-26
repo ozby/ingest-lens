@@ -8,7 +8,7 @@ export type DeliveryPayload = {
   queueId: string;
   pushEndpoint: string;
   topicId: string | null;
-  attempt: number;
+  attempt?: number;
 };
 
 export type Env = {
