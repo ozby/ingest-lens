@@ -18,6 +18,8 @@ import { buildIntakeLifecycleEvent, recordIntakeLifecycle } from "../telemetry";
 import { requireOwnedQueue, requireOwnedTopic } from "./ownership";
 import { getFixtureReference } from "../intake/contracts";
 import { getDemoFixtureById, listDemoFixtures } from "../intake/demoFixtures";
+import { shapeFingerprint } from "../intake/shapeFingerprint";
+import type { IntakeValidationSuccess } from "../intake/validateIntakeRequest";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -623,6 +625,200 @@ intakeRoutes.get("/mapping-suggestions", async (c) => {
   });
 });
 
+type ValidatedIntakeValue = IntakeValidationSuccess["value"];
+
+type SuggestMappingsResult = Awaited<ReturnType<typeof suggestMappings>>;
+
+async function persistHealedAttempt(
+  db: ReturnType<typeof createDb>,
+  ownerId: string,
+  value: ValidatedIntakeValue,
+  mapped: Extract<SuggestMappingsResult, { kind: "success" }>,
+  healSuggestions: MappingSuggestion[],
+  attemptId: string,
+  mappingVersionId: string,
+): Promise<{
+  revision: typeof approvedMappingRevisions.$inferSelect;
+  attempt: typeof intakeAttempts.$inferSelect;
+}> {
+  const now = new Date();
+  return db.transaction(async (tx) => {
+    const [revision] = await tx
+      .insert(approvedMappingRevisions)
+      .values({
+        id: mappingVersionId,
+        ownerId,
+        intakeAttemptId: attemptId,
+        mappingTraceId: mapped.batch.mappingTraceId,
+        contractId: value.contract.id,
+        contractVersion: value.contract.version,
+        targetRecordType: value.contract.id.replace(/-v\d+$/, "").replace(/-/g, "_"),
+        approvedSuggestionIds: healSuggestions.map((s) => s.id),
+        sourceHash: value.sourceHash,
+        sourceKind: value.sourceKind,
+        sourceFixtureId: value.sourceFixture?.id,
+        deliveryTarget: value.deliveryTarget,
+        createdAt: now,
+      })
+      .returning();
+
+    const [attempt] = await tx
+      .insert(intakeAttempts)
+      .values({
+        id: attemptId,
+        ownerId,
+        mappingTraceId: mapped.batch.mappingTraceId,
+        contractId: value.contract.id,
+        contractVersion: value.contract.version,
+        sourceSystem: value.sourceSystem,
+        sourceKind: value.sourceKind,
+        sourceFixtureId: value.sourceFixture?.id,
+        sourceHash: value.sourceHash,
+        deliveryTarget: value.deliveryTarget,
+        status: "approved",
+        ingestStatus: "pending",
+        driftCategory: mapped.batch.driftCategories[0] ?? "renamed_field",
+        modelName: mapped.decisionLog.model,
+        promptVersion: mapped.decisionLog.promptVersion,
+        overallConfidence: mapped.decisionLog.confidence.overall,
+        redactedSummary: value.redactedSummary,
+        validationErrors: [],
+        suggestionBatch: mapped.batch,
+        reviewPayload: value.reviewPayload,
+        reviewPayloadExpiresAt: value.reviewPayloadExpiresAt
+          ? new Date(value.reviewPayloadExpiresAt)
+          : null,
+        mappingVersionId,
+        approvedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+
+    if (!revision || !attempt) {
+      throw new Error("Heal persistence returned no rows; rolling back.");
+    }
+    return { revision, attempt };
+  });
+}
+
+async function persistPendingReview(
+  db: ReturnType<typeof createDb>,
+  ownerId: string,
+  value: ValidatedIntakeValue,
+  mapped: SuggestMappingsResult,
+): Promise<typeof intakeAttempts.$inferSelect | null> {
+  const now = new Date();
+  const attemptId = createId();
+  const mappingTraceId = mapped.kind === "success" ? mapped.batch.mappingTraceId : createId();
+  const driftCategory =
+    mapped.kind === "success"
+      ? (mapped.batch.driftCategories[0] ?? "renamed_field")
+      : "ambiguous_mapping";
+  const validationErrors = mapped.kind === "invalid_output" ? mapped.errors : [];
+
+  const [row] = await db
+    .insert(intakeAttempts)
+    .values({
+      id: attemptId,
+      ownerId,
+      mappingTraceId,
+      contractId: value.contract.id,
+      contractVersion: value.contract.version,
+      sourceSystem: value.sourceSystem,
+      sourceKind: value.sourceKind,
+      sourceFixtureId: value.sourceFixture?.id,
+      sourceHash: value.sourceHash,
+      deliveryTarget: value.deliveryTarget,
+      status: deriveMappingStatus(mapped.kind),
+      ingestStatus: "not_started",
+      driftCategory,
+      modelName: mapped.decisionLog.model,
+      promptVersion: mapped.decisionLog.promptVersion,
+      overallConfidence: mapped.decisionLog.confidence.overall,
+      redactedSummary: value.redactedSummary,
+      validationErrors,
+      suggestionBatch: mapped.kind === "success" ? mapped.batch : null,
+      reviewPayload: value.reviewPayload,
+      reviewPayloadExpiresAt: value.reviewPayloadExpiresAt
+        ? new Date(value.reviewPayloadExpiresAt)
+        : null,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .returning();
+
+  return row ?? null;
+}
+
+async function tryHealPath(
+  c: AppContext,
+  ownerId: string,
+  value: ValidatedIntakeValue,
+  mapped: Extract<SuggestMappingsResult, { kind: "success" }>,
+  healDO: DurableObjectStub,
+  incomingFingerprint: string,
+  autoHealThreshold: number,
+): Promise<Response | null> {
+  if (mapped.batch.overallConfidence < autoHealThreshold) return null;
+
+  try {
+    const healRes = await healDO.fetch("https://do/tryHeal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        batch: mapped.batch,
+        sourceSystem: value.sourceSystem,
+        fingerprint: incomingFingerprint,
+      }),
+    });
+
+    if (!healRes.ok) return null;
+
+    const healResult = await healRes.json<{ healed: boolean; suggestions: MappingSuggestion[] }>();
+    const db = createDb(c.env);
+    const persisted = await persistHealedAttempt(
+      db,
+      ownerId,
+      value,
+      mapped,
+      healResult.suggestions,
+      createId(),
+      createId(),
+    );
+
+    const approvedAttempt = toAttemptRecord(persisted.attempt);
+    const mappingVersion = toMappingRevision(persisted.revision);
+    const normalized = normalizeWithMapping({
+      payload: value.payload,
+      suggestions: healResult.suggestions,
+    });
+    const normalizedRecord = createNormalizedEnvelope({
+      attempt: approvedAttempt,
+      mappingVersion,
+      record: normalized,
+    });
+
+    try {
+      await publishToTarget(
+        c,
+        normalizedRecord as unknown as Record<string, unknown>,
+        approvedAttempt.deliveryTarget,
+      );
+    } catch {
+      // fall through — ingest_failed update skipped to keep heal path simple
+    }
+
+    recordIntakeLifecycle(c.env, buildIntakeLifecycleEvent(approvedAttempt, "suggestion.ingested"));
+    return c.json({
+      status: "success",
+      data: { attempt: approvedAttempt, mappingVersion, normalizedRecord, healPath: true },
+    });
+  } catch {
+    return null; // fall through to pending_review on any failure
+  }
+}
+
 intakeRoutes.post("/mapping-suggestions", async (c) => {
   const ownerId = c.get("user").userId;
   const body = await c.req.json<CreateIntakeSuggestionRequest>();
@@ -643,6 +839,38 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     );
   }
 
+  const AUTO_HEAL_THRESHOLD = Number(c.env.AUTO_HEAL_THRESHOLD ?? 0.8);
+
+  const doId = c.env.HEAL_STREAM.idFromName(
+    `${validation.value.sourceSystem}:${validation.value.contract.id}:${validation.value.contract.version}`,
+  );
+  const healDO = c.env.HEAL_STREAM.get(doId);
+
+  const incomingFingerprint = shapeFingerprint(validation.value.payload);
+  const stateRes = await healDO.fetch("https://do/state");
+  const currentState = stateRes.ok
+    ? await stateRes.json<{
+        approved: { fingerprint: string; suggestions: MappingSuggestion[] } | null;
+      }>()
+    : { approved: null };
+
+  if (currentState.approved && currentState.approved.fingerprint === incomingFingerprint) {
+    // FAST PATH — shape matches approved fingerprint, skip LLM
+    const normalized = normalizeWithMapping({
+      payload: validation.value.payload,
+      suggestions: currentState.approved.suggestions,
+    });
+    await c.env.DELIVERY_QUEUE.send({
+      type: "intake_audit",
+      attemptId: createId(),
+      sourceSystem: validation.value.sourceSystem,
+      sourceHash: validation.value.sourceHash,
+      fingerprint: incomingFingerprint,
+      timestamp: new Date().toISOString(),
+    } as unknown as Parameters<typeof c.env.DELIVERY_QUEUE.send>[0]);
+    return c.json({ status: "success", data: { normalized, fastPath: true } });
+  }
+
   const mapped = await suggestMappings(
     {
       payload: validation.value.payload,
@@ -657,46 +885,22 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     },
   );
 
-  const now = new Date();
-  const attemptId = createId();
-  const mappingTraceId = mapped.kind === "success" ? mapped.batch.mappingTraceId : createId();
-  const driftCategory =
-    mapped.kind === "success"
-      ? (mapped.batch.driftCategories[0] ?? "renamed_field")
-      : "ambiguous_mapping";
-  const validationErrors = mapped.kind === "invalid_output" ? mapped.errors : [];
+  // HEAL PATH — high-confidence success auto-approved and stored in HealStreamDO
+  if (mapped.kind === "success") {
+    const healResponse = await tryHealPath(
+      c,
+      ownerId,
+      validation.value,
+      mapped,
+      healDO,
+      incomingFingerprint,
+      AUTO_HEAL_THRESHOLD,
+    );
+    if (healResponse) return healResponse;
+  }
 
   const db = createDb(c.env);
-  const [row] = await db
-    .insert(intakeAttempts)
-    .values({
-      id: attemptId,
-      ownerId,
-      mappingTraceId,
-      contractId: validation.value.contract.id,
-      contractVersion: validation.value.contract.version,
-      sourceSystem: validation.value.sourceSystem,
-      sourceKind: validation.value.sourceKind,
-      sourceFixtureId: validation.value.sourceFixture?.id,
-      sourceHash: validation.value.sourceHash,
-      deliveryTarget: validation.value.deliveryTarget,
-      status: deriveMappingStatus(mapped.kind),
-      ingestStatus: "not_started",
-      driftCategory,
-      modelName: mapped.decisionLog.model,
-      promptVersion: mapped.decisionLog.promptVersion,
-      overallConfidence: mapped.decisionLog.confidence.overall,
-      redactedSummary: validation.value.redactedSummary,
-      validationErrors,
-      suggestionBatch: mapped.kind === "success" ? mapped.batch : null,
-      reviewPayload: validation.value.reviewPayload,
-      reviewPayloadExpiresAt: validation.value.reviewPayloadExpiresAt
-        ? new Date(validation.value.reviewPayloadExpiresAt)
-        : null,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .returning();
+  const row = await persistPendingReview(db, ownerId, validation.value, mapped);
 
   if (!row) {
     return c.json({ status: "error", message: "Failed to record intake attempt" }, 500);

@@ -42,6 +42,21 @@ export function createMockKv(store: Map<string, string> = new Map()): {
   };
 }
 
+function createMockHealStream(): {
+  idFromName: ReturnType<typeof vi.fn>;
+  get: ReturnType<typeof vi.fn>;
+} {
+  const stateResponse = new Response(JSON.stringify({ approved: null }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+  const stubFetch = vi.fn().mockResolvedValue(stateResponse);
+  const stub = { fetch: stubFetch };
+  const getMock = vi.fn().mockReturnValue(stub);
+  const idFromNameMock = vi.fn().mockReturnValue("heal-stream-stub-id");
+  return { idFromName: idFromNameMock, get: getMock };
+}
+
 export function createMockEnv(
   deliveryQueue?: { send: ReturnType<typeof vi.fn> },
   rateLimiter?: { limit: ReturnType<typeof vi.fn> },
@@ -64,8 +79,7 @@ export function createMockEnv(
     ANALYTICS: (analytics ?? { writeDataPoint: vi.fn() }) as unknown as Env["ANALYTICS"],
     TOPIC_ROOMS: (topicRooms ??
       createMockDurableObjectNamespace()) as unknown as Env["TOPIC_ROOMS"],
-    HEAL_STREAM: (healStream ??
-      createMockDurableObjectNamespace()) as unknown as Env["HEAL_STREAM"],
+    HEAL_STREAM: (healStream ?? createMockHealStream()) as unknown as Env["HEAL_STREAM"],
     KV: (kv ?? createMockKv()) as unknown as Env["KV"],
   };
 }
