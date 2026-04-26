@@ -8,3 +8,4 @@
 **Why:** The band behavior is correct but undocumented. Implementers will encounter confidence 0.6 results and wonder whether auto-heal should fire.
 **Where to start:** `apps/workers/src/intake/aiMappingAdapter.ts` and `apps/workers/src/routes/intake.ts` (auto-heal branch condition).
 **Effort:** XS — comment + design doc update only.
+**Completed:** v0.0.0 (2026-04-26) — comment added to aiMappingAdapter.ts
