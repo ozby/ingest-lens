@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: in-progress
+status: completed
 complexity: M
 created: "2026-04-26"
 last_updated: "2026-04-26"
-progress: "78% (7/9 tasks done, 0 blocked, updated 2026-04-26)"
+progress: "100% (9/9 tasks done, 0 blocked, updated 2026-04-26)"
 depends_on: []
 tags:
   - cloudflare-workers
@@ -13,6 +13,7 @@ tags:
   - schema-drift
   - llm
   - self-healing
+completed_at: "2026-04-26"
 ---
 
 # Self-healing adaptive intake
@@ -397,7 +398,7 @@ Follows the existing `handlePublishFailure()` pattern in `intake.ts`.
 
 #### [tests] Task 4.1: Unit + DO tests — fast-path negative assertion + concurrent heal
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 3.1, Task 3.2
 
@@ -433,16 +434,16 @@ Two critical tests identified in eng-review:
 
 **Acceptance:**
 
-- [ ] Negative assertion: `suggestMappings` NOT called on fast-path match
-- [ ] Concurrent `tryHeal()` test: second caller returns `{healed: false}`
-- [ ] `HealStreamDO` cold/warm/heal/rollback states all tested
-- [ ] All tests green
+- [x] Negative assertion: `suggestMappings` NOT called on fast-path match
+- [x] Concurrent `tryHeal()` test: second caller returns `{healed: false}`
+- [x] `HealStreamDO` cold/warm/heal/rollback states all tested
+- [x] All tests green
 
 ---
 
 #### [docs] Task 4.2: Integration demo + confidence band comment
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 4.1
 
@@ -468,10 +469,10 @@ band comment from TODOS.md.
 
 **Acceptance:**
 
-- [ ] Comment added to `aiMappingAdapter.ts` explaining 0.5-0.79 band behavior
-- [ ] `pnpm docs:check` passes
-- [ ] `pnpm blueprints:check` passes
-- [ ] `TODOS.md` confidence band item marked complete
+- [x] Comment added to `aiMappingAdapter.ts` explaining 0.5-0.79 band behavior
+- [x] `pnpm docs:check` passes
+- [x] `pnpm blueprints:check` passes
+- [x] `TODOS.md` confidence band item marked complete
 
 ---
 
