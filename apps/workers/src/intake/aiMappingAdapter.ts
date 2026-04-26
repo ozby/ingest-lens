@@ -9,6 +9,9 @@ import { validateJudgeAssessment, validateMappingSuggestionBatch } from "./valid
 export const DEFAULT_PRIMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 export const DEFAULT_JUDGE_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 export const DEFAULT_MAPPING_PROMPT_VERSION = "payload-mapper-v1";
+// Values between LOW_CONFIDENCE_THRESHOLD (0.5) and AUTO_HEAL_THRESHOLD (0.8 default)
+// return kind:"success" from suggestMappings() but fall through to pending_review
+// (below AUTO_HEAL_THRESHOLD). Only confidence ≥ AUTO_HEAL_THRESHOLD triggers auto-heal.
 export const LOW_CONFIDENCE_THRESHOLD = 0.5;
 const DEFAULT_MODEL_TIMEOUT_MS = 5_000;
 const DEFAULT_PRIMARY_MAX_ATTEMPTS = 2;
