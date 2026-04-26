@@ -86,6 +86,19 @@ Keep runtime marker contracts stable and non-destructive when overlays are appli
   <!-- OMX:GUIDANCE:OPERATING:END -->
   </operating_principles>
 
+## Tech stack
+
+- **Runtime:** Cloudflare Workers (Hono framework)
+- **Client:** React Router (SPA served from Workers assets)
+- **DB:** Drizzle ORM + Neon Postgres (Hyperdrive in prod, direct in dev)
+- **Infra:** Pulumi (`infra/`) managing Cloudflare resources
+- **Secrets:** Doppler — no `.env` files; scripts wrap with `bun ./scripts/with-doppler.ts`
+- **Test runner:** Vitest (`@cloudflare/vitest-pool-workers`)
+- **Type checker:** `tsgo --noEmit` — never `tsc`
+- **Package manager:** pnpm workspaces; bun for scripts
+- **Workspace runner:** `vp` (vite-plus) — `vp run <script>` across packages
+- **Linting:** oxlint + secretlint + commitlint (Husky pre-commit)
+
 ## Working agreements
 
 - Write a cleanup plan before modifying code for cleanup/refactor/deslop work.

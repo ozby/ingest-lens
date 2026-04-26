@@ -4,7 +4,7 @@ prompt = """
 ## Writing Implementation Plans
 
 1. Review design and clarify unknowns.
-2. Create the draft directly in `blueprints/draft/{slug}/_overview.md`, then refine it into executable blueprint-format tasks.
+2. Create the draft with `ak blueprint new "<goal>" --complexity <XS|S|M|L|XL>`, then refine the generated file in `blueprints/draft/{slug}/`.
 3. Tasks are bite-sized with exact files, tests, commands, and expected output.
 4. Include dependencies and rollback per task.
 5. Offer execution via `/pll`.

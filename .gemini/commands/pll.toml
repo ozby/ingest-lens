@@ -3,14 +3,14 @@ description = "Blueprint-aware parallel execution adapter over ultrawork/subagen
 prompt = """
 # /pll - Blueprint-Aware Parallel Execution
 
-Execute Blueprint-shaped work through the current parallel engine layer while keeping durable lifecycle state on repo-owned blueprint files and status metadata.
+Execute Blueprint-shaped work through the current parallel engine layer while keeping durable lifecycle state on the shipped `ak blueprint` surface.
 
-`/pll` is an **operator adapter**, not a standalone runtime. It should agree with the repo's durable blueprint files and lifecycle conventions instead of inventing a separate execution model.
+`/pll` is an **operator adapter**, not a standalone runtime. It is the interactive half of the same shared execution model used by `ak blueprint exec`, so both surfaces should agree on launch spec shape, backend vocabulary, and runtime-state bridge semantics.
 
 It does three things:
 
 1. understands task dependencies well enough to preserve ordering
-2. keeps Blueprint lifecycle state honest via repo-owned status updates in the blueprint artifact
+2. keeps Blueprint lifecycle state honest via `ak blueprint start|task|finalize`
 3. delegates generic parallel fan-out to the active engine layer (`$ultrawork`, subagents, or equivalent host-native parallel lanes)
 
 **Arguments**: {{args}}
@@ -53,11 +53,12 @@ If invoked without arguments, infer the nearest task list from the latest user c
 
 When `/pll` is executing blueprint-backed work:
 
-- mark the blueprint as started before execution begins
-- mark each task as in progress, blocked, or complete in the durable blueprint state surface
-- record block reasons next to the affected task, not in ad hoc chat state
-- finalize the blueprint only after every acceptance and verification gate actually passes
-- treat structural moves as recovery-only, not the normal execution primitive
+- use `ak blueprint start <slug>` before execution begins
+- use `ak blueprint task start <slug> <taskId>` when a task starts
+- use `ak blueprint task block <slug> <taskId> --reason "<reason>"` when work is blocked
+- use `ak blueprint task complete <slug> <taskId>` only after the task's acceptance and verification actually pass
+- use `ak blueprint finalize <slug>` only after all tasks are validly done
+- do **not** use `ak blueprint move` as the normal execution primitive; it is recovery-only
 
 ## What `/pll` Owns
 
@@ -69,7 +70,7 @@ When `/pll` is executing blueprint-backed work:
 
 ## Shared Execution Model
 
-`/pll` and any non-interactive blueprint executor should remain two surfaces over one repo-owned model:
+`/pll` and `ak blueprint exec` are two surfaces over one repo-owned model:
 
 - same Blueprint-backed launch spec
 - same backend names and policy hooks
@@ -155,6 +156,6 @@ If the model would diverge between the two surfaces, fix the contract instead of
 ## Verification Discipline
 
 - Prefer per-file or per-package verification first.
-- Use the blueprint markdown itself plus its named verification checks to prove state transitions.
+- Use `ak blueprint audit` and the task's named checks to prove state transitions.
 - Never treat orchestration progress as proof of correctness.
 """
