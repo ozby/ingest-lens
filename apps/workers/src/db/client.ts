@@ -24,6 +24,7 @@ export type Env = {
   ANALYTICS: AnalyticsEngineDataset;
   TOPIC_ROOMS: DurableObjectNamespace;
   KV: KVNamespace;
+  HEAL_STREAM: DurableObjectNamespace;
 };
 
 export function createDb(env: Env) {

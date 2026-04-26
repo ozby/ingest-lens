@@ -64,6 +64,7 @@ export function createMockEnv(
     TOPIC_ROOMS: (topicRooms ??
       createMockDurableObjectNamespace()) as unknown as Env["TOPIC_ROOMS"],
     KV: (kv ?? createMockKv()) as unknown as Env["KV"],
+    HEAL_STREAM: createMockDurableObjectNamespace() as unknown as Env["HEAL_STREAM"],
   };
 }
 
