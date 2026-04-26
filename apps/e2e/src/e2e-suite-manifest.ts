@@ -43,6 +43,7 @@ const MESSAGING_FILES = [
 ] as const;
 const HARDENING_FILES = ["journeys/ownership-hardening.e2e.ts"] as const;
 const INTAKE_FILES = ["journeys/intake-mapping-flow.e2e.ts"] as const;
+const HEALING_FILES = ["journeys/self-healing-intake.e2e.ts"] as const;
 const DEMO_FILES = ["journeys/public-fixture-demo-flow.e2e.ts"] as const;
 const CLIENT_FILES = ["journeys/client-route-code-splitting.e2e.ts"] as const;
 const BRANDING_FILES = ["journeys/ingestlens-branding.e2e.ts"] as const;
@@ -53,6 +54,7 @@ const FULL_FILES = [
   ...MESSAGING_FILES,
   ...HARDENING_FILES,
   ...INTAKE_FILES,
+  ...HEALING_FILES,
   ...DEMO_FILES,
   ...CLIENT_FILES,
   ...BRANDING_FILES,
@@ -97,6 +99,13 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: INTAKE_FILES,
     batchKey: "intake",
     steps: [createVitestStep("intake", INTAKE_FILES)],
+  },
+  {
+    id: "healing",
+    aliases: ["self-heal", "adaptive", "heal-stream"],
+    fileMatchers: HEALING_FILES,
+    batchKey: "healing",
+    steps: [createVitestStep("healing", HEALING_FILES)],
   },
   {
     id: "demo",
