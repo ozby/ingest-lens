@@ -127,6 +127,91 @@ function createId(): string {
   return crypto.randomUUID();
 }
 
+async function approveMapping(
+  db: ReturnType<typeof createDb>,
+  _env: Env,
+  attemptRow: AttemptRow,
+  approvedSuggestionIds: string[],
+  _opts?: {
+    healedAt?: Date;
+    shapeFingerprint?: string;
+    rolledBackFrom?: string;
+  },
+): Promise<{
+  attempt: IntakeAttemptRecord;
+  mappingVersion: ApprovedMappingRevision;
+  normalizedRecord: unknown;
+}> {
+  const payload = getAttemptPayload(attemptRow);
+  if (!payload) {
+    throw new Error("Review payload has expired. Re-run the suggestion.");
+  }
+
+  const approvedSuggestions = selectApprovedSuggestions(
+    attemptRow.suggestionBatch!.suggestions,
+    approvedSuggestionIds,
+  );
+
+  if (approvedSuggestions.length === 0) {
+    throw new Error("At least one approved suggestion is required.");
+  }
+
+  const mappingVersionId = createId();
+  const now = new Date();
+  const record = normalizeWithMapping({
+    payload,
+    suggestions: approvedSuggestions,
+  });
+
+  const persisted = await db.transaction(async (tx) => {
+    const [revision] = await tx
+      .insert(approvedMappingRevisions)
+      .values({
+        id: mappingVersionId,
+        ownerId: attemptRow.ownerId,
+        intakeAttemptId: attemptRow.id,
+        mappingTraceId: attemptRow.mappingTraceId,
+        contractId: attemptRow.contractId,
+        contractVersion: attemptRow.contractVersion,
+        targetRecordType: attemptRow.contractId.replace(/-v\d+$/, "").replace(/-/g, "_"),
+        approvedSuggestionIds: approvedSuggestions.map((suggestion) => suggestion.id),
+        sourceHash: attemptRow.sourceHash,
+        sourceKind: attemptRow.sourceKind,
+        sourceFixtureId: attemptRow.sourceFixtureId,
+        deliveryTarget: attemptRow.deliveryTarget,
+        createdAt: now,
+      })
+      .returning();
+
+    const [attempt] = await tx
+      .update(intakeAttempts)
+      .set({
+        status: "approved",
+        ingestStatus: "pending",
+        mappingVersionId,
+        approvedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(intakeAttempts.id, attemptRow.id))
+      .returning();
+
+    if (!revision || !attempt) {
+      throw new Error("Approval persistence returned no rows; rolling back.");
+    }
+    return { revision, attempt };
+  });
+
+  const approvedAttempt = toAttemptRecord(persisted.attempt);
+  const mappingVersion = toMappingRevision(persisted.revision);
+  const normalizedRecord = createNormalizedEnvelope({
+    attempt: approvedAttempt,
+    mappingVersion,
+    record,
+  });
+
+  return { attempt: approvedAttempt, mappingVersion, normalizedRecord };
+}
+
 function deriveMappingStatus(
   kind: string,
 ): "pending_review" | "abstained" | "invalid_output" | "runtime_failure" {
@@ -134,6 +219,80 @@ function deriveMappingStatus(
   if (kind === "abstain") return "abstained";
   if (kind === "invalid_output") return "invalid_output";
   return "runtime_failure";
+}
+
+async function handleNewApprove(
+  c: AppContext,
+  db: ReturnType<typeof createDb>,
+  attemptRow: AttemptRow,
+  body: { approvedSuggestionIds?: string[] },
+): Promise<Response> {
+  if (!attemptRow.suggestionBatch) {
+    return c.json(
+      { status: "error", message: "Attempt does not contain reviewable suggestions." },
+      409,
+    );
+  }
+
+  if (!getAttemptPayload(attemptRow)) {
+    return c.json(
+      { status: "error", message: "Review payload has expired. Re-run the suggestion." },
+      410,
+    );
+  }
+
+  if (
+    selectApprovedSuggestions(attemptRow.suggestionBatch.suggestions, body.approvedSuggestionIds)
+      .length === 0
+  ) {
+    return c.json(
+      { status: "error", message: "At least one approved suggestion is required." },
+      400,
+    );
+  }
+
+  const {
+    attempt: approvedAttempt,
+    mappingVersion,
+    normalizedRecord,
+  } = await approveMapping(db, c.env, attemptRow, body.approvedSuggestionIds ?? []);
+
+  try {
+    await publishToTarget(
+      c,
+      normalizedRecord as unknown as Record<string, unknown>,
+      approvedAttempt.deliveryTarget,
+    );
+  } catch (error) {
+    return handlePublishFailure(c, db, attemptRow.id, error, mappingVersion, normalizedRecord);
+  }
+
+  const [ingestedAttemptRow] = await db
+    .update(intakeAttempts)
+    .set({
+      status: "ingested",
+      ingestStatus: "ingested",
+      ingestError: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(intakeAttempts.id, attemptRow.id))
+    .returning();
+
+  if (!ingestedAttemptRow) {
+    return c.json({ status: "error", message: "Failed to record ingest success" }, 500);
+  }
+
+  const ingestedAttempt = toAttemptRecord(ingestedAttemptRow);
+  recordIntakeLifecycle(c.env, buildIntakeLifecycleEvent(ingestedAttempt, "suggestion.ingested"));
+
+  return c.json({
+    status: "success",
+    data: {
+      attempt: ingestedAttempt,
+      mappingVersion,
+      normalizedRecord,
+    },
+  });
 }
 
 async function handleIdempotentApprove(
@@ -550,7 +709,6 @@ intakeRoutes.post("/mapping-suggestions/:id/reject", async (c) => {
 });
 
 intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
-  const ownerId = c.get("user").userId;
   const attemptId = c.req.param("id");
   const body = await c.req.json<{ approvedSuggestionIds?: string[] }>();
 
@@ -570,123 +728,5 @@ intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
     return handleIdempotentApprove(c, db, attemptRow, body);
   }
 
-  if (!attemptRow.suggestionBatch) {
-    return c.json(
-      { status: "error", message: "Attempt does not contain reviewable suggestions." },
-      409,
-    );
-  }
-
-  const payload = getAttemptPayload(attemptRow);
-  if (!payload) {
-    return c.json(
-      { status: "error", message: "Review payload has expired. Re-run the suggestion." },
-      410,
-    );
-  }
-
-  const approvedSuggestions = selectApprovedSuggestions(
-    attemptRow.suggestionBatch.suggestions,
-    body.approvedSuggestionIds,
-  );
-
-  if (approvedSuggestions.length === 0) {
-    return c.json(
-      { status: "error", message: "At least one approved suggestion is required." },
-      400,
-    );
-  }
-
-  const mappingVersionId = createId();
-  const now = new Date();
-  const record = normalizeWithMapping({
-    payload,
-    suggestions: approvedSuggestions,
-  });
-
-  const persisted = await db.transaction(async (tx) => {
-    const [revision] = await tx
-      .insert(approvedMappingRevisions)
-      .values({
-        id: mappingVersionId,
-        ownerId,
-        intakeAttemptId: attemptRow.id,
-        mappingTraceId: attemptRow.mappingTraceId,
-        contractId: attemptRow.contractId,
-        contractVersion: attemptRow.contractVersion,
-        targetRecordType: attemptRow.contractId.replace(/-v\d+$/, "").replace(/-/g, "_"),
-        approvedSuggestionIds: approvedSuggestions.map((suggestion) => suggestion.id),
-        sourceHash: attemptRow.sourceHash,
-        sourceKind: attemptRow.sourceKind,
-        sourceFixtureId: attemptRow.sourceFixtureId,
-        deliveryTarget: attemptRow.deliveryTarget,
-        createdAt: now,
-      })
-      .returning();
-
-    const [attempt] = await tx
-      .update(intakeAttempts)
-      .set({
-        status: "approved",
-        ingestStatus: "pending",
-        mappingVersionId,
-        approvedAt: now,
-        updatedAt: now,
-      })
-      .where(eq(intakeAttempts.id, attemptRow.id))
-      .returning();
-
-    if (!revision || !attempt) {
-      throw new Error("Approval persistence returned no rows; rolling back.");
-    }
-    return { revision, attempt };
-  });
-
-  const mappingVersionRow = persisted.revision;
-  const approvedAttemptRow = persisted.attempt;
-
-  const approvedAttempt = toAttemptRecord(approvedAttemptRow);
-  const mappingVersion = toMappingRevision(mappingVersionRow);
-  const normalizedRecord = createNormalizedEnvelope({
-    attempt: approvedAttempt,
-    mappingVersion,
-    record,
-  });
-
-  try {
-    await publishToTarget(
-      c,
-      normalizedRecord as unknown as Record<string, unknown>,
-      approvedAttempt.deliveryTarget,
-    );
-  } catch (error) {
-    return handlePublishFailure(c, db, attemptRow.id, error, mappingVersion, normalizedRecord);
-  }
-
-  const [ingestedAttemptRow] = await db
-    .update(intakeAttempts)
-    .set({
-      status: "ingested",
-      ingestStatus: "ingested",
-      ingestError: null,
-      updatedAt: new Date(),
-    })
-    .where(eq(intakeAttempts.id, attemptRow.id))
-    .returning();
-
-  if (!ingestedAttemptRow) {
-    return c.json({ status: "error", message: "Failed to record ingest success" }, 500);
-  }
-
-  const ingestedAttempt = toAttemptRecord(ingestedAttemptRow);
-  recordIntakeLifecycle(c.env, buildIntakeLifecycleEvent(ingestedAttempt, "suggestion.ingested"));
-
-  return c.json({
-    status: "success",
-    data: {
-      attempt: ingestedAttempt,
-      mappingVersion,
-      normalizedRecord,
-    },
-  });
+  return handleNewApprove(c, db, attemptRow, body);
 });
