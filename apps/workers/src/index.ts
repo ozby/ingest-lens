@@ -1,4 +1,5 @@
 export { TopicRoom } from "./do/TopicRoom";
+export { HealStreamDO } from "./consumers/HealStreamDO";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -9,6 +10,7 @@ import { messageRoutes } from "./routes/message";
 import { topicRoutes } from "./routes/topic";
 import { dashboardRoutes } from "./routes/dashboard";
 import { intakeRoutes } from "./routes/intake";
+import { healStreamRoutes } from "./routes/healStream";
 import { rateLimiter, authRateLimiter } from "./middleware/rateLimiter";
 import { handleDeliveryBatch } from "./consumers/deliveryConsumer";
 import { handleScheduled as handleScheduledPurge } from "./cron/purgeExpiredReviewPayloads";
@@ -41,6 +43,7 @@ app.route("/api/messages", messageRoutes);
 app.route("/api/topics", topicRoutes);
 app.route("/api/dashboard", dashboardRoutes);
 app.route("/api/intake", intakeRoutes);
+app.route("/api/heal", healStreamRoutes);
 
 export default {
   fetch: app.fetch,

@@ -67,6 +67,7 @@ export function createMockEnv(
     HEAL_STREAM: (healStream ??
       createMockDurableObjectNamespace()) as unknown as Env["HEAL_STREAM"],
     KV: (kv ?? createMockKv()) as unknown as Env["KV"],
+    HEAL_STREAM: createMockDurableObjectNamespace() as unknown as Env["HEAL_STREAM"],
   };
 }
 
