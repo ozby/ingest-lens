@@ -3,8 +3,9 @@ import app from "../index";
 import { createDb } from "../db/client";
 import { approvedMappingRevisions, intakeAttempts, messages, queues, topics } from "../db/schema";
 import { authenticate } from "../middleware/auth";
-import { AUTH_HEADER, bypassAuth, createMockEnv, get, post } from "./helpers";
+import { AUTH_HEADER, bypassAuth, createMockEnv, createMockHealStream, get, post } from "./helpers";
 import { suggestMappings } from "../intake/aiMappingAdapter";
+import { shapeFingerprint } from "../intake/shapeFingerprint";
 
 vi.mock("../middleware/auth", () => ({
   authenticate: vi.fn(),
@@ -581,5 +582,66 @@ describe("intake routes", () => {
 
     expect(response.status).toBe(410);
     expect(deliveryQueue.send).not.toHaveBeenCalled();
+  });
+});
+
+describe("auto-heal fast path", () => {
+  it("skips suggestMappings() when payload shape matches HealStreamDO fingerprint", async () => {
+    bypassAuth(vi.mocked(authenticate));
+
+    const testPayload = { first_name: "Alice" };
+    const matchingFingerprint = shapeFingerprint(testPayload);
+
+    // HealStreamDO returns approved state with a fingerprint matching the test payload shape.
+    const healStream = createMockHealStream({
+      approved: {
+        fingerprint: matchingFingerprint,
+        suggestions: [
+          {
+            id: "suggestion-heal-1",
+            sourcePath: "/first_name",
+            targetField: "first_name",
+            transformKind: "copy",
+            confidence: 1,
+            explanation: "Direct field match.",
+            evidenceSample: "Alice",
+            deterministicValidation: {
+              isValid: true,
+              validatedAt: "2026-01-01T00:00:00.000Z",
+              errors: [],
+            },
+            reviewStatus: "pending",
+            replayStatus: "not_requested",
+          },
+        ],
+        approvedAt: "2026-01-01T00:00:00.000Z",
+      },
+    });
+
+    const state: FakeDbState = {
+      attempts: [],
+      mappingVersions: [],
+      messages: [],
+      queues: [],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
+
+    await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions",
+        {
+          contractId: "employee-v1",
+          payload: testPayload,
+          queueId: "queue-1",
+          sourceSystem: "test",
+        },
+        AUTH_HEADER,
+      ),
+      createMockEnv(undefined, undefined, undefined, undefined, undefined, undefined, healStream),
+    );
+
+    // Critical assertion: LLM was never invoked on the fast path.
+    expect(vi.mocked(suggestMappings)).not.toHaveBeenCalled();
   });
 });

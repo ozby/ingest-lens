@@ -42,11 +42,11 @@ export function createMockKv(store: Map<string, string> = new Map()): {
   };
 }
 
-function createMockHealStream(): {
+export function createMockHealStream(state: { approved: unknown } = { approved: null }): {
   idFromName: ReturnType<typeof vi.fn>;
   get: ReturnType<typeof vi.fn>;
 } {
-  const stateResponse = new Response(JSON.stringify({ approved: null }), {
+  const stateResponse = new Response(JSON.stringify(state), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });

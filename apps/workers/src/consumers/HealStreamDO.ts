@@ -1,7 +1,6 @@
 import type { MappingSuggestion } from "@repo/types";
 import { createDb, type Env } from "../db/client";
 import { approvedMappingRevisions } from "../db/schema";
-import { shapeFingerprint } from "../intake/shapeFingerprint";
 
 // ---------------------------------------------------------------------------
 // SSE event types
@@ -26,6 +25,7 @@ interface ApprovedState {
 
 interface TryHealBody {
   batch: { suggestions: MappingSuggestion[]; mappingTraceId: string; driftCategories: string[] };
+  payloadFingerprint: string; // shapeFingerprint(payload) computed by the Worker
   attemptId: string;
   sourceSystem: string;
   contractId: string;
@@ -146,9 +146,17 @@ export class HealStreamDO implements DurableObject {
 
   private async handleTryHeal(request: Request): Promise<Response> {
     const body = (await request.json()) as TryHealBody;
-    const { batch, attemptId, sourceSystem, contractId, contractVersion, ownerId } = body;
+    const {
+      batch,
+      payloadFingerprint,
+      attemptId,
+      sourceSystem,
+      contractId,
+      contractVersion,
+      ownerId,
+    } = body;
 
-    const newFingerprint = shapeFingerprint(batch.suggestions);
+    const newFingerprint = payloadFingerprint; // computed by the Worker from the raw payload
 
     // Already matches current approved state — no-op
     if (this.approved && this.approved.fingerprint === newFingerprint) {

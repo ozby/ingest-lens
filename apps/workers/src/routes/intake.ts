@@ -732,8 +732,8 @@ async function tryHealPath(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         batch: mapped.batch,
+        payloadFingerprint: incomingFingerprint,
         sourceSystem: value.sourceSystem,
-        fingerprint: incomingFingerprint,
       }),
     });
 
