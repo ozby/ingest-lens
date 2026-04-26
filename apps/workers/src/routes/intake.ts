@@ -733,13 +733,22 @@ async function tryHealPath(
       body: JSON.stringify({
         batch: mapped.batch,
         payloadFingerprint: incomingFingerprint,
-        sourceSystem: value.sourceSystem,
       }),
     });
 
     if (!healRes.ok) return null;
 
     const healResult = await healRes.json<{ healed: boolean; suggestions: MappingSuggestion[] }>();
+
+    if (!healResult.healed) {
+      // Race: fingerprint matched in DO between getState() and tryHeal() — use cached suggestions
+      const normalized = normalizeWithMapping({
+        payload: value.payload,
+        suggestions: healResult.suggestions,
+      });
+      return c.json({ status: "success", data: { normalized, fastPath: true } });
+    }
+
     const db = createDb(c.env);
     const persisted = await persistHealedAttempt(
       db,

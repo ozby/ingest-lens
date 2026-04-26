@@ -26,11 +26,6 @@ interface ApprovedState {
 interface TryHealBody {
   batch: { suggestions: MappingSuggestion[]; mappingTraceId: string; driftCategories: string[] };
   payloadFingerprint: string; // shapeFingerprint(payload) computed by the Worker
-  attemptId: string;
-  sourceSystem: string;
-  contractId: string;
-  contractVersion: string;
-  ownerId: string;
 }
 
 interface RollbackBody {
@@ -146,26 +141,18 @@ export class HealStreamDO implements DurableObject {
 
   private async handleTryHeal(request: Request): Promise<Response> {
     const body = (await request.json()) as TryHealBody;
-    const {
-      batch,
-      payloadFingerprint,
-      attemptId,
-      sourceSystem,
-      contractId,
-      contractVersion,
-      ownerId,
-    } = body;
+    const { batch, payloadFingerprint } = body;
 
     const newFingerprint = payloadFingerprint; // computed by the Worker from the raw payload
 
-    // Already matches current approved state — no-op
+    // Already matches current approved state — no-op (race between getState() and tryHeal())
     if (this.approved && this.approved.fingerprint === newFingerprint) {
       return Response.json({ healed: false, suggestions: this.approved.suggestions });
     }
 
     const startMs = Date.now();
 
-    // Broadcast intent events before the write
+    // Broadcast intent events
     await this.broadcast({
       type: "drift_detected",
       shapeFingerprint: newFingerprint,
@@ -174,41 +161,12 @@ export class HealStreamDO implements DurableObject {
     await this.broadcast({ type: "analyzing", confidence: 0.9, model: "auto" });
     await this.broadcast({ type: "rewriting", suggestionCount: batch.suggestions.length });
 
-    // Neon write — must succeed before we update cache or broadcast healed
-    const db = createDb(this.env);
-    const mappingVersionId = crypto.randomUUID();
-    const now = new Date();
-
-    const [revision] = await db
-      .insert(approvedMappingRevisions)
-      .values({
-        id: mappingVersionId,
-        ownerId,
-        intakeAttemptId: attemptId,
-        mappingTraceId: batch.mappingTraceId,
-        contractId,
-        contractVersion,
-        targetRecordType: contractId.replace(/-v\d+$/, "").replace(/-/g, "_"),
-        approvedSuggestionIds: batch.suggestions.map((s) => s.id),
-        sourceHash: sourceSystem,
-        sourceKind: "auto_heal",
-        sourceFixtureId: null,
-        deliveryTarget: {
-          healSource: `${sourceSystem}:${contractId}:${contractVersion}`,
-        } as unknown as import("@repo/types").DeliveryTarget,
-        shapeFingerprint: newFingerprint,
-        healedAt: now,
-        createdAt: now,
-      })
-      .returning();
-
-    if (!revision) {
-      throw new Error("HealStreamDO: Neon insert returned no rows");
-    }
-
     // Update in-memory cache and persist to DO storage
+    // Neon writes are owned by the Worker (persistHealedAttempt), not the DO
     this.approved = { fingerprint: newFingerprint, suggestions: batch.suggestions };
     await this.state.storage.put(STORAGE_KEY, JSON.stringify(this.approved));
+
+    const mappingVersionId = crypto.randomUUID();
 
     // Broadcast healed
     await this.broadcast({
@@ -288,9 +246,8 @@ export class HealStreamDO implements DurableObject {
       });
     }, 15_000);
 
-    // Clean up on stream close
-    void readable
-      .pipeTo(new WritableStream())
+    // Clean up when the writer closes (client disconnect)
+    void writer.closed
       .catch(() => undefined)
       .finally(() => {
         clearInterval(keepaliveHandle);

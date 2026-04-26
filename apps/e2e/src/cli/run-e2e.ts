@@ -71,7 +71,29 @@ export function resolveJourneySelection(args: RunE2eArgs): JourneySelection {
 
 export function buildJourneyRunCommand(args: RunE2eArgs): JourneyRunCommand {
   const selection = resolveJourneySelection(args);
-  const commandArgs = ["exec", "vitest", "run", "--config", "vitest.journeys.config.ts"];
+  const suites = listE2ESuites();
+  const suite = suites.find((s) => s.id === selection.suiteId);
+  const firstStep = suite?.steps[0];
+
+  if (firstStep?.runner === "playwright") {
+    const configPath = firstStep.configPath ?? "playwright.config.ts";
+    return {
+      command: "pnpm",
+      args: [
+        "exec",
+        "playwright",
+        "test",
+        "--config",
+        configPath,
+        ...selection.files,
+        ...args.passthrough,
+      ],
+      suiteId: selection.suiteId,
+    };
+  }
+
+  const configPath = firstStep?.configPath ?? "vitest.journeys.config.ts";
+  const commandArgs = ["exec", "vitest", "run", "--config", configPath];
 
   if (args.workers !== undefined) {
     commandArgs.push("--poolOptions.threads.maxThreads", String(args.workers));

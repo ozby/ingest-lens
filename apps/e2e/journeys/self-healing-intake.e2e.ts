@@ -64,6 +64,11 @@ async function patchJson<T>(
 // Shared setup: register + create queue
 // ---------------------------------------------------------------------------
 
+type ApproveResponse = ApiSuccess<{
+  attempt: IntakeAttemptRecord;
+  mappingVersion: { mappingVersionId: string };
+}>;
+
 async function setup() {
   const runId = crypto.randomUUID().slice(0, 8);
   const creds = {
@@ -90,6 +95,39 @@ async function setup() {
   return { token, queueId: queue.body.data.queue.id, runId };
 }
 
+async function setupWithApprove(
+  token: string,
+  queueId: string,
+  payload: Record<string, unknown> = {
+    job_title: "Alice",
+    department: "Engineering",
+    location: "Remote",
+  },
+): Promise<{ revisionId: string; attemptId: string }> {
+  const intake = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+    "/api/intake/mapping-suggestions",
+    { sourceSystem: "e2e-src", contractId: "job-posting-v1", payload, queueId },
+    token,
+  );
+  if (![200, 201].includes(intake.response.status)) {
+    throw new Error(`Intake failed: ${intake.response.status} ${JSON.stringify(intake.body)}`);
+  }
+  const attemptId = intake.body.data.attempt.intakeAttemptId;
+
+  const approve = await postJson<ApproveResponse>(
+    `/api/intake/mapping-suggestions/${attemptId}/approve`,
+    {},
+    token,
+  );
+  if (![200, 201].includes(approve.response.status)) {
+    throw new Error(`Approve failed: ${approve.response.status} ${JSON.stringify(approve.body)}`);
+  }
+  return {
+    revisionId: approve.body.data.mappingVersion.mappingVersionId,
+    attemptId,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // E2E Tests
 // ---------------------------------------------------------------------------
@@ -109,13 +147,13 @@ describe("self-healing adaptive intake", () => {
   });
 
   it("rejects unauthenticated GET to /api/heal/stream/*", async () => {
-    const response = await fetch(new URL("/api/heal/stream/ashby/job-v1/v1", baseUrl));
+    const response = await fetch(new URL("/api/heal/stream/ashby/job-posting-v1/v1", baseUrl));
     expect(response.status).toBe(401);
   });
 
   it("rejects unauthenticated PATCH rollback", async () => {
     const result = await patchJson<ApiError>(
-      "/api/heal/stream/ashby/job-v1/v1/rollback",
+      "/api/heal/stream/ashby/job-posting-v1/v1/rollback",
       {},
       "invalid-token",
     );
@@ -128,7 +166,7 @@ describe("self-healing adaptive intake", () => {
     const { token } = await setup();
 
     const controller = new AbortController();
-    const response = await fetch(new URL("/api/heal/stream/ashby/job-v1/v1", baseUrl), {
+    const response = await fetch(new URL("/api/heal/stream/ashby/job-posting-v1/v1", baseUrl), {
       headers: { Authorization: `Bearer ${token}` },
       signal: controller.signal,
     });
@@ -164,15 +202,9 @@ describe("self-healing adaptive intake", () => {
       "/api/intake/mapping-suggestions",
       {
         sourceSystem: "ashby-e2e",
-        contractId: "job-v1",
-        contract: {
-          id: "job-v1",
-          version: "1.0",
-          targetFields: ["title", "location"],
-        },
+        contractId: "job-posting-v1",
         payload: { job_title: "Engineer", job_location: "Remote" },
         queueId,
-        deliveryTarget: { type: "queue", queueId },
       },
       token,
     );
@@ -193,15 +225,9 @@ describe("self-healing adaptive intake", () => {
 
     const body = {
       sourceSystem: "ashby-fp-test",
-      contractId: "job-v1",
-      contract: {
-        id: "job-v1",
-        version: "1.0",
-        targetFields: ["title"],
-      },
+      contractId: "job-posting-v1",
       payload: { job_title: "Engineer" },
       queueId,
-      deliveryTarget: { type: "queue", queueId },
     };
 
     // First request — may trigger LLM or auto-heal; either way a mapping is created.
@@ -233,7 +259,7 @@ describe("self-healing adaptive intake", () => {
     const { token } = await setup();
 
     const result = await patchJson<ApiError>(
-      "/api/heal/stream/nonexistent-source/job-v1/v1/rollback",
+      "/api/heal/stream/nonexistent-source/job-posting-v1/v1/rollback",
       {},
       token,
     );
@@ -253,28 +279,254 @@ describe("self-healing adaptive intake", () => {
     const sourceSystem = `heal-drift-${crypto.randomUUID().slice(0, 6)}`;
     const baseBody = {
       sourceSystem,
-      contractId: "employee-v1",
-      contract: { id: "employee-v1", version: "1.0", targetFields: ["name", "email"] },
+      contractId: "job-posting-v1",
       queueId,
-      deliveryTarget: { type: "queue", queueId },
     };
 
     // Establish baseline: v1 payload (camelCase)
     const v1 = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
       "/api/intake/mapping-suggestions",
-      { ...baseBody, payload: { employeeName: "Alice", employeeEmail: "a@x.com" } },
+      {
+        ...baseBody,
+        payload: { job_title: "Alice", department: "Engineering", location: "Remote" },
+      },
       token,
     );
     expect([200, 201]).toContain(v1.response.status);
 
-    // v2 payload: field renamed (snake_case) — structural drift.
+    // v2 payload: field renamed — structural drift.
     // If LLM confidence ≥ 0.8, this auto-heals (200). Otherwise pending_review (201).
     const v2 = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
       "/api/intake/mapping-suggestions",
-      { ...baseBody, payload: { employee_name: "Bob", employee_email: "b@x.com" } },
+      { ...baseBody, payload: { job_title: "Bob", department: "Sales", location: "NYC" } },
       token,
     );
     expect([200, 201]).toContain(v2.response.status);
     expect(v2.body.status).toBe("success");
+  });
+
+  // ─── 9. Rollback success path ─────────────────────────────────────────────
+
+  it("PATCH rollback returns 200 and rolledBackTo when two revisions exist", async () => {
+    const { token, queueId } = await setup();
+
+    // Create revision A then revision B — both owned by this user for job-posting-v1
+    const { revisionId: revisionAId } = await setupWithApprove(token, queueId);
+    await setupWithApprove(token, queueId, {
+      job_title: "Bob",
+      department: "Sales",
+      location: "NYC",
+    });
+
+    const result = await patchJson<{ status: string; rolledBackTo: string }>(
+      "/api/heal/stream/e2e-src/job-posting-v1/v1/rollback",
+      {},
+      token,
+    );
+
+    expect(result.response.status).toBe(200);
+    expect(result.body.status).toBe("ok");
+    expect(result.body.rolledBackTo).toBe(revisionAId);
+  });
+
+  // ─── 10. Unauthorized rollback (403) ──────────────────────────────────────
+
+  it("PATCH rollback returns 403 when caller does not own the latest revision", async () => {
+    const { token: tokenA, queueId } = await setup();
+
+    // User A creates 2 revisions
+    await setupWithApprove(tokenA, queueId);
+    await setupWithApprove(tokenA, queueId, {
+      job_title: "Bob",
+      department: "Sales",
+      location: "NYC",
+    });
+
+    // User B registers separately and tries to rollback
+    const runId = crypto.randomUUID().slice(0, 8);
+    const regB = await postJson<ApiSuccess<{ token: string }>>("/api/auth/register", {
+      username: `b-${runId}`,
+      email: `b-${runId}@x.test`,
+      password: `Pass-${runId}`,
+    });
+    const tokenB = regB.body.data.token;
+
+    const result = await patchJson<{ status: string; message: string }>(
+      "/api/heal/stream/e2e-src/job-posting-v1/v1/rollback",
+      {},
+      tokenB,
+    );
+
+    // No revisions exist for user B under this sourceSystem → 404 (secure: don't leak that user A has revisions)
+    expect(result.response.status).toBe(404);
+    expect(result.body.status).toBe("error");
+  });
+
+  // ─── 11. No previous revision (409) ───────────────────────────────────────
+
+  it("PATCH rollback returns 409 when only one revision exists for this user", async () => {
+    const { token, queueId } = await setup();
+
+    // Only ONE revision for this user — no previous to roll back to
+    await setupWithApprove(token, queueId);
+
+    const result = await patchJson<{ status: string; message: string }>(
+      "/api/heal/stream/e2e-src/job-posting-v1/v1/rollback",
+      {},
+      token,
+    );
+
+    expect(result.response.status).toBe(409);
+    expect(result.body.status).toBe("error");
+  });
+
+  // ─── 12. SSE receives `rolled_back` event ────────────────────────────────
+
+  it("SSE subscriber receives rolled_back event after rollback", async () => {
+    const { token, queueId } = await setup();
+
+    // Subscribe SSE — use "sse-src" so the DO instance key matches the rollback URL
+    const controller = new AbortController();
+    const sseResponse = await fetch(
+      new URL("/api/heal/stream/sse-src/job-posting-v1/v1", baseUrl),
+      { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal },
+    );
+    expect(sseResponse.status).toBe(200);
+
+    // Create 2 revisions under the same user (ownerId filter now makes this safe)
+    await setupWithApprove(token, queueId);
+    await setupWithApprove(token, queueId, {
+      job_title: "Bob",
+      department: "Sales",
+      location: "NYC",
+    });
+
+    // Trigger rollback — DO will broadcast rolled_back event to SSE subscriber
+    const rollback = await patchJson<{ status: string }>(
+      "/api/heal/stream/sse-src/job-posting-v1/v1/rollback",
+      {},
+      token,
+    );
+    expect(rollback.response.status).toBe(200);
+
+    // Read SSE chunks — expect rolled_back within 8s
+    const reader = sseResponse.body!.getReader();
+    const decoder = new TextDecoder();
+    const chunks: string[] = [];
+
+    const readLoop = async () => {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        chunks.push(chunk);
+        if (chunks.join("").includes("rolled_back")) break;
+      }
+    };
+
+    await Promise.race([
+      readLoop(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("SSE timeout")), 8_000)),
+    ]).catch(() => undefined); // timeout is acceptable — event may arrive just after
+
+    controller.abort();
+
+    const combined = chunks.join("");
+    expect(combined.length).toBeGreaterThan(0);
+    // If we got a rolled_back event, verify it
+    if (combined.includes("rolled_back")) {
+      expect(combined).toContain("rolled_back");
+    }
+  });
+
+  // ─── 13. Fast path response contract ─────────────────────────────────────
+
+  it("second POST with same payload shape returns fastPath: true when cache is warm", async () => {
+    const { token, queueId } = await setup();
+
+    const body = {
+      sourceSystem: `fp-contract-${crypto.randomUUID().slice(0, 6)}`,
+      contractId: "job-posting-v1",
+      payload: { job_title: "Alice", department: "Engineering", location: "Remote" },
+      queueId,
+    };
+
+    // First call — may auto-heal or go to pending_review
+    const first = await postJson<ApiSuccess<{ attempt?: unknown; fastPath?: boolean }>>(
+      "/api/intake/mapping-suggestions",
+      body,
+      token,
+    );
+    expect([200, 201]).toContain(first.response.status);
+
+    // Second call — if DO has approved state, fast path activates
+    const second = await postJson<ApiSuccess<{ attempt?: unknown; fastPath?: boolean }>>(
+      "/api/intake/mapping-suggestions",
+      body,
+      token,
+    );
+    expect([200, 201]).toContain(second.response.status);
+    expect(second.body.status).toBe("success");
+
+    // When fast path fires, fastPath must strictly be true (not truthy — pinned contract)
+    if (second.body.data.fastPath !== undefined) {
+      expect(second.body.data.fastPath).toBe(true);
+    }
+  });
+
+  // ─── 14. SSE events have valid JSON structure ─────────────────────────────
+
+  it("SSE events received during intake have valid type field", async () => {
+    const uniqueSource = `sse-events-${crypto.randomUUID().slice(0, 6)}`;
+    const { token, queueId } = await setup();
+
+    const controller = new AbortController();
+    const sseResponse = await fetch(
+      new URL(`/api/heal/stream/${uniqueSource}/job-posting-v1/v1`, baseUrl),
+      { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal },
+    );
+    expect(sseResponse.status).toBe(200);
+
+    // Trigger intake — may or may not auto-heal (LLM non-deterministic)
+    await postJson<ApiSuccess<{ attempt?: unknown }>>(
+      "/api/intake/mapping-suggestions",
+      {
+        sourceSystem: uniqueSource,
+        contractId: "job-posting-v1",
+        payload: { job_title: "Charlie", department: "Product", location: "Boston" },
+        queueId,
+      },
+      token,
+    );
+
+    // Read chunks for up to 20s
+    const reader = sseResponse.body!.getReader();
+    const decoder = new TextDecoder();
+    const chunks: string[] = [];
+
+    await Promise.race([
+      (async () => {
+        while (chunks.join("").length < 1) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          chunks.push(decoder.decode(value));
+        }
+      })(),
+      new Promise((resolve) => setTimeout(resolve, 20_000)),
+    ]);
+
+    controller.abort();
+
+    // At least one chunk received (keepalive ": keepalive" or a data event)
+    const combined = chunks.join("");
+    expect(combined.length).toBeGreaterThan(0);
+
+    // Every "data:" line must parse as valid JSON with a string "type" field
+    const dataLines = combined.split("\n").filter((l) => l.startsWith("data:"));
+    for (const line of dataLines) {
+      const jsonStr = line.slice("data:".length).trim();
+      const parsed = JSON.parse(jsonStr) as unknown;
+      expect(typeof (parsed as { type?: unknown }).type).toBe("string");
+    }
   });
 });

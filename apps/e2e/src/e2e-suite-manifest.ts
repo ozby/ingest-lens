@@ -48,6 +48,7 @@ const DEMO_FILES = ["journeys/public-fixture-demo-flow.e2e.ts"] as const;
 const CLIENT_FILES = ["journeys/client-route-code-splitting.e2e.ts"] as const;
 const BRANDING_FILES = ["journeys/ingestlens-branding.e2e.ts"] as const;
 const NEON_BRANCH_PROVIDER_FILES = ["journeys/neon-branch-provider.e2e.ts"] as const;
+const INTAKE_UI_FILES = ["journeys/intake-heal-ui.spec.ts"] as const;
 const FULL_FILES = [
   ...FOUNDATION_FILES,
   ...AUTH_FILES,
@@ -149,6 +150,23 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
         fixedFiles: S1B_LATENCY_FILES,
         batchKey: "s1b-latency",
         env: { SKIP_REASON: "shell-not-wired" },
+      },
+    ],
+  },
+  {
+    id: "intake-ui",
+    aliases: ["ui", "browser", "playwright-intake"],
+    fileMatchers: INTAKE_UI_FILES,
+    batchKey: "intake-ui",
+    steps: [
+      {
+        runner: "playwright",
+        logName: "intake-ui",
+        configPath: "playwright.config.ts",
+        fixedFiles: INTAKE_UI_FILES,
+        batchKey: "intake-ui",
+        supportsHeaded: true,
+        supportsDebug: true,
       },
     ],
   },

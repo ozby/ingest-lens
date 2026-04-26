@@ -26,6 +26,7 @@ export type Env = {
   HEAL_STREAM: DurableObjectNamespace;
   KV: KVNamespace;
   AUTO_HEAL_THRESHOLD?: string;
+  LOW_CONFIDENCE_THRESHOLD?: string;
 };
 
 export function createDb(env: Env) {

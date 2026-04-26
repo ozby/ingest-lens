@@ -9,7 +9,7 @@ import { validateJudgeAssessment, validateMappingSuggestionBatch } from "./valid
 export const DEFAULT_PRIMARY_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 export const DEFAULT_JUDGE_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 export const DEFAULT_MAPPING_PROMPT_VERSION = "payload-mapper-v1";
-// Values between LOW_CONFIDENCE_THRESHOLD (0.5) and AUTO_HEAL_THRESHOLD (0.8 default)
+// Values between LOW_CONFIDENCE_THRESHOLD and AUTO_HEAL_THRESHOLD (0.8 default)
 // return kind:"success" from suggestMappings() but fall through to pending_review
 // (below AUTO_HEAL_THRESHOLD). Only confidence ≥ AUTO_HEAL_THRESHOLD triggers auto-heal.
 export const LOW_CONFIDENCE_THRESHOLD = 0.5;
@@ -59,7 +59,7 @@ export type StructuredRunner = <T>(options: {
 }) => Promise<unknown>;
 
 export interface SuggestMappingsDependencies {
-  env?: Pick<Env, "AI">;
+  env?: Pick<Env, "AI" | "LOW_CONFIDENCE_THRESHOLD">;
   primaryRunner?: StructuredRunner;
   judgeRunner?: StructuredRunner;
   timeoutMs?: number;
@@ -164,10 +164,10 @@ function buildJudgePrompt(
   ].join("\n\n");
 }
 
-function hasLowConfidence(batch: MappingSuggestionBatch): boolean {
+function hasLowConfidence(batch: MappingSuggestionBatch, threshold: number): boolean {
   return (
-    batch.overallConfidence < LOW_CONFIDENCE_THRESHOLD ||
-    batch.suggestions.some((suggestion) => suggestion.confidence < LOW_CONFIDENCE_THRESHOLD)
+    batch.overallConfidence < threshold ||
+    batch.suggestions.some((suggestion) => suggestion.confidence < threshold)
   );
 }
 
@@ -514,6 +514,11 @@ export async function suggestMappings(
 ): Promise<SuggestMappingsResult> {
   const opts = resolveDependencyOpts(input, dependencies);
 
+  const threshold =
+    typeof dependencies.env?.LOW_CONFIDENCE_THRESHOLD === "string"
+      ? Number(dependencies.env.LOW_CONFIDENCE_THRESHOLD)
+      : LOW_CONFIDENCE_THRESHOLD;
+
   const runnerResult = acquirePrimaryRunner(input, dependencies, opts.primaryModel);
   if (!runnerResult.ok) return runnerResult.result;
   const { runner: primaryRunner, provider } = runnerResult;
@@ -542,7 +547,7 @@ export async function suggestMappings(
     };
   }
 
-  if (hasLowConfidence(validation.value)) {
+  if (hasLowConfidence(validation.value, threshold)) {
     return {
       kind: "abstain",
       reason: "Model confidence is too low for review creation.",

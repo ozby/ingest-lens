@@ -57,6 +57,7 @@ healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollb
       and(
         eq(approvedMappingRevisions.contractId, contractId),
         eq(approvedMappingRevisions.contractVersion, contractVersion),
+        eq(approvedMappingRevisions.ownerId, ownerId),
       ),
     )
     .orderBy(desc(approvedMappingRevisions.createdAt))
@@ -66,10 +67,6 @@ healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollb
 
   if (!current) {
     return c.json({ status: "error", message: "No approved revision found for this source." }, 404);
-  }
-
-  if (current.ownerId !== ownerId) {
-    return c.json({ status: "error", message: "Not authorized to rollback this revision." }, 403);
   }
 
   if (!previous) {
@@ -99,7 +96,6 @@ healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollb
           sourceFixtureId: previous.sourceFixtureId ?? null,
           deliveryTarget: previous.deliveryTarget,
           shapeFingerprint: previous.shapeFingerprint ?? null,
-          suggestions: [],
         },
       }),
     }),

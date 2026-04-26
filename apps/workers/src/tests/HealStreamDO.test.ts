@@ -2,12 +2,8 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { HealStreamDO } from "../consumers/HealStreamDO";
 import { shapeFingerprint } from "../intake/shapeFingerprint";
 import type { MappingSuggestion } from "@repo/types";
-import { createDb } from "../db/client";
 
-vi.mock("../db/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/client")>();
-  return { ...actual, createDb: vi.fn() };
-});
+vi.mock("../db/client");
 
 function createMockStorage(): DurableObjectStorage {
   const store = new Map<string, unknown>();
@@ -73,14 +69,6 @@ function makeSuggestion(overrides: Partial<MappingSuggestion> = {}): MappingSugg
   };
 }
 
-function mockNeonInsert() {
-  const revision = { id: "rev-1", createdAt: new Date() };
-  const returning = vi.fn().mockResolvedValue([revision]);
-  const values = vi.fn().mockReturnValue({ returning });
-  const insert = vi.fn().mockReturnValue({ values });
-  vi.mocked(createDb).mockReturnValue({ insert } as never);
-}
-
 async function postTryHeal(
   do_: HealStreamDO,
   payload: Record<string, unknown>,
@@ -122,14 +110,12 @@ describe("HealStreamDO", () => {
 
   describe("tryHeal()", () => {
     it("heals once on first call (returns healed: true)", async () => {
-      mockNeonInsert();
       const result = await postTryHeal(healDO, { first_name: "Alice" }, [makeSuggestion()]);
       expect(result.healed).toBe(true);
       expect(mockState.storage.put).toHaveBeenCalledTimes(1);
     });
 
     it("is a no-op on second call with same payload shape (returns healed: false)", async () => {
-      mockNeonInsert();
       const payload = { first_name: "Alice" };
       const suggestions = [makeSuggestion()];
 
@@ -139,16 +125,14 @@ describe("HealStreamDO", () => {
       const second = await postTryHeal(healDO, payload, suggestions);
       expect(second.healed).toBe(false);
 
-      // Neon write happened exactly once.
+      // DO storage written exactly once — no-op does not re-persist.
       expect(mockState.storage.put).toHaveBeenCalledTimes(1);
     });
 
     it("heals again when payload shape changes", async () => {
-      mockNeonInsert();
       const first = await postTryHeal(healDO, { first_name: "Alice" }, [makeSuggestion()]);
       expect(first.healed).toBe(true);
 
-      mockNeonInsert();
       const second = await postTryHeal(healDO, { first_name: "Bob", last_name: "Smith" }, [
         makeSuggestion(),
       ]);
@@ -163,7 +147,6 @@ describe("HealStreamDO", () => {
     });
 
     it("returns approved state with correct fingerprint after heal", async () => {
-      mockNeonInsert();
       const payload = { first_name: "Alice" };
       await postTryHeal(healDO, payload, [makeSuggestion()]);
 
