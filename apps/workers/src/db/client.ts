@@ -25,7 +25,6 @@ export type Env = {
   TOPIC_ROOMS: DurableObjectNamespace;
   HEAL_STREAM: DurableObjectNamespace;
   KV: KVNamespace;
-  HEAL_STREAM: DurableObjectNamespace;
 };
 
 export function createDb(env: Env) {
