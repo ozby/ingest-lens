@@ -49,6 +49,7 @@ export function createMockEnv(
   topicRooms?: { idFromName: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> },
   ai?: Ai,
   kv?: { get: ReturnType<typeof vi.fn>; put: ReturnType<typeof vi.fn> },
+  healStream?: { idFromName: ReturnType<typeof vi.fn>; get: ReturnType<typeof vi.fn> },
 ): Env {
   return {
     HYPERDRIVE: createMockHyperdrive(),
@@ -63,6 +64,8 @@ export function createMockEnv(
     ANALYTICS: (analytics ?? { writeDataPoint: vi.fn() }) as unknown as Env["ANALYTICS"],
     TOPIC_ROOMS: (topicRooms ??
       createMockDurableObjectNamespace()) as unknown as Env["TOPIC_ROOMS"],
+    HEAL_STREAM: (healStream ??
+      createMockDurableObjectNamespace()) as unknown as Env["HEAL_STREAM"],
     KV: (kv ?? createMockKv()) as unknown as Env["KV"],
     HEAL_STREAM: createMockDurableObjectNamespace() as unknown as Env["HEAL_STREAM"],
   };

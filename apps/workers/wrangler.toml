@@ -22,6 +22,14 @@ account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret;
 
 # General rate limiter — 100 req/60s (wrangler dev / local only; envs declare their own below)
 # namespace_id is a stable project-scoped UUID; CF creates the namespace on first deploy.
+[[durable_objects.bindings]]
+name = "TOPIC_ROOMS"
+class_name = "TopicRoom"
+
+[[durable_objects.bindings]]
+name = "HEAL_STREAM"
+class_name = "HealStreamDO"
+
 [[rate_limiting]]
 binding = "RATE_LIMITER"
 namespace_id = "b8f2e4a6-1c3d-4f5e-8a7b-9c0d1e2f3a4b"
@@ -67,6 +75,10 @@ bucket_name = "node-pubsub-dev-assets"
 [[env.dev.durable_objects.bindings]]
 name = "TOPIC_ROOMS"
 class_name = "TopicRoom"
+
+[[env.dev.durable_objects.bindings]]
+name = "HEAL_STREAM"
+class_name = "HealStreamDO"
 
 [[env.dev.migrations]]
 tag = "v1"
@@ -132,6 +144,10 @@ bucket_name = "placeholder-prd-r2-bucket"
 [[env.prd.durable_objects.bindings]]
 name = "TOPIC_ROOMS"
 class_name = "TopicRoom"
+
+[[env.prd.durable_objects.bindings]]
+name = "HEAL_STREAM"
+class_name = "HealStreamDO"
 
 [[env.prd.migrations]]
 tag = "v1"
