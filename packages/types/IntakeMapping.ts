@@ -170,6 +170,9 @@ export interface ApprovedMappingRevision {
   sourceKind: SourceReferenceKind;
   sourceFixtureId?: string;
   deliveryTarget: DeliveryTarget;
+  shapeFingerprint?: string;
+  healedAt?: string;
+  rolledBackFrom?: string;
   createdAt: string;
 }
 

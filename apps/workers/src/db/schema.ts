@@ -180,5 +180,8 @@ export const approvedMappingRevisions = pgTable("approved_mapping_revisions", {
   sourceKind: text("source_kind").notNull(),
   sourceFixtureId: text("source_fixture_id"),
   deliveryTarget: jsonb("delivery_target").$type<DeliveryTarget>().notNull(),
+  shapeFingerprint: text("shape_fingerprint"),
+  healedAt: timestamp("healed_at"),
+  rolledBackFrom: text("rolled_back_from"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

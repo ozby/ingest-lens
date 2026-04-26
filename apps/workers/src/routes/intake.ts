@@ -119,6 +119,9 @@ function toMappingRevision(row: MappingVersionRow): ApprovedMappingRevision {
     sourceKind: row.sourceKind as ApprovedMappingRevision["sourceKind"],
     sourceFixtureId: row.sourceFixtureId ?? undefined,
     deliveryTarget: row.deliveryTarget,
+    shapeFingerprint: row.shapeFingerprint ?? undefined,
+    healedAt: row.healedAt?.toISOString() ?? undefined,
+    rolledBackFrom: row.rolledBackFrom ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };
 }
