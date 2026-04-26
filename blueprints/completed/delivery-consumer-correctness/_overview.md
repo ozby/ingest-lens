@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: in-progress
+status: completed
 complexity: M
 created: "2026-04-26"
 last_updated: "2026-04-26"
-progress: "0% (0/4 tasks done, 0 blocked, updated 2026-04-26)"
+progress: "100% (4/4 tasks done, 0 blocked, updated 2026-04-26)"
 depends_on:
   - cf-queues-delivery
 tags:
@@ -14,6 +14,7 @@ tags:
   - delivery
   - tech-debt
   - correctness
+completed_at: "2026-04-26"
 ---
 
 # Delivery consumer correctness
@@ -31,18 +32,19 @@ README's "honest delivery semantics" claim actually true.
   (4xx/5xx classification → DLQ). Both are consumer-only; producer side
   is touched only to keep `attempt` field optional during the rollout window.
 - **Deferred to sibling blueprints:**
-  - **`infra-delivery-dlq`** (precondition): provision the Pulumi
-    `delivery-dlq` resource — declared in `wrangler.toml` but missing from `infra/`.
   - **`topicroom-dedupe-then-notify-before-ack`** (follow-on for B3):
     add UNIQUE on `msg_log.messageId`, dedupe `handlePostNotify`, then reorder
     ack/notify. Cannot be safely shipped before TopicRoom dedupes.
+- **Infra precondition resolved:** Pulumi `delivery-dlq` resource was provisioned in
+  `infra/src/resources/exports-queues.ts` via commit `ab0eeb1` (same wave); no separate
+  `infra-delivery-dlq` blueprint was required.
 - **Out of scope:** Producer crash window, exactly-once delivery, DLQ inspection
   UI, removal of `attempt` field from `DeliveryPayload` (deferred follow-up
   release), B3 reorder.
 
 ## Pre-execution audit
 
-**Readiness:** Tasks 1.1 + 1.2 unblocked. Tasks 1.3 + 1.4 blocked on `infra-delivery-dlq`.
+**Readiness:** All tasks unblocked. DLQ resource provisioned via `ab0eeb1`.
 
 **Verified (2026-04-26)**
 
@@ -51,7 +53,7 @@ README's "honest delivery semantics" claim actually true.
 - `wrangler.toml` declares `max_retries = 5` and `dead_letter_queue = "delivery-dlq-{dev,prd}"`.
 - `@cloudflare/workers-types@4.20260423.1` declares `readonly attempts: number` on `Message<Body>` at index.d.ts:2367.
 - `docs/delivery-guarantees.md` exists and is clean.
-- **Pulumi `delivery-dlq` resource missing** from `infra/src/resources/` — hard precondition for Tasks 1.3 + 1.4.
+- Pulumi `delivery-dlq` resource provisioned in `infra/src/resources/exports-queues.ts` (commit `ab0eeb1`) — precondition for Tasks 1.3 + 1.4 satisfied; no `infra-delivery-dlq` sibling blueprint required.
 
 ## Bugs
 
@@ -60,7 +62,7 @@ README's "honest delivery semantics" claim actually true.
 | B1  | `deliveryConsumer.ts:15,79,85`; `routes/{message,topic}.ts` | Reads `msg.body.attempt` (always `0`); backoff index resets on every restart | **In scope** — consumer-side fix; field stays optional (R10 deploy safety)                       |
 | B2  | `deliveryConsumer.ts:78-82`                                 | Any non-2xx retries with same backoff; permanent 401/410 burns retry budget  | **In scope** — permanents route to DLQ with `failure_class` attribute                            |
 | B3  | `deliveryConsumer.ts:44,46-77`                              | `msg.ack()` before `TOPIC_ROOMS` notify; notify throw → silent drop          | **DEFERRED** — TopicRoom doesn't dedupe by `messageId`; reorder alone causes duplicate broadcast |
-| B4  | README "Delivery rails"                                     | Claims DLQ behavior; consumer never routes to DLQ                            | **In scope** (Task 1.4), gated on `infra-delivery-dlq`                                           |
+| B4  | README "Delivery rails"                                     | Claims DLQ behavior; consumer never routes to DLQ                            | **Shipped** (Task 1.4) — README + `delivery-guarantees.md` updated                               |
 
 ## Architecture changes (B1 + B2 only)
 
@@ -96,13 +98,13 @@ DeliveryPayload during rollout:
 
 Serial blueprint — all code-touching tasks modify `deliveryConsumer.ts`.
 
-| Wave              | Tasks                 | Dependencies               | Blocked?             | Effort |
-| ----------------- | --------------------- | -------------------------- | -------------------- | ------ |
-| Wave 0            | 1.1 regression tests  | None                       | No                   | S      |
-| Wave 1            | 1.2 B1 fix            | 1.1                        | No                   | S      |
-| Wave 2            | 1.3 B2 + DLQ routing  | 1.2 + `infra-delivery-dlq` | Yes — awaiting infra | S      |
-| Wave 3            | 1.4 README + docs     | 1.3                        | Yes — awaiting 1.3   | XS     |
-| **Critical path** | 1.1 → 1.2 → 1.3 → 1.4 | —                          | —                    | M      |
+| Wave              | Tasks                 | Dependencies | Done? | Effort |
+| ----------------- | --------------------- | ------------ | ----- | ------ |
+| Wave 0            | 1.1 regression tests  | None         | Yes   | S      |
+| Wave 1            | 1.2 B1 fix            | 1.1          | Yes   | S      |
+| Wave 2            | 1.3 B2 + DLQ routing  | 1.2          | Yes   | S      |
+| Wave 3            | 1.4 README + docs     | 1.3          | Yes   | XS     |
+| **Critical path** | 1.1 → 1.2 → 1.3 → 1.4 | —            | —     | M      |
 
 ---
 
@@ -139,9 +141,9 @@ B3 is deferred; do not add a B3 test here.
 
 **Acceptance:**
 
-- [ ] Four new tests named B1, B2-permanent, B2-transient, R10
-- [ ] Existing 11 test cases unchanged
-- [ ] `pnpm --filter @repo/workers test deliveryConsumer` shows the new failures
+- [x] Four new tests named B1, B2-permanent, B2-transient, R10
+- [x] Existing 11 test cases unchanged
+- [x] `pnpm --filter @repo/workers test deliveryConsumer` shows the new failures
 
 ---
 
@@ -176,21 +178,19 @@ Field removal ships as a follow-up release after queue drains.
 
 **Acceptance:**
 
-- [ ] `DeliveryPayload.attempt` is `attempt?: number` (optional, not removed)
-- [ ] Producers unchanged (still stamp `attempt: 0`)
-- [ ] Backoff lookup uses `msg.attempts`
-- [ ] B1 + R10 regression tests pass
-- [ ] `check-types` clean
+- [x] `DeliveryPayload.attempt` is `attempt?: number` (optional, not removed)
+- [x] Producers unchanged (still stamp `attempt: 0`)
+- [x] Backoff lookup uses `msg.attempts`
+- [x] B1 + R10 regression tests pass
+- [x] `check-types` clean
 
 ---
 
 #### [fix] Task 1.3: B2 — classify 4xx; route permanents to DLQ
 
-**Status:** todo
+**Status:** done
 
-**Depends:** Task 1.2, sibling blueprint `infra-delivery-dlq`
-
-> ⚠️ BLOCKED until `infra-delivery-dlq` provisions the Pulumi `delivery-dlq` resource.
+**Depends:** Task 1.2 (DLQ resource provisioned via `ab0eeb1`)
 
 Distinguish permanent vs transient failures. Route both to DLQ on retry
 exhaustion, tagged by `failure_class`.
@@ -224,11 +224,11 @@ Analytics + DLQ attribute: `failure_class: "transient"`.
 
 **Acceptance:**
 
-- [ ] `classifyFailure` extracted and unit-tested
-- [ ] 401/404/410/422 → `msg.retry({ delaySeconds: 0 })` not `msg.ack()`
-- [ ] 408/425/429/5xx → standard backoff
-- [ ] `delivery-guarantees.md` documents the status-code matrix
-- [ ] All gates green
+- [x] `classifyFailure` extracted and unit-tested
+- [x] 401/404/410/422 → `msg.retry({ delaySeconds: 0 })` not `msg.ack()`
+- [x] 408/425/429/5xx → standard backoff
+- [x] `delivery-guarantees.md` documents the status-code matrix
+- [x] All gates green
 
 ---
 
@@ -236,9 +236,7 @@ Analytics + DLQ attribute: `failure_class: "transient"`.
 
 **Status:** done
 
-**Depends:** Task 1.3, sibling blueprint `infra-delivery-dlq` merged
-
-> ⚠️ BLOCKED until Task 1.3 and `infra-delivery-dlq` are both done.
+**Depends:** Task 1.3 (DLQ resource provisioned via `ab0eeb1`)
 
 **Files:**
 
@@ -256,10 +254,10 @@ Analytics + DLQ attribute: `failure_class: "transient"`.
 
 **Acceptance:**
 
-- [ ] `delivery-dlq` is provisioned (verified, not assumed)
-- [ ] README matches implemented policy
-- [ ] `delivery-guarantees.md` is source of truth for retry semantics
-- [ ] `pnpm docs:check` passes
+- [x] `delivery-dlq` is provisioned (verified, not assumed)
+- [x] README matches implemented policy
+- [x] `delivery-guarantees.md` is source of truth for retry semantics
+- [x] `pnpm docs:check` passes
 
 ---
 

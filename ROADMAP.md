@@ -65,10 +65,10 @@ blueprints, but are load-bearing for the current state:
   `af1c3b7`; replaces machine-local `file:` paths.
 - **`delivery-consumer-correctness` (blueprint)** — three correctness fixes in
   the push-delivery consumer: `msg.attempts` for backoff (B1), 4xx/5xx
-  failure classification routing permanents to DLQ (B2), and `justfile` shim
-  for `ak-stop-qa`. Queues and DLQ moved to Pulumi IaC
-  (`infra/src/resources/exports-queues.ts`). B3 (notify-before-ack) deferred
-  pending TopicRoom dedupe.
+  failure classification routing permanents to DLQ (B2), and README +
+  `delivery-guarantees.md` reconciliation to match implemented semantics (B4).
+  DLQ (`delivery-dlq-{dev,prd}`) provisioned in Pulumi IaC via `ab0eeb1`.
+  B3 (notify-before-ack reorder) deferred pending TopicRoom dedupe.
 
 ## What's next
 
