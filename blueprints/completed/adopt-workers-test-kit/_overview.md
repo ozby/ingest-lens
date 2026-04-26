@@ -270,3 +270,63 @@ pnpm catalog:check                       # no drift
 
 - `@webpresso/workers-test-kit` via GitHub dependency (not yet on npm registry)
 - All kit mocks are `vi.fn()`-based — compatible with existing vitest setup
+
+## Refinement Summary
+
+**Date:** 2026-04-25
+
+### Findings
+
+1. **Technology claims — accurate.** `apps/workers/src/tests/helpers.ts` exists (confirmed)
+   and contains inline mock factories: `createMockEnv`, Hyperdrive (`null as unknown as
+Env["HYPERDRIVE"]`), DO namespace, and execution context stand-ins. The
+   `@webpresso/workers-test-kit` package exists at `/Users/ozby/repos/webpresso/workers-test-kit/`
+   and exports all claimed symbols (`createMockEnv`, `createMockHyperdrive`,
+   `createMockDurableObjectNamespace`, `createMockExecutionContext`,
+   `createAuthenticatedRequest`, `setupWorkerTest`).
+
+2. **Task 1.1 catalog URL format — correction needed.** The blueprint specifies
+   `github:webpresso/workers-test-kit#main` but every other webpresso package in
+   `pnpm-workspace.yaml` uses the `git+ssh://` form, e.g.
+   `"git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/typescript-config"`.
+   Task 1.1 should use:
+
+   ```yaml
+   "@webpresso/workers-test-kit": "git+ssh://git@github.com/webpresso/workers-test-kit.git#main"
+   ```
+
+3. **Task 1.2 "keep" list has phantom helpers — correction needed.** Task 1.2 says to
+   keep `createAuthRequest`, `createRequest`, and `put`, but none of these exist in
+   `helpers.ts`. The real exported request builders are `get`, `post`, and `del` only.
+   Remove `createAuthRequest`, `createRequest`, and `put` from the keep list in Task 1.2.
+
+4. **Task 1.5 acceptance criterion uses non-existent command.** `ak audit catalog-drift`
+   is not a command in this project. The verification gates section uses `pnpm catalog:check`
+   which is also not a documented project command. Replace Task 1.5 acceptance with:
+
+   ```
+   - [ ] pnpm --filter @repo/workers lint passes (0 unused exports)
+   - [ ] pnpm --filter @repo/lab lint passes
+   ```
+
+5. **Task 1.4 dependency — accurate.** Task 1.4 correctly depends on 1.1 only (not 1.2),
+   since lab tests are independent of the workers helpers refactor. Wave 2 parallelism of
+   1.3 + 1.4 is valid — they touch completely disjoint files.
+
+6. **No same-wave file conflicts.** Wave 2 tasks (1.3 and 1.4) touch
+   `apps/workers/src/tests/*.test.ts` and `apps/lab/src/routes/*.test.ts` /
+   `apps/lab/src/middleware/kill-switch.test.ts` respectively — no overlap.
+
+7. **Acceptance criteria are concrete and verifiable** (except the `ak audit catalog-drift`
+   issue noted above). Test counts (217 workers, 75 lab) and type-check commands are
+   machine-verifiable.
+
+8. **`buildInsertChain` not mentioned — minor gap.** `helpers.ts` exports `buildInsertChain`
+   which is not listed in the keep-or-remove lists. It should be listed under "keep" since
+   it is a chain builder with no kit equivalent.
+
+### Blueprint compliant: Yes
+
+Corrections above are non-blocking clarifications (wrong URL format, phantom helper names,
+and one invalid command reference). No structural redesign required. The wave DAG,
+file paths, and technology choices are sound.

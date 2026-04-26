@@ -276,3 +276,106 @@ pnpm catalog:check                     # no drift
 
 - `@webpresso/db-branching` — vendor-agnostic branch interface from webpresso
 - `NeonBranchProvider` — thin wrapper; no new runtime dependencies
+
+---
+
+## Refinement Summary
+
+**Date:** 2026-04-25
+
+### Verification Results
+
+#### 1. `packages/neon/src/branches.ts` — CONFIRMED
+
+File exists. Exports confirmed: `createEphemeralBranch`, `deleteEphemeralBranch`,
+`listE2EBranches`, `cleanupStaleE2EBranches`, `NeonBranch`. `getNeonConfig` and
+`isNeonAvailable` are in `config.ts` (as blueprint implies). No corrections needed here.
+
+#### 2. `@webpresso/db-branching` — CONFIRMED
+
+Package exists at `/Users/ozby/repos/webpresso/db-branching/`. Exports `BranchProvider`,
+`Branch`, `BranchConfig` from `src/index.ts`. Also re-exports `Branch as EphemeralBranch`
+for backward compatibility. All three types match blueprint's description.
+
+#### 3. E2E scripts — PARTIALLY CORRECT, correction needed
+
+All four scripts exist at `apps/e2e/scripts/`. However:
+
+- `db-branch-create.ts` and `db-branch-delete.ts` use `createEphemeralBranch` /
+  `deleteEphemeralBranch` — map cleanly to `provider.createBranch()` / `provider.deleteBranch()`.
+- `db-branch-list.ts` uses `listE2EBranches` — has no `BranchProvider` equivalent method.
+- `db-branch-cleanup.ts` uses `cleanupStaleE2EBranches` — has no `BranchProvider` equivalent.
+
+**Correction (F1 — MEDIUM):** Task 2.3 should clarify that `db-branch-list.ts` and
+`db-branch-cleanup.ts` will continue calling the existing `packages/neon` functions directly
+(they exercise functions outside the `BranchProvider` contract). Only `db-branch-create.ts`
+and `db-branch-delete.ts` are migrated to `NeonBranchProvider`.
+
+#### 4. `NeonBranch.connectionUri` is optional — shape mismatch (F2 — HIGH)
+
+`NeonBranch.connectionUri` is typed `connectionUri?: string` (optional) because the Neon
+API response only includes `connection_uris` on the create endpoint, not on list/get.
+`Branch.connectionUri` is typed `connectionUri: string` (required).
+
+The `createBranch()` implementation in Task 2.2 returns
+`{ id: branch.id, connectionUri: branch.connectionUri }` but `branch.connectionUri` may be
+`undefined` at runtime. A null assertion or guard is required:
+
+```typescript
+const uri = branch.connectionUri;
+if (!uri) throw new Error("Neon did not return a connectionUri for the new branch");
+return { id: branch.id, connectionUri: uri };
+```
+
+Task 2.2 must add this guard.
+
+#### 5. `BranchConfig.ttlMs` vs `CreateBranchOptions.ttlHours` — mapping gap (F3 — MEDIUM)
+
+`BranchConfig` (upstream) uses `ttlMs` (milliseconds). `CreateBranchOptions` in
+`branches.ts` uses `ttlHours` (hours). The Task 2.2 `createBranch` snippet passes
+`config?.name` and `config?.parentBranchId` but silently drops `config?.ttlMs`.
+
+The wrapper must convert: `ttlHours: config?.ttlMs !== undefined ? config.ttlMs / 3_600_000 : undefined`.
+
+#### 6. `getConnectionUri` implementation is incorrect (F4 — HIGH)
+
+The Task 2.2 snippet implements `getConnectionUri(branchId?)` by calling
+`createEphemeralBranch(...)` — this creates a **new branch** instead of returning
+the URI for an existing one. `branches.ts` has no `getConnectionUri(id)` function.
+
+The ingest-lens branch-per-test pattern never calls `getConnectionUri` on an existing
+branch post-creation (the URI is captured at `createBranch` time and stored). The correct
+implementation should throw `Error("not implemented")` similar to `resetBranch`, or simply
+return the cached URI from context. The blueprint should not pretend to implement this by
+creating a new branch.
+
+#### 7. Task 2.4 references non-existent `types.ts` (F5 — LOW)
+
+Task 2.4 lists `Edit: packages/neon/src/types.ts` as a file to edit for deprecating
+`NeonBranch`. `NeonBranch` is defined in `packages/neon/src/branches.ts` — no `types.ts`
+exists in the neon package. The file reference should be
+`Edit: packages/neon/src/branches.ts`.
+
+### Findings Summary
+
+| ID  | Severity | Description                                                       | Fix                                                                |
+| --- | -------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| F1  | MEDIUM   | `db-branch-list.ts` / `db-branch-cleanup.ts` scope overclaimed    | Narrow Task 2.3 scope to create + delete scripts only              |
+| F2  | HIGH     | `connectionUri` optional on `NeonBranch`, required on `Branch`    | Add null-guard in `createBranch()` return                          |
+| F3  | MEDIUM   | `ttlMs` → `ttlHours` conversion missing in `createBranch` wrapper | Add ms→hours conversion in Task 2.2 implementation snippet         |
+| F4  | HIGH     | `getConnectionUri` creates a new branch instead of fetching URI   | Implement as `throw new Error("not implemented")` like resetBranch |
+| F5  | LOW      | Task 2.4 references `types.ts` (does not exist)                   | Change to `branches.ts`                                            |
+
+### Blueprint Compliance
+
+| Metric                  | Value                                                                  |
+| ----------------------- | ---------------------------------------------------------------------- |
+| Findings total          | 5                                                                      |
+| Critical                | 0                                                                      |
+| High                    | 2 (F2, F4)                                                             |
+| Medium                  | 2 (F1, F3)                                                             |
+| Low                     | 1 (F5)                                                                 |
+| File paths verified     | All core paths confirmed; 1 incorrect (F5)                             |
+| E2E scripts confirmed   | All 4 exist; scope of 2.3 needs narrowing                              |
+| Cross-plan conflicts    | None detected                                                          |
+| **Blueprint compliant** | **Yes** — no blocking issues; apply F1–F5 corrections before execution |

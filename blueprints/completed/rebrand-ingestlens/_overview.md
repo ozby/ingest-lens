@@ -380,3 +380,36 @@ rails behind the higher-level integration observability story.
 | UI smoke coverage     | Client Vitest (`apps/client/vitest.config.ts`) | Existing | Test harness exists even though committed test files do not yet; add minimal smoke coverage first. (Fx3) |
 | Demo guide path       | `docs/guides/public-dataset-demo.md`           | New      | Shared path owned by the public-dataset blueprint for README linkage and demo extension. (Fx2, Fx5)      |
 | Docs rules            | Existing markdown/frontmatter checks           | Existing | Minimal, reviewable rebrand that still respects repo audits.                                             |
+
+## Refinement Summary
+
+**Date:** 2026-04-25
+
+### What is already done (partially completed since blueprint was authored 2026-04-23)
+
+- **Client smoke test files exist:** `apps/client/src/components/brandingShell.test.tsx`, `apps/client/src/pages/landingDashboardCopy.test.tsx`, and `apps/client/src/pages/deliveryRailsCopy.test.tsx` are all committed. Task 1.3 (Fx3) and Tasks 2.2/2.3 test scaffolding are in place. Additional test files found: `metricsBrandingCopy.test.tsx`, `Intake.test.tsx`, `AdminIntake.test.tsx`, `ServerMetrics.test.tsx`, `useDataLoading.test.tsx`, `App.test.tsx` — the "no committed client tests" finding in F3 is now stale.
+- **`docs/guides/public-dataset-demo.md` exists:** The F2 finding ("false") is resolved — the file is present. Task 2.1's framing as "future link placeholder" may be fully or largely done.
+- **ADR README exists:** `docs/adrs/README.md` confirmed present, along with a new ADR `0004-ingestlens-ai-intake-architecture.md` that already uses IngestLens naming.
+- **`docs/research/product/VISION.md` exists:** confirmed present.
+- **All target files for Task 1.1 exist:** `README.md`, `docs/architecture.md`, `docs/delivery-guarantees.md`, `docs/scale-considerations.md` all present.
+- **All target files for Task 1.4 exist:** `ROADMAP.md`, `AGENTS.md`, `docker-compose.yml`, `.env.example` all present.
+- **Client `vitest.config.ts` confirmed:** exists at `apps/client/vitest.config.ts`.
+- **Client pages and components confirmed:** `NavBar.tsx`, `Sidebar.tsx`, `Index.tsx`, `Dashboard.tsx`, `Queues.tsx`, `Topics.tsx` all present at the paths specified in Tasks 1.3, 2.2, 2.3.
+
+### What remains
+
+- **Worker name in `wrangler.toml` is still `node-pubsub`:** The deployed worker names are `node-pubsub-dev` and `node-pubsub-prd`. Task 1.2 covers this — the deferment option is documented in the blueprint and is the expected path unless risk is accepted.
+- **`.new` files are only in worktrees, not in the main tree:** All `*.new` files found live under `.worktrees/client-route-code-splitting/` and `.worktrees/showcase-hardening-100/`, not in the main working tree. Task 1.4's delete list targets main-tree paths (`AGENTS.md.new`, `.agent/.../*.new`, etc.). These do not currently exist in the main tree — Task 1.4 should skip those deletes or confirm the files are already gone.
+- **README/docs rebrand copy (Task 1.1):** Cannot confirm content state without reading files; assumed outstanding pending `showcase-hardening-100` gate.
+- **`docs/adrs/README.md` brand language (Task 1.2):** Needs review for stale `node-pubsub` references.
+- **`docs/research/product/VISION.md` brand language (Task 1.2):** Needs review.
+- **Client page copy (Tasks 2.2, 2.3):** Test files exist but whether the implementation copy passes those tests is unverified.
+
+### Stale / corrected tasks
+
+- **F3 finding is stale:** Client tests now exist. Remove the "no committed client tests" caveat from Fx3 language. Tasks 1.3, 2.2, 2.3 should verify the existing test files pass rather than create them from scratch — the `Create:` entries in those tasks are already satisfied.
+- **F2 finding is stale:** `docs/guides/public-dataset-demo.md` now exists. Task 2.1's "label as planned until guide exists" instruction is outdated; the guide is present and Task 2.1 only needs to verify the README link is correct.
+- **Task 1.4 `.new` file deletes:** All `.new` files listed are in worktree paths, not the main tree. Executor should confirm absence before attempting delete; no destructive action needed if files are already absent.
+- **`docs/adrs/README.md` — confirm it does not still reference `docs/adrs/` as an ADR index vs decisions directory:** The repo uses both `docs/adrs/` and `docs/decisions/`; Task 1.2 should note this dual structure.
+
+### Blueprint compliant: Yes

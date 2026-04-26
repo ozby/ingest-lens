@@ -271,3 +271,26 @@ ak tech-debt list                                         # 5 entries
 | New `ak` version has breaking changes to `blueprint-lifecycle` audit | Run `pnpm blueprints:check` immediately after install; revert SHA if it fails |
 | Slim symlinker removes files that were hand-maintained               | Review diff carefully in 3.2; only accept auto-generated removals             |
 | `ak audit commit-message-lore` fails on old commits                  | Use `--since origin/main` to scope to branch-only; not a full-history scan    |
+
+## Refinement Summary
+
+**Date:** 2026-04-25
+
+**Findings:**
+
+1. **Current SHA verified** — `package.json` confirms `@webpresso/agent-kit` is pinned to `e869a333dde35a8a47c179b51e21e8d2079cf3b5`. Matches the "before" SHA stated in Task 3.1. No correction needed.
+
+2. **Target SHA verified** — `d3922c52419b5af57fdb68d3b9aa8b8c2db083ba` exists in `/Users/ozby/repos/webpresso/agent-kit` git log (`d3922c5 Merge branch 'pll/expand-ak-setup-base-kit'`). No correction needed.
+
+3. **`ak tech-debt` command exists** — `/Users/ozby/repos/webpresso/agent-kit/src/cli/commands/tech-debt/` is present with `index.ts`, `router.ts`, `router-dispatch.ts`, and `router-dispatch.test.ts`. The command is available in the new version. No correction needed.
+
+4. **CI workflow verified** — `.github/workflows/ci.yml` exists. The `pnpm blueprints:check` step is at line 75. The Lore audit step can be inserted immediately after it. No correction needed.
+
+5. **All task file paths accurate** — All 5 files referenced in Task 3.3 tech-debt entries confirmed present:
+   - `apps/workers/src/auth/crypto.ts` — OK
+   - `apps/workers/src/lib/validate-push-endpoint.ts` — OK
+   - `apps/lab/src/crons/cost-estimator.ts` — OK
+   - `apps/workers/wrangler.toml` — OK
+   - `apps/lab/assets/LICENSES/fonts.txt` — OK
+
+**Blueprint compliant: Yes**

@@ -572,3 +572,58 @@ rejects, replays, ingests, or blocks deterministic gates.
 | Delivery          | Existing `DELIVERY_QUEUE.send(...)` rails                    | Existing repo behavior                         | Avoids adding another publisher path                                                                |
 | Telemetry         | `apps/workers/src/telemetry.ts` + dashboard aggregates       | Existing repo behavior                         | Centralized, redacted Analytics Engine writes                                                       |
 | Eval runner       | `bun ./scripts/run-mapping-eval.ts` via `pnpm ai:eval`       | Existing repo script pattern                   | Deterministic root command without new runtime dependencies                                         |
+
+## Refinement Summary
+
+**Date:** 2026-04-25
+
+### Findings
+
+**Already-implemented files (stale "Create" tasks):**
+
+- `packages/types/IntakeMapping.ts` — already exists and is exported from `packages/types/index.ts` (Task 1.1 create steps are done).
+- `apps/workers/src/intake/contracts.ts` — already exists (Task 1.1 create step done).
+- `apps/workers/src/intake/aiMappingAdapter.ts` — already exists (Task 1.2 create step done).
+- `apps/workers/src/intake/validateIntakeRequest.ts` — already exists (Task 2.1 create step done).
+- `apps/workers/src/routes/intake.ts` — already exists and is registered in `apps/workers/src/index.ts` (Task 2.1 done).
+- `apps/workers/src/intake/evaluateMappings.ts` — already exists (Task 3.2 create step done).
+- `scripts/run-mapping-eval.ts` — already exists (Task 3.2 done).
+- `apps/client/src/pages/Intake.tsx` + `Intake.test.tsx` — already exist (Task 3.1 partially done).
+- `apps/client/src/pages/AdminIntake.tsx` + `AdminIntake.test.tsx` — already exist (Task 3.1 partially done).
+- `apps/client/src/components/MappingSuggestionReview.tsx` — already exists (Task 3.1 partially done).
+- `apps/workers/src/tests/` files for intake, contracts, adapter, telemetry, normalization, prompt, and eval — most already exist.
+
+**Infrastructure already wired:**
+
+- `[ai] binding = "AI"` already present in `apps/workers/wrangler.toml` (Task 1.2 wrangler step done).
+- `intakeRoutes` already registered in `apps/workers/src/index.ts` (Task 2.1 Fx4 step done).
+- `"ai:eval": "bun ./scripts/run-mapping-eval.ts"` already in root `package.json` (Task 3.2 Fx10 step done).
+
+**Stale file path — Task 2.2 (approval):**
+
+- Blueprint plans to create `apps/workers/src/intake/normalizeWithMapping.ts` and `apps/workers/src/intake/normalizedEnvelope.ts` as new files. In reality the `normalizeWithMapping` function already lives in `apps/workers/src/intake/normalize.ts`. The separate files listed do not exist; any remaining work should target `normalize.ts` rather than creating the blueprint-named files.
+
+**Stale migration name — Task 2.1:**
+
+- Blueprint specifies migration `apps/workers/src/db/migrations/0002_add_intake_attempts.sql`. The actual file is `0003_add_intake_attempts.sql`; `0002_jazzy_karnak.sql` occupies that slot. The migration itself exists and is correct; only the blueprint's stated filename is wrong.
+
+**ADR reference confirmed valid:**
+
+- `docs/adrs/0004-ingestlens-ai-intake-architecture.md` exists.
+
+**Dataset assets confirmed valid:**
+
+- `data/payload-mapper/payloads/ats/` and `data/payload-mapper/evals/eval-contract.json` exist.
+- `docs/ai/payload-mapper.md` exists.
+
+**No missing AI/ML dependencies:**
+
+- No external AI/ML packages beyond Cloudflare Workers AI (runtime binding) are required; none were found absent from `pnpm-workspace.yaml`.
+
+**No stale technology claims:**
+
+- Hono, Wrangler, Drizzle ORM, Vitest, tsgo, oxlint, pnpm workspaces all confirmed present and in use.
+
+### Blueprint compliant: Yes
+
+All blocking structural issues have been addressed in prior work. The blueprint's task list now largely describes already-implemented code; execution agents should treat "Create" steps for the files listed above as verification steps (confirm contents match acceptance criteria) rather than net-new work. The two concrete corrections needed before execution are: (1) update the migration filename reference in Task 2.1 from `0002_add_intake_attempts.sql` to `0003_add_intake_attempts.sql`, and (2) retarget Task 2.2's normalization file references from the non-existent `normalizeWithMapping.ts`/`normalizedEnvelope.ts` to the existing `normalize.ts`.

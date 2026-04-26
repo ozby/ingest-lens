@@ -3,10 +3,10 @@ import { base64UrlDecode } from "../auth/crypto";
 import type { Env } from "../db/client";
 
 async function isJtiRevoked(
-  kv: { get(key: string): Promise<string | null> },
+  kv: { get(key: string): Promise<string | null> } | undefined | null,
   jti: string | undefined,
 ): Promise<boolean> {
-  if (!jti) return false;
+  if (!jti || !kv) return false;
   const revoked = await kv.get(`revoked:${jti}`);
   return revoked !== null;
 }
@@ -66,7 +66,7 @@ function isTokenExpired(payload: Record<string, unknown>): boolean {
 
 async function validatePayload(
   payloadB64: string,
-  kv: { get(key: string): Promise<string | null> },
+  kv: { get(key: string): Promise<string | null> } | undefined | null,
 ): Promise<
   { ok: false; reason: string } | { ok: true; jti: string; userId: string; username: string }
 > {

@@ -6,13 +6,17 @@ IngestLens is a Cloudflare-first showcase for a common IntegrationOps problem:
 third-party payloads drift, operators need help mapping them safely, and the
 underlying delivery rails still need honest, observable guarantees.
 
+Built solo by [Ozby](https://github.com/ozby) as a portfolio of integration
+primitives — drift detection, mapping revisions, classified delivery, and a
+measurement harness for delivery semantics.
+
 ## What is shipped vs. partial vs. planned?
 
-| State       | What it means here                                                                                                                                                                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Shipped** | Worker auth (JWT + KV jti revocation), owned queues/topics, push delivery, pull receive leases, dashboard metrics, IngestLens rebrand, AI-assisted intake mapping with admin review/approval, public ATS fixture demo, and the Consistency Lab observability tool. |
-| **Partial** | Optional allowlisted live ATS fetches and broader demo lenses beyond the seeded ATS fixture catalog.                                                                                                                                                               |
-| **Planned** | Manual replay after approval, durable per-user cursor store, multi-region Postgres, and a global quota system. None are presented as completed product features.                                                                                                   |
+| State       | What it means here                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Shipped** | Worker auth (JWT + KV jti revocation), owned queues/topics, push delivery, pull receive leases, dashboard metrics, IngestLens rebrand, AI-assisted intake mapping with admin review/approval, **self-healing adaptive intake** (shape-fingerprint drift detection + Durable-Object-serialized auto-heal at LLM confidence ≥ 0.8 with SSE stream and rollback), public ATS fixture demo, and the Consistency Lab observability tool. |
+| **Partial** | Optional allowlisted live ATS fetches and broader demo lenses beyond the seeded ATS fixture catalog.                                                                                                                                                                                                                                                                                                                                |
+| **Planned** | Manual replay after approval, durable per-user cursor store, multi-region Postgres, and a global quota system. None are presented as completed product features.                                                                                                                                                                                                                                                                    |
 
 ## The product in 30 seconds
 

@@ -355,3 +355,41 @@ dataset-path-verified)
 | Fixture catalog API  | `GET /api/intake/public-fixtures` + `GET /api/intake/public-fixtures/:fixtureId`                              | Planned in this blueprint | Small metadata-first flow fits the current demo better than shipping every payload body up front. |
 | Mapping API reuse    | Existing upstream `POST /api/intake/mapping-suggestions` + `POST /api/intake/mapping-suggestions/:id/approve` | Planned upstream          | Avoids a parallel demo-only backend path.                                                         |
 | Demo guide           | `docs/guides/public-dataset-demo.md`                                                                          | Planned in this blueprint | Gives README and interview rehearsal one deterministic source of truth.                           |
+
+## Refinement Summary
+
+**Date:** 2026-04-25
+
+### Findings
+
+**Stale paths / incorrect assumptions corrected:**
+
+1. **F2 (routes) — now stale:** The blueprint's Fact-Checked Findings table (F2) states that `apps/workers/src/routes/intake.ts` does not yet exist and will arrive via `ai-payload-intake-mapper`. It already exists in main. The route is live; tasks 1.2, 2.1, and the cross-plan reference table must be read as "extend the existing file" rather than "wait for upstream to create it".
+
+2. **F3 (client UI files) — now stale:** The blueprint states that `apps/client/src/pages/Intake.tsx`, `apps/client/src/pages/AdminIntake.tsx`, and `apps/client/src/components/MappingSuggestionReview.tsx` are not present. All three exist in main. Task 2.2 should be read as "extend/modify existing files", which the task's Files section already says — the prose dependency warning ("treat as blocked until `ai-payload-intake-mapper` lands") no longer applies.
+
+3. **Test files `normalizeWithMapping.test.ts` and `evaluateMappings.test.ts` — already exist:** Task 2.1 says to write failing tests for these files. Both `apps/workers/src/tests/normalizeWithMapping.test.ts` and `apps/workers/src/tests/evaluateMappings.test.ts` already exist. Task 2.1 should target additions to those files rather than creating them from scratch.
+
+4. **`apps/workers/src/tests/demoFixtures.test.ts` — already exists:** Task 1.2 lists this as a file to create. It already exists. The task should modify the file.
+
+5. **`apps/workers/src/intake/demoFixtures.ts` — already exists:** Task 1.2 lists this as a file to create. It already exists.
+
+6. **`scripts/generate-demo-fixtures.ts` — already exists:** Task 1.2 lists this as a file to create. It already exists.
+
+7. **`docs/guides/public-dataset-demo.md` — already exists:** Tasks 1.1 and 3.1 list this as a file to create. It already exists.
+
+8. **`client` package filter name:** The client package's `name` field is `client`, not `@repo/client`. The verification gate command `pnpm --filter client test -- Intake.test.tsx` and `pnpm --filter client check-types` are correct as written.
+
+9. **`@repo/workers` package filter name:** Confirmed correct; the workers package name is `@repo/workers`. All `pnpm --filter @repo/workers` commands are accurate.
+
+10. **`apps/workers/src/intake/` subdirectory:** Several intake module files (`aiMappingAdapter.ts`, `contracts.ts`, `evaluateMappings.ts`, `normalize.ts`, `schemas.ts`, `sourcePath.ts`, `validateIntakeRequest.ts`, `validators.ts`) already exist. Task 1.2's "Create: `apps/workers/src/intake/demoFixtures.ts`" should be "Modify".
+
+11. **No stale `depends_on` blueprint slugs:** `showcase-hardening-100`, `rebrand-ingestlens`, and `ai-payload-intake-mapper` are all present in `blueprints/planned/`. The frontmatter `depends_on` list is accurate.
+
+12. **Toolchain commands verified:** `pnpm docs:check`, `pnpm format:check`, `pnpm blueprints:check`, `pnpm check-types`, `pnpm build`, `pnpm --filter @repo/workers test`, `pnpm --filter @repo/workers check-types`, `pnpm --filter @repo/workers lint` — all commands match the root `package.json` scripts and workspace package names. The type checker is invoked via `vp run check-types` which maps to `tsgo --noEmit` per project convention (not `tsc`).
+
+**No technology choice errors found.** Cloudflare Workers, Hono, Drizzle, Vitest, tsgo, oxlint, pnpm workspaces, and Bun are all confirmed by the project structure.
+
+### Blueprint compliant: Yes
+
+All blocking gates are in place. The stale-path items above are clarifications (files already exist, so "Create" becomes "Modify") — none block execution. Tasks remain valid and ordered correctly. The blueprint is ready for `/pll` execution once the `depends_on` blueprints land.
