@@ -4,7 +4,7 @@ status: in-progress
 complexity: M
 created: "2026-04-26"
 last_updated: "2026-04-26"
-progress: "67% (6/9 tasks done, 0 blocked, updated 2026-04-26)"
+progress: "78% (7/9 tasks done, 0 blocked, updated 2026-04-26)"
 depends_on: []
 tags:
   - cloudflare-workers
@@ -317,7 +317,7 @@ the existing `TOPIC_ROOMS` pattern.
 
 #### [feat] Task 3.1: Auto-heal branch in intake.ts + audit Queue consumer handler
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3, Task 2.1, Task 2.2
 
@@ -354,11 +354,11 @@ Queue message type to the delivery consumer.
 
 **Acceptance:**
 
-- [ ] Fast path: fingerprint match → no `suggestMappings()` call, Queue audit sent
-- [ ] Heal path: confidence ≥ 0.8 → `tryHeal()` → `approveMapping()` → publish
-- [ ] `normalizeWithMapping()` throw caught → falls to `pending_review`
-- [ ] Existing human review path (confidence < 0.8) unchanged
-- [ ] All existing tests green
+- [x] Fast path: fingerprint match → no `suggestMappings()` call, Queue audit sent
+- [x] Heal path: confidence ≥ 0.8 → `tryHeal()` → `approveMapping()` → publish
+- [x] `normalizeWithMapping()` throw caught → falls to `pending_review`
+- [x] Existing human review path (confidence < 0.8) unchanged
+- [x] All existing tests green
 
 ---
 
