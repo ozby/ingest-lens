@@ -1,52 +1,57 @@
----
-type: rule
-paths: ["blueprints/**/*.md"]
-last_updated: "2026-04-21"
----
-
 # Blueprint scoping — product-wedge anchor required
 
-Every new blueprint that touches enabling-layer infrastructure (runtime,
-delivery engine, schema, agent fabric, observability plane, CI/CD
-pipeline) **must name a product-wedge in the current product vision that
-directly consumes the new capability**. Blueprints without that anchor
-stay under `blueprints/draft/` or move to `blueprints/archived/`.
+New blueprints that extend or replace enabling-layer infrastructure (runtime,
+schema engine, agent fabric, session storage, policy engine, workflow runner)
+MUST name a product-wedge in the current roadmap stage that directly consumes
+the new capability. Blueprints without that anchor stay in `draft/` or move to
+`archived/`.
 
 ## Why
 
-Infra-empire blueprints — written against hypothetical consumers — are
-the most common failure mode in this class of repo. They tend to be
-**right about invariants and wrong about scope**: ~80% of what they
-propose eventually lands via narrower, product-driven paths, leaving the
-XL blueprint as a fossil. The scoping rule is the cheapest available
-check against that outcome.
+Infra-only blueprints that lack a product-wedge anchor tend to hit the same
+failure mode — substantial infra scope, no direct consumer pull, and a large
+share of the actual value lands via other paths. The findings are worth
+preserving; the blueprints themselves over-scoped.
 
-## Fields required in `_overview.md`
+The fix is simple: before investing in infra, name the product surface that
+will use it in the same cycle.
 
-- **Product-wedge** — a one-line description of the product surface that consumes this capability on day one. Not "operators will benefit." Not "cleaner runtime." A specific feature, route, event, workflow, or dashboard.
-- **First consumer file** — the path of the file that imports/uses the new capability in its first delivered form.
-- **Failure behavior if deferred** — what breaks for the product-wedge if this blueprint slips a quarter.
+## How to apply
 
-If you cannot fill all three, the blueprint is premature. Either:
+During `ak blueprint new` / refinement, the blueprint `_overview.md` must
+include a **Product wedge anchor** subsection at the top of the summary. The
+anchor must name:
 
-1. Convert it into a fact-check note under `blueprints/draft/<slug>/` that
-   explicitly blocks on a product-wedge anchor; or
-2. Mine its findings into a narrower blueprint that has one.
+1. The concrete roadmap outcome this work unblocks (cite the vision or
+   roadmap document and the specific outcome).
+2. The user-facing surface (route, UI component, CLI verb) that consumes the
+   new capability **in the same blueprint or an already-in-progress one**.
+3. What the product user can do after this lands that they cannot do today.
 
-## Qualifying vs non-qualifying wedges
+### Template
 
-| Qualifying                                    | Non-qualifying       |
-| --------------------------------------------- | -------------------- |
-| A live deployment path a customer can trigger | "Cleaner runtime"    |
-| A user journey measurable in a dashboard      | "Simpler fabric"     |
-| A webhook the receiver depends on             | "Better patterns"    |
-| A KPI that moves on a sprint timeline         | "Future flexibility" |
+```markdown
+## Product wedge anchor
 
-Pure-infra wedges qualify **only** when paired with one of the above and
-delivered in the same blueprint.
+- **Stage outcome:** <cite roadmap section + specific outcome>
+- **Consuming surface:** <route / component / verb + path>
+- **New user-visible capability:** <one sentence>
+```
 
-## When an exception applies
+If you cannot fill all three, the blueprint is premature. Convert it to a
+fact-check document under `blueprints/draft/` with a note that it blocks on a
+product-wedge anchor, or mine its findings into a narrower blueprint that has
+one.
 
-The only exception is a documented **forced-move blueprint** — a
-security CVE, a vendor EOL, or a production SEV-1 remediation. Mark it
-with `forced-move: true` in the frontmatter and cite the forcing event.
+## What counts as a product wedge
+
+A wedge is something a roadmap-stage user can see or touch:
+
+- An app they launched
+- A live deployment flow they triggered
+- A user they acquired via an acquisition loop
+- A KPI signal they read off a dashboard
+- A review decision they approved in the UI
+
+Pure-infra wedges ("cleaner runtime", "simpler fabric") do not qualify on
+their own. They qualify only when paired with one of the above.

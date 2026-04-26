@@ -1,33 +1,26 @@
 ---
-type: rules-index
-last_updated: "2026-04-21"
+type: core
+last_updated: 2026-04-22
 ---
 
-# Agent rules
+# Agent Rules Index
 
-Durable rules that apply to every change made in this repo. Rules are
-terse, imperative, and enforced wherever possible (lint, CI, hooks). Each
-rule lives in its own file so it can be cited, diffed, and evolved
-independently.
+Rules are enforced agent-operational policies. They live under `.agent/rules/`
+and load automatically for the tools that pick up this directory.
 
-## Index
+## Available Rules
 
-| Rule                                                           | Purpose                                                             |
-| -------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [ts-coding-conventions.md](./ts-coding-conventions.md)         | TypeScript style and type-safety non-negotiables                    |
-| [cmd-execution.md](./cmd-execution.md)                         | Bookend QA rule and canonical command surface                       |
-| [repo-restrictions.md](./repo-restrictions.md)                 | Oxlint + CI-enforced restrictions summary                           |
-| [blueprint-scoping.md](./blueprint-scoping.md)                 | New blueprints need a named product-wedge                           |
-| [generated-code-governance.md](./generated-code-governance.md) | Generated artifacts are read-only                                   |
-| [no-raw-scripts.md](./no-raw-scripts.md)                       | Use `pnpm <script>` / `bun ./scripts/*.ts` — never raw `node`/`npx` |
-| [no-dotenv.md](./no-dotenv.md)                                 | Secrets flow through Doppler — dotenv is forbidden                  |
+- `agent-guide.md` — monorepo import aliases, entity / schema conventions,
+  secret injection, E2E coverage contract, test organization
+- `blueprint-scoping.md` — product-wedge anchor requirement for new
+  infra-layer blueprints
+- `cmd-execution.md` — bookend QA protocol, scoped command surface, log-file
+  discipline
+- `generated-code-governance.md` — authored source vs generated output,
+  import surface for generated packages
+- `repo-restrictions.md` — how restrictions are layered (linter, pre-commit,
+  agent hooks, CI, agent instructions) and how to add a new one
 
-## How rules are enforced
-
-1. **Oxlint** — syntactic rules (zero `any`, cognitive complexity ≤8, no enums, let/const, import cycles).
-2. **CI** — gates on `pnpm qa`, `pnpm blueprint:validate`, `pnpm lint:docs`.
-3. **Commit hooks** — fast fail on style, commit structure, secrets.
-4. **Agent self-enforcement** — agents read these files before editing and treat them as hard constraints.
-
-If a rule conflicts with a task, stop and update the rule in the same PR
-rather than silently bypassing it.
+Rules are tool-agnostic by default. If your repo uses `just`, `pnpm`, `turbo`,
+or another task runner, the rule bodies reference that surface generically;
+wire the concrete recipes in your repo's task runner of choice.

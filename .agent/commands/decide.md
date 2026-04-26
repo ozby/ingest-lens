@@ -126,7 +126,7 @@ List decision sessions.
 
 This command integrates with the blueprint decision framework:
 
-- Use the repo-owned session files under `docs/system/decisions/_sessions/`
-- Promote a decision by writing the final DRR under `docs/system/decisions/`
+- CLI: `ak blueprint decision init <topic>`
+- CLI: `ak blueprint decision decide`
 - Sessions stored in `docs/system/decisions/_sessions/`
 - DRRs stored in `docs/system/decisions/`

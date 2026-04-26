@@ -1,49 +1,79 @@
 ---
-type: guide
-last_updated: "2026-04-21"
+type: core
+last_updated: 2026-04-22
 ---
 
-# Parallel execution
+# Parallel Execution Guide
 
-Parallelism is a sharp tool. Used well, it compresses a day into an hour.
-Used badly, it multiplies failure modes, corrupts shared state, and makes
-results impossible to reason about. The rules below are what a senior
-engineer does, not what a concurrency library default does.
+Execute blueprint-shaped work with a parallel orchestration surface while
+keeping blueprint lifecycle state on the shipped `ak blueprint` surface.
 
-## When to parallelize
+> [!NOTE]
+> **Canonical reference:** `.agent/commands/pll.md`
+> This file is a summary. See the command file for full details.
 
-- **Independent reads.** Multiple files, multiple repos, multiple API lookups with no shared write target.
-- **Independent workspaces.** Running tests across packages that do not import each other.
-- **Independent fact-checks.** Inspecting N blueprints against repo reality.
+## Quick Start
 
-## When NOT to parallelize
+```bash
+# 1. Move a blueprint into active lifecycle state
+ak blueprint start <slug>
 
-- **Writes to the same file or same table.** Serialize.
-- **Commands with side effects on shared infra.** `pulumi up`, DNS edits, DB migrations — one at a time.
-- **Dependency chains.** B depends on A's output → run sequentially.
-- **Exploratory work.** If you don't know what you're looking for, parallel lanes multiply noise. Read once, slowly, then fan out.
+# 2. Inspect the active plan
+ak blueprint show <slug>
 
-## Agent-tool rules
+# 3. Execute via the parallel orchestration surface
+/pll blueprints/in-progress/<slug>/_overview.md
 
-- **Tool calls in one message** — prefer this for independent reads/queries. The harness batches them efficiently.
-- **Subagent fan-out** — use when each lane has a substantial, self-contained task and a tight return shape. Each subagent should answer one question.
-- **Background processes** — start with a clear lifecycle (PID, log file, expected termination condition). Never leave a background process running at the end of a session.
+# 4. Monitor and complete
+ak blueprint show <slug>
+ak blueprint audit --all --strict
+ak blueprint finalize <slug>
+```
 
-## Bounding concurrency
+## Architecture
 
-- **Default: 3 lanes.** Enough to compress work without saturating rate limits.
-- **API quota–bound work: ≤2.** Leave headroom.
-- **IO-bound fan-out over many items: chunked.** Process in batches of 10–20, not 500-at-once. Emit progress.
-- **CPU-bound: ≤ cores - 1.** Leave the scheduler a breather.
+The plan execution surface has three layers:
 
-## Failure semantics
+1. **Blueprint lifecycle** (`ak blueprint start/task/finalize/audit`) —
+   durable repo-owned plan state.
+2. **Blueprint DAG helpers** (`@webpresso/agent-kit/blueprint`) — task graph,
+   executor, and related local analysis utilities.
+3. **Parallel operator workflow** (`/pll`, parallel-lane commands,
+   subagents / team lanes) — prompt / skill-driven orchestration over the
+   repo state.
 
-- **Fail fast** when any lane reports a blocker. Cancel the others.
-- **Fail partial** when one lane's failure is independent (e.g. one of N file analyses). Collect results and report which lanes failed.
-- **Never present partial results as complete.** Always surface the gap.
+## Core Rules
 
-## Evidence and reporting
+| Rule                                      | Implementation                                                                          |
+| ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Blueprint is canonical**                | Task / lifecycle truth lives in the blueprint file plus shipped `ak blueprint` commands |
+| **No direct `move` for normal execution** | `move` is recovery-only; use `start`, `task ...`, and `finalize`                        |
+| **Operator UX is separate**               | `/pll` and lane commands are orchestration surfaces, not durable state stores           |
+| **Generic engine vs adapter**             | The parallel engine is reusable; `/pll` is the blueprint-aware adapter                  |
+| **Verification stays repo-owned**         | Use `ak blueprint audit`, targeted tests, lint, and typecheck to prove completion       |
 
-- Every parallel lane must end with a concrete artifact: a file, a summary block, a commit.
-- Surface the **slowest** lane's bottleneck in your summary — it's the only one that matters for next time.
-- If a lane succeeded but produced an unexpected side effect, flag it. Quiet surprises become incidents.
+> [!NOTE]
+> Blueprint markdown is allowed to be historically mixed. For execution
+> safety, rely on `ak blueprint show <slug>` and
+> `ak blueprint audit --all --strict` instead of assuming every blueprint
+> matches one final section template.
+
+## How It Works
+
+When `/pll` is used with a blueprint path or active blueprint context:
+
+1. `ak blueprint show <slug>` or the blueprint file provides the durable
+   task list.
+2. The orchestrator decides which tasks are ready and which can safely run in
+   parallel.
+3. Ready work is delegated through the available parallel execution surface.
+4. Lifecycle state is written back through
+   `ak blueprint task start|block|unblock|complete`.
+5. Completion is proved with repo verification commands, then the blueprint
+   is finalized through `ak blueprint finalize <slug>`.
+
+## References
+
+- **Canonical command**: `.agent/commands/pll.md`
+- **Lifecycle CLI**: the shipped `ak blueprint` subcommands
+- **DAG engine**: `@webpresso/agent-kit/blueprint` DAG helpers

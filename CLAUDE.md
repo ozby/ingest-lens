@@ -183,3 +183,22 @@ Do not skip skills, ignore gstack errors, or work around missing gstack.
 Using gstack skills: After install, skills like /qa, /ship, /review, /investigate,
 and /browse are available. Use /browse for all web browsing.
 Use ~/.claude/skills/gstack/... for gstack file paths (the global path).
+
+## agent-kit (Claude Code plugin)
+
+Install once per machine to get blueprint hooks, slash commands, and the `ak mcp` server inside Claude Code:
+
+```bash
+/plugin marketplace add webpresso/agent-kit
+/plugin install agent-kit@webpresso
+```
+
+What this provides:
+
+- **Hooks** — `PreToolUse` runs `ak-pretool-guard` (path/blueprint/dangerous-command checks); `PostToolUse` runs `ak-post-tool` (lint after edit); `Stop` runs `ak-stop-qa` (QA on changed files); `SessionStart` injects `.agent/routing.md` if present.
+- **Slash commands** — `/ak:test`, `/ak:qa`, `/ak:audit`, `/ak:blueprint` (route through the MCP server).
+- **MCP tools** — `ak_test`, `ak_lint`, `ak_typecheck`, `ak_qa`, `ak_audit`, `ak_blueprint`. Schema-validated, structured output. Backend auto-detects `just` vs `pnpm -F`.
+
+Pin to release tags (`v<version>`) — `main` of `webpresso/agent-kit` does not have `dist/` checked in; only release tags do.
+
+The pnpm catalog dep `@webpresso/agent-kit` stays — it's still needed for `defineAgentKitConfig` in `agent-kit.config.ts`. Plugin install is additive, not a replacement for the library dep.

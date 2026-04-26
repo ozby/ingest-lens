@@ -9,18 +9,24 @@ description: Navigate the ozbys-node-pubsub monorepo efficiently. Knows package 
 
 ### Packages
 
-| Package                   | Path                         | Purpose            | Common Files           |
-| ------------------------- | ---------------------------- | ------------------ | ---------------------- |
-| `@repo/infra`             | `infra`                      | {{TODO: describe}} | {{TODO: common files}} |
-| `@repo/logger`            | `packages/logger`            | {{TODO: describe}} | {{TODO: common files}} |
-| `@repo/test-utils`        | `packages/test-utils`        | {{TODO: describe}} | {{TODO: common files}} |
-| `@repo/types`             | `packages/types`             | {{TODO: describe}} | {{TODO: common files}} |
-| `@repo/typescript-config` | `packages/config-typescript` | {{TODO: describe}} | {{TODO: common files}} |
-| `@repo/ui`                | `packages/ui`                | {{TODO: describe}} | {{TODO: common files}} |
-| `@repo/workers`           | `apps/workers`               | {{TODO: describe}} | {{TODO: common files}} |
-| `client`                  | `apps/client`                | {{TODO: describe}} | {{TODO: common files}} |
+| Package                     | Path                                 | Purpose            | Common Files           |
+| --------------------------- | ------------------------------------ | ------------------ | ---------------------- |
+| `@repo/e2e`                 | `apps/e2e`                           | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/infra`               | `infra`                              | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/lab`                 | `apps/lab`                           | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/lab-core`            | `packages/lab-core`                  | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/lab-s1a-correctness` | `apps/lab/scenarios/s1a-correctness` | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/lab-s1b-latency`     | `apps/lab/scenarios/s1b-latency`     | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/logger`              | `packages/logger`                    | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/neon`                | `packages/neon`                      | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/test-utils`          | `packages/test-utils`                | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/types`               | `packages/types`                     | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/typescript-config`   | `packages/config-typescript`         | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/ui`                  | `packages/ui`                        | {{TODO: describe}} | {{TODO: common files}} |
+| `@repo/workers`             | `apps/workers`                       | {{TODO: describe}} | {{TODO: common files}} |
+| `client`                    | `apps/client`                        | {{TODO: describe}} | {{TODO: common files}} |
 
-<!-- Rendered from pnpm-workspace.yaml / package.json workspace metadata.
+<!-- Rendered from pnpm-workspace.yaml / package.json workspaces during `ak init`.
      Format: | Package | Path | Purpose | Common Files |
      Purpose + Common Files start as {{TODO: describe ...}} placeholders. -->
 
@@ -58,12 +64,12 @@ Examples:
 ### Importing from other packages
 
 ```typescript
+import {} from /* ... */ "@repo/e2e";
 import {} from /* ... */ "@repo/infra";
-import {} from /* ... */ "@repo/logger";
-import {} from /* ... */ "@repo/test-utils";
-import {} from /* ... */ "@repo/types";
-import {} from /* ... */ "@repo/typescript-config";
-import {} from /* ... */ "@repo/ui";
+import {} from /* ... */ "@repo/lab";
+import {} from /* ... */ "@repo/lab-core";
+import {} from /* ... */ "@repo/lab-s1a-correctness";
+import {} from /* ... */ "@repo/lab-s1b-latency";
 ```
 
 <!-- From package.json name fields: e.g.,
@@ -71,8 +77,14 @@ import {} from /* ... */ "@repo/ui";
 
 ### Package names
 
+- `e2e` → `@repo/e2e`
 - `infra` → `@repo/infra`
+- `lab` → `@repo/lab`
+- `lab-core` → `@repo/lab-core`
+- `lab-s1a-correctness` → `@repo/lab-s1a-correctness`
+- `lab-s1b-latency` → `@repo/lab-s1b-latency`
 - `logger` → `@repo/logger`
+- `neon` → `@repo/neon`
 - `test-utils` → `@repo/test-utils`
 - `types` → `@repo/types`
 - `typescript-config` → `@repo/typescript-config`

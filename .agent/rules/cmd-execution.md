@@ -1,56 +1,68 @@
 ---
-type: rule
-paths: ["**/*"]
-last_updated: "2026-04-21"
+paths:
+  - "**/*"
 ---
 
-# Command execution
+# Command Execution Rules
 
-The canonical command surface is the root `package.json` scripts plus
-workspace-filtered `pnpm` commands. Scripts themselves are authored in
-TypeScript and executed via **bun**.
+## BOOKEND Rule: Full QA Runs Exactly Twice
 
-## BOOKEND rule: `pnpm qa` runs exactly twice
+The full QA pipeline (e.g. `just qa`, `pnpm qa`, `turbo run check`) is a
+**bookend command** — run it once at the START and once at the END. Never in
+between.
 
-`pnpm qa` is a **bookend** command.
+```
+START:  qa command              → captures baseline (minutes)
+MIDDLE: scoped commands only    → fast iteration (seconds each)
+END:    qa command              → final verification (minutes)
+```
 
-- Run it **once at the START** of a non-trivial change to confirm a clean baseline.
-- Run it **once at the END** to confirm the change landed green.
-- **Never run it in between.** Running it mid-change burns CI time and obscures which step introduced the failure. Use targeted commands for inner-loop verification.
+### Scoped Commands (Use These In Between)
 
-The QA bundle is `pnpm lint && pnpm check-types && pnpm test && pnpm build`.
+Use the narrowest scope that proves your change:
 
-`check-types` runs `tsgo --noEmit` (from `@typescript/native-preview`) in every
-workspace — **not** `tsc`. `tsgo` is the Go-based TypeScript compiler; it is
-roughly an order of magnitude faster than `tsc` and is the canonical
-typecheck tool in this repo.
+| Concern   | Scoped form                                   |
+| --------- | --------------------------------------------- |
+| Lint      | `lint --file <paths...>` / `--package <name>` |
+| Tests     | `test --file <paths...>` / `--package <name>` |
+| Typecheck | `typecheck --package <name>`                  |
 
-## Targeted inner-loop commands
+**Multi-target:** `--file` and `--package` typically accept multiple
+space-separated values. Check your repo's task runner for the exact flag
+surface.
 
-| Want to verify             | Command                                                          |
-| -------------------------- | ---------------------------------------------------------------- |
-| A single file's types      | `pnpm --filter <workspace> exec tsgo --noEmit -p .`              |
-| One workspace's tests      | `pnpm --filter <workspace> test`                                 |
-| One file's tests           | `pnpm --filter <workspace> exec vitest run path/to/file.test.ts` |
-| Lint the staged files only | the pre-commit hook (or `pnpm exec lint-staged`)                 |
+### Log Files
 
-## Script execution
+If the repo's task runner saves output to timestamped logs, treat the log file
+as the source of truth. Re-reading a log is always cheaper than re-running the
+command.
 
-- Repo scripts live under `scripts/` as `*.ts` files with a `#!/usr/bin/env bun` shebang.
-- Invoke them via `bun ./scripts/<name>.ts` or a `pnpm` script wrapper.
-- **Do not** author `.mjs` or `.cjs` scripts. Bun runs TypeScript natively — there is no reason to reach for a plain-ESM sidecar.
-- **Do not** use `npx` for one-off invocations in documentation. Use `pnpm exec <tool>` or add a script.
+Common conventions:
 
-## Background and long-running processes
+- One log per command invocation
+- QA runs may split into several stage logs (root checks, typecheck, test)
+- Log path is displayed after the command completes
 
-- Prefer `pnpm dev` (root) over per-workspace `pnpm --filter <name> dev` when multiple workspaces should start together.
-- Kill stragglers before re-running. Port collisions are a top debugging trap.
-- Long builds and test runs should use `&` + a log file only when running unattended; otherwise keep them in the foreground so failures aren't hidden.
+Do not assume the newest log alone is the source of truth. Check related
+stage logs and confirm progress with file `mtime`/size changes. If logs are
+unchanged, verify whether the underlying process is still alive before
+treating the run as stalled.
 
-## Forbidden patterns
+**Critical:** Read the log file after completion. Never re-run to check
+results.
 
-- `pnpm install --force` outside of a declared recovery procedure.
-- `git push --force` on shared branches.
-- `git commit --no-verify` — hooks are the first guardrail. If a hook is wrong, fix the hook.
-- `pnpm qa` inside a test watch loop.
-- `rm -rf node_modules` as a debug step before filing a reproducible issue.
+**Forbidden:** Never pipe quality commands (e.g., `test | grep`). Piping
+breaks auto-logging and hides real output.
+
+## Other Rules
+
+- Always use the repo-owned command wrappers (`just`, `pnpm`, `turbo`, etc.)
+  for repo-owned workflows. Do not invoke underlying tools directly when a
+  wrapped recipe exists.
+- If you are about to run `vitest`, `test`, `lint`, `typecheck`, `build`,
+  `qa`, `e2e`, or repo CLIs directly through a package manager, stop and look
+  for the wrapped recipe first.
+- Prefer the repo's recipe surface over raw package-manager execution when
+  the repo expects a wrapped CLI invocation.
+- Never pipe quality commands at all — they typically auto-log (and piping
+  may be blocked by pretool hooks).

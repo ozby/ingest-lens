@@ -8,7 +8,7 @@ paths:
 
 # Agent Rules
 
-> Generic agent rules for a monorepo using agentkit. Cross-platform rules live
+> Generic agent rules for a monorepo using agent-kit. Cross-platform rules live
 > in `AGENTS.md` (auto-loaded).
 
 ## Entity / Schema System (YAML SSOT)

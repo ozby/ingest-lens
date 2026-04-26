@@ -1,70 +1,157 @@
 ---
-type: rule
-paths: ["**/*"]
-last_updated: "2026-04-21"
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.test.ts"
 ---
 
-# Repo restrictions — enforced rules summary
+# Repository Restriction Guide
 
-This is the one-page reference of what is **mechanically enforced** in this
-repo. If a rule is here, the CI gate, lint run, or commit hook will catch
-violations before review.
+> How restrictions are enforced across the monorepo.
+> When adding a new restriction, follow the enforcement layers below.
 
-## Oxlint built-in rules (always enforced)
+## Enforcement Layers (Priority Order)
 
-- Zero `any` types.
-- Max cognitive complexity: **8** per function.
-- No `TypeScript enum` — use `as const` unions.
-- Ban `alert()`, `confirm()`, `prompt()`.
-- `let`/`const` only (no `var`).
-- No duplicate imports.
-- No import cycles.
-- No non-null assertions without justification.
-- Promise handling: no unhandled promises, no `await` on non-Promise.
+| Layer                     | Mechanism                                              | When It Runs                   | Catches                                       |
+| ------------------------- | ------------------------------------------------------ | ------------------------------ | --------------------------------------------- |
+| **1. Linter**             | Built-in rules + plugins (e.g. oxlint, eslint)         | `lint`, pre-commit, CI         | Import paths, code patterns, safety, perf     |
+| **2. Pre-commit Hook**    | Husky / repo pre-commit script                         | Every `git commit`             | Lint, typecheck, drift, quality               |
+| **3. Agent Hooks**        | Agent-tool pretool guard (Claude Code / Cursor / etc.) | Every Write/Edit in agent tool | Forbidden commands, test quality, conventions |
+| **4. Agent Instructions** | `AGENTS.md`, `.agent/rules/*.md`, `.agent/guides/*.md` | Agent context loading          | Soft enforcement for all AI agents            |
+| **5. CI Workflows**       | `.github/workflows/*.yml` or equivalent                | PRs and pushes                 | Full QA, security, drift detection            |
+| **6. Boundaries Lint**    | `eslint-plugin-boundaries` or similar tier enforcer    | `lint-boundaries`              | Architectural tier violations                 |
 
-**Config:** `oxlint.config.ts`.
+## Import Path Restrictions
 
-## Oxlint custom rules (import hygiene) — planned
+Most monorepos benefit from a small set of path restrictions enforced by a
+linter plugin. Typical bans:
 
-- **no-relative-parent-imports** — no `../../..` ladders. Use workspace aliases.
-- **no-cross-package-deep-imports** — only public entry points.
-- **no-generated-mirrors** — never import generated code through a package-local mirror path; always through the canonical generator output.
-- **no-mocks-outside-module** — mock files must sit next to the module they mock.
+### `../src/` Imports → Use `#` (or package subpath)
 
-**Status:** not yet installed. Will ship as a repo-local oxlint plugin
-package (path to be chosen — likely `packages/oxlint-plugin-repo/`) as part
-of the `ci-hardening` blueprint. Until then, these rules are **review-time**
-conventions enforced by the code reviewer, not lint.
+Within-package deep relative imports into a sibling `src/` tree are brittle;
+they break whenever files move or when the package is consumed by source
+export from another package. Prefer Node.js subpath imports (`#`) that resolve
+via the declaring package's `package.json` `imports` field.
 
-## Blueprint validator
+### Cross-Package Relative Imports
 
-`pnpm blueprint:validate` enforces:
+`../../other-package/src/foo` imports bypass the package boundary and break
+path resolution across workspaces. Ban them; require the package name.
 
-- Every `blueprints/<lifecycle>/<slug>/` directory contains `_overview.md`.
-- `_overview.md` frontmatter `status` matches its parent directory.
-- `_overview.md` frontmatter declares `type: blueprint`.
+### `vi.mock()` Relative Paths
 
-## Commit hooks (planned, see `commit-hooks-guardrails` blueprint)
+`vi.mock('../../services/auth')` breaks when vitest projects use
+`extends: false` or when test files sit at different directory depths.
+Always match the source code's import style.
 
-- **pre-commit:** `lint-staged` (oxlint + prettier on touched files); secretlint.
-- **commit-msg:** commitlint + Lore trailer validator when `[lore]` tag is present.
-- **pre-push:** `pnpm blueprint:validate` + affected-mutation (short).
+### `../` Parent Imports → Prefer `#`
 
-## CI gates (see `ci-hardening` blueprint)
+Any cross-directory import that reaches outside the current directory
+generally wants a subpath import instead.
 
-Required status checks on `main`:
+### Cross-Package Path Traversal via `__dirname`
 
-- `lint` — oxlint + prettier check.
-- `check-types` — `pnpm check-types`.
-- `test` — `pnpm test`.
-- `mutation-affected` — Stryker on affected packages only, threshold: `break: 65`.
-- `blueprint-validate` — `pnpm blueprint:validate`.
-- `catalog-drift` — no workspace declares a literal version for a catalog-tracked dep.
-- `docs-lint` — `markdownlint-cli2` + `lychee` link check.
-- `security-scan` — gitleaks + osv-scanner + semgrep.
+`resolve(__dirname, '../../..')` patterns to find "repo root" or to reach
+into another package are fragile. Provide a repo-utility helper (e.g.
+`findProjectRoot()`) and ban the raw traversal patterns.
 
-## When a restriction is wrong
+## Adding a New Restriction
 
-- Add a blueprint that proposes the change.
-- Update the rule file in the same PR as the enforcement change.
-- Never silence a rule at the call site with an inline comment unless the blueprint explicitly authorizes it.
+### Step 1: Choose the Right Mechanism
+
+| What You Want to Ban                        | Use This                           |
+| ------------------------------------------- | ---------------------------------- |
+| Import path pattern (`from 'xxx'`)          | Linter plugin                      |
+| Structural code pattern (AST node matching) | Linter plugin                      |
+| String content in function args             | Linter plugin + agent instructions |
+| Command execution pattern                   | Agent hooks (forbidden-commands)   |
+| File naming / placement                     | Agent hooks + pre-commit           |
+
+### Step 2: Implement
+
+#### For Linter Plugins
+
+1. Add the rule to an existing plugin or create a new one in a plugin package.
+2. Register the rule in the lint config and add the plugin to the active set.
+3. Add overrides if certain file patterns need exemptions.
+
+#### For Agent Hooks
+
+Edit the pretool-guard validators:
+
+- Add validation logic in a new or existing validator
+- Register it in the pretool runner
+- Scope it to the agent tools that need it
+
+#### For Agent Instructions
+
+Edit the appropriate file:
+
+- `.agent/rules/agent-guide.md` — import / path / schema rules (all agents)
+- `AGENTS.md` — cross-platform agent rules
+- `.agent/guides/agent-guardrails.md` — agent-operational guidance and
+  current repo surfaces
+
+### Step 3: Document
+
+- Update this file with the new restriction.
+- Add examples to agent instructions showing correct alternatives.
+
+## Common Active Restrictions
+
+### Linter Built-in Rules (Always Enforced)
+
+- Zero `any` types
+- Bounded cognitive complexity (e.g. ≤ 8)
+- Ban `alert()` / `confirm()` / `prompt()`
+- Ban TypeScript enums
+- Use let / const (no var)
+- Import cycle detection, duplicate imports
+
+### Linter Plugin Rules (Always Enforced)
+
+**Import hygiene**:
+
+- `no-relative-parent-imports` — ban `../` imports (use `#`)
+- `no-src-path-imports` — ban `../src/` imports (use `#`)
+- `no-relative-mock-paths` — ban `vi.mock('../')` (use `#` or package name)
+
+**Monorepo paths**:
+
+- `no-hardcoded-repo-root` — ban `__dirname` / `import.meta.dirname` + `../../`
+  for repo root
+- `no-cross-package-paths` — ban `__dirname` + traversal into other packages
+
+**Testing quality**:
+
+- `no-weak-assertions` — ban `toBeTruthy()` / `toBeFalsy()` / `toBeDefined()`
+  / `toBeUndefined()` / `toBeTypeOf()`
+- `no-bare-spy-assertions` — ban `toHaveBeenCalled()` without args
+- `no-internal-mocks` — ban mocking internal workspace packages
+- `no-real-timers-in-tests` — ban `setTimeout` in `Promise` constructor
+
+**Code safety**:
+
+- `as-any-audit` — audit unsafe `as any` casts
+- `no-swallowed-errors` — ban catch blocks that only `console.error`
+
+### Architectural Tier Enforcement
+
+Use a boundaries plugin (e.g. `eslint-plugin-boundaries`) or dependency-cruiser
+rules to prevent tier inversions (e.g. feature → app, package → feature).
+
+### Agent Hooks (Agent-Tool Only)
+
+- Forbidden commands (suggest wrapped recipe equivalents)
+- Package import deduplication
+- Test quality validation
+- Blueprint / docs governance
+- File conventions
+
+### Pre-commit Hook (All Developers)
+
+- Format + lint auto-fix
+- Typecheck affected packages
+- Generated file drift detection
+- Schema drift detection
+- Blueprint format validation

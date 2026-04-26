@@ -1,110 +1,66 @@
 ---
 name: pll
-description: Parallel Lane Launch — execute one or more blueprints simultaneously, each in its own git worktree, committing once per lane after /verify passes. Invoke as `$pll <slug1> [slug2 …]`.
+description: Blueprint-aware parallel execution adapter over ultrawork/subagents. If OMX isn't installed, the skill uses the `local-worktree` backend (default for repos without OMX).
 ---
 
-# PLL — Parallel Lane Launch
+# PLL Skill — Blueprint-Aware Parallel Execution
 
-`$pll` fans out blueprint execution across isolated git worktrees so that
-multiple blueprints can progress simultaneously without touching each other's
-staging area or branch state.
+Use this skill when the user invokes `/pll` or asks for Blueprint-aware parallel execution.
 
-## When to invoke
+`/pll` is not a standalone runner. It is the operator-facing adapter over the same shared execution model used by `ak blueprint exec`: both surfaces consume the same Blueprint-backed launch spec, backend vocabulary, and runtime-state bridge, but `/pll` stays manual and operator-facing.
 
-- The user says `$pll <slug>` or `/pll <slug>`.
-- You need to execute one or more planned blueprints and want each isolated.
-- After `$plan-refine` has stamped **Blueprint compliant: Yes** on every target slug.
+`/pll`:
 
-Do NOT invoke `$pll` on blueprints that are still `draft` or that carry an
-open `**Q:**` requiring user decision.
+1. understands Blueprint/task dependencies
+2. updates `ak blueprint` lifecycle state honestly
+3. delegates generic parallel fan-out to the engine layer such as `$ultrawork` or host-native subagents
 
-## Pre-flight checklist
+> **Backends**: `/pll` can delegate to `omx-team` or `omx-pll-interactive` when OMX is installed. If OMX isn't installed, the skill uses the `local-worktree` backend (default for repos without OMX).
 
-For each `<slug>` in the argument list:
+## Responsibilities
 
-1. `blueprints/planned/<slug>/_overview.md` exists and `status: planned`.
-2. `$plan-refine <slug>` has been run (Refinement Summary present, **Blueprint compliant: Yes**).
-3. No task in Phase 1 of the blueprint has an unresolved `**Blocked:**` annotation.
-4. No two slugs in the same `$pll` invocation write to the same file in Wave 1 (same-wave conflict check).
+1. **Input parsing**
+   - Accept inline task lists, comma-separated strings, or file paths.
+   - Treat blueprint paths under `blueprints/` as lifecycle-backed execution.
+2. **Blueprint lifecycle**
+   - Use `ak blueprint start`, `ak blueprint task ...`, and `ak blueprint finalize` for durable state.
+   - Never use `ak blueprint move` as the normal execution primitive.
+   - Keep the lifecycle semantics aligned with `ak blueprint exec`; do not invent a separate `/pll`-only plan model.
+3. **Dependency-aware batching**
+   - Compute ready work from explicit dependencies and obvious blocking relationships.
+   - Prioritize critical-path or high-fan-out work when choosing the next batch.
+4. **Engine delegation**
+   - Hand independent work to the current engine layer (`$ultrawork`, subagents, or equivalent runtime-native parallel lanes).
+   - Do not promise a fixed active-agent count across runtimes.
+5. **Verification discipline**
+   - Require repo verification before marking blueprint tasks complete.
+6. **Shared execution model**
+   - Treat `/pll` as the interactive/manual front door for the same control-plane contract that `ak blueprint exec` uses.
+   - Reuse the same backend names, progress bridge semantics, and truthfulness rules.
 
-If any check fails, stop and surface the issue to the user before creating worktrees.
+## Concurrency Limits
 
-## Worktree protocol
+| Scope              | Guidance                                                                  |
+| ------------------ | ------------------------------------------------------------------------- |
+| Default batches    | Use the smallest parallelism that still keeps safe independent lanes busy |
+| Test-heavy tasks   | Keep concurrency conservative                                             |
+| Build/deploy tasks | Keep concurrency conservative                                             |
 
-For each lane `<slug>`:
+## Deadlock and Failure Handling
 
-```bash
-# From the main checkout root:
-git worktree add .worktrees/<slug> -b pll/<slug>
-```
+- If no tasks remain ready but some are blocked, report the blocking tasks and their dependencies.
+- Failed tasks stay blocked with reasons; downstream work remains blocked unless explicitly safe to continue.
+- If lifecycle mutation fails, stop instead of continuing with stale plan state.
 
-- **Worktree path:** `.worktrees/<slug>/`
-- **Branch name:** `pll/<slug>`
-- **Base:** HEAD of `main` at the moment `$pll` is invoked.
-- All file edits, installs, and test runs happen inside the worktree.
-- The main checkout is never touched during lane execution.
+## When **NOT** to use
 
-## Execution model
+- Small, strictly serial work where `/plan` or direct execution is simpler.
+- Situations where you only need generic parallel fan-out and do not need Blueprint lifecycle/state awareness; use `$ultrawork` directly there.
 
-Each lane runs as an independent background agent with the following contract:
-
-1. **Navigate** into the worktree (`cd .worktrees/<slug>`).
-2. **Execute** the blueprint tasks in wave order (Phase 1 → Phase 2 → …).
-3. **Verify** by running the blueprint's Verification Gates table in full.
-4. **Commit** exactly once if and only if all gates are green:
-
-```text
-<type>(<scope>): <summary matching the blueprint goal>
-
-Blueprint: blueprints/planned/<slug>/_overview.md
-
-- key change 1
-- key change 2
-- key change 3
-```
-
-No `Co-Authored-By` trailers. No `🤖 Generated with Claude Code` footers.
-Commits are authored as the repo owner.
-
-5. **Report** back: `{ worktree, branch, commitSha, filesTouched, verifyStatus }`.
-
-If any Verification Gate is red, do NOT commit. Surface the failures in the
-lane report instead.
-
-## Commit message rules
-
-- Follow conventional-commit format: `<type>(<scope>): <summary>`.
-- Body bullet points: 3–5, each describing a concrete change.
-- `Blueprint:` trailer line (required).
-- No AI authorship lines of any kind.
-
-## Parallelism rules
-
-- Lanes that share no files in Wave 1 may run fully in parallel.
-- Lanes that share a file must be serialized: the later lane must wait for
-  the earlier lane's commit before starting.
-- If a slug's blueprint lists `depends_on` pointing at another slug in the
-  same `$pll` invocation, serialize them in dependency order.
-
-## After all lanes complete
-
-1. Each lane's worktree stays alive until the user merges or rebases the branch.
-2. Report a summary table:
-
-| Lane     | Branch       | Status      | Commit      |
-| -------- | ------------ | ----------- | ----------- |
-| `<slug>` | `pll/<slug>` | green / red | `<sha>` / — |
-
-3. Suggest cleanup commands once the user confirms merge:
+## Quick Start Examples
 
 ```bash
-git worktree remove .worktrees/<slug>
-git branch -d pll/<slug>
+/pll "lint auth, lint utils, typecheck api [depends: lint auth], test api [depends: typecheck api]"
+/pll tasks.md --max=6
+/pll blueprints/in-progress/new-launch/_overview.md
 ```
-
-## What $pll does NOT do
-
-- Merge branches into `main` — the user decides.
-- Open pull requests — the user decides.
-- Rebase or squash across lanes — each lane is its own commit history.
-- Skip Verification Gates for any reason.
