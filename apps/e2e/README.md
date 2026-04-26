@@ -61,7 +61,7 @@ export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pubsub
 psql "$DATABASE_URL" -c 'CREATE EXTENSION IF NOT EXISTS pgcrypto;'
 psql "$DATABASE_URL" -f apps/workers/src/db/migrations/0000_initial_workers_schema.sql
 psql "$DATABASE_URL" -f apps/workers/src/db/migrations/0001_add_message_seq.sql || true
-pnpm --filter @repo/workers exec wrangler dev --port 8787 --var JWT_SECRET:e2e-test-secret
+JWT_SECRET=e2e-test-secret pnpm --filter @repo/workers dev -- --port 8787
 ```
 
 Then run:

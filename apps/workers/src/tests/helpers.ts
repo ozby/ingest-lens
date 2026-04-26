@@ -42,15 +42,39 @@ export function createMockKv(store: Map<string, string> = new Map()): {
   };
 }
 
-export function createMockHealStream(state: { approved: unknown } = { approved: null }): {
+export function createMockHealStream(
+  state: { approved: unknown } = { approved: null },
+  opts: {
+    tryHealResponse?: unknown;
+    tryHealStatus?: number;
+  } = {},
+): {
   idFromName: ReturnType<typeof vi.fn>;
   get: ReturnType<typeof vi.fn>;
 } {
-  const stateResponse = new Response(JSON.stringify(state), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
+  const stubFetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.endsWith("/tryHeal")) {
+      const tryHealStatus = opts.tryHealStatus ?? 404;
+      return Promise.resolve(
+        new Response(JSON.stringify(opts.tryHealResponse ?? { healed: false, suggestions: [] }), {
+          status: tryHealStatus,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }
+
+    if (url.endsWith("/state")) {
+      return Promise.resolve(
+        new Response(JSON.stringify(state), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }
+
+    return Promise.resolve(new Response("not found", { status: 404 }));
   });
-  const stubFetch = vi.fn().mockResolvedValue(stateResponse);
   const stub = { fetch: stubFetch };
   const getMock = vi.fn().mockReturnValue(stub);
   const idFromNameMock = vi.fn().mockReturnValue("heal-stream-stub-id");

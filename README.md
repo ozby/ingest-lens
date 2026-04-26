@@ -128,7 +128,8 @@ pnpm --dir apps/e2e db:branch:list
 ```
 
 Local `auth`, `messaging`, and `full` runs require a migrated local Postgres
-schema plus `wrangler dev --var JWT_SECRET:e2e-test-secret`.
+schema plus a worker started via
+`JWT_SECRET=e2e-test-secret pnpm --filter @repo/workers dev -- --port 8787`.
 
 Neon branch commands and the cleanup workflow read `NEON_API_KEY`,
 `NEON_PROJECT_ID`, and `NEON_PARENT_BRANCH_ID` from Doppler-backed shell env.
@@ -175,11 +176,14 @@ remains enabled as a migration guard, but the primary warning source is gone.
 `.github/workflows/testing-e2e-act.yml`, which is shaped for `act` and expects a
 local Postgres instance reachable at `host.docker.internal:5432`.
 
-Local worker development expects the environment described in
-[`.env.example`](./.env.example): a Postgres connection (`DATABASE_URL`) for
-local development, a `JWT_SECRET`, and the same Cloudflare binding shape used by
-`wrangler.toml`. Doppler remains the preferred secret-loading path for real
-runs, but the package-level commands above are the clean-checkout baseline.
+Local worker development does **not** require a `.dev.vars` file. The workers
+package runs `scripts/run-workers-dev.ts`, which forwards `JWT_SECRET`,
+`AUTO_HEAL_THRESHOLD`, and `LOW_CONFIDENCE_THRESHOLD` from the shell into
+`wrangler dev`; if `JWT_SECRET` is absent it falls back to a local-only default.
+Postgres still comes from `localConnectionString` in
+[`apps/workers/wrangler.toml`](./apps/workers/wrangler.toml). [`.env.example`](./.env.example)
+remains a documentation-only fallback for one-off local scripts, while Doppler
+is still the preferred secret-loading path for steady-state runs.
 
 ## Verify locally
 

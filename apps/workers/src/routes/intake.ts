@@ -726,6 +726,11 @@ async function tryHealPath(
 ): Promise<Response | null> {
   if (mapped.batch.overallConfidence < autoHealThreshold) return null;
 
+  let approvedAttempt: IntakeAttemptRecord;
+  let mappingVersion: ApprovedMappingRevision;
+  let normalizedRecord: ReturnType<typeof createNormalizedEnvelope>;
+  let db: ReturnType<typeof createDb>;
+
   try {
     const healRes = await healDO.fetch("https://do/tryHeal", {
       method: "POST",
@@ -749,7 +754,7 @@ async function tryHealPath(
       return c.json({ status: "success", data: { normalized, fastPath: true } });
     }
 
-    const db = createDb(c.env);
+    db = createDb(c.env);
     const persisted = await persistHealedAttempt(
       db,
       ownerId,
@@ -760,36 +765,52 @@ async function tryHealPath(
       createId(),
     );
 
-    const approvedAttempt = toAttemptRecord(persisted.attempt);
-    const mappingVersion = toMappingRevision(persisted.revision);
+    approvedAttempt = toAttemptRecord(persisted.attempt);
+    mappingVersion = toMappingRevision(persisted.revision);
     const normalized = normalizeWithMapping({
       payload: value.payload,
       suggestions: healResult.suggestions,
     });
-    const normalizedRecord = createNormalizedEnvelope({
+    normalizedRecord = createNormalizedEnvelope({
       attempt: approvedAttempt,
       mappingVersion,
       record: normalized,
     });
-
-    try {
-      await publishToTarget(
-        c,
-        normalizedRecord as unknown as Record<string, unknown>,
-        approvedAttempt.deliveryTarget,
-      );
-    } catch {
-      // fall through — ingest_failed update skipped to keep heal path simple
-    }
-
-    recordIntakeLifecycle(c.env, buildIntakeLifecycleEvent(approvedAttempt, "suggestion.ingested"));
-    return c.json({
-      status: "success",
-      data: { attempt: approvedAttempt, mappingVersion, normalizedRecord, healPath: true },
-    });
   } catch {
-    return null; // fall through to pending_review on any failure
+    return null; // fall through to pending_review while no persisted approved state exists
   }
+
+  try {
+    await publishToTarget(
+      c,
+      normalizedRecord as unknown as Record<string, unknown>,
+      approvedAttempt.deliveryTarget,
+    );
+  } catch (error) {
+    return handlePublishFailure(c, db, approvedAttempt.id, error, mappingVersion, normalizedRecord);
+  }
+
+  const [ingestedAttemptRow] = await db
+    .update(intakeAttempts)
+    .set({
+      status: "ingested",
+      ingestStatus: "ingested",
+      ingestError: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(intakeAttempts.id, approvedAttempt.id))
+    .returning();
+
+  if (!ingestedAttemptRow) {
+    return c.json({ status: "error", message: "Failed to record ingest success" }, 500);
+  }
+
+  const ingestedAttempt = toAttemptRecord(ingestedAttemptRow);
+  recordIntakeLifecycle(c.env, buildIntakeLifecycleEvent(ingestedAttempt, "suggestion.ingested"));
+  return c.json({
+    status: "success",
+    data: { attempt: ingestedAttempt, mappingVersion, normalizedRecord, healPath: true },
+  });
 }
 
 intakeRoutes.post("/mapping-suggestions", async (c) => {

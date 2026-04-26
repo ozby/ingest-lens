@@ -189,6 +189,16 @@ function createAttemptRow(overrides: Partial<AttemptRow> = {}): AttemptRow {
 }
 
 const deliveryQueue = { send: vi.fn().mockResolvedValue(undefined) };
+const testQueue = {
+  id: "queue-1",
+  name: "Demo queue",
+  ownerId: "user-123",
+  retentionPeriod: 14,
+  schema: null,
+  pushEndpoint: "https://example.com/webhook",
+  createdAt: new Date("2026-04-24T00:00:00.000Z"),
+  updatedAt: new Date("2026-04-24T00:00:00.000Z"),
+} satisfies QueueRow;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -392,18 +402,7 @@ describe("intake routes", () => {
       attempts: [attempt],
       mappingVersions: [],
       messages: [],
-      queues: [
-        {
-          id: "queue-1",
-          name: "Demo queue",
-          ownerId: "user-123",
-          retentionPeriod: 14,
-          schema: null,
-          pushEndpoint: "https://example.com/webhook",
-          createdAt: new Date("2026-04-24T00:00:00.000Z"),
-          updatedAt: new Date("2026-04-24T00:00:00.000Z"),
-        },
-      ],
+      queues: [testQueue],
       topics: [],
     };
     vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
@@ -643,5 +642,131 @@ describe("auto-heal fast path", () => {
 
     // Critical assertion: LLM was never invoked on the fast path.
     expect(vi.mocked(suggestMappings)).not.toHaveBeenCalled();
+  });
+});
+
+describe("auto-heal publish lifecycle", () => {
+  it("marks healed attempts as ingested after publish succeeds", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    deliveryQueue.send.mockResolvedValue(undefined);
+    vi.mocked(suggestMappings).mockResolvedValueOnce({
+      kind: "success",
+      batch: createAttemptRow().suggestionBatch!,
+      decisionLog: {
+        provider: "test-runner",
+        model: "test-model",
+        promptVersion: "payload-mapper-v1",
+        validationOutcome: "passed",
+        confidence: { average: 0.96, maximum: 0.96, minimum: 0.96, overall: 0.92 },
+        judgeDisagreements: 0,
+        judgeUnavailableCount: 0,
+      },
+    });
+
+    const state: FakeDbState = {
+      attempts: [],
+      mappingVersions: [],
+      messages: [],
+      queues: [testQueue],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
+
+    const healStream = createMockHealStream(
+      { approved: null },
+      {
+        tryHealResponse: {
+          healed: true,
+          suggestions: createAttemptRow().suggestionBatch!.suggestions,
+        },
+      },
+    );
+
+    const response = await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions",
+        {
+          contractId: "job-posting-v1",
+          fixtureId: "ashby-job-001",
+          queueId: "queue-1",
+          sourceSystem: "manual",
+        },
+        AUTH_HEADER,
+      ),
+      createMockEnv(deliveryQueue, undefined, undefined, undefined, undefined, undefined, healStream),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      data: { attempt: { status: string; ingestStatus: string }; healPath: boolean };
+    };
+    expect(payload.data.healPath).toBe(true);
+    expect(payload.data.attempt.status).toBe("ingested");
+    expect(payload.data.attempt.ingestStatus).toBe("ingested");
+    expect(state.attempts[0]?.status).toBe("ingested");
+    expect(state.attempts[0]?.ingestStatus).toBe("ingested");
+    expect(deliveryQueue.send).toHaveBeenCalledOnce();
+  });
+
+  it("marks healed attempts as ingest_failed when publish fails", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    deliveryQueue.send.mockRejectedValueOnce(new Error("Queue send exploded"));
+    vi.mocked(suggestMappings).mockResolvedValueOnce({
+      kind: "success",
+      batch: createAttemptRow().suggestionBatch!,
+      decisionLog: {
+        provider: "test-runner",
+        model: "test-model",
+        promptVersion: "payload-mapper-v1",
+        validationOutcome: "passed",
+        confidence: { average: 0.96, maximum: 0.96, minimum: 0.96, overall: 0.92 },
+        judgeDisagreements: 0,
+        judgeUnavailableCount: 0,
+      },
+    });
+
+    const state: FakeDbState = {
+      attempts: [],
+      mappingVersions: [],
+      messages: [],
+      queues: [testQueue],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
+
+    const healStream = createMockHealStream(
+      { approved: null },
+      {
+        tryHealResponse: {
+          healed: true,
+          suggestions: createAttemptRow().suggestionBatch!.suggestions,
+        },
+      },
+    );
+
+    const response = await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions",
+        {
+          contractId: "job-posting-v1",
+          fixtureId: "ashby-job-001",
+          queueId: "queue-1",
+          sourceSystem: "manual",
+        },
+        AUTH_HEADER,
+      ),
+      createMockEnv(deliveryQueue, undefined, undefined, undefined, undefined, undefined, healStream),
+    );
+
+    expect(response.status).toBe(502);
+    const payload = (await response.json()) as {
+      message: string;
+      data: { attempt: { status: string; ingestStatus: string } };
+    };
+    expect(payload.message).toBe("Queue send exploded");
+    expect(payload.data.attempt.status).toBe("ingest_failed");
+    expect(payload.data.attempt.ingestStatus).toBe("failed");
+    expect(state.attempts[0]?.status).toBe("ingest_failed");
+    expect(state.attempts[0]?.ingestStatus).toBe("failed");
   });
 });
