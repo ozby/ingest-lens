@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-25"
+last_updated: "2026-04-26"
 ---
 
 # System Architecture
@@ -35,6 +35,7 @@ flowchart LR
 
   subgraph DO["Durable Objects"]
     TR["TopicRoom DO<br/>(WS fan-out + replay log)"]
+    HS["HealStreamDO<br/>(schema drift coordinator + SSE)"]
     SL["SessionLock DO"]
     GAUGE["LabConcurrencyGauge DO"]
     S1A["S1aRunnerDO (correctness)"]
@@ -48,9 +49,11 @@ flowchart LR
 
   subgraph INTAKE["AI intake / mapping (apps/workers)"]
     INR["/api/intake/* routes"]
-    ADP["aiMappingAdapter<br/>(@webpresso/agent-kit-driven)"]
-    NORM["Deterministic normalizer<br/>+ approved mapping revisions"]
+    SFP["shapeFingerprint()<br/>(structural drift detection)"]
+    ADP["aiMappingAdapter<br/>(Workers AI mapping)"]
+    NORM["normalizeWithMapping()<br/>+ approvedMappingRevisions"]
     FIX["Public ATS fixtures<br/>(open-apply-sample.jsonl)"]
+    HEAL["/api/heal/stream/* routes"]
   end
 
   UI --> SPA
@@ -63,7 +66,14 @@ flowchart LR
   API -->|publish| DQ
   API -->|JWT verify + jti check| KV
   API --> INR
-  INR --> ADP --> AI
+  INR --> SFP
+  SFP -->|"shape match (fast path)"| NORM
+  SFP -->|"shape mismatch"| ADP
+  ADP --> AI
+  ADP -->|"confidence ≥ 0.8"| HS
+  HS -->|"write coordinator"| PG
+  HS -->|"SSE broadcast"| OPER
+  HEAL --> HS
   ADP --> NORM --> PG
   INR --> FIX
 
@@ -97,15 +107,21 @@ flowchart LR
   cost ceiling, and SessionLock-gated runners. Never shares state with
   the API worker beyond the `lab.*` schema.
 - **Durable Objects**: `TopicRoom` is the production fan-out + reconnect
-  replay primitive; `SessionLock`, `LabConcurrencyGauge`, and the two
-  scenario runner DOs are lab-internal.
+  replay primitive; `HealStreamDO` (one per `sourceSystem:contractId:contractVersion`)
+  is the write coordinator for schema drift healing — it serializes concurrent
+  heal writes via the CF input gate and broadcasts SSE events to operator
+  subscribers; `SessionLock`, `LabConcurrencyGauge`, and the two scenario runner
+  DOs are lab-internal.
 - **Postgres**: single Neon project. Production tables live in
   `public.*`; lab tables strictly under `lab.*` (CI-enforced).
   `@webpresso/db-branching` provides the vendor-agnostic interface;
   `packages/neon` is the Neon implementation used in E2E.
-- **AI intake path**: only AI call site is mapping repair suggestion;
-  every step after that — schema validation, source-path validation,
-  approval, normalization, publish — is deterministic code.
+- **AI intake path**: only AI call site is mapping repair suggestion.
+  `shapeFingerprint()` detects structural drift before calling the LLM.
+  On shape-match (fast path) the LLM is skipped entirely; on mismatch at
+  ≥ 0.8 confidence `HealStreamDO.tryHeal()` auto-approves the new mapping.
+  Every step after mapping approval — schema validation, normalization,
+  publish — is deterministic code.
 - **Workers test substrate**: `@webpresso/workers-test-kit` is the
   upstream for `BaseWorkerEnv`, `createMockExecutionContext`, and
   `createMockHyperdrive`. `packages/test-utils` only re-exports

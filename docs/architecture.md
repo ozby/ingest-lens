@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-25"
+last_updated: "2026-04-26"
 ---
 
 # Architecture
@@ -53,7 +53,7 @@ SQLite replay log. `GET /api/topics/:id/ws?cursor=<c>` replays missed
 messages. O(n) fan-out per topic — see
 [scale-considerations.md](scale-considerations.md) for sharding.
 
-## IngestLens AI intake — shipped
+## IngestLens AI intake
 
 Single AI call site: mapping repair suggestion. Input: bounded source
 payload, target contract, current approved mapping revision, prompt
@@ -62,44 +62,96 @@ ambiguous fields, confidence, notes. Everything after that
 (schema/source-path validation, compatibility, approval, normalization,
 publish, telemetry, retention, replay) is deterministic.
 
-Manual replay after approval is deferred from v1; approval itself
-performs the deterministic replay+ingest path.
-
 ADR: [0004](adrs/0004-ingestlens-ai-intake-architecture.md).
+Self-healing stream design: `~/.gstack/projects/ozby-ingest-lens/ozby-main-design-20260426-195719.md`.
+
+### Human review path (v1 baseline)
 
 ```mermaid
 flowchart TD
   P[Source payload] --> S["POST /api/intake/mapping-suggestions"]
   S --> AUTH[auth + rate-limit]
-  AUTH --> DRIFT[drift detect vs. approved mapping revision]
-  DRIFT --> ADP[aiMappingAdapter → Workers AI]
-  ADP --> V[schema + source-path + compatibility validation]
-  V --> PR[(pending_review row)]
+  AUTH --> SFP["shapeFingerprint(payload)"]
+  SFP -->|"matches approvedMappingRevision<br/>(fast path)"| FAST["normalizeWithMapping()<br/>→ publish<br/>→ Queue.send audit event"]
+  SFP -->|"mismatch or no revision yet"| ADP["aiMappingAdapter → Workers AI"]
+  ADP -->|"confidence < 0.8<br/>or mismatch"| PR[(pending_review row)]
   PR --> REV["GET ?status=pending_review<br/>(admin UI)"]
   REV --> APR["POST /:id/approve"]
   APR --> OWN[verify ownership / TTL]
-  OWN --> REVN[create approved mapping revision]
-  REVN --> NORM[deterministic normalize<br/>ingest.record.normalized v1]
+  OWN --> REVN["approveMapping()<br/>→ approvedMappingRevisions"]
+  REVN --> NORM["normalizeWithMapping()<br/>ingest.record.normalized v1"]
   NORM --> MSG[INSERT message] --> DQ[(DELIVERY_QUEUE)]
   NORM --> TEL[telemetry on mappingTraceId]
 ```
 
+### Self-healing path (adaptive intake)
+
+When `shapeFingerprint()` detects structural drift and the LLM returns
+confidence ≥ 0.8, `HealStreamDO.tryHeal()` auto-approves — no human
+review required. Operators observe via SSE and can revert via PATCH.
+
+```mermaid
+sequenceDiagram
+  participant SRC as Third-party source
+  participant W as API Worker
+  participant HS as HealStreamDO
+  participant PG as Postgres (Neon)
+  participant OPER as Operator (SSE)
+
+  SRC->>W: POST /api/intake/mapping-suggestions<br/>(renamed field)
+  W->>W: shapeFingerprint(payload) ≠ cached fingerprint
+  W->>W: suggestMappings() — Workers AI
+  Note over W: confidence ≥ 0.8
+  W->>HS: tryHeal(batch) via DO RPC
+  HS->>PG: INSERT approvedMappingRevisions<br/>(healedAt = now)
+  HS->>HS: update in-memory cache + storage.put()
+  HS-->>OPER: SSE: drift_detected → analyzing → healed
+  W->>W: normalizeWithMapping(new suggestions)
+  W->>PG: publish message
+  W-->>SRC: 200 (normalized record)
+
+  Note over OPER: Operator inspects heal, decides to revert
+  OPER->>W: PATCH /api/heal/stream/.../rollback
+  W->>HS: rollback(currentRevisionId)
+  HS->>PG: INSERT approvedMappingRevisions<br/>(rolledBackFrom = currentId)
+  HS->>HS: restore previous {fingerprint, suggestions}
+  HS-->>OPER: SSE: rolled_back
+
+  Note over SRC: Next payload with same renamed field
+  SRC->>W: POST /api/intake/mapping-suggestions
+  W->>HS: getState() — fingerprint mismatch (reverted)
+  W->>W: suggestMappings() → confidence < 0.8 (or pending_review)
+```
+
 ```text
 GET  /api/intake/public-fixtures              list bundled ATS fixtures
-POST /api/intake/mapping-suggestions          auth → drift detect → AI adapter → validate → persist
+POST /api/intake/mapping-suggestions          auth → shapeFingerprint → fast path or AI adapter → persist
 GET  /api/intake/mapping-suggestions?status=pending_review
 POST /api/intake/mapping-suggestions/:id/approve
        → verify ownership, reject expired payloads
-       → create approved mapping revision
-       → replay → normalize (eventType ingest.record.normalized, schemaVersion v1)
-       → insert message → DELIVERY_QUEUE
+       → approveMapping() → create approved mapping revision
+       → normalizeWithMapping() → insert message → DELIVERY_QUEUE
        → emit telemetry on shared mappingTraceId
+
+GET  /api/heal/stream/:sourceSystem/:contractId/:contractVersion
+       → SSE stream; events: drift_detected | analyzing | rewriting | healed | deferred | rolled_back
+       → keepalive every 15s
+PATCH /api/heal/stream/:sourceSystem/:contractId/:contractVersion/rollback
+       → verify ownership → HealStreamDO.rollback()
+       → insert new approvedMappingRevisions (rolledBackFrom = currentId)
+       → SSE: rolled_back
 ```
+
+**HealStreamDO invariants:**
+
+- One DO instance per `sourceSystem:contractId:contractVersion` tuple.
+- DO input gate serializes all concurrent heal/rollback writes — no application-level locking needed.
+- Write ordering: `INSERT Neon` → `update DO cache` → `broadcast SSE`. Neon failure throws; DO cache is never updated.
+- Audit trail: `approvedMappingRevisions` is append-only. `healedAt` marks auto-heals; `rolledBackFrom` links rollback rows to the reversed revision.
 
 Fixture source bundled into Worker code from
 `data/payload-mapper/payloads/ats/open-apply-sample.jsonl` — no runtime
-filesystem dependency. Optional allowlisted live fetch is partial, not
-on the v1 critical path.
+filesystem dependency.
 
 ## Request lifecycle
 
