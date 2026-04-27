@@ -1,0 +1,15 @@
+description = "Execute a plan from a blueprint or plan file."
+
+prompt = """
+# Execute Plan
+
+Runs the steps defined in a plan or blueprint.
+
+## Steps
+
+1. Parse the plan file for tasks and dependencies
+2. Execute tasks in dependency order
+3. Report progress and results
+
+See the plan command for creating and managing plans.
+"""

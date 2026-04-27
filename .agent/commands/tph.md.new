@@ -1,0 +1,380 @@
+---
+description: Testing Philosophy Helper - Audit test quality, detect violations, and refactor tests to follow the integration-first, anti-mocking philosophy with a target 85% mutation score
+---
+
+# Testing Philosophy Helper (`/tph`)
+
+Enforce testing philosophy compliance: integration-first, anti-mocking, meaningful assertions.
+
+## Usage
+
+```bash
+just audit-tph                 # Run TPH audit script (over-mocking, file naming)
+just audit-tph-e2e             # Run TPH E2E audit (internal API calls, mocks, dry-run, coverage heuristics)
+/tph                           # Agent: audit all recent test files
+/tph <file>                    # Agent: audit specific test file
+/tph --check                   # Agent: check current changes only (git diff)
+```
+
+> Note: `just <recipe>` commands assume your repo uses the [just](https://github.com/casey/just) task runner. Substitute your own runner (`make`, `npm run`, etc.) where needed. The `ak run` abstraction layer is planned; until then, the referenced recipes are illustrative.
+
+## Implementation
+
+TPH enforcement is split across two layers:
+
+### Layer 1: GritQL Patterns (automatic, in `.grit/patterns/`)
+
+These run during lint and catch pattern-level violations:
+
+| Pattern                     | File                             | Detects                                            |
+| --------------------------- | -------------------------------- | -------------------------------------------------- |
+| `no_weak_assertions`        | `no-weak-assertions.grit`        | `toBeTruthy()`, `toBeFalsy()`                      |
+| `no_tobefalsy`              | `no-tobefalsy.grit`              | `toBeFalsy()` (all chains)                         |
+| `no_tobedefined`            | `no-tobedefined.grit`            | `toBeDefined()`, `toBeUndefined()`, `toBeTypeOf()` |
+| `no_bare_spy_assertions`    | `no-bare-spy-assertions.grit`    | `toHaveBeenCalled()` without args                  |
+| `no_mock_calls_length_hack` | `no-mock-calls-length-hack.grit` | `spy.mock.calls.length > 0` workarounds            |
+| `no_internal_mocks`         | `no-internal-mocks.grit`         | `vi.mock('~/<internal>/*')` — your own modules     |
+
+### Layer 2: Audit Script (`just audit-tph`)
+
+Catches file-level violations GritQL can't express:
+
+- **Over-mocking** — files with >3 `vi.mock()` calls (WARNING)
+- **Internal mocks in unit tests** — `.test.ts` files mocking your own internal modules (ERROR)
+
+## What This Command Does
+
+1. **Audits test files** for philosophy violations:
+   - Over-mocking (>3 mocks for unit, any for integration)
+   - Mocking business logic (services, parsers, validators)
+   - Weak assertions (`toBeTruthy`, `toBeDefined`, `toBeTypeOf`, `toHaveProperty(key)` without value, `.length > 0`, partial `toMatch`/`toContain`)
+   - Wrong file type (integration test named `.test.ts`)
+   - Missing real dependencies
+
+2. **Reports violations** with:
+   - Severity (ERROR, WARNING, INFO)
+   - File paths and rule names
+   - Suggested fixes
+
+3. **Auto-fixes** (agent-assisted with `/tph --fix`):
+   - Rename `.test.ts` → `.integration.test.ts` if needed
+   - Remove service/business logic mocks
+   - Add temp file setup for integration tests
+   - Strengthen weak assertions
+   - Add missing test patterns
+
+## When to Use
+
+**Trigger `/tph` when:**
+
+- After implementing new tests (proactive quality check)
+- Before claiming work is "done" (quality gate)
+- When tests pass but you're not confident (smell test)
+- During PR review (catch violations early)
+- When refactoring existing tests (improvement)
+
+**Don't use for:**
+
+- Authoring Playwright/browser E2E tests (different rules apply)
+- Pure unit tests of formatting functions (mocking OK there)
+- Tests that already follow philosophy (waste of time)
+
+## Violation Detection Rules
+
+### E2E Guidelines & Evaluation (TPH-E2E)
+
+**Scope**: E2E tests only (`*.spec.ts` for Playwright and `*.e2e.ts` for Vitest end-to-end coverage). This is a quality audit, not authoring.
+
+**Rules**:
+
+1. **No internal handler calls** (must go through real HTTP/browser paths)
+2. **No mocks in E2E** (real services/boundaries only)
+3. **No dry-run mode** (must execute real behavior)
+4. **Coverage heuristics** (should exist):
+   - Error/invalid paths
+   - Mixed/partial/graceful degradation
+
+**Run**:
+
+```bash
+just audit-tph-e2e
+```
+
+### CRITICAL Violations (Must Fix)
+
+1. **Mocking Business Logic**
+
+   ```typescript
+   // BAD — CRITICAL
+   vi.mock('~/services/blueprint/local') // Service layer
+   vi.mock('../../lib/task-graph') // Business logic
+   vi.mock('../database') // Data layer
+   ```
+
+2. **Integration Test Named as Unit Test**
+
+   ```typescript
+   // BAD — CRITICAL: Uses services but named .test.ts
+   // <package>/src/commands/exec.test.ts
+   vi.mock('~/services/blueprint/local') // Integration, not unit!
+   ```
+
+3. **Zero Real Dependencies**
+
+   ```typescript
+   // BAD — CRITICAL: Everything mocked, tests nothing
+   vi.mock('~/services/blueprint/local')
+   vi.mock('../../lib/task-graph')
+   vi.mock('../../lib/parser')
+   // = Testing mocks, not code
+   ```
+
+4. **Missing E2E Coverage for Commands**
+
+   ```typescript
+   // BAD — CRITICAL: Only routing test, no actual execution
+   it('should recognize new command', async () => {
+     await actionFn('new', ['test'], { 'dry-run': true })
+     expect(exitSpy).not.toHaveBeenCalled()
+   })
+   // Missing: Test that actually creates files!
+   ```
+
+5. **Using dry-run in Integration Tests**
+
+   ```typescript
+   // BAD — CRITICAL: Not testing real behavior
+   await executeRun('test', { dryRun: true })
+   // Should: await executeRun('test', {}) and verify files created
+   ```
+
+6. **Inline YAML in Test Files**
+
+   ```typescript
+   // BAD — CRITICAL: Inline YAML string literals
+   const yaml = `entity: tasks\nfields:\n  - name: id\n    type: uuid`
+   writeFileSync(join(dir, 'tasks.yaml'), yaml)
+
+   // GOOD: Use __fixtures__ YAML files
+   const FIXTURES_DIR = join(import.meta.dirname, '__fixtures__')
+   cpSync(join(FIXTURES_DIR, 'tasks.yaml'), join(dir, 'tasks.yaml'))
+   ```
+
+   **Exception**: Intentionally malformed YAML (1-2 lines) for error-handling tests is OK.
+   **Exception**: Programmatic YAML via `yaml.stringify()` from objects is OK.
+
+### WARNING Violations (Should Fix)
+
+1. **Weak Assertions**
+
+   ```typescript
+   // BAD — Weak: Allows equivalent mutants
+   expect(result).toBeTruthy()
+   expect(result).toBeDefined()
+   expect(array).toHaveLength(3) // Without checking contents
+
+   // BAD — Weak: toHaveBeenCalled() workarounds
+   expect(spy.mock.calls.length).toBeGreaterThan(0)
+   expect(spy.mock.calls).toHaveLength(1)
+
+   // GOOD — Strong: Verify actual values
+   expect(result).toBe(true)
+   expect(result).toMatchObject({ status: 'success', count: 3 })
+   expect(array).toEqual(['item1', 'item2', 'item3'])
+
+   // GOOD — Strong: Verify actual call arguments
+   expect(spy).toHaveBeenCalledWith('expected', 'args')
+   expect(spy).toHaveBeenCalledTimes(1)
+   const output = spy.mock.calls.map((c) => c[0]).join('\n')
+   expect(output).toContain('expected content')
+   ```
+
+2. **Too Many Mocks (>3)**
+
+   ```typescript
+   // WARNING: Convert to integration test
+   vi.mock('./service1')
+   vi.mock('./service2')
+   vi.mock('./service3')
+   vi.mock('./service4')
+   // 4+ mocks = integration in disguise
+   ```
+
+3. **Testing Implementation**
+   ```typescript
+   // WARNING: Breaks on refactoring
+   expect(spy).toHaveBeenCalledWith(mockInput)
+   ```
+
+### INFO Violations (Consider Fixing)
+
+1. **No Integration Test Coverage**
+   - Pure unit tests exist but no integration tests
+   - May want to add `.integration.test.ts` for confidence
+
+2. **Inconsistent Naming**
+   - Test file doesn't match source file name
+
+3. **Incomplete E2E Coverage for Commands**
+   - Has routing test but missing:
+     - E2E test (actual execution)
+     - Error handling test
+     - Edge case tests
+   - Required for all commands/features
+
+4. **UX Testing Anti-Patterns** (Unit tests miss user experience)
+
+   ```typescript
+   // INFO: Unit test expects throw, but no E2E for graceful degradation
+   await expect(service.listItems()).rejects.toThrow('Invalid item')
+
+   // Missing E2E test: "should show valid items when some are invalid"
+   ```
+
+   **Patterns to detect**:
+   - `expect(...list...).rejects.toThrow()` without corresponding E2E test
+   - Only testing 100% valid or 100% invalid (no mixed scenarios)
+   - No E2E test for list/browse operations with mixed data
+   - Batch operations that don't test partial success
+
+   **Why this matters**: Unit tests verify implementation (throws on error), but miss UX requirements (users need to see valid items even if some are invalid).
+
+   **Example from production**:
+   - Unit test: `expect(listBlueprints()).rejects.toThrow()` — PASSES
+   - Production: Users can't see ANY blueprints if ONE is invalid — BAD UX
+   - E2E test would catch: "should show 5 valid blueprints even if 1 is corrupted"
+
+   **Action**: Add E2E tests for graceful degradation, error recovery, and mixed valid/invalid scenarios.
+
+## Example Output
+
+```
+Auditing: <package>/src/commands/exec.test.ts
+
+CRITICAL: Mocking business logic
+  Line 10: vi.mock('~/services/blueprint/local')
+  Rule: Never mock your own services/parsers/business logic
+  Fix: Convert to .integration.test.ts with real BlueprintService
+
+CRITICAL: Wrong file type
+  File: exec.test.ts (should be exec.integration.test.ts)
+  Reason: Uses services (BlueprintService, task-graph)
+  Fix: Rename to .integration.test.ts and remove mocks
+
+WARNING: Weak assertion
+  Line 63: expect(result).toMatchObject({ totalTasks: 2 })
+  Rule: Test specific values, not just shape
+  Fix: expect(result.totalTasks).toBe(2)
+
+Summary:
+  Critical: 2
+  Warning: 1
+  Info: 0
+
+Test quality: FAILING
+   Fix violations before claiming work is done.
+```
+
+## Auto-Fix Example
+
+```bash
+/tph --fix <package>/src/commands/exec.test.ts
+```
+
+**Before:**
+
+```typescript
+// exec.test.ts
+vi.mock('~/services/blueprint/local', () => ({
+  BlueprintService: class {
+    getBlueprint = mockGetBlueprint
+  },
+}))
+
+it('should show metrics', async () => {
+  mockGetBlueprint.mockResolvedValue(mockData)
+  const result = await executeExec('test', {})
+  expect(result).toBeTruthy()
+})
+```
+
+**After:**
+
+```typescript
+// exec.integration.test.ts
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+
+const tempDir = path.join(os.tmpdir(), `exec-test-${Date.now()}`)
+const blueprintsDir = path.join(tempDir, 'blueprints')
+
+beforeEach(() => {
+  process.cwd = () => tempDir
+})
+
+it('should calculate metrics from real blueprint', async () => {
+  // Create REAL blueprint file
+  const blueprint = `---
+type: blueprint
+status: in-progress
+---
+
+# Test Plan
+
+#### Task 1.1: First
+- [ ] Work
+`
+
+  const planPath = path.join(blueprintsDir, 'test', '_overview.md')
+  await mkdir(path.dirname(planPath), { recursive: true })
+  await writeFile(planPath, blueprint, 'utf8')
+
+  // Uses REAL BlueprintService, REAL parser
+  const result = await executeExec('test', {})
+
+  expect(result.totalTasks).toBe(1)
+  expect(result.waveCount).toBeGreaterThan(0)
+})
+
+afterEach(async () => {
+  await rm(tempDir, { recursive: true })
+})
+```
+
+## Integration with Workflow
+
+**Add to quality gates:**
+
+```bash
+# Before claiming work is done
+just test --package <name>   # Tests pass
+/tph --check                 # Test quality passes
+just qa                      # Full quality check
+```
+
+**Add to PR checklist:**
+
+- [ ] Tests pass (`just test`)
+- [ ] Test quality verified (`/tph --check`)
+- [ ] No philosophy violations
+
+## Related Commands
+
+- `/verify` - Post-implementation quality gate (includes test quality)
+- `/audit` - Comprehensive code quality audit
+- `just test --mutation --package <name>` - Mutation score verification
+
+## Philosophy Quick Reference
+
+| Rule                | Violation                            | Fix                                             |
+| ------------------- | ------------------------------------ | ----------------------------------------------- |
+| Integration-first   | Mock-heavy `.test.ts`                | Convert to `.integration.test.ts`, remove mocks |
+| Anti-mocking        | `vi.mock('~/<your-internal>/*')`     | Use real service with temp files/PGlite         |
+| Test behavior       | `expect(spy).toHaveBeenCalled()`     | Test actual outputs/state                       |
+| Specific assertions | `toBeTruthy()`                       | `toBe(expected)` or `toEqual(expected)`         |
+| No inline YAML      | `writeFileSync(path, \`yaml: ...\`)` | Use `__fixtures__/*.yaml` + `cpSync`            |
+| 90% mutation        | Weak tests pass but mutants survive  | Add boundary tests, exact assertions            |
+
+## See Also
+
+- `.agent/skills/testing-philosophy/SKILL.md` - Full philosophy
+- Your repo's integration test for the blueprint service — example of the correct pattern

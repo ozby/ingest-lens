@@ -57,8 +57,8 @@ catalogs:
     '@webpresso/agent-kit':
       specifier: git+ssh://git@github.com/webpresso/agent-kit.git#main
       version: 0.1.0
-    '@webpresso/db-branching':
-      specifier: git+ssh://git@github.com/webpresso/db-branching.git#main
+    '@webpresso/neon':
+      specifier: git+ssh://git@github.com/webpresso/neon.git#main
       version: 0.1.0
     '@webpresso/process-utils':
       specifier: github:webpresso/process-utils#master
@@ -418,9 +418,9 @@ importers:
 
   apps/e2e:
     dependencies:
-      '@repo/neon':
-        specifier: workspace:*
-        version: link:../../packages/neon
+      '@webpresso/neon':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/neon.git#2f8ca50fd8f6fb20534288670dbdb9cef9799356
     devDependencies:
       '@playwright/test':
         specifier: ^1.49.0
@@ -615,6 +615,9 @@ importers:
       '@pulumiverse/doppler':
         specifier: ^0.9.0
         version: 0.9.0(ts-node@10.9.2(@swc/core@1.15.30(@swc/helpers@0.5.21))(@types/node@25.6.0)(typescript@5.8.2))(typescript@5.8.2)
+      '@webpresso/neon':
+        specifier: 'catalog:'
+        version: git+https://git@github.com:webpresso/neon.git#2f8ca50fd8f6fb20534288670dbdb9cef9799356
       '@webpresso/process-utils':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/process-utils.git#af2ef042a25b8b59c583c1739d71f859d64b0ef5
@@ -691,34 +694,6 @@ importers:
       '@webpresso/stryker-config':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
-      '@webpresso/typescript-config':
-        specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
-      '@webpresso/vitest-config':
-        specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
-      bunchee:
-        specifier: 'catalog:'
-        version: 6.10.0(typescript@5.8.2)
-      oxlint:
-        specifier: catalog:tooling
-        version: 1.61.0(oxlint-tsgolint@0.21.1)
-      vitest:
-        specifier: catalog:tooling
-        version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
-
-  packages/neon:
-    dependencies:
-      '@webpresso/db-branching':
-        specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/db-branching.git#3863a2977257b2c4076bd91e2b367578dbd05bd9
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 25.6.0
-      '@typescript/native-preview':
-        specifier: catalog:tooling
-        version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
@@ -2071,6 +2046,9 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
+
+  '@neondatabase/api-client@1.13.0':
+    resolution: {integrity: sha512-grB9eW8YBS6oJe1Hun9mAzebpW2+ZoWb3BVKM1dhkYV/ZAtEOX2VOxwUcRKmi5PGA7xYItgszsKQuuQv068ULQ==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -4387,6 +4365,11 @@ packages:
 
   '@webpresso/db-branching@git+https://git@github.com:webpresso/db-branching.git#3863a2977257b2c4076bd91e2b367578dbd05bd9':
     resolution: {commit: 3863a2977257b2c4076bd91e2b367578dbd05bd9, repo: git@github.com:webpresso/db-branching.git, type: git}
+    version: 0.1.0
+    engines: {node: '>=20'}
+
+  '@webpresso/neon@git+https://git@github.com:webpresso/neon.git#2f8ca50fd8f6fb20534288670dbdb9cef9799356':
+    resolution: {commit: 2f8ca50fd8f6fb20534288670dbdb9cef9799356, repo: git@github.com:webpresso/neon.git, type: git}
     version: 0.1.0
     engines: {node: '>=20'}
 
@@ -8162,6 +8145,12 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
+  '@neondatabase/api-client@1.13.0':
+    dependencies:
+      axios: 1.15.2
+    transitivePeerDependencies:
+      - debug
+
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -10247,6 +10236,13 @@ snapshots:
       - supports-color
 
   '@webpresso/db-branching@git+https://git@github.com:webpresso/db-branching.git#3863a2977257b2c4076bd91e2b367578dbd05bd9': {}
+
+  '@webpresso/neon@git+https://git@github.com:webpresso/neon.git#2f8ca50fd8f6fb20534288670dbdb9cef9799356':
+    dependencies:
+      '@neondatabase/api-client': 1.13.0
+      '@webpresso/db-branching': git+https://git@github.com:webpresso/db-branching.git#3863a2977257b2c4076bd91e2b367578dbd05bd9
+    transitivePeerDependencies:
+      - debug
 
   '@webpresso/process-utils@git+https://git@github.com:webpresso/process-utils.git#af2ef042a25b8b59c583c1739d71f859d64b0ef5':
     dependencies:

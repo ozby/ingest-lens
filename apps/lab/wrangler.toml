@@ -69,7 +69,6 @@ id = "placeholder-lab-kill-switch-kv-id"
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "placeholder-lab-hyperdrive-id"
-localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
 
 # ─── Secrets (injected by Doppler at deploy time) ─────────────────────────────
 # LAB_SESSION_SECRET — dedicated secret; never reuse JWT_SECRET (F-08)

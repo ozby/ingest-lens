@@ -14,6 +14,7 @@
     "@pulumi/cloudflare": "^6.14.0",
     "@pulumi/pulumi": "^3.232.0",
     "@pulumiverse/doppler": "^0.9.0",
+    "@webpresso/neon": "catalog:",
     "@webpresso/process-utils": "catalog:"
   },
   "devDependencies": {

@@ -8,30 +8,12 @@ on:
 jobs:
   full-suite:
     # Fork-PR safety: only run on push-to-main or same-repo PRs.
-    # Current workflow uses no secrets, but this guard prevents accidental
-    # exposure if secrets are added later (forks inherit workflows; workflows
-    # triggered by fork PRs must never see repo secrets).
     if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pubsub
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    timeout-minutes: 20
 
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: pubsub
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres -d pubsub"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     steps:
       - uses: actions/checkout@v6
@@ -49,50 +31,15 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install Doppler CLI
+        run: |
+          curl -Ls https://cli.doppler.com/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Migrate local postgres schema
-        run: |
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION IF NOT EXISTS pgcrypto;'
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/workers/src/db/migrations/0000_initial_workers_schema.sql
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=0 -f apps/workers/src/db/migrations/0001_add_message_seq.sql || true
-
-      - name: Start workers runtime
-        # FIX-8 (CSO audit): JWT_SECRET is now sourced from GitHub Actions secrets.
-        # Set E2E_JWT_SECRET in repository Settings → Secrets and variables → Actions.
-        # Any non-empty string works for testing purposes.
-        run: |
-          pnpm --filter @repo/workers exec wrangler dev --port 8787 --var JWT_SECRET:${{ secrets.E2E_JWT_SECRET }} > worker.log 2>&1 &
-          echo $! > worker.pid
-
-      - name: Wait for worker health
-        run: |
-          for i in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:8787/health > /tmp/e2e-health.json; then
-              cat /tmp/e2e-health.json
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Worker did not become healthy in time" >&2
-          exit 1
-
-      - name: Run full e2e suite
+      - name: Run e2e suite (auto-provisions Neon branch)
         env:
-          E2E_BASE_URL: http://127.0.0.1:8787
-        run: pnpm --dir apps/e2e run e2e:run -- --suite full
-
-      - name: Upload worker log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: worker-log
-          path: worker.log
-
-      - name: Stop workers runtime
-        if: always()
-        run: |
-          if [ -f worker.pid ]; then
-            kill $(cat worker.pid) || true
-          fi
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
+        run: pnpm e2e --suite full

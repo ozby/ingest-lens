@@ -1,8 +1,4 @@
-import {
-  generateBranchName,
-  getNeonConfig,
-  NeonBranchProvider,
-} from "../../../packages/neon/src/index.ts";
+import { generateBranchName, getNeonConfig, NeonBranchProvider } from "@webpresso/neon";
 
 const config = getNeonConfig(process.env);
 const provider = new NeonBranchProvider(config);

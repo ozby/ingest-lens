@@ -25,6 +25,7 @@
     "prepare": "husky",
     "docs:check": "ak audit docs-frontmatter",
     "blueprints:check": "ak audit blueprint-lifecycle --legacy-omx",
+    "e2e": "bun ./apps/e2e/scripts/e2e-with-neon.ts",
     "ai:eval": "bun ./scripts/run-mapping-eval.ts",
     "probes:lab": "bun scripts/probes/consistency-lab/run-all.ts"
   },
@@ -67,6 +68,7 @@
       "@webpresso/agent-kit",
       "@webpresso/cli-utils",
       "@webpresso/db-branching",
+      "@webpresso/neon",
       "@webpresso/process-utils",
       "@webpresso/vitest-config",
       "@webpresso/workers-test-kit"

@@ -1,0 +1,163 @@
+---
+description: Blueprint-aware parallel execution adapter over ultrawork/subagents
+allowed-tools: Bash, Task, Read, Write, Edit, Glob, Grep
+argument-hint: <task-list-or-file> [--max=8]
+---
+
+# /pll - Blueprint-Aware Parallel Execution
+
+Execute Blueprint-shaped work through the current parallel engine layer while keeping durable lifecycle state on the shipped `ak blueprint` surface.
+
+`/pll` is an **operator adapter**, not a standalone runtime. It is the interactive half of the same shared execution model used by `ak blueprint exec`, so both surfaces should agree on launch spec shape, backend vocabulary, and runtime-state bridge semantics.
+
+It does three things:
+
+1. understands task dependencies well enough to preserve ordering
+2. keeps Blueprint lifecycle state honest via `ak blueprint start|task|finalize`
+3. delegates generic parallel fan-out to the active engine layer (`$ultrawork`, subagents, or equivalent host-native parallel lanes)
+
+**Arguments**: $ARGUMENTS
+
+## Input Formats
+
+### Format 1: Numbered list with optional dependencies
+
+```text
+1. Fix lint errors in packages/auth
+2. Fix lint errors in packages/utils
+3. Fix typecheck errors in packages/auth [depends: 1]
+4. Fix typecheck errors in packages/utils [depends: 2]
+5. Run tests for packages/auth [depends: 3]
+6. Run tests for packages/utils [depends: 4]
+```
+
+### Format 2: Simple comma-separated list
+
+```text
+/pll "fix auth lint, fix utils lint, update docs"
+```
+
+### Format 3: File path
+
+```text
+/pll tasks.md
+/pll blueprints/in-progress/my-blueprint/_overview.md
+```
+
+### Format 4: Conversation context
+
+```text
+/pll
+```
+
+If invoked without arguments, infer the nearest task list from the latest user context. If that context is anchored to a blueprint, apply Blueprint lifecycle rules.
+
+## Blueprint Lifecycle Rules
+
+When `/pll` is executing blueprint-backed work:
+
+- use `ak blueprint start <slug>` before execution begins
+- use `ak blueprint task start <slug> <taskId>` when a task starts
+- use `ak blueprint task block <slug> <taskId> --reason "<reason>"` when work is blocked
+- use `ak blueprint task complete <slug> <taskId>` only after the task's acceptance and verification actually pass
+- use `ak blueprint finalize <slug>` only after all tasks are validly done
+- do **not** use `ak blueprint move` as the normal execution primitive; it is recovery-only
+
+## What `/pll` Owns
+
+- parsing lightweight dependency hints from task lists or blueprint task structure
+- prioritizing ready work using dependency order, critical-path pressure, and practical file-scope judgment
+- choosing a safe level of parallelism for the current runtime
+- keeping lifecycle state synchronized with actual execution
+- reporting progress, blockers, and verification outcomes
+
+## Shared Execution Model
+
+`/pll` and `ak blueprint exec` are two surfaces over one repo-owned model:
+
+- same Blueprint-backed launch spec
+- same backend names and policy hooks
+- same runtime-state bridge
+- same truthfulness rules for `start`, `task`, `block`, `complete`, `finalize`, `status`, `resume`, and `stop`
+
+If the model would diverge between the two surfaces, fix the contract instead of creating a `/pll`-only exception.
+
+## What `/pll` Does **NOT** Own
+
+- durable plan storage
+- standalone runner/runtime semantics
+- a guaranteed fixed number of active agents at all times
+- host-specific background-task APIs or polling contracts
+- replacing `$ultrawork` as the generic engine layer
+
+## Execution Protocol
+
+### Phase 1: Parse and Ground
+
+1. Parse the input into discrete tasks and dependency hints.
+2. If the source is a blueprint, read the blueprint task list and lifecycle state first.
+3. Reject obvious cycles or contradictory dependency declarations before execution begins.
+4. Produce a compact `/pll DAG Analysis` summary:
+
+```text
+/pll DAG Analysis
+  Total: 8 tasks
+  Ready now: 3
+  Critical path: Task 1.1 -> Task 2.1 -> Task 4.1
+  Suggested max parallelism: 3
+```
+
+### Phase 2: Delegate Through the Engine Layer
+
+1. Start with ready tasks only.
+2. Prioritize work that unblocks the longest chain or the most downstream tasks.
+3. Delegate independent work through the current engine layer:
+   - prefer `$ultrawork` / host-native subagents for true independent lanes
+   - keep test-heavy or build-heavy work at lower concurrency when needed
+4. Update Blueprint task state before and after execution so the durable artifact stays truthful.
+5. If a task fails, block it with a concrete reason and leave downstream work blocked unless explicitly safe to continue.
+
+### Phase 3: Verify and Report
+
+1. Run the task-level verification named by the task or blueprint.
+2. Run repo-level verification when the change scope justifies it.
+3. Report:
+   - completed tasks
+   - blocked tasks with reasons
+   - remaining ready tasks
+   - verification evidence
+
+## Concurrency Guidance
+
+| Scope | Guidance |
+| --- | --- |
+| Default | Use only as much parallelism as the current runtime and task mix safely support |
+| Test-heavy work | Reduce parallelism to avoid exhausting Vitest/CPU/memory |
+| Build-heavy work | Reduce parallelism to avoid CPU/memory spikes |
+| Mixed doc + code work | Run lightweight doc/admin work beside one heavier lane when safe |
+
+## Failure Handling
+
+| Event | Action |
+| --- | --- |
+| Task fails | Mark blocked with reason; do not mark complete |
+| Lifecycle mutation fails | Stop immediately rather than continuing with stale plan state |
+| Dependency cycle detected | Reject the run and ask for plan cleanup |
+| No ready tasks remain | Report blockers and the tasks they are waiting on |
+| File-scope conflict suspected | Serialize the conflicting tasks or merge them into one lane |
+
+## Examples
+
+```text
+/pll "lint auth, lint utils, typecheck auth [depends: 1], test auth [depends: 3]"
+
+/pll blueprints/in-progress/converge-omx-and-blueprint-planning-surfaces/_overview.md
+
+/pll
+```
+
+## Verification Discipline
+
+- Prefer per-file or per-package verification first.
+- Use `ak blueprint audit` and the task's named checks to prove state transitions.
+- Never treat orchestration progress as proof of correctness.

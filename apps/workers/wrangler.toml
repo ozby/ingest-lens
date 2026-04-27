@@ -59,7 +59,6 @@ simple = { limit = 5, period = 60 }
 [[env.dev.hyperdrive]]
 binding = "HYPERDRIVE"
 id = "e9f1d0a87a0c49a3ba0c74ef657bc7f0"
-localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
 
 [[env.dev.kv_namespaces]]
 binding = "KV"
@@ -129,7 +128,6 @@ binding = "AI"
 [[env.prd.hyperdrive]]
 binding = "HYPERDRIVE"
 id = "placeholder-prd-hyperdrive-id"
-localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
 
 [[env.prd.kv_namespaces]]
 binding = "KV"

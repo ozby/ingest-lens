@@ -3,9 +3,9 @@ import {
   generateBranchName,
   getNeonConfig,
   isNeonAvailable,
+  listE2EBranches,
   NeonBranchProvider,
-} from "../../../packages/neon/src/index.ts";
-import { listE2EBranches } from "../../../packages/neon/src/branches.ts";
+} from "@webpresso/neon";
 
 const NEON_API_KEY = process.env.NEON_API_KEY;
 

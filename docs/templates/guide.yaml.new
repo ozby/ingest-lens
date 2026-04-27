@@ -1,0 +1,31 @@
+name: guide
+description: Workflow guides for development and operations
+
+frontmatter:
+  required:
+    type:
+      value: guide
+      description: Must be exactly "guide"
+    last_updated:
+      type: date
+      format: YYYY-MM-DD
+      description: Last modification date
+  optional:
+    redirect_to:
+      type: string
+      description: Relative path to consolidated guide
+
+sections:
+  required: []
+  optional: []
+
+location:
+  patterns:
+    - 'docs/guides/**/*.md'
+  exclude:
+    - 'docs/guides/cookbook/**'
+
+naming:
+  pattern: "[a-z0-9-]+\\.md"
+  case: lower
+  description: 'kebab-case'

@@ -4,8 +4,11 @@
  * Usage: bun ./src/deploy/deploy.ts <stack>  (run from infra/)
  */
 import { doppler, execWith } from "@webpresso/process-utils/secret-runner";
+import { getNeonConfig } from "@webpresso/neon";
 import { execSync } from "node:child_process";
 import process from "node:process";
+
+const NEON_API_BASE_URL = "https://console.neon.tech/api/v2";
 
 const stack = process.argv[2];
 if (!stack) {
@@ -22,18 +25,9 @@ const isProd = stack === "prd";
 // ── Neon branch provisioning (non-prd only) ──────────────────────────
 if (!isProd) {
   console.log(`\n📦 Provisioning Neon branch for stack: ${stack}`);
-  const neonConfig = {
-    apiKey: process.env.NEON_API_KEY,
-    projectId: process.env.NEON_PROJECT_ID,
-    parentBranchId: process.env.NEON_PARENT_BRANCH_ID,
-  };
+  const neonConfig = getNeonConfig(process.env);
 
-  if (!neonConfig.apiKey || !neonConfig.projectId || !neonConfig.parentBranchId) {
-    throw new Error("Missing NEON_API_KEY, NEON_PROJECT_ID, or NEON_PARENT_BRANCH_ID");
-  }
-
-  // Check if a branch with this stack name already exists
-  const listUrl = `https://console.neon.tech/api/v2/projects/${neonConfig.projectId}/branches`;
+  const listUrl = `${NEON_API_BASE_URL}/projects/${neonConfig.projectId}/branches`;
   const listRes = await fetch(listUrl, {
     headers: { Authorization: `Bearer ${neonConfig.apiKey}` },
   });
@@ -46,7 +40,7 @@ if (!isProd) {
 
   if (existing) {
     console.log(`  Branch "${stack}" already exists (${existing.id}), reusing.`);
-    const endpointsUrl = `https://console.neon.tech/api/v2/projects/${neonConfig.projectId}/branches/${existing.id}/endpoints`;
+    const endpointsUrl = `${NEON_API_BASE_URL}/projects/${neonConfig.projectId}/branches/${existing.id}/endpoints`;
     const epRes = await fetch(endpointsUrl, {
       headers: { Authorization: `Bearer ${neonConfig.apiKey}` },
     });
@@ -64,7 +58,7 @@ if (!isProd) {
     connectionUri = `postgresql://${roleName}:${encodeURIComponent(rolePassword)}@${host}/${dbName}?sslmode=require`;
   } else {
     console.log(`  Creating Neon branch "${stack}" from parent ${neonConfig.parentBranchId}...`);
-    const createUrl = `https://console.neon.tech/api/v2/projects/${neonConfig.projectId}/branches`;
+    const createUrl = `${NEON_API_BASE_URL}/projects/${neonConfig.projectId}/branches`;
     const createRes = await fetch(createUrl, {
       method: "POST",
       headers: {
