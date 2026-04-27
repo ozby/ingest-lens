@@ -1,9 +1,0 @@
-description = "Update documentation and agent instructions based on recent context."
-
-prompt = """
-1. Review recent context (task files + recent changes).
-2. Identify targets (AGENTS.md, docs/\\*, tool entry points).
-3. Edit with apply_patch; follow templates in `docs/`.
-4. Validate with the repo's documentation check (e.g. `just docs`, `pnpm docs:check`, or equivalent) and apply fixes if needed.
-5. Summarize updates and locations.
-"""

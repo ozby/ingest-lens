@@ -1,1 +1,0 @@
-../../.agent/workflows/write-plan.md
