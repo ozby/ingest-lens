@@ -73,6 +73,7 @@ Invoke `$plan-refine <slug>`. The skill will:
 - [`consistency-lab-01b-latency`](./planned/consistency-lab-01b-latency/_overview.md) — scenario 1b: same three delivery paths measured for p50/p95/p99 latency, throughput under contention, and cost-per-million from a pinned CF pricing table.
 - [`consistency-lab-shell`](./planned/consistency-lab-shell/_overview.md) — `apps/lab` Hono app: HTMX-on-Hono SSR scenario pages, SSE live updates, `LAB_ENABLED` feature flag, session-cookie auth, self-hosted Inter Tight + JetBrains Mono.
 - [`consistency-lab-ops`](./planned/consistency-lab-ops/_overview.md) — operational hardening: 15-min synthetic-run heartbeat, CF-billing cost alerts with $50 auto kill-switch, incident runbook, `packages/lab-core` onboarding README, HTMX-precedent note in CLAUDE.md.
+- [`langfuse-prompt-tracing`](./planned/langfuse-prompt-tracing/_overview.md) — add Langfuse prompt versioning and per-call AI tracing to the Workers AI intake pipeline via `@langfuse/client` + `@langfuse/tracing` + custom Workers-compatible OTLP exporter.
 
 ## Execution roadmap
 
