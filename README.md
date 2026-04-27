@@ -39,8 +39,8 @@ flowchart TD
     D --> E[Queue/topic delivery rails]
     E --> F[Cloudflare Queues consumer]
     F --> G[Push delivery + retry / DLQ]
-    F --> H[TopicRoom Durable Object fan-out]
-    B --> I[AI-assisted mapping suggestion + approval flow]
+    F --> H[TopicRoom fan-out + WS replay]
+    B --> I[AI intake: shape fingerprint →<br/>fast-path or LLM suggestion →<br/>human review or auto-heal ≥0.8<br/>confidence via HealStreamDO]
 ```
 
 A full system view (edge workers, DOs, AI intake path, lab) lives in

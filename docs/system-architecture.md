@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-26"
+last_updated: "2026-04-27"
 ---
 
 # System Architecture
@@ -27,19 +27,20 @@ flowchart LR
     HD["Hyperdrive pool"]
     DQ[("Cloudflare Queue:<br/>DELIVERY_QUEUE")]
     DLQ[("delivery-dlq")]
-    KV[("KV: KillSwitchKV<br/>+ JWT jti revocation")]
+    API_KV[("KV: JWT jti revocation")]
+    LAB_KV[("KILL_SWITCH_KV")]
     RL["Rate limiter bindings<br/>(API + AUTH_RATE_LIMITER)"]
     AE[("Analytics Engine")]
     AI["Workers AI<br/>(mapping suggestion)"]
   end
 
   subgraph DO["Durable Objects"]
-    TR["TopicRoom DO<br/>(WS fan-out + replay log)"]
-    HS["HealStreamDO<br/>(schema drift coordinator + SSE)"]
-    SL["SessionLock DO"]
-    GAUGE["LabConcurrencyGauge DO"]
-    S1A["S1aRunnerDO (correctness)"]
-    S1B["S1bRunnerDO (latency)"]
+    TR["TopicRoom<br/>(WS fan-out + replay log)"]
+    HS["HealStreamDO<br/>(drift coordinator + SSE)"]
+    SL["SessionLock"]
+    GAUGE["LabConcurrencyGauge"]
+    S1A["S1aRunnerDO (correctness)<br/>(@repo/lab-s1a-correctness)"]
+    S1B["S1bRunnerDO (latency)<br/>(@repo/lab-s1b-latency)"]
   end
 
   subgraph DATA["State"]
@@ -64,14 +65,15 @@ flowchart LR
   API --> RL
   API --> HD --> PG
   API -->|publish| DQ
-  API -->|JWT verify + jti check| KV
+  API -->|JWT jti check| API_KV
   API --> INR
   INR --> SFP
-  SFP -->|"shape match (fast path)"| NORM
-  SFP -->|"shape mismatch"| ADP
+  SFP -->|"fingerprint check (DO fetch)"| HS
+  HS -->|"match → fast path"| NORM
+  SFP -->|"no cached state → AI path"| ADP
   ADP --> AI
   ADP -->|"confidence ≥ 0.8"| HS
-  HS -->|"write coordinator"| PG
+  HS -->|"rollback rows only<br/>(Worker owns auto-heal persistence)"| PG
   HS -->|"SSE broadcast"| OPER
   HEAL --> HS
   ADP --> NORM --> PG
@@ -83,7 +85,7 @@ flowchart LR
   TR <-->|WebSocket fan-out + replay| UI
   API -->|telemetry| AE
 
-  LAB --> KV
+  LAB --> LAB_KV
   LAB --> SL
   LAB --> GAUGE
   LAB --> S1A
@@ -108,20 +110,32 @@ flowchart LR
   the API worker beyond the `lab.*` schema.
 - **Durable Objects**: `TopicRoom` is the production fan-out + reconnect
   replay primitive; `HealStreamDO` (one per `sourceSystem:contractId:contractVersion`)
-  is the write coordinator for schema drift healing — it serializes concurrent
-  heal writes via the CF input gate and broadcasts SSE events to operator
-  subscribers; `SessionLock`, `LabConcurrencyGauge`, and the two scenario runner
-  DOs are lab-internal.
+  serializes concurrent heal decisions via the CF input gate, owns the live
+  in-memory fingerprint cache and SSE stream, and writes rollback revision rows;
+  the Worker owns Postgres persistence for auto-heal (inserts
+  `approvedMappingRevisions` + `intakeAttempts`) and publish completion;
+  `SessionLock`, `LabConcurrencyGauge`, and the two scenario runner DOs
+  (`S1aRunnerDO` from `@repo/lab-s1a-correctness`, `S1bRunnerDO` from
+  `@repo/lab-s1b-latency`) are lab-internal.
 - **Postgres**: single Neon project. Production tables live in
   `public.*`; lab tables strictly under `lab.*` (CI-enforced).
   `@webpresso/db-branching` provides the vendor-agnostic interface;
-  `packages/neon` is the Neon implementation used in E2E.
+  `packages/neon` is the Neon implementation used in E2E. Hyperdrive is the
+  runtime pool for Workers; Neon is primarily the managed Postgres origin and
+  branching substrate. Core queue/topic relationships are enforced with
+  foreign keys and cascades so deletes do not rely on application-side cleanup,
+  and `ownerId` is FK-backed to `users.id` for the main multi-tenant tables.
 - **AI intake path**: only AI call site is mapping repair suggestion.
-  `shapeFingerprint()` detects structural drift before calling the LLM.
-  On shape-match (fast path) the LLM is skipped entirely; on mismatch at
-  ≥ 0.8 confidence `HealStreamDO.tryHeal()` auto-approves the new mapping.
-  Every step after mapping approval — schema validation, normalization,
-  publish — is deterministic code.
+  `shapeFingerprint()` detects structural drift. The fast-path check queries
+  `HealStreamDO` in-memory state (not Postgres); on match the LLM is skipped
+  and the record is normalized without creating a new intake attempt row.
+  On mismatch the LLM generates mapping suggestions; at ≥ 0.8 confidence
+  `HealStreamDO.tryHeal()` serializes the auto-heal reservation, the Worker
+  persists `approvedMappingRevisions` + `intakeAttempts` in a transaction,
+  then commits the heal to the DO. The `analyzing` SSE event uses a
+  hardcoded placeholder confidence; the real LLM confidence is available
+  in the Worker after `suggestMappings()` returns. Every step after mapping
+  approval — schema validation, normalization, publish — is deterministic code.
 - **Workers test substrate**: `@webpresso/workers-test-kit` is the
   upstream for `BaseWorkerEnv`, `createMockExecutionContext`, and
   `createMockHyperdrive`. `packages/test-utils` only re-exports
@@ -129,15 +143,15 @@ flowchart LR
 
 ## Cross-cutting concerns
 
-| Concern          | Where it lives                                                      |
-| ---------------- | ------------------------------------------------------------------- |
-| Auth             | `apps/workers/src/middleware/auth.ts` + KV jti revocation (h-001)   |
-| Rate limiting    | API + `AUTH_RATE_LIMITER` bindings (per-PoP token bucket, ADR 0004) |
-| Telemetry        | Analytics Engine — `analytics-engine-telemetry` blueprint           |
-| Replay           | `TopicRoom` DO + Postgres `messages.seq` (`message-replay-cursor`)  |
-| Bundle budgets   | `pnpm client:bundle:check` (`client-route-code-splitting`)          |
-| Mutation testing | Stryker per-package + CI gate (`stryker-mutation-guardrails`)       |
-| Doppler secrets  | `bun ./scripts/with-doppler.ts` wrapper (no `.env`)                 |
+| Concern          | Where it lives                                                                                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth             | `apps/workers/src/middleware/auth.ts` + eventually consistent KV `KV` (API Worker jti revocation, h-001); lab uses separate `KILL_SWITCH_KV` for runtime gating |
+| Rate limiting    | API + `AUTH_RATE_LIMITER` bindings (per-PoP token bucket, ADR 0004)                                                                                             |
+| Telemetry        | Analytics Engine — `analytics-engine-telemetry` blueprint                                                                                                       |
+| Replay           | `TopicRoom` DO + Postgres `messages.seq` (`message-replay-cursor`)                                                                                              |
+| Bundle budgets   | `pnpm client:bundle:check` (`client-route-code-splitting`)                                                                                                      |
+| Mutation testing | Stryker per-package + CI gate (`stryker-mutation-guardrails`)                                                                                                   |
+| Doppler secrets  | `bun ./scripts/with-doppler.ts` wrapper (no `.env`)                                                                                                             |
 
 ## Related
 
