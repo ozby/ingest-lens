@@ -1,31 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { getE2EBaseUrlOrThrow } from "../src/journeys/env";
+import { deleteJson, getJson, postJson } from "../src/journeys/http";
+import type { ApiError, ApiSuccess, AuthResponse } from "../src/journeys/types";
 
-const baseUrl = process.env.E2E_BASE_URL;
-
-if (!baseUrl) {
-  throw new Error("E2E_BASE_URL is required for apps/e2e/journeys/intake-mapping-flow.e2e.ts");
-}
-
-type ApiSuccess<T> = {
-  status: "success";
-  results?: number;
-  data: T;
-};
-
-type ApiError = {
-  status: "error";
-  message: string;
-};
-
-type AuthResponse = ApiSuccess<{
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    createdAt: string;
-  };
-}>;
+const baseUrl = getE2EBaseUrlOrThrow("apps/e2e/journeys/intake-mapping-flow.e2e.ts");
 
 type QueueRecord = {
   id: string;
@@ -121,54 +99,6 @@ type DeleteMessageResponse = {
   deletedMessageId: string;
 };
 
-async function postJson<T>(
-  path: string,
-  body: Record<string, unknown>,
-  token?: string,
-): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
-async function getJson<T>(path: string, token?: string): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
-async function deleteJson<T>(
-  path: string,
-  token: string,
-): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
 describe("intake mapping flow", () => {
   it("creates a deterministic mapping suggestion, approves it, and delivers a normalized record to the queue", async () => {
     const runId = crypto.randomUUID().slice(0, 8);
@@ -178,12 +108,13 @@ describe("intake mapping flow", () => {
       password: `Pass-${runId}`,
     };
 
-    const registration = await postJson<AuthResponse>("/api/auth/register", credentials);
+    const registration = await postJson<AuthResponse>(baseUrl, "/api/auth/register", credentials);
     expect(registration.response.status).toBe(201);
     expect(registration.body.status).toBe("success");
     const token = registration.body.data.token;
 
     const queue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
       "/api/queues",
       {
         name: `intake-${runId}`,
@@ -198,12 +129,16 @@ describe("intake mapping flow", () => {
       retentionPeriod: 7,
     });
 
-    const unauthorizedAttempt = await postJson<ApiError>("/api/intake/mapping-suggestions", {
-      sourceSystem: "ashby",
-      contractId: "job-posting-v1",
-      fixtureId: "ashby-job-001",
-      queueId: queue.body.data.queue.id,
-    });
+    const unauthorizedAttempt = await postJson<ApiError>(
+      baseUrl,
+      "/api/intake/mapping-suggestions",
+      {
+        sourceSystem: "ashby",
+        contractId: "job-posting-v1",
+        fixtureId: "ashby-job-001",
+        queueId: queue.body.data.queue.id,
+      },
+    );
     expect(unauthorizedAttempt.response.status).toBe(401);
     expect(unauthorizedAttempt.body).toMatchObject({
       status: "error",
@@ -211,6 +146,7 @@ describe("intake mapping flow", () => {
     });
 
     const fixtureCatalog = await getJson<ApiSuccess<{ fixtures: PublicFixtureMetadata[] }>>(
+      baseUrl,
       "/api/intake/public-fixtures",
       token,
     );
@@ -235,6 +171,7 @@ describe("intake mapping flow", () => {
     );
 
     const ashbyFixture = await getJson<ApiSuccess<{ fixture: PublicFixtureDetail }>>(
+      baseUrl,
       "/api/intake/public-fixtures/ashby-job-001",
       token,
     );
@@ -249,6 +186,7 @@ describe("intake mapping flow", () => {
     });
 
     const missingFixture = await getJson<ApiError>(
+      baseUrl,
       "/api/intake/public-fixtures/missing-fixture",
       token,
     );
@@ -259,6 +197,7 @@ describe("intake mapping flow", () => {
     });
 
     const createdAttempt = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       {
         sourceSystem: "ashby",
@@ -281,6 +220,7 @@ describe("intake mapping flow", () => {
     expect(createdAttempt.body.data.attempt.suggestionBatch?.suggestions.length).toBeGreaterThan(0);
 
     const listedAttempts = await getJson<ApiSuccess<{ attempts: IntakeAttemptRecord[] }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions?status=pending_review",
       token,
     );
@@ -305,6 +245,7 @@ describe("intake mapping flow", () => {
         normalizedRecord: NormalizedRecordEnvelope;
       }>
     >(
+      baseUrl,
       `/api/intake/mapping-suggestions/${createdAttempt.body.data.attempt.intakeAttemptId}/approve`,
       { approvedSuggestionIds },
       token,
@@ -343,7 +284,7 @@ describe("intake mapping flow", () => {
 
     const queueMessages = await getJson<
       ApiSuccess<{ messages: MessageRecord[]; visibilityTimeout: number }>
-    >(`/api/messages/${queue.body.data.queue.id}`, token);
+    >(baseUrl, `/api/messages/${queue.body.data.queue.id}`, token);
     expect(queueMessages.response.status).toBe(200);
     expect(queueMessages.body.results).toBe(1);
     expect(queueMessages.body.data.messages).toHaveLength(1);
@@ -366,6 +307,7 @@ describe("intake mapping flow", () => {
     });
 
     const ackedMessage = await deleteJson<ApiSuccess<DeleteMessageResponse>>(
+      baseUrl,
       `/api/messages/${queue.body.data.queue.id}/${queueMessages.body.data.messages[0].id}`,
       token,
     );
@@ -377,7 +319,7 @@ describe("intake mapping flow", () => {
 
     const queueAfterAck = await getJson<
       ApiSuccess<{ messages: MessageRecord[]; visibilityTimeout: number }>
-    >(`/api/messages/${queue.body.data.queue.id}`, token);
+    >(baseUrl, `/api/messages/${queue.body.data.queue.id}`, token);
     expect(queueAfterAck.response.status).toBe(200);
     expect(queueAfterAck.body.results).toBe(0);
     expect(queueAfterAck.body.data.messages).toEqual([]);

@@ -31,22 +31,24 @@ function buildApp(allowedOrigin: string | undefined): Hono<{ Bindings: Env }> {
 describe("CORS middleware — exact-origin allow-listing", () => {
   describe("allowed origin", () => {
     it("returns Access-Control-Allow-Origin for the exact allowed origin", async () => {
-      const app = buildApp("https://dev.ozby.dev");
+      const app = buildApp("https://dev.ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
-          headers: { Origin: "https://dev.ozby.dev" },
+          headers: { Origin: "https://dev.ingest-lens.ozby.dev" },
         }),
       );
 
       expect(res.status).toBe(200);
-      expect(res.headers.get("Access-Control-Allow-Origin")).toBe("https://dev.ozby.dev");
+      expect(res.headers.get("Access-Control-Allow-Origin")).toBe(
+        "https://dev.ingest-lens.ozby.dev",
+      );
     });
 
     it("includes Access-Control-Allow-Credentials: true for allowed origin", async () => {
-      const app = buildApp("https://dev.ozby.dev");
+      const app = buildApp("https://dev.ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
-          headers: { Origin: "https://dev.ozby.dev" },
+          headers: { Origin: "https://dev.ingest-lens.ozby.dev" },
         }),
       );
 
@@ -56,7 +58,7 @@ describe("CORS middleware — exact-origin allow-listing", () => {
 
   describe("disallowed origin", () => {
     it("does not return Access-Control-Allow-Origin for a forbidden origin", async () => {
-      const app = buildApp("https://dev.ozby.dev");
+      const app = buildApp("https://dev.ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
           headers: { Origin: "https://evil.example.com" },
@@ -68,7 +70,7 @@ describe("CORS middleware — exact-origin allow-listing", () => {
     });
 
     it("does not set Access-Control-Allow-Origin for a forbidden origin (credentials header irrelevant to browser)", async () => {
-      const app = buildApp("https://dev.ozby.dev");
+      const app = buildApp("https://dev.ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
           headers: { Origin: "https://evil.example.com" },
@@ -85,12 +87,12 @@ describe("CORS middleware — exact-origin allow-listing", () => {
 
   describe("OPTIONS preflight", () => {
     it("responds 204 with short-lived max-age cache for allowed origin", async () => {
-      const app = buildApp("https://dev.ozby.dev");
+      const app = buildApp("https://dev.ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
           method: "OPTIONS",
           headers: {
-            Origin: "https://dev.ozby.dev",
+            Origin: "https://dev.ingest-lens.ozby.dev",
             "Access-Control-Request-Method": "POST",
             "Access-Control-Request-Headers": "Authorization, Content-Type",
           },
@@ -99,16 +101,18 @@ describe("CORS middleware — exact-origin allow-listing", () => {
 
       expect(res.status).toBe(204);
       expect(res.headers.get("Access-Control-Max-Age")).toBe("300");
-      expect(res.headers.get("Access-Control-Allow-Origin")).toBe("https://dev.ozby.dev");
+      expect(res.headers.get("Access-Control-Allow-Origin")).toBe(
+        "https://dev.ingest-lens.ozby.dev",
+      );
     });
   });
 
   describe("no wildcard", () => {
     it("never returns * as the Allow-Origin value", async () => {
-      const app = buildApp("https://dev.ozby.dev");
+      const app = buildApp("https://dev.ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
-          headers: { Origin: "https://dev.ozby.dev" },
+          headers: { Origin: "https://dev.ingest-lens.ozby.dev" },
         }),
       );
 
@@ -118,21 +122,21 @@ describe("CORS middleware — exact-origin allow-listing", () => {
 
   describe("prd environment wiring", () => {
     it("allows the prd origin when configured", async () => {
-      const app = buildApp("https://ozby.dev");
+      const app = buildApp("https://ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
-          headers: { Origin: "https://ozby.dev" },
+          headers: { Origin: "https://ingest-lens.ozby.dev" },
         }),
       );
 
-      expect(res.headers.get("Access-Control-Allow-Origin")).toBe("https://ozby.dev");
+      expect(res.headers.get("Access-Control-Allow-Origin")).toBe("https://ingest-lens.ozby.dev");
     });
 
     it("blocks the dev origin when only prd is configured", async () => {
-      const app = buildApp("https://ozby.dev");
+      const app = buildApp("https://ingest-lens.ozby.dev");
       const res = await app.fetch(
         new Request("http://localhost/health", {
-          headers: { Origin: "https://dev.ozby.dev" },
+          headers: { Origin: "https://dev.ingest-lens.ozby.dev" },
         }),
       );
 

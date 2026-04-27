@@ -78,6 +78,9 @@ version. Output: suggested source paths, drift categories, missing /
 ambiguous fields, confidence, notes. Everything after that
 (schema/source-path validation, compatibility, approval, normalization,
 publish, telemetry, retention, replay) is deterministic.
+Normalization/envelope builders now have one canonical implementation in
+`apps/workers/src/intake/normalize.ts`; legacy module paths remain as
+compatibility re-exports.
 
 ADR: [0004](adrs/0004-ingestlens-ai-intake-architecture.md).
 Self-healing stream design: `~/.gstack/projects/ozby-ingest-lens/ozby-main-design-20260426-195719.md`.

@@ -1,31 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { getE2EBaseUrlOrThrow } from "../src/journeys/env";
+import { getJson, postJson } from "../src/journeys/http";
+import type { ApiError, ApiSuccess, AuthResponse } from "../src/journeys/types";
 
-const baseUrl = process.env.E2E_BASE_URL;
-
-if (!baseUrl) {
-  throw new Error("E2E_BASE_URL is required for apps/e2e/journeys/public-fixture-demo-flow.e2e.ts");
-}
-
-type ApiSuccess<T> = {
-  status: "success";
-  results?: number;
-  data: T;
-};
-
-type ApiError = {
-  status: "error";
-  message: string;
-};
-
-type AuthResponse = ApiSuccess<{
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    createdAt: string;
-  };
-}>;
+const baseUrl = getE2EBaseUrlOrThrow("apps/e2e/journeys/public-fixture-demo-flow.e2e.ts");
 
 type QueueRecord = {
   id: string;
@@ -83,37 +61,6 @@ type MessageRecord = {
   data: NormalizedRecordEnvelope;
 };
 
-async function postJson<T>(
-  path: string,
-  body: Record<string, unknown>,
-  token?: string,
-): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
-async function getJson<T>(path: string, token?: string): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
 describe("public fixture demo flow", () => {
   it("lists the public fixture catalog and replays a pinned fixture through approval into the delivery rails", async () => {
     const runId = crypto.randomUUID().slice(0, 8);
@@ -123,11 +70,11 @@ describe("public fixture demo flow", () => {
       password: `Pass-${runId}`,
     };
 
-    const registration = await postJson<AuthResponse>("/api/auth/register", credentials);
+    const registration = await postJson<AuthResponse>(baseUrl, "/api/auth/register", credentials);
     expect(registration.response.status).toBe(201);
     const token = registration.body.data.token;
 
-    const unauthorizedFixtures = await getJson<ApiError>("/api/intake/public-fixtures");
+    const unauthorizedFixtures = await getJson<ApiError>(baseUrl, "/api/intake/public-fixtures");
     expect(unauthorizedFixtures.response.status).toBe(401);
     expect(unauthorizedFixtures.body).toMatchObject({
       status: "error",
@@ -135,6 +82,7 @@ describe("public fixture demo flow", () => {
     });
 
     const queue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
       "/api/queues",
       { name: `demo-${runId}` },
       token,
@@ -142,6 +90,7 @@ describe("public fixture demo flow", () => {
     expect(queue.response.status).toBe(201);
 
     const fixtures = await getJson<ApiSuccess<{ fixtures: PublicFixtureMetadata[] }>>(
+      baseUrl,
       "/api/intake/public-fixtures",
       token,
     );
@@ -163,6 +112,7 @@ describe("public fixture demo flow", () => {
     );
 
     const leverFixture = await getJson<ApiSuccess<{ fixture: PublicFixtureDetail }>>(
+      baseUrl,
       "/api/intake/public-fixtures/lever-posting-001",
       token,
     );
@@ -179,6 +129,7 @@ describe("public fixture demo flow", () => {
     });
 
     const createdAttempt = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       {
         sourceSystem: leverFixture.body.data.fixture.sourceSystem,
@@ -204,6 +155,7 @@ describe("public fixture demo flow", () => {
         normalizedRecord: NormalizedRecordEnvelope;
       }>
     >(
+      baseUrl,
       `/api/intake/mapping-suggestions/${createdAttempt.body.data.attempt.intakeAttemptId}/approve`,
       {},
       token,
@@ -237,7 +189,7 @@ describe("public fixture demo flow", () => {
 
     const queueMessages = await getJson<
       ApiSuccess<{ messages: MessageRecord[]; visibilityTimeout: number }>
-    >(`/api/messages/${queue.body.data.queue.id}`, token);
+    >(baseUrl, `/api/messages/${queue.body.data.queue.id}`, token);
     expect(queueMessages.response.status).toBe(200);
     expect(queueMessages.body.results).toBe(1);
     expect(queueMessages.body.data.messages[0]).toMatchObject({

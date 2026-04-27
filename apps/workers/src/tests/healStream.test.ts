@@ -50,7 +50,7 @@ beforeEach(() => {
 describe("GET /api/heal/stream/:sourceSystem/:contractId/:contractVersion", () => {
   it("returns 401 when not authenticated", async () => {
     const res = await app.fetch(
-      new Request("https://api.ozby.dev/api/heal/stream/ashby/ats-postings/v1", {
+      new Request("https://api.ingest-lens.ozby.dev/api/heal/stream/ashby/ats-postings/v1", {
         headers: { "Content-Type": "application/json" },
       }),
       makeMockEnv(),
@@ -73,7 +73,7 @@ describe("GET /api/heal/stream/:sourceSystem/:contractId/:contractVersion", () =
     const env = makeMockEnv(healStream);
 
     const res = await app.fetch(
-      new Request("https://api.ozby.dev/api/heal/stream/ashby/ats-postings/v1", {
+      new Request("https://api.ingest-lens.ozby.dev/api/heal/stream/ashby/ats-postings/v1", {
         headers: { ...AUTH_HEADER, "Content-Type": "application/json" },
       }),
       env,
@@ -88,10 +88,13 @@ describe("GET /api/heal/stream/:sourceSystem/:contractId/:contractVersion", () =
 describe("PATCH /api/heal/stream/:sourceSystem/:contractId/:contractVersion/rollback", () => {
   it("returns 401 when not authenticated", async () => {
     const res = await app.fetch(
-      new Request("https://api.ozby.dev/api/heal/stream/ashby/ats-postings/v1/rollback", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Request(
+        "https://api.ingest-lens.ozby.dev/api/heal/stream/ashby/ats-postings/v1/rollback",
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
       makeMockEnv(),
     );
     expect(res.status).toBe(401);
@@ -102,10 +105,13 @@ describe("PATCH /api/heal/stream/:sourceSystem/:contractId/:contractVersion/roll
     setupEmptyRollbackDb();
 
     const res = await app.fetch(
-      new Request("https://api.ozby.dev/api/heal/stream/ashby/ats-postings/v1/rollback", {
-        method: "PATCH",
-        headers: { ...AUTH_HEADER, "Content-Type": "application/json" },
-      }),
+      new Request(
+        "https://api.ingest-lens.ozby.dev/api/heal/stream/ashby/ats-postings/v1/rollback",
+        {
+          method: "PATCH",
+          headers: { ...AUTH_HEADER, "Content-Type": "application/json" },
+        },
+      ),
       makeMockEnv(),
     );
     expect(res.status).toBe(404);

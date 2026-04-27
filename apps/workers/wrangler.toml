@@ -1,7 +1,4 @@
-# Internal runtime identifier intentionally deferred during the IngestLens
-# rebrand to avoid risky Cloudflare resource churn before deploy migration is
-# planned and verified.
-name = "node-pubsub"
+name = "ingest-lens"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
@@ -12,12 +9,12 @@ account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret;
 # them. Hyperdrive/KV/R2 IDs per-env are synced by
 # `infra/src/deploy/sync-wrangler-ids.ts` after `pulumi up`.
 #
-# Each env's Worker is auto-named `node-pubsub-<env>` by wrangler and is
+# Each env's Worker is auto-named `ingest-lens-<env>` by wrangler and is
 # deployed via `wrangler deploy --env <env>`.
 
 # ─── dev environment ──────────────────────────────────────────────────────
-# Deployed Worker name: node-pubsub-dev
-# Custom domain: api.dev.ozby.dev (wrangler atomically creates Worker +
+# Deployed Worker name: ingest-lens-dev
+# Custom domain: api.dev.ingest-lens.ozby.dev (wrangler atomically creates Worker +
 # route + DNS + cert when `custom_domain = true`).
 
 # General rate limiter — 100 req/60s (wrangler dev / local only; envs declare their own below)
@@ -43,11 +40,11 @@ simple = { limit = 5, period = 60 }
 
 [env.dev]
 workers_dev = false
-routes = [{ pattern = "api.dev.ozby.dev", custom_domain = true }]
+routes = [{ pattern = "api.dev.ingest-lens.ozby.dev", custom_domain = true }]
 
 [env.dev.vars]
 NODE_ENV = "development"
-ALLOWED_ORIGIN = "https://dev.ozby.dev"
+ALLOWED_ORIGIN = "https://dev.ingest-lens.ozby.dev"
 
 [[env.dev.rate_limiting]]
 binding = "RATE_LIMITER"
@@ -61,16 +58,16 @@ simple = { limit = 5, period = 60 }
 
 [[env.dev.hyperdrive]]
 binding = "HYPERDRIVE"
-id = "04f6be6c29b94198a3a3b273a0d7423b"
+id = "e9f1d0a87a0c49a3ba0c74ef657bc7f0"
 localConnectionString = "postgresql://postgres:postgres@localhost:5432/pubsub"
 
 [[env.dev.kv_namespaces]]
 binding = "KV"
-id = "5dbeb40fc8584a22af3cb9fffa276e3c"
+id = "97e55cfda54446d4aab3b2eb54ebba50"
 
 [[env.dev.r2_buckets]]
 binding = "ASSETS"
-bucket_name = "node-pubsub-dev-assets"
+bucket_name = "ingest-lens-dev-assets"
 
 [[env.dev.durable_objects.bindings]]
 name = "TOPIC_ROOMS"
@@ -105,16 +102,16 @@ dataset = "delivery_events_dev"
 crons = ["0 * * * *"]
 
 # ─── prd environment ──────────────────────────────────────────────────────
-# Deployed Worker name: node-pubsub-prd
-# Custom domain: api.ozby.dev
+# Deployed Worker name: ingest-lens-prd
+# Custom domain: api.ingest-lens.ozby.dev
 
 [env.prd]
 workers_dev = false
-routes = [{ pattern = "api.ozby.dev", custom_domain = true }]
+routes = [{ pattern = "api.ingest-lens.ozby.dev", custom_domain = true }]
 
 [env.prd.vars]
 NODE_ENV = "production"
-ALLOWED_ORIGIN = "https://ozby.dev"
+ALLOWED_ORIGIN = "https://ingest-lens.ozby.dev"
 
 [[env.prd.rate_limiting]]
 binding = "RATE_LIMITER"

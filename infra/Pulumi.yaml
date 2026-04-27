@@ -1,8 +1,8 @@
-name: node-pubsub
+name: ingest-lens
 main: src/resources/main.ts
 runtime:
   name: nodejs
   options:
     nodeargs: --import tsx
     typescript: false
-description: Cloudflare infrastructure for node-pubsub
+description: Cloudflare infrastructure for ingest-lens

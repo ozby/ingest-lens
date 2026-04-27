@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { getE2EBaseUrlOrThrow } from "../src/journeys/env";
 
-const baseUrl = process.env.E2E_BASE_URL;
-
-if (!baseUrl) {
-  throw new Error("E2E_BASE_URL is required for apps/e2e/journeys/worker-health.e2e.ts");
-}
+const baseUrl = getE2EBaseUrlOrThrow("apps/e2e/journeys/worker-health.e2e.ts");
 
 describe("worker health", () => {
   it("returns 200 ok from the live worker runtime", async () => {

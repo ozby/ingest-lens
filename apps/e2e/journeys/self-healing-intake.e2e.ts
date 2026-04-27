@@ -1,22 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { getE2EBaseUrlOrThrow } from "../src/journeys/env";
+import { patchJson, postJson } from "../src/journeys/http";
+import type { ApiError, ApiSuccess, AuthResponse } from "../src/journeys/types";
 
-const baseUrl = process.env.E2E_BASE_URL;
-
-if (!baseUrl) {
-  throw new Error("E2E_BASE_URL is required for apps/e2e/journeys/self-healing-intake.e2e.ts");
-}
+const baseUrl = getE2EBaseUrlOrThrow("apps/e2e/journeys/self-healing-intake.e2e.ts");
 
 // ---------------------------------------------------------------------------
 // Helpers (same pattern as intake-mapping-flow.e2e.ts)
 // ---------------------------------------------------------------------------
-
-type ApiSuccess<T> = { status: "success"; data: T };
-type ApiError = { status: "error"; message: string };
-
-type AuthResponse = ApiSuccess<{
-  token: string;
-  user: { id: string; username: string; email: string; createdAt: string };
-}>;
 
 type QueueRecord = { id: string; name: string; ownerId: string; retentionPeriod: number };
 
@@ -27,38 +18,6 @@ type IntakeAttemptRecord = {
   contractVersion: string;
   sourceSystem: string;
 };
-
-async function postJson<T>(
-  path: string,
-  body: Record<string, unknown>,
-  token?: string,
-): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-  return { response, body: (await response.json()) as T };
-}
-
-async function patchJson<T>(
-  path: string,
-  body: Record<string, unknown>,
-  token: string,
-): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    method: "PATCH",
-    headers: {
-      "content-type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-  return { response, body: (await response.json()) as T };
-}
 
 // ---------------------------------------------------------------------------
 // Shared setup: register + create queue
@@ -77,13 +36,14 @@ async function setup() {
     password: `Pass-${runId}`,
   };
 
-  const reg = await postJson<AuthResponse>("/api/auth/register", creds);
+  const reg = await postJson<AuthResponse>(baseUrl, "/api/auth/register", creds);
   if (reg.response.status !== 201) {
     throw new Error(`Registration failed: ${reg.response.status}`);
   }
   const token = reg.body.data.token;
 
   const queue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+    baseUrl,
     "/api/queues",
     { name: `heal-queue-${runId}`, retentionPeriod: 7 },
     token,
@@ -105,6 +65,7 @@ async function setupWithApprove(
   },
 ): Promise<{ revisionId: string; attemptId: string }> {
   const intake = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+    baseUrl,
     "/api/intake/mapping-suggestions",
     { sourceSystem: "e2e-src", contractId: "job-posting-v1", payload, queueId },
     token,
@@ -115,6 +76,7 @@ async function setupWithApprove(
   const attemptId = intake.body.data.attempt.intakeAttemptId;
 
   const approve = await postJson<ApproveResponse>(
+    baseUrl,
     `/api/intake/mapping-suggestions/${attemptId}/approve`,
     {},
     token,
@@ -136,7 +98,7 @@ describe("self-healing adaptive intake", () => {
   // ─── 1. Auth gate ────────────────────────────────────────────────────────
 
   it("rejects unauthenticated POST to /api/intake/mapping-suggestions", async () => {
-    const result = await postJson<ApiError>("/api/intake/mapping-suggestions", {
+    const result = await postJson<ApiError>(baseUrl, "/api/intake/mapping-suggestions", {
       sourceSystem: "ashby",
       contractId: "job-v1",
       payload: { first_name: "Alice" },
@@ -153,6 +115,7 @@ describe("self-healing adaptive intake", () => {
 
   it("rejects unauthenticated PATCH rollback", async () => {
     const result = await patchJson<ApiError>(
+      baseUrl,
       "/api/heal/stream/ashby/job-posting-v1/v1/rollback",
       {},
       "invalid-token",
@@ -199,6 +162,7 @@ describe("self-healing adaptive intake", () => {
     const { token, queueId } = await setup();
 
     const result = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       {
         sourceSystem: "ashby-e2e",
@@ -232,6 +196,7 @@ describe("self-healing adaptive intake", () => {
 
     // First request — may trigger LLM or auto-heal; either way a mapping is created.
     const first = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       body,
       token,
@@ -241,6 +206,7 @@ describe("self-healing adaptive intake", () => {
     // Second request — same payload shape. If fast path is active (HealStreamDO
     // cache hit), the response arrives without a new pending_review row.
     const second = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord; fastPath?: boolean }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       body,
       token,
@@ -259,6 +225,7 @@ describe("self-healing adaptive intake", () => {
     const { token } = await setup();
 
     const result = await patchJson<ApiError>(
+      baseUrl,
       "/api/heal/stream/nonexistent-source/job-posting-v1/v1/rollback",
       {},
       token,
@@ -285,6 +252,7 @@ describe("self-healing adaptive intake", () => {
 
     // Establish baseline: v1 payload (camelCase)
     const v1 = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       {
         ...baseBody,
@@ -297,6 +265,7 @@ describe("self-healing adaptive intake", () => {
     // v2 payload: field renamed — structural drift.
     // If LLM confidence ≥ 0.8, this auto-heals (200). Otherwise pending_review (201).
     const v2 = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       { ...baseBody, payload: { job_title: "Bob", department: "Sales", location: "NYC" } },
       token,
@@ -319,6 +288,7 @@ describe("self-healing adaptive intake", () => {
     });
 
     const result = await patchJson<{ status: string; rolledBackTo: string }>(
+      baseUrl,
       "/api/heal/stream/e2e-src/job-posting-v1/v1/rollback",
       {},
       token,
@@ -344,7 +314,7 @@ describe("self-healing adaptive intake", () => {
 
     // User B registers separately and tries to rollback
     const runId = crypto.randomUUID().slice(0, 8);
-    const regB = await postJson<ApiSuccess<{ token: string }>>("/api/auth/register", {
+    const regB = await postJson<ApiSuccess<{ token: string }>>(baseUrl, "/api/auth/register", {
       username: `b-${runId}`,
       email: `b-${runId}@x.test`,
       password: `Pass-${runId}`,
@@ -352,6 +322,7 @@ describe("self-healing adaptive intake", () => {
     const tokenB = regB.body.data.token;
 
     const result = await patchJson<{ status: string; message: string }>(
+      baseUrl,
       "/api/heal/stream/e2e-src/job-posting-v1/v1/rollback",
       {},
       tokenB,
@@ -371,6 +342,7 @@ describe("self-healing adaptive intake", () => {
     await setupWithApprove(token, queueId);
 
     const result = await patchJson<{ status: string; message: string }>(
+      baseUrl,
       "/api/heal/stream/e2e-src/job-posting-v1/v1/rollback",
       {},
       token,
@@ -403,6 +375,7 @@ describe("self-healing adaptive intake", () => {
 
     // Trigger rollback — DO will broadcast rolled_back event to SSE subscriber
     const rollback = await patchJson<{ status: string }>(
+      baseUrl,
       "/api/heal/stream/sse-src/job-posting-v1/v1/rollback",
       {},
       token,
@@ -453,6 +426,7 @@ describe("self-healing adaptive intake", () => {
 
     // First call — may auto-heal or go to pending_review
     const first = await postJson<ApiSuccess<{ attempt?: unknown; fastPath?: boolean }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       body,
       token,
@@ -461,6 +435,7 @@ describe("self-healing adaptive intake", () => {
 
     // Second call — if DO has approved state, fast path activates
     const second = await postJson<ApiSuccess<{ attempt?: unknown; fastPath?: boolean }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       body,
       token,
@@ -489,6 +464,7 @@ describe("self-healing adaptive intake", () => {
 
     // Trigger intake — may or may not auto-heal (LLM non-deterministic)
     await postJson<ApiSuccess<{ attempt?: unknown }>>(
+      baseUrl,
       "/api/intake/mapping-suggestions",
       {
         sourceSystem: uniqueSource,

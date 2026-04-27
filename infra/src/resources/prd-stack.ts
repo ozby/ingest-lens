@@ -5,9 +5,9 @@
  * exports-storage.ts modules, which derive naming from `pulumi.getStack()`.
  * When the active stack is "prd", Pulumi creates:
  *
- *   Hyperdrive:    node-pubsub-prd-db
- *   KV namespace:  node-pubsub-prd-kv
- *   R2 bucket:     node-pubsub-prd-assets
+ *   Hyperdrive:    ingest-lens-prd-db
+ *   KV namespace:  ingest-lens-prd-kv
+ *   R2 bucket:     ingest-lens-prd-assets
  *
  * After provisioning, the outputs (hyperdriveId, kvNamespaceId, r2BucketName)
  * are synced into apps/workers/wrangler.toml [env.prd] by

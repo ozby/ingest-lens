@@ -7,4 +7,4 @@ export {
 } from "./branches.ts";
 export { getNeonConfig, isNeonAvailable, type NeonConfig } from "./config.ts";
 export { generateBranchName, type GenerateBranchNameOptions } from "./names.ts";
-export { NeonBranchProvider } from "./provider.ts";
+export { NeonBranchProvider, type NeonBranchLifecycleProvider } from "./provider.ts";

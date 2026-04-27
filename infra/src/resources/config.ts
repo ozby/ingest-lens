@@ -11,4 +11,9 @@ export const prNumber = isPreview ? stack.replace("preview-pr-", "") : null;
 export const cloudflareAccountId = config.requireSecret("cloudflareAccountId");
 export const cloudflareZoneId = config.requireSecret("cloudflareZoneId");
 export const domain = config.require("domain"); // e.g. "example.com"
-export const workerName = `node-pubsub-${stack}`;
+export const workerName = `ingest-lens-${stack}`;
+
+// Neon config — the connection string is set before pulumi up by deploy.ts
+// (which creates a Neon branch for non-prd stacks).
+export const neonConnectionString = config.requireSecret("neonConnectionString");
+export const neonDatabaseName = config.require("neonDatabaseName");

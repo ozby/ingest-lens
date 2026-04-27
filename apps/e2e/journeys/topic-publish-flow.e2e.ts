@@ -1,31 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { getE2EBaseUrlOrThrow } from "../src/journeys/env";
+import { getJson, postJson } from "../src/journeys/http";
+import type { ApiError, ApiSuccess, AuthResponse } from "../src/journeys/types";
 
-const baseUrl = process.env.E2E_BASE_URL;
-
-if (!baseUrl) {
-  throw new Error("E2E_BASE_URL is required for apps/e2e/journeys/topic-publish-flow.e2e.ts");
-}
-
-type ApiSuccess<T> = {
-  status: "success";
-  results?: number;
-  data: T;
-};
-
-type ApiError = {
-  status: "error";
-  message: string;
-};
-
-type AuthResponse = ApiSuccess<{
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    createdAt: string;
-  };
-}>;
+const baseUrl = getE2EBaseUrlOrThrow("apps/e2e/journeys/topic-publish-flow.e2e.ts");
 
 type QueueRecord = {
   id: string;
@@ -48,39 +26,6 @@ type MessageRecord = {
   data: Record<string, unknown>;
 };
 
-async function postJson<T>(
-  path: string,
-  body: Record<string, unknown>,
-  token?: string,
-): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
-async function getJson<T>(path: string, token: string): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
 describe("topic publish flow", () => {
   it("publishes to a subscribed queue and rejects publishing without subscribers", async () => {
     const runId = crypto.randomUUID().slice(0, 8);
@@ -90,11 +35,12 @@ describe("topic publish flow", () => {
       password: `Pass-${runId}`,
     };
 
-    const registration = await postJson<AuthResponse>("/api/auth/register", credentials);
+    const registration = await postJson<AuthResponse>(baseUrl, "/api/auth/register", credentials);
     expect(registration.response.status).toBe(201);
     const token = registration.body.data.token;
 
     const queue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
       "/api/queues",
       { name: `subscriber-${runId}` },
       token,
@@ -102,6 +48,7 @@ describe("topic publish flow", () => {
     expect(queue.response.status).toBe(201);
 
     const topic = await postJson<ApiSuccess<{ topic: TopicRecord }>>(
+      baseUrl,
       "/api/topics",
       { name: `events-${runId}` },
       token,
@@ -120,6 +67,7 @@ describe("topic publish flow", () => {
     };
 
     const publishWithoutSubscribers = await postJson<ApiError>(
+      baseUrl,
       `/api/topics/${topic.body.data.topic.id}/publish`,
       { data: payload },
       token,
@@ -131,6 +79,7 @@ describe("topic publish flow", () => {
     });
 
     const subscribedTopic = await postJson<ApiSuccess<{ topic: TopicRecord }>>(
+      baseUrl,
       `/api/topics/${topic.body.data.topic.id}/subscribe`,
       { queueId: queue.body.data.queue.id },
       token,
@@ -139,6 +88,7 @@ describe("topic publish flow", () => {
     expect(subscribedTopic.body.data.topic.subscribedQueues).toContain(queue.body.data.queue.id);
 
     const published = await postJson<ApiSuccess<{ messages: MessageRecord[] }>>(
+      baseUrl,
       `/api/topics/${topic.body.data.topic.id}/publish`,
       { data: payload },
       token,
@@ -154,7 +104,7 @@ describe("topic publish flow", () => {
 
     const received = await getJson<
       ApiSuccess<{ messages: MessageRecord[]; visibilityTimeout: number }>
-    >(`/api/messages/${queue.body.data.queue.id}`, token);
+    >(baseUrl, `/api/messages/${queue.body.data.queue.id}`, token);
     expect(received.response.status).toBe(200);
     expect(received.body.results).toBe(1);
     expect(received.body.data.messages).toHaveLength(1);

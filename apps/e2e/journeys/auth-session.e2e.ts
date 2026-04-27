@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { getE2EBaseUrlOrThrow } from "../src/journeys/env";
 
-const baseUrl = process.env.E2E_BASE_URL;
-
-if (!baseUrl) {
-  throw new Error("E2E_BASE_URL is required for apps/e2e/journeys/auth-session.e2e.ts");
-}
+const baseUrl = getE2EBaseUrlOrThrow("apps/e2e/journeys/auth-session.e2e.ts");
 
 type AuthSuccess = {
   status: "success";
@@ -25,6 +22,7 @@ type AuthError = {
 };
 
 async function postJson(
+  baseUrl: string,
   path: string,
   body: Record<string, string>,
   headers?: HeadersInit,
@@ -39,7 +37,7 @@ async function postJson(
   });
 }
 
-async function getJson(path: string, headers?: HeadersInit): Promise<Response> {
+async function getJson(baseUrl: string, path: string, headers?: HeadersInit): Promise<Response> {
   return fetch(new URL(path, baseUrl), {
     headers,
   });
@@ -54,7 +52,7 @@ describe("auth session journey", () => {
       password: `Pass-${runId}`,
     };
 
-    const unauthorizedMeResponse = await getJson("/api/auth/me");
+    const unauthorizedMeResponse = await getJson(baseUrl, "/api/auth/me");
     expect(unauthorizedMeResponse.status).toBe(401);
     const unauthorizedMeBody = (await unauthorizedMeResponse.json()) as AuthError;
     expect(unauthorizedMeBody).toMatchObject({
@@ -62,7 +60,7 @@ describe("auth session journey", () => {
       message: "Authentication required",
     });
 
-    const registerResponse = await postJson("/api/auth/register", credentials);
+    const registerResponse = await postJson(baseUrl, "/api/auth/register", credentials);
     expect(registerResponse.status).toBe(201);
     const registerBody = (await registerResponse.json()) as AuthSuccess;
 
@@ -73,7 +71,7 @@ describe("auth session journey", () => {
       email: credentials.email,
     });
 
-    const wrongPasswordResponse = await postJson("/api/auth/login", {
+    const wrongPasswordResponse = await postJson(baseUrl, "/api/auth/login", {
       username: credentials.username,
       password: `${credentials.password}-wrong`,
     });
@@ -84,7 +82,7 @@ describe("auth session journey", () => {
       message: "Invalid credentials",
     });
 
-    const loginResponse = await postJson("/api/auth/login", {
+    const loginResponse = await postJson(baseUrl, "/api/auth/login", {
       username: credentials.username,
       password: credentials.password,
     });
@@ -99,7 +97,7 @@ describe("auth session journey", () => {
       email: credentials.email,
     });
 
-    const meResponse = await getJson("/api/auth/me", {
+    const meResponse = await getJson(baseUrl, "/api/auth/me", {
       Authorization: `Bearer ${loginBody.data.token}`,
     });
     expect(meResponse.status).toBe(200);

@@ -18,7 +18,7 @@ tags:
 # Client deploy via Workers Assets (pure-static)
 
 **Goal:** Deploy `apps/client` (the React + Vite SPA) as a **pure-static
-Worker** using `[assets]` binding, so `dev.ozby.dev` and `ozby.dev` serve
+Worker** using `[assets]` binding, so `dev.ingest-lens.ozby.dev` and `ingest-lens.ozby.dev` serve
 the built SPA with native SPA-fallback routing, atomic custom-domain + DNS
 
 - cert creation, and zero Pulumi resources on the client side. Matches
@@ -28,7 +28,7 @@ the built SPA with native SPA-fallback routing, atomic custom-domain + DNS
 
 ## Planning Summary
 
-- **Why now:** The API Worker is live at `api.dev.ozby.dev`; the SPA at
+- **Why now:** The API Worker is live at `api.dev.ingest-lens.ozby.dev`; the SPA at
   `apps/client/` has no deploy target. CF's own docs now position Workers
   - Assets as the canonical SPA deploy path — Pages is maintenance-mode.
     Probe `p04` (this repo) confirmed the `[assets] directory / binding /
@@ -37,12 +37,12 @@ not_found_handling` config shape. Adopting it now keeps the deploy
     `[env.prd]` pattern the API just shipped on.
 - **Scope:** Add `apps/client/wrangler.toml` with `name = "node-pubsub-client"`,
   per-env `[env.dev] / [env.prd]` blocks setting `routes = [{ pattern =
-"dev.ozby.dev", custom_domain = true }]` (prd: `ozby.dev`) and an
+"dev.ingest-lens.ozby.dev", custom_domain = true }]` (prd: `ingest-lens.ozby.dev`) and an
   `[assets]` binding pointing at `./dist` with SPA fallback. Extend
   `infra/src/deploy/deploy.ts` to sequence a client build + deploy after
   the API deploy, or introduce `infra/src/deploy/client-deploy.ts` as a
   sibling orchestrator. Wire per-env CORS on the API so the SPA at
-  `dev.ozby.dev` can call `api.dev.ozby.dev` without friction.
+  `dev.ingest-lens.ozby.dev` can call `api.dev.ingest-lens.ozby.dev` without friction.
 - **Out of scope:** Moving the API to live under the same root domain
   (it stays at the `api.` subdomain). Pages-based deploys. A Node/Bun
   runtime for the SPA. Service Worker / offline support. Authentication
@@ -51,31 +51,31 @@ not_found_handling` config shape. Adopting it now keeps the deploy
   reframe rather than remove.
 - **Primary success metric:** After `pnpm --filter client build && pnpm
 --filter @repo/client-worker exec wrangler deploy --env dev`, the URL
-  `https://dev.ozby.dev` returns the SPA index, deep links such as
-  `https://dev.ozby.dev/queues/abc` return `index.html` with HTTP 200
+  `https://dev.ingest-lens.ozby.dev` returns the SPA index, deep links such as
+  `https://dev.ingest-lens.ozby.dev/queues/abc` return `index.html` with HTTP 200
   (SPA fallback), static assets are served with long-lived cache headers
   by CF, and the SPA successfully authenticates + fetches from
-  `https://api.dev.ozby.dev` under the dev CORS policy.
+  `https://api.dev.ingest-lens.ozby.dev` under the dev CORS policy.
 
 ## Architecture Overview
 
 ```text
-Browser ──▶ https://dev.ozby.dev/*        (node-pubsub-client-dev Worker, pure static)
+Browser ──▶ https://dev.ingest-lens.ozby.dev/*        (node-pubsub-client-dev Worker, pure static)
           │                                ├─ wrangler.toml [assets] directory = "./dist"
           │                                ├─ not_found_handling = "single-page-application"
-          │                                └─ route: { pattern = "dev.ozby.dev", custom_domain = true }
+          │                                └─ route: { pattern = "dev.ingest-lens.ozby.dev", custom_domain = true }
           │
           │ SPA app code runs in browser
-          │ fetch() ──▶ https://api.dev.ozby.dev/api/*
+          │ fetch() ──▶ https://api.dev.ingest-lens.ozby.dev/api/*
           ▼
-       (existing API Worker; CORS Allow-Origin: https://dev.ozby.dev)
+       (existing API Worker; CORS Allow-Origin: https://dev.ingest-lens.ozby.dev)
 
 Deploy pipeline (adds two steps at the tail):
   pulumi up --stack dev           (existing — Hyperdrive/KV/R2)
   sync-wrangler-ids.ts dev        (existing — patches API wrangler.toml)
-  wrangler deploy --env dev       (existing — API Worker at api.dev.ozby.dev)
+  wrangler deploy --env dev       (existing — API Worker at api.dev.ingest-lens.ozby.dev)
   pnpm --filter client build      (NEW — produces apps/client/dist)
-  wrangler deploy --env dev       (NEW — in apps/client/ cwd; publishes static Worker at dev.ozby.dev)
+  wrangler deploy --env dev       (NEW — in apps/client/ cwd; publishes static Worker at dev.ingest-lens.ozby.dev)
 ```
 
 ## Key Decisions
@@ -87,8 +87,8 @@ Deploy pipeline (adds two steps at the tail):
 | Script presence      | **No `main` script** (pure static) — Worker has zero JS handler                                                                                          | Simpler, cheaper, and faster than coupling static serving with a handler. Can add a `main` later if/when we need server-side auth-gate or edge rendering.   | —                                    |
 | Deploy target        | New workspace `apps/client/wrangler.toml` (keeping `apps/client/` as the package root)                                                                   | Avoids adding a separate `apps/client-worker/` package; the Vite project and its deploy config live together.                                               | —                                    |
 | Environment model    | `[env.dev]` / `[env.prd]` mirroring the API Worker                                                                                                       | Consistency across the monorepo; same `wrangler deploy --env <stack>` verb.                                                                                 | matches existing API pattern         |
-| Custom domain        | `dev.ozby.dev` (dev), `ozby.dev` (prd), both via `custom_domain = true`                                                                                  | Atomic cert + DNS provisioning via wrangler; no Pulumi DNS records needed (they were removed from Pulumi when the API deploy adopted the same pattern).     | CF docs (routing/custom-domains)     |
-| CORS                 | Allow-list exact origin per env on the API: `https://dev.ozby.dev` (dev), `https://ozby.dev` (prd)                                                       | Wildcard or `*` Allow-Origin is banned for cookie-bearing requests; exact origin is the lowest-privilege option.                                            | Fetch API spec                       |
+| Custom domain        | `dev.ingest-lens.ozby.dev` (dev), `ingest-lens.ozby.dev` (prd), both via `custom_domain = true`                                                          | Atomic cert + DNS provisioning via wrangler; no Pulumi DNS records needed (they were removed from Pulumi when the API deploy adopted the same pattern).     | CF docs (routing/custom-domains)     |
+| CORS                 | Allow-list exact origin per env on the API: `https://dev.ingest-lens.ozby.dev` (dev), `https://ingest-lens.ozby.dev` (prd)                               | Wildcard or `*` Allow-Origin is banned for cookie-bearing requests; exact origin is the lowest-privilege option.                                            | Fetch API spec                       |
 | Build orchestration  | `deploy.ts` extended with a `phase4_clientDeploy(stack)` step; or a new sibling `client-deploy.ts` invoked after `deploy.ts`                             | Single pipeline entry point keeps CI simple. One invocation, two Workers deployed.                                                                          | —                                    |
 | Rollout strategy     | Manual bump first (dev only). Prd deploy comes after dev is validated and the prd Pulumi stack + env secrets are provisioned (currently neither exists). | Matches the existing "dev-first, prd later" posture the rest of the repo takes.                                                                             | —                                    |
 
@@ -188,9 +188,9 @@ keys that probe p04 validated. Matches the existing ADR format (001–005).
 
 **Depends:** 1.1
 
-Add CORS middleware to the API Hono app so the SPA at `dev.ozby.dev` (or
-`ozby.dev` later) can call the API without the browser rejecting
-responses. Allowed origin is exact (`https://dev.ozby.dev`, not `*`)
+Add CORS middleware to the API Hono app so the SPA at `dev.ingest-lens.ozby.dev` (or
+`ingest-lens.ozby.dev` later) can call the API without the browser rejecting
+responses. Allowed origin is exact (`https://dev.ingest-lens.ozby.dev`, not `*`)
 because requests will carry the JWT cookie/header. Reads the origin from
 an env var so dev + prd diverge cleanly.
 
@@ -202,7 +202,7 @@ an env var so dev + prd diverge cleanly.
 
 **Steps (TDD):**
 
-1. Test: allowed origin → `Access-Control-Allow-Origin: https://dev.ozby.dev` returned; disallowed origin → no Allow-Origin header
+1. Test: allowed origin → `Access-Control-Allow-Origin: https://dev.ingest-lens.ozby.dev` returned; disallowed origin → no Allow-Origin header
 2. Test: credentials path → `Access-Control-Allow-Credentials: true` only when origin matches
 3. FAIL → implement → PASS
 
@@ -228,8 +228,8 @@ config fetch, but build-time is simpler for this size of app). Use Vite's
 
 **Files:**
 
-- Create: `apps/client/.env.dev` (gitignored; contains `VITE_API_BASE_URL=https://api.dev.ozby.dev`)
-- Create: `apps/client/.env.prd` (gitignored; contains `VITE_API_BASE_URL=https://api.ozby.dev`)
+- Create: `apps/client/.env.dev` (gitignored; contains `VITE_API_BASE_URL=https://api.dev.ingest-lens.ozby.dev`)
+- Create: `apps/client/.env.prd` (gitignored; contains `VITE_API_BASE_URL=https://api.ingest-lens.ozby.dev`)
 - Modify: `apps/client/src/lib/api-client.ts` (or equivalent) — consume `import.meta.env.VITE_API_BASE_URL` instead of a hardcoded URL
 - Modify: `apps/client/package.json` — `build:dev`, `build:prd` variants; `deploy:dev` calls `build:dev`; same for prd
 - Modify: `.gitignore` — append `apps/client/.env.*` (local env files; not secrets but not reproducible)
@@ -276,12 +276,12 @@ grows beyond 2 Workers.
 **Steps (TDD):**
 
 1. Run `bun ./infra/src/deploy/deploy.ts dev` end-to-end; both Workers deploy successfully
-2. `https://dev.ozby.dev/` returns the SPA index; deep link `https://dev.ozby.dev/queues/anything` returns `index.html` with 200 (SPA fallback)
+2. `https://dev.ingest-lens.ozby.dev/` returns the SPA index; deep link `https://dev.ingest-lens.ozby.dev/queues/anything` returns `index.html` with 200 (SPA fallback)
 
 **Acceptance:**
 
 - [x] One command deploys both the API Worker and the client Worker
-- [ ] The SPA authenticates against the API and makes at least one authenticated request successfully — deploy-gated; requires live dev.ozby.dev CF environment
+- [ ] The SPA authenticates against the API and makes at least one authenticated request successfully — deploy-gated; requires live dev.ingest-lens.ozby.dev CF environment
 
 ---
 
@@ -314,13 +314,13 @@ loading + one authenticated API call.
 
 ## Verification Gates
 
-| Gate        | Command                                                                 | Success Criteria                                         |
-| ----------- | ----------------------------------------------------------------------- | -------------------------------------------------------- |
-| Type safety | `pnpm --filter client check-types`                                      | Zero errors                                              |
-| Lint        | `pnpm --filter client lint`                                             | Zero violations                                          |
-| Build       | `pnpm --filter client build:dev`                                        | Produces `dist/`; VITE_API_BASE_URL baked in correctly   |
-| Dry deploy  | `pnpm --filter client exec wrangler deploy --env dev --dry-run`         | Asset upload plan shown; no script bytes                 |
-| E2E         | `bun ./infra/src/deploy/deploy.ts dev` then `curl https://dev.ozby.dev` | SPA index returned; deep link falls back to `index.html` |
+| Gate        | Command                                                                             | Success Criteria                                         |
+| ----------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Type safety | `pnpm --filter client check-types`                                                  | Zero errors                                              |
+| Lint        | `pnpm --filter client lint`                                                         | Zero violations                                          |
+| Build       | `pnpm --filter client build:dev`                                                    | Produces `dist/`; VITE_API_BASE_URL baked in correctly   |
+| Dry deploy  | `pnpm --filter client exec wrangler deploy --env dev --dry-run`                     | Asset upload plan shown; no script bytes                 |
+| E2E         | `bun ./infra/src/deploy/deploy.ts dev` then `curl https://dev.ingest-lens.ozby.dev` | SPA index returned; deep link falls back to `index.html` |
 
 ## Cross-Plan References
 
@@ -328,7 +328,7 @@ loading + one authenticated API call.
 | ---------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Peer       | `client-route-code-splitting` | Premise reframed: bundle warning is no longer a deploy blocker (Workers Assets serves static bytes outside the script budget) but route-level lazy loading still matters for browser UX (first paint, bytes on-the-wire per route). The two blueprints can run in either order; splitting first reduces the static payload, but the deploy path itself is orthogonal. |
 | Upstream   | API deploy (already shipped)  | API must have CORS allowing the SPA origin before end-to-end UX works. Task 2.1 wires this explicitly.                                                                                                                                                                                                                                                                |
-| Downstream | `showcase-hardening-100`      | Shipping a visible SPA at `dev.ozby.dev` likely surfaces more audit concerns (auth UX, input validation on the client, error surfaces). Flag for review after deploy.                                                                                                                                                                                                 |
+| Downstream | `showcase-hardening-100`      | Shipping a visible SPA at `dev.ingest-lens.ozby.dev` likely surfaces more audit concerns (auth UX, input validation on the client, error surfaces). Flag for review after deploy.                                                                                                                                                                                     |
 
 ## NOT in scope
 

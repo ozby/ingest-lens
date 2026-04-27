@@ -1,12 +1,16 @@
 config:
-  node-pubsub:domain: dev.ozby.dev
-  # Set these via: pulumi config set --secret <key> <value> --stack dev
-  # node-pubsub:cloudflareAccountId: <your CF account ID>
-  # node-pubsub:cloudflareZoneId: <CF zone ID for ozby.dev>
-
-  node-pubsub:cloudflareAccountId:
-    secure: AAABAP28N3NBJyiVGwf+rV/72rYuhalUxzBkArGtF+9LMPAHpvGORmzu2butm/iwZkzMUTN042pwBwwjaaMjyA==
-  node-pubsub:cloudflareZoneId:
-    secure: AAABAO8rYOyS1YEsro6Xo7+r/7rBAZ9Tno2suOUUM5fWBzFogHJlCA1zlmkzzabIN76oKtAVNi1vv9a7Nn5Dcw==
-  node-pubsub:neonConnectionString:
-    secure: AAABADCwaHySlnjEp0+qzLn8phD0EdOwc/bMtd1xOHTz39q5cWkzdzR3J+hCpX773cxcmUqAPZvxKDBqmBZvy/Qx81jyvX5BaOShGDme8Hm+Du2A/pA5itLjZzTsHIZGVSo6my4glYpVwdourzMd41yfFVb5+4Ihev30rZub/7l0txoBPyLwtsDCGg030dwpvxwXLFuZMy8iAbiaUYbasK6tGKeBBxJCn+qO00uPzAECsdoGGvtxGg==
+  ingest-lens:domain: dev.ingest-lens.ozby.dev
+  ingest-lens:cloudflareAccountId:
+    secure: AAABAFh/kHvFCt5BrEXtd7Vmjgxgb/T6Xbm4INYhbFQzVWYt1edHm6vy1L1RJz9DDVdy8sihj88QI9jMtAYvDQ==
+  ingest-lens:cloudflareZoneId:
+    secure: AAABAFSUAH555sNmcG5NKKcm9JwkOBwb2p78OrNhIPTfg2rSCUS7oIBXDRVPaXhs1RFfQrxsHIYOw6m0ooIX2Q==
+  ingest-lens:neonProjectId: lucky-king-24635750
+  ingest-lens:neonRoleName: neondb_owner
+  ingest-lens:neonRolePassword:
+    secure: AAABAIyJbwqnfO8CVHuBvpA+0DPbwfTS6so/tZPEipeF7MGswUvZRMPAcnRhob3n
+  ingest-lens:neonDatabaseName: neondb
+  ingest-lens:neonParentBranchId: br-blue-brook-alwwzbdy
+  ingest-lens:neonApiKey:
+    secure: AAABAKtWVET1iSx/feV+RHSbtDI9ZatqFLM9o+NuXBwCDJY/SVfI6GaCCE0N+gt2z18op19GBizxClDQrusm36kN3o2dsytTPEY0Yt5MBqsU7n12bunL0amJkDS/0LZF/wo4Vtk=
+  ingest-lens:neonConnectionString:
+    secure: AAABAIpoEVr+opS4UwvLPseUvPmmt1pEM/F1UBC22sqduUa8YSRm1h6ghFPkfLzOi+ok2vA2mbum98ep56QWXkoyeoy1qiqlrOjCgda9BkleTryQ86FKBwFNWYQTyJw8j3EUHXFN9rqk6NPDeiTGMeE3G9jgjpjgz5l9O9gdvT2rLT1cKXQLuaDHGawWqmls4tKPkK8=

@@ -2,7 +2,9 @@ import type { Branch, BranchConfig, BranchProvider } from "@webpresso/db-branchi
 import { createEphemeralBranch, deleteEphemeralBranch } from "./branches.ts";
 import type { NeonConfig } from "./config.ts";
 
-export class NeonBranchProvider implements BranchProvider {
+export type NeonBranchLifecycleProvider = Pick<BranchProvider, "createBranch" | "deleteBranch">;
+
+export class NeonBranchProvider implements NeonBranchLifecycleProvider {
   constructor(private readonly config: NeonConfig) {}
 
   async createBranch(config?: BranchConfig): Promise<Branch> {

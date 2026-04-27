@@ -21,7 +21,8 @@ The contract is:
    row is updated to `enqueueState = "enqueued"`; if it fails the row is updated to
    `enqueueState = "failed"` with `lastEnqueueError` recorded. Direct queue publish returns `502`
    in that case, and topic/intake publish surfaces the failure explicitly instead of silently
-   pretending the delivery was scheduled.
+   pretending the delivery was scheduled. Queue/topic/intake routes share this
+   contract through `apps/workers/src/messages/lifecycle.ts`.
 
 2. The Cloudflare Queue consumer (`apps/workers/src/consumers/deliveryConsumer.ts`) calls
    `msg.ack()` only after receiving a 2xx response from the push endpoint. Non-2xx responses and

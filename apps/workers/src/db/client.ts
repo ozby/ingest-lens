@@ -16,7 +16,7 @@ export type Env = {
   DATABASE_URL?: string; // local dev fallback
   JWT_SECRET: string;
   NODE_ENV?: string;
-  ALLOWED_ORIGIN?: string; // per-env SPA origin for CORS (e.g. https://dev.ozby.dev)
+  ALLOWED_ORIGIN?: string; // per-env SPA origin for CORS (e.g. https://dev.ingest-lens.ozby.dev)
   AI?: Ai;
   DELIVERY_QUEUE: Queue<DeliveryPayload>;
   RATE_LIMITER?: RateLimit;

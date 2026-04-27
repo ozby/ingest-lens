@@ -21,8 +21,8 @@ flowchart LR
   end
 
   subgraph EDGE["Cloudflare edge"]
-    SPA["Worker: ozby.dev<br/>(apps/client → Workers Assets)"]
-    API["Worker: api.ozby.dev<br/>(apps/workers, Hono)"]
+    SPA["Worker: ingest-lens.ozby.dev<br/>(apps/client → Workers Assets)"]
+    API["Worker: api.ingest-lens.ozby.dev<br/>(apps/workers, Hono)"]
     LAB["Worker: Consistency Lab<br/>(apps/lab, Hono SSR + htmx)"]
     HD["Hyperdrive pool"]
     DQ[("Cloudflare Queue:<br/>DELIVERY_QUEUE")]
@@ -45,7 +45,7 @@ flowchart LR
 
   subgraph DATA["State"]
     PG[("Postgres via Neon<br/>(public.* + lab.*)")]
-    NEON["Neon branches<br/>(@webpresso/db-branching)"]
+    NEON["Neon branches<br/>(deploy.ts auto-provisions<br/>per-stack, e2e-with-neon.ts<br/>for 1h TTL test branches)"]
   end
 
   subgraph INTAKE["AI intake / mapping (apps/workers)"]
@@ -119,13 +119,18 @@ flowchart LR
   `@repo/lab-s1b-latency`) are lab-internal.
 - **Postgres**: single Neon project. Production tables live in
   `public.*`; lab tables strictly under `lab.*` (CI-enforced).
-  `@webpresso/db-branching` provides the vendor-agnostic interface;
-  `packages/neon` is the Neon implementation used in E2E. Hyperdrive is the
-  runtime pool for Workers; Neon is primarily the managed Postgres origin and
+  Per-stack Neon branches are auto-provisioned by `deploy.ts` before
+  `pulumi up` (for non-`prd` stacks). E2E branches are created with 1h TTL
+  by `apps/e2e/scripts/e2e-with-neon.ts` and auto-deleted on test completion.
+  The shared `packages/neon` implements `@webpresso/db-branching`'s
+  `BranchProvider` interface for create/delete flows. Hyperdrive is the
+  runtime pool for Workers; Neon is the managed Postgres origin and
   branching substrate. Core queue/topic relationships are enforced with
   foreign keys and cascades so deletes do not rely on application-side cleanup,
   and `ownerId` is FK-backed to `users.id` for the main multi-tenant tables.
 - **AI intake path**: only AI call site is mapping repair suggestion.
+  Shared attempt/mapping conversion helpers live in
+  `apps/workers/src/intake/services/records.ts`.
   `shapeFingerprint()` detects structural drift. The fast-path check queries
   `HealStreamDO` in-memory state (not Postgres); on match the LLM is skipped
   and the record is normalized without creating a new intake attempt row.

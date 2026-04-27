@@ -1,9 +1,9 @@
 config:
-  node-pubsub:domain: ozby.dev
+  ingest-lens:domain: ingest-lens.ozby.dev
   # Set these via: pulumi config set --secret <key> <value> --stack prd
-  # node-pubsub:cloudflareAccountId: <your CF account ID>
-  # node-pubsub:cloudflareZoneId: <CF zone ID for ozby.dev>
-  # node-pubsub:neonConnectionString: <postgresql://... prd connection string>
+  # ingest-lens:cloudflareAccountId: <your CF account ID>
+  # ingest-lens:cloudflareZoneId: <CF zone ID for ingest-lens.ozby.dev>
+  # ingest-lens:neonConnectionString: <postgresql://... prd connection string>
   #
   # After setting secrets, run from infra/:
   #   doppler run --project ozby-shell --config production -- pulumi up --yes --stack prd

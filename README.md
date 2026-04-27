@@ -108,6 +108,9 @@ pnpm --filter client dev
 
 The repo-owned E2E runner lives in `apps/e2e` and executes live HTTP journeys
 through the package-local CLI.
+Journey specs now share common HTTP/env/type helpers from
+`apps/e2e/src/journeys/{http,env,types}.ts` to keep request wiring and
+`E2E_BASE_URL` handling consistent across suites.
 
 Current live suites (defined in `apps/e2e/src/e2e-suite-manifest.ts`):
 
@@ -133,6 +136,9 @@ schema plus a worker started via
 
 Neon branch commands and the cleanup workflow read `NEON_API_KEY`,
 `NEON_PROJECT_ID`, and `NEON_PARENT_BRANCH_ID` from Doppler-backed shell env.
+`packages/neon` exports `NeonBranchProvider` plus
+`NeonBranchLifecycleProvider` (`createBranch`/`deleteBranch`) for the E2E
+branch scripts.
 
 ## Local GitHub Actions testing
 
@@ -221,25 +227,25 @@ idempotency keys, pull-lease semantics, and DLQ recovery steps.
 One command deploys both Workers (API + client SPA) in the correct order:
 
 ```bash
-bun ./infra/src/deploy/deploy.ts dev   # deploys api.dev.ozby.dev + dev.ozby.dev
-bun ./infra/src/deploy/deploy.ts prd   # deploys api.ozby.dev     + ozby.dev
+bun ./infra/src/deploy/deploy.ts dev   # deploys api.dev.ingest-lens.ozby.dev + dev.ingest-lens.ozby.dev
+bun ./infra/src/deploy/deploy.ts prd   # deploys api.ingest-lens.ozby.dev     + ingest-lens.ozby.dev
 ```
 
 **Smoke check after deploy:**
 
 ```bash
 # SPA index returned
-curl -sI https://dev.ozby.dev | grep -E 'HTTP|content-type'
+curl -sI https://dev.ingest-lens.ozby.dev | grep -E 'HTTP|content-type'
 
 # Deep link falls back to index.html (SPA mode)
-curl -sI https://dev.ozby.dev/queues/some-id | grep -E 'HTTP|content-type'
+curl -sI https://dev.ingest-lens.ozby.dev/queues/some-id | grep -E 'HTTP|content-type'
 
 # API health
-curl -s https://api.dev.ozby.dev/health
+curl -s https://api.dev.ingest-lens.ozby.dev/health
 ```
 
 **Rollback:** `wrangler rollback --env <stack>` reverts the previous Worker deployment
-for either `node-pubsub-client-<stack>` or `node-pubsub-<stack>` independently.
+for either `ingest-lens-client-<stack>` or `ingest-lens-<stack>` independently.
 
 **Key design decisions:**
 

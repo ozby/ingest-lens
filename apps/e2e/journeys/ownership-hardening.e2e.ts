@@ -1,31 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { getE2EBaseUrlOrThrow } from "../src/journeys/env";
+import { getJson, postJson } from "../src/journeys/http";
+import type { ApiError, ApiSuccess, AuthResponse } from "../src/journeys/types";
 
-const baseUrl = process.env.E2E_BASE_URL;
-
-if (!baseUrl) {
-  throw new Error("E2E_BASE_URL is required for apps/e2e/journeys/ownership-hardening.e2e.ts");
-}
-
-type ApiSuccess<T> = {
-  status: "success";
-  results?: number;
-  data: T;
-};
-
-type ApiError = {
-  status: "error";
-  message: string;
-};
-
-type AuthResponse = ApiSuccess<{
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    createdAt: string;
-  };
-}>;
+const baseUrl = getE2EBaseUrlOrThrow("apps/e2e/journeys/ownership-hardening.e2e.ts");
 
 type QueueRecord = {
   id: string;
@@ -50,39 +28,6 @@ type MessageRecord = {
   queueId: string;
 };
 
-async function postJson<T>(
-  path: string,
-  body: Record<string, unknown>,
-  token?: string,
-): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
-async function getJson<T>(path: string, token: string): Promise<{ response: Response; body: T }> {
-  const response = await fetch(new URL(path, baseUrl), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return {
-    response,
-    body: (await response.json()) as T,
-  };
-}
-
 describe("ownership hardening", () => {
   it("rejects cross-tenant queue, dashboard, topic subscribe, and websocket access", async () => {
     const runId = crypto.randomUUID().slice(0, 8);
@@ -97,11 +42,16 @@ describe("ownership hardening", () => {
       password: `Pass-${runId}`,
     };
 
-    const ownerRegistration = await postJson<AuthResponse>("/api/auth/register", ownerCredentials);
+    const ownerRegistration = await postJson<AuthResponse>(
+      baseUrl,
+      "/api/auth/register",
+      ownerCredentials,
+    );
     expect(ownerRegistration.response.status).toBe(201);
     const ownerToken = ownerRegistration.body.data.token;
 
     const intruderRegistration = await postJson<AuthResponse>(
+      baseUrl,
       "/api/auth/register",
       intruderCredentials,
     );
@@ -109,6 +59,7 @@ describe("ownership hardening", () => {
     const intruderToken = intruderRegistration.body.data.token;
 
     const ownerQueue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
       "/api/queues",
       { name: `owner-queue-${runId}` },
       ownerToken,
@@ -116,6 +67,7 @@ describe("ownership hardening", () => {
     expect(ownerQueue.response.status).toBe(201);
 
     const intruderQueue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
       "/api/queues",
       { name: `intruder-queue-${runId}` },
       intruderToken,
@@ -123,6 +75,7 @@ describe("ownership hardening", () => {
     expect(intruderQueue.response.status).toBe(201);
 
     const ownerTopic = await postJson<ApiSuccess<{ topic: TopicRecord }>>(
+      baseUrl,
       "/api/topics",
       { name: `owner-topic-${runId}` },
       ownerToken,
@@ -130,6 +83,7 @@ describe("ownership hardening", () => {
     expect(ownerTopic.response.status).toBe(201);
 
     const intruderTopic = await postJson<ApiSuccess<{ topic: TopicRecord }>>(
+      baseUrl,
       "/api/topics",
       { name: `intruder-topic-${runId}` },
       intruderToken,
@@ -137,6 +91,7 @@ describe("ownership hardening", () => {
     expect(intruderTopic.response.status).toBe(201);
 
     const ownerMessage = await postJson<ApiSuccess<{ message: MessageRecord }>>(
+      baseUrl,
       `/api/messages/${ownerQueue.body.data.queue.id}`,
       { data: { runId, lane: "owner" } },
       ownerToken,
@@ -144,6 +99,7 @@ describe("ownership hardening", () => {
     expect(ownerMessage.response.status).toBe(201);
 
     const intruderMessage = await postJson<ApiSuccess<{ message: MessageRecord }>>(
+      baseUrl,
       `/api/messages/${intruderQueue.body.data.queue.id}`,
       { data: { runId, lane: "intruder" } },
       intruderToken,
@@ -151,6 +107,7 @@ describe("ownership hardening", () => {
     expect(intruderMessage.response.status).toBe(201);
 
     const ownerDashboard = await getJson<ApiSuccess<{ queueMetrics: QueueMetric[] }>>(
+      baseUrl,
       "/api/dashboard/queues",
       ownerToken,
     );
@@ -163,6 +120,7 @@ describe("ownership hardening", () => {
     ]);
 
     const intruderDashboard = await getJson<ApiSuccess<{ queueMetrics: QueueMetric[] }>>(
+      baseUrl,
       "/api/dashboard/queues",
       intruderToken,
     );
@@ -175,6 +133,7 @@ describe("ownership hardening", () => {
     ]);
 
     const foreignQueueReceive = await getJson<ApiError>(
+      baseUrl,
       `/api/messages/${ownerQueue.body.data.queue.id}`,
       intruderToken,
     );
@@ -185,6 +144,7 @@ describe("ownership hardening", () => {
     });
 
     const foreignQueueMetrics = await getJson<ApiError>(
+      baseUrl,
       `/api/dashboard/queues/${ownerQueue.body.data.queue.id}`,
       intruderToken,
     );
@@ -195,6 +155,7 @@ describe("ownership hardening", () => {
     });
 
     const foreignTopicSubscribe = await postJson<ApiError>(
+      baseUrl,
       `/api/topics/${ownerTopic.body.data.topic.id}/subscribe`,
       { queueId: intruderQueue.body.data.queue.id },
       intruderToken,
@@ -206,6 +167,7 @@ describe("ownership hardening", () => {
     });
 
     const foreignQueueOnOwnedTopic = await postJson<ApiError>(
+      baseUrl,
       `/api/topics/${ownerTopic.body.data.topic.id}/subscribe`,
       { queueId: intruderQueue.body.data.queue.id },
       ownerToken,
@@ -217,6 +179,7 @@ describe("ownership hardening", () => {
     });
 
     const websocketOwnership = await getJson<ApiError>(
+      baseUrl,
       `/api/topics/${ownerTopic.body.data.topic.id}/ws`,
       intruderToken,
     );
@@ -227,6 +190,7 @@ describe("ownership hardening", () => {
     });
 
     const ownedTopicSubscribe = await postJson<ApiSuccess<{ topic: TopicRecord }>>(
+      baseUrl,
       `/api/topics/${intruderTopic.body.data.topic.id}/subscribe`,
       { queueId: intruderQueue.body.data.queue.id },
       intruderToken,
@@ -245,12 +209,13 @@ describe("ownership hardening", () => {
       password: `Pass-${runId}`,
     };
 
-    const registration = await postJson<AuthResponse>("/api/auth/register", credentials);
+    const registration = await postJson<AuthResponse>(baseUrl, "/api/auth/register", credentials);
     expect(registration.response.status).toBe(201);
     const token = registration.body.data.token;
     const ownerId = registration.body.data.user.id;
 
     const created = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
       "/api/queues",
       { name: `tenant-queue-${runId}` },
       token,
@@ -259,6 +224,7 @@ describe("ownership hardening", () => {
     const createdQueue = created.body.data.queue;
 
     const fetched = await getJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
       `/api/queues/${createdQueue.id}`,
       token,
     );
