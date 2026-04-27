@@ -15,7 +15,7 @@
     "db:branch:cleanup": "bun scripts/db-branch-cleanup.ts"
   },
   "dependencies": {
-    "@webpresso/neon": "catalog:"
+    "@webpresso/neon-core": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

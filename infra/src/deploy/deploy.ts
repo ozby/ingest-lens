@@ -4,7 +4,7 @@
  * Usage: bun ./src/deploy/deploy.ts <stack>  (run from infra/)
  */
 import { doppler, execWith } from "@webpresso/process-utils/secret-runner";
-import { getNeonConfig } from "@webpresso/neon";
+import { getNeonConfig } from "@webpresso/neon-core";
 import { execSync } from "node:child_process";
 import process from "node:process";
 

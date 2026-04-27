@@ -68,7 +68,7 @@
       "@webpresso/agent-kit",
       "@webpresso/cli-utils",
       "@webpresso/db-branching",
-      "@webpresso/neon",
+      "@webpresso/neon-core",
       "@webpresso/process-utils",
       "@webpresso/vitest-config",
       "@webpresso/workers-test-kit"

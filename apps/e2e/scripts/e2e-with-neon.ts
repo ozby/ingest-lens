@@ -12,7 +12,7 @@ import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
 import { doppler } from "@webpresso/process-utils/secret-runner";
-import { getNeonConfig, NeonBranchProvider } from "@webpresso/neon";
+import { getNeonConfig, NeonBranchProvider } from "@webpresso/neon-core";
 
 const suite = process.argv.includes("--suite")
   ? process.argv[process.argv.indexOf("--suite") + 1]
