@@ -37,7 +37,7 @@ Analytics Engine telemetry or deterministic test runner.
   `LANGFUSE_HOST`. This blueprint adopts `LANGFUSE_PUBLIC_KEY`,
   `LANGFUSE_SECRET_KEY`, and `LANGFUSE_BASE_URL`.
 - **Prompt strategy:** Use `langfuse.prompt.get("payload-mapper", { label:
-  "production", cacheTtlSeconds: 60, fallback })`. Langfuse already provides
+"production", cacheTtlSeconds: 60, fallback })`. Langfuse already provides
   client-side caching and optional fallback, so no repo-local `Map` cache is
   needed.
 - **Tracing strategy:** Build one manual OTLP generation span for the primary
@@ -52,18 +52,18 @@ Analytics Engine telemetry or deterministic test runner.
 
 ## Fact-Checked Findings
 
-| ID | Severity | Claim | Reality / source | Blueprint fix |
-| -- | -------- | ----- | ---------------- | ------------- |
-| F1 | **CRITICAL** | `@langfuse/tracing` / `@langfuse/otel` can run in Workers | Langfuse JS README lists `@langfuse/client` as Universal JS, while `@langfuse/tracing` and `@langfuse/otel` are `Node.js 20+` only. | Use `@langfuse/client` only; export traces via manual OTLP HTTP/JSON. |
-| F2 | HIGH | The env var should be `LANGFUSE_HOST` | Langfuse SDK docs and prompt docs use `LANGFUSE_BASE_URL` / constructor `baseUrl`. | Rename all plan references to `LANGFUSE_BASE_URL`. |
-| F3 | HIGH | We need a custom in-memory prompt cache | Langfuse prompt-management docs state prompts are cached client-side, stale prompts are served immediately, and `cacheTtlSeconds` controls TTL. | Remove custom `Map` caching from the plan; use SDK caching only. |
-| F4 | HIGH | `score.create()` is enough in Workers | Langfuse score docs explicitly say to `await langfuse.flush()` in short-lived environments. | Queue score creation and schedule `langfuse.flush()` via `c.executionCtx.waitUntil(...)`. |
-| F5 | HIGH | `crypto.randomUUID()` directly satisfies Langfuse trace-id format | Langfuse trace-id docs require 32 lowercase hex chars for trace IDs and 16 hex chars for observation IDs. `crypto.randomUUID()` includes hyphens. | Derive OTLP trace IDs from `mappingTraceId.replace(/-/g, "")`; generate 16-hex span IDs separately. |
-| F6 | MEDIUM | `ctx.waitUntil(...)` is the right route API | Hono’s Cloudflare `Context` exposes `c.executionCtx.waitUntil(...)`. | Use `c.executionCtx.waitUntil(...)` in the route task. |
-| F7 | MEDIUM | Any OTLP endpoint details are inferred | Langfuse OTLP docs specify `/api/public/otel/v1/traces`, Basic Auth, and `x-langfuse-ingestion-version: 4`; HTTP/JSON is supported. | Use the documented endpoint and headers verbatim. |
-| F8 | MEDIUM | Current adapter already exposes enough data for latency/token tracing | `StructuredRunner` currently returns only the parsed object; timing and usage are discarded before route integration. | Add adapter-side telemetry capture and return it in a non-persisted runtime field. |
-| F9 | MEDIUM | Judge-prompt migration belongs in the same first rollout | The current code has an optional judge path with separate prompt construction and potentially multiple extra spans/scores, which expands risk and file overlap. | Defer judge-prompt Langfuse migration/tracing to v2; keep the hardcoded judge prompt for now. |
-| F10 | LOW | New Wrangler env blocks are required | `apps/workers/wrangler.toml` already has `[env.dev.vars]` and `[env.prd.vars]`. | Append `LANGFUSE_BASE_URL` to existing blocks only. |
+| ID  | Severity     | Claim                                                                 | Reality / source                                                                                                                                                | Blueprint fix                                                                                       |
+| --- | ------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| F1  | **CRITICAL** | `@langfuse/tracing` / `@langfuse/otel` can run in Workers             | Langfuse JS README lists `@langfuse/client` as Universal JS, while `@langfuse/tracing` and `@langfuse/otel` are `Node.js 20+` only.                             | Use `@langfuse/client` only; export traces via manual OTLP HTTP/JSON.                               |
+| F2  | HIGH         | The env var should be `LANGFUSE_HOST`                                 | Langfuse SDK docs and prompt docs use `LANGFUSE_BASE_URL` / constructor `baseUrl`.                                                                              | Rename all plan references to `LANGFUSE_BASE_URL`.                                                  |
+| F3  | HIGH         | We need a custom in-memory prompt cache                               | Langfuse prompt-management docs state prompts are cached client-side, stale prompts are served immediately, and `cacheTtlSeconds` controls TTL.                 | Remove custom `Map` caching from the plan; use SDK caching only.                                    |
+| F4  | HIGH         | `score.create()` is enough in Workers                                 | Langfuse score docs explicitly say to `await langfuse.flush()` in short-lived environments.                                                                     | Queue score creation and schedule `langfuse.flush()` via `c.executionCtx.waitUntil(...)`.           |
+| F5  | HIGH         | `crypto.randomUUID()` directly satisfies Langfuse trace-id format     | Langfuse trace-id docs require 32 lowercase hex chars for trace IDs and 16 hex chars for observation IDs. `crypto.randomUUID()` includes hyphens.               | Derive OTLP trace IDs from `mappingTraceId.replace(/-/g, "")`; generate 16-hex span IDs separately. |
+| F6  | MEDIUM       | `ctx.waitUntil(...)` is the right route API                           | Hono’s Cloudflare `Context` exposes `c.executionCtx.waitUntil(...)`.                                                                                            | Use `c.executionCtx.waitUntil(...)` in the route task.                                              |
+| F7  | MEDIUM       | Any OTLP endpoint details are inferred                                | Langfuse OTLP docs specify `/api/public/otel/v1/traces`, Basic Auth, and `x-langfuse-ingestion-version: 4`; HTTP/JSON is supported.                             | Use the documented endpoint and headers verbatim.                                                   |
+| F8  | MEDIUM       | Current adapter already exposes enough data for latency/token tracing | `StructuredRunner` currently returns only the parsed object; timing and usage are discarded before route integration.                                           | Add adapter-side telemetry capture and return it in a non-persisted runtime field.                  |
+| F9  | MEDIUM       | Judge-prompt migration belongs in the same first rollout              | The current code has an optional judge path with separate prompt construction and potentially multiple extra spans/scores, which expands risk and file overlap. | Defer judge-prompt Langfuse migration/tracing to v2; keep the hardcoded judge prompt for now.       |
+| F10 | LOW          | New Wrangler env blocks are required                                  | `apps/workers/wrangler.toml` already has `[env.dev.vars]` and `[env.prd.vars]`.                                                                                 | Append `LANGFUSE_BASE_URL` to existing blocks only.                                                 |
 
 ## Architecture Overview
 
@@ -118,36 +118,36 @@ After:
 
 ## Key Decisions
 
-| Decision | Choice | Rationale |
-| -------- | ------ | --------- |
-| Prompt-management scope | Primary mapping prompt only in v1 | Smallest slice that delivers prompt versioning to the core AI path without dragging the optional judge path into the first rollout |
-| Langfuse package usage | `@langfuse/client` only | Officially Universal JS; prompt retrieval and score ingestion work without Node-only tracing packages |
-| Trace transport | Manual OTLP HTTP/JSON | Workers-compatible, doc-backed, zero OpenTelemetry SDK dependencies |
-| Prompt cache | Langfuse SDK `cacheTtlSeconds` | Built-in stale-while-revalidate behavior already covers availability and latency goals |
-| Fallback prompt | Current hardcoded primary prompt text | Preserves deterministic local behavior when Langfuse is unreachable |
-| Score scope | `overall_confidence` only in v1 | Keeps `waitUntil` fan-out bounded and avoids per-suggestion flush pressure |
-| Flush model | `c.executionCtx.waitUntil(langfuse.flush())` | Required for short-lived environments per Langfuse docs |
-| Trace ID correlation | `mappingTraceId` with hyphens stripped | Preserves existing correlation semantics while satisfying 32-hex Langfuse trace-id format |
-| Existing telemetry | Keep Cloudflare Analytics Engine | Langfuse is additive, not a replacement for current aggregate lifecycle telemetry |
-| Judge prompt/tracing | Deferred | Avoids broadening file overlap and trace-shape complexity in the first implementation |
+| Decision                | Choice                                       | Rationale                                                                                                                          |
+| ----------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Prompt-management scope | Primary mapping prompt only in v1            | Smallest slice that delivers prompt versioning to the core AI path without dragging the optional judge path into the first rollout |
+| Langfuse package usage  | `@langfuse/client` only                      | Officially Universal JS; prompt retrieval and score ingestion work without Node-only tracing packages                              |
+| Trace transport         | Manual OTLP HTTP/JSON                        | Workers-compatible, doc-backed, zero OpenTelemetry SDK dependencies                                                                |
+| Prompt cache            | Langfuse SDK `cacheTtlSeconds`               | Built-in stale-while-revalidate behavior already covers availability and latency goals                                             |
+| Fallback prompt         | Current hardcoded primary prompt text        | Preserves deterministic local behavior when Langfuse is unreachable                                                                |
+| Score scope             | `overall_confidence` only in v1              | Keeps `waitUntil` fan-out bounded and avoids per-suggestion flush pressure                                                         |
+| Flush model             | `c.executionCtx.waitUntil(langfuse.flush())` | Required for short-lived environments per Langfuse docs                                                                            |
+| Trace ID correlation    | `mappingTraceId` with hyphens stripped       | Preserves existing correlation semantics while satisfying 32-hex Langfuse trace-id format                                          |
+| Existing telemetry      | Keep Cloudflare Analytics Engine             | Langfuse is additive, not a replacement for current aggregate lifecycle telemetry                                                  |
+| Judge prompt/tracing    | Deferred                                     | Avoids broadening file overlap and trace-shape complexity in the first implementation                                              |
 
 ## Quick Reference (Execution Waves)
 
-| Wave | Tasks | Dependencies | Parallelizable | Effort |
-| ---- | ----- | ------------ | -------------- | ------ |
-| **Wave 0** | 1.1, 1.2, 2.2, 3.1 | None | 4 agents | XS-M |
-| **Wave 1** | 2.1, 3.2 | Wave 0 (partial) | 2 agents | S-M |
-| **Wave 2** | 4.1 | Wave 1 | 1 agent | M |
-| **Critical path** | 3.1 → 3.2 → 4.1 | -- | 3 waves | M |
+| Wave              | Tasks              | Dependencies     | Parallelizable | Effort |
+| ----------------- | ------------------ | ---------------- | -------------- | ------ |
+| **Wave 0**        | 1.1, 1.2, 2.2, 3.1 | None             | 4 agents       | XS-M   |
+| **Wave 1**        | 2.1, 3.2           | Wave 0 (partial) | 2 agents       | S-M    |
+| **Wave 2**        | 4.1                | Wave 1           | 1 agent        | M      |
+| **Critical path** | 3.1 → 3.2 → 4.1    | --               | 3 waves        | M      |
 
 ### Parallel Metrics Snapshot
 
-| Metric | Formula / Meaning | Target | Actual |
-| ------ | ----------------- | ------ | ------ |
-| RW0 | Ready tasks in Wave 0 | ≥ planned agents / 2 | 4 |
-| CPR | total_tasks / critical_path_length | ≥ 2.5 | 2.33 |
-| DD | dependency_edges / total_tasks | ≤ 2.0 | 1.14 |
-| CP | same-file overlaps per wave | 0 | 0 |
+| Metric | Formula / Meaning                  | Target               | Actual |
+| ------ | ---------------------------------- | -------------------- | ------ |
+| RW0    | Ready tasks in Wave 0              | ≥ planned agents / 2 | 4      |
+| CPR    | total_tasks / critical_path_length | ≥ 2.5                | 2.33   |
+| DD     | dependency_edges / total_tasks     | ≤ 2.0                | 1.14   |
+| CP     | same-file overlaps per wave        | 0                    | 0      |
 
 Refinement delta: split the original monolithic route-integration task into
 prompt resolution, OTLP export, adapter telemetry, and final route wiring. This
@@ -436,32 +436,32 @@ resolved prompt text and version, then schedule Langfuse trace/score work with
 
 ## Verification Gates
 
-| Gate | Command | Success Criteria |
-| ---- | ------- | ---------------- |
-| Type safety | `pnpm check-types` | Zero errors |
-| Lint | `pnpm lint` | Zero violations |
-| Tests | `pnpm test` | All relevant suites pass |
-| Build | `pnpm build` | Workspace build succeeds |
+| Gate        | Command            | Success Criteria         |
+| ----------- | ------------------ | ------------------------ |
+| Type safety | `pnpm check-types` | Zero errors              |
+| Lint        | `pnpm lint`        | Zero violations          |
+| Tests       | `pnpm test`        | All relevant suites pass |
+| Build       | `pnpm build`       | Workspace build succeeds |
 
 ## Cross-Plan References
 
-| Type | Blueprint | Relationship |
-| ---- | --------- | ------------ |
-| Upstream | `ai-payload-intake-mapper` | This plan extends the AI-mapping adapter and intake route introduced there |
-| Downstream | None | |
+| Type       | Blueprint                  | Relationship                                                               |
+| ---------- | -------------------------- | -------------------------------------------------------------------------- |
+| Upstream   | `ai-payload-intake-mapper` | This plan extends the AI-mapping adapter and intake route introduced there |
+| Downstream | None                       |                                                                            |
 
 ## Edge Cases and Error Handling
 
-| Edge Case | Risk | Solution | Task |
-| --------- | ---- | -------- | ---- |
-| Langfuse prompt fetch fails on cold start | No cached prompt yet | Use Langfuse `fallback` with the current hardcoded primary prompt text | 2.1, 4.1 |
-| Langfuse score queue never flushes | Scores disappear in short-lived Worker | Explicitly schedule `langfuse.flush()` with `c.executionCtx.waitUntil(...)` | 3.2, 4.1 |
-| `mappingTraceId` includes hyphens | Trace rejected or split in Langfuse | Normalize to 32 hex by stripping hyphens before OTLP export | 2.2, 3.2 |
-| OTLP POST fails or times out | Lost trace, broken request if uncaught | Export helper never throws; route response path stays unchanged | 2.2, 4.1 |
-| First prompt fetch adds latency | Intake p99 spike on first request per isolate | Rely on SDK cache for steady-state; accept one cold fetch as bounded overhead | 2.1, 4.1 |
-| Worker fast-path skips `suggestMappings()` | No Langfuse trace for fast-path requests | Accept by design; blueprint scope is “every `suggestMappings()` call”, not every intake POST | 4.1 |
-| Payload/prompt/output are large | Trace payload bloat | Truncate serialized input/output fields in OTLP helper before export | 2.2 |
-| `waitUntil` budget exceeded | Background work cancelled after response | Keep v1 to one trace POST + one score flush, no per-suggestion score fan-out | 3.2, 4.1 |
+| Edge Case                                  | Risk                                          | Solution                                                                                     | Task     |
+| ------------------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------------------- | -------- |
+| Langfuse prompt fetch fails on cold start  | No cached prompt yet                          | Use Langfuse `fallback` with the current hardcoded primary prompt text                       | 2.1, 4.1 |
+| Langfuse score queue never flushes         | Scores disappear in short-lived Worker        | Explicitly schedule `langfuse.flush()` with `c.executionCtx.waitUntil(...)`                  | 3.2, 4.1 |
+| `mappingTraceId` includes hyphens          | Trace rejected or split in Langfuse           | Normalize to 32 hex by stripping hyphens before OTLP export                                  | 2.2, 3.2 |
+| OTLP POST fails or times out               | Lost trace, broken request if uncaught        | Export helper never throws; route response path stays unchanged                              | 2.2, 4.1 |
+| First prompt fetch adds latency            | Intake p99 spike on first request per isolate | Rely on SDK cache for steady-state; accept one cold fetch as bounded overhead                | 2.1, 4.1 |
+| Worker fast-path skips `suggestMappings()` | No Langfuse trace for fast-path requests      | Accept by design; blueprint scope is “every `suggestMappings()` call”, not every intake POST | 4.1      |
+| Payload/prompt/output are large            | Trace payload bloat                           | Truncate serialized input/output fields in OTLP helper before export                         | 2.2      |
+| `waitUntil` budget exceeded                | Background work cancelled after response      | Keep v1 to one trace POST + one score flush, no per-suggestion score fan-out                 | 3.2, 4.1 |
 
 ## Non-goals
 
@@ -476,39 +476,39 @@ resolved prompt text and version, then schedule Langfuse trace/score work with
 
 ## Risks
 
-| Risk | Impact | Mitigation |
-| ---- | ------ | ---------- |
-| Adapter refactor leaks runtime telemetry into persisted API shapes | Behavior regression in intake flow | Keep telemetry in runtime-only fields consumed by route code, not DB persistence | 
-| Langfuse prompt fetch latency regresses cold requests | User-visible slowdown on first isolate hit | Use SDK caching, keep fallback local, and verify route behavior with prompt-fetch failure tests |
-| Background flush work exceeds Worker post-response budget | Missing scores/traces | Keep v1 fan-out minimal and use one `Promise.allSettled(...)` scheduled via `c.executionCtx.waitUntil(...)` |
-| Dual telemetry systems confuse future maintainers | Misinterpretation of metrics vs traces | Document clearly: CF Analytics = aggregate lifecycle metrics; Langfuse = per-call AI trace detail |
+| Risk                                                               | Impact                                     | Mitigation                                                                                                  |
+| ------------------------------------------------------------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Adapter refactor leaks runtime telemetry into persisted API shapes | Behavior regression in intake flow         | Keep telemetry in runtime-only fields consumed by route code, not DB persistence                            |
+| Langfuse prompt fetch latency regresses cold requests              | User-visible slowdown on first isolate hit | Use SDK caching, keep fallback local, and verify route behavior with prompt-fetch failure tests             |
+| Background flush work exceeds Worker post-response budget          | Missing scores/traces                      | Keep v1 fan-out minimal and use one `Promise.allSettled(...)` scheduled via `c.executionCtx.waitUntil(...)` |
+| Dual telemetry systems confuse future maintainers                  | Misinterpretation of metrics vs traces     | Document clearly: CF Analytics = aggregate lifecycle metrics; Langfuse = per-call AI trace detail           |
 
 ## Technology Choices
 
-| Component | Technology | Version | Why |
-| --------- | ---------- | ------- | --- |
-| Prompt retrieval | `@langfuse/client` | latest compatible | Universal JS client with prompt caching/fallback support |
-| Prompt cache | `prompt.get(..., { cacheTtlSeconds })` | built-in | Official stale-while-revalidate behavior; no custom cache code |
-| Prompt fallback | `prompt.get(..., { fallback })` | built-in | Preserves availability without extra repo-side retry logic |
-| Score ingest | `langfuse.score.create()` + `langfuse.flush()` | built-in | Official score path for JS/TS, with short-lived-env guidance |
-| Trace export | Manual OTLP HTTP/JSON | n/a | Workers-safe and doc-backed; avoids Node-only tracing packages |
-| Background scheduling | `c.executionCtx.waitUntil(...)` | Hono/Cloudflare built-in | Correct API surface for fire-and-forget work from Hono on Workers |
-| Trace correlation | `mappingTraceId.replace(/-/g, "")` | n/a | Reuses existing correlation ID while satisfying Langfuse trace format |
-| Secrets/config | Doppler + Wrangler secrets + `LANGFUSE_BASE_URL` | existing | Matches repo policy: no `.env` files |
+| Component             | Technology                                       | Version                  | Why                                                                   |
+| --------------------- | ------------------------------------------------ | ------------------------ | --------------------------------------------------------------------- |
+| Prompt retrieval      | `@langfuse/client`                               | latest compatible        | Universal JS client with prompt caching/fallback support              |
+| Prompt cache          | `prompt.get(..., { cacheTtlSeconds })`           | built-in                 | Official stale-while-revalidate behavior; no custom cache code        |
+| Prompt fallback       | `prompt.get(..., { fallback })`                  | built-in                 | Preserves availability without extra repo-side retry logic            |
+| Score ingest          | `langfuse.score.create()` + `langfuse.flush()`   | built-in                 | Official score path for JS/TS, with short-lived-env guidance          |
+| Trace export          | Manual OTLP HTTP/JSON                            | n/a                      | Workers-safe and doc-backed; avoids Node-only tracing packages        |
+| Background scheduling | `c.executionCtx.waitUntil(...)`                  | Hono/Cloudflare built-in | Correct API surface for fire-and-forget work from Hono on Workers     |
+| Trace correlation     | `mappingTraceId.replace(/-/g, "")`               | n/a                      | Reuses existing correlation ID while satisfying Langfuse trace format |
+| Secrets/config        | Doppler + Wrangler secrets + `LANGFUSE_BASE_URL` | existing                 | Matches repo policy: no `.env` files                                  |
 
 ## Refinement Summary
 
-| Metric | Value |
-| ------ | ----- |
-| Findings total | 10 |
-| Critical | 1 |
-| High | 5 |
-| Medium | 3 |
-| Low | 1 |
-| Fixes applied to blueprint | 10/10 |
-| Cross-plans updated | 0 |
-| Total tasks | 7 |
-| Critical path | 3 waves |
-| Max parallel agents | 4 in Wave 0 |
-| Parallelization score | B |
-| Blueprint compliant | 7/7 |
+| Metric                     | Value       |
+| -------------------------- | ----------- |
+| Findings total             | 10          |
+| Critical                   | 1           |
+| High                       | 5           |
+| Medium                     | 3           |
+| Low                        | 1           |
+| Fixes applied to blueprint | 10/10       |
+| Cross-plans updated        | 0           |
+| Total tasks                | 7           |
+| Critical path              | 3 waves     |
+| Max parallel agents        | 4 in Wave 0 |
+| Parallelization score      | B           |
+| Blueprint compliant        | 7/7         |
