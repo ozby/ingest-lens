@@ -398,7 +398,7 @@ rails behind the higher-level integration observability story.
 
 ### What remains
 
-- **Worker name in `wrangler.toml` is still `node-pubsub`:** The deployed worker names are `node-pubsub-dev` and `node-pubsub-prd`. Task 1.2 covers this — the deferment option is documented in the blueprint and is the expected path unless risk is accepted.
+- **Worker name in `wrangler.toml` was `node-pubsub`:** Renamed to `ingest-lens` (completed). The deployed worker names are now `ingest-lens-dev` and `ingest-lens-prd`.
 - **`.new` files are only in worktrees, not in the main tree:** All `*.new` files found live under `.worktrees/client-route-code-splitting/` and `.worktrees/showcase-hardening-100/`, not in the main working tree. Task 1.4's delete list targets main-tree paths (`AGENTS.md.new`, `.agent/.../*.new`, etc.). These do not currently exist in the main tree — Task 1.4 should skip those deletes or confirm the files are already gone.
 - **README/docs rebrand copy (Task 1.1):** Cannot confirm content state without reading files; assumed outstanding pending `showcase-hardening-100` gate.
 - **`docs/adrs/README.md` brand language (Task 1.2):** Needs review for stale `node-pubsub` references.

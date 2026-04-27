@@ -35,7 +35,7 @@ the built SPA with native SPA-fallback routing, atomic custom-domain + DNS
 not_found_handling` config shape. Adopting it now keeps the deploy
     pipeline single-tool (wrangler) and matches the existing `[env.dev]` /
     `[env.prd]` pattern the API just shipped on.
-- **Scope:** Add `apps/client/wrangler.toml` with `name = "node-pubsub-client"`,
+- **Scope:** Add `apps/client/wrangler.toml` with `name = "ingest-lens-client"`,
   per-env `[env.dev] / [env.prd]` blocks setting `routes = [{ pattern =
 "dev.ingest-lens.ozby.dev", custom_domain = true }]` (prd: `ingest-lens.ozby.dev`) and an
   `[assets]` binding pointing at `./dist` with SPA fallback. Extend
@@ -60,7 +60,7 @@ not_found_handling` config shape. Adopting it now keeps the deploy
 ## Architecture Overview
 
 ```text
-Browser ──▶ https://dev.ingest-lens.ozby.dev/*        (node-pubsub-client-dev Worker, pure static)
+Browser ──▶ https://dev.ingest-lens.ozby.dev/*        (ingest-lens-client-dev Worker, pure static)
           │                                ├─ wrangler.toml [assets] directory = "./dist"
           │                                ├─ not_found_handling = "single-page-application"
           │                                └─ route: { pattern = "dev.ingest-lens.ozby.dev", custom_domain = true }
@@ -124,7 +124,7 @@ Deploy pipeline (adds two steps at the tail):
 **Depends:** None
 
 Add a wrangler config at `apps/client/wrangler.toml` with the static-assets
-Worker shape: `name = "node-pubsub-client"`, `account_id = "<ozby>"`
+Worker shape: `name = "ingest-lens-client"`, `account_id = "<ozby>"`
 (already a public ID, safe to commit — see the API wrangler.toml pattern),
 `compatibility_date` matching the API's. No `main` key; no Durable
 Objects; no KV; no Hyperdrive. `[env.dev]` and `[env.prd]` blocks each
@@ -355,7 +355,7 @@ loading + one authenticated API call.
 | CORS misconfig blocks the SPA from calling the API         | App visibly broken                                                        | Task 2.1 has explicit tests asserting headers for allowed vs forbidden origin                                                                                                               | —                                       |
 | Custom domain cert provisioning delay                      | First dev deploy's SPA appears broken for 1-5 min after `wrangler deploy` | Runbook documents the expected wait window; `wrangler tail` shows the Worker is live before cert propagates                                                                                 | observed during API deploy this session |
 | Build-time env leak (API URL baked in public bundle)       | Not a secret — API base URL is public info — so not a security concern    | Document it openly; do NOT put secrets in `VITE_*` env vars (build-time vars are bundled and public by design)                                                                              | Vite docs                               |
-| Client Worker bundle conflicts with API Worker namespace   | Two Workers share the same account; ensure unique `name` values           | Names differ (`node-pubsub-dev`, `node-pubsub-client-dev`); wrangler refuses to collide                                                                                                     | —                                       |
+| Client Worker bundle conflicts with API Worker namespace   | Two Workers share the same account; ensure unique `name` values           | Names differ (`ingest-lens-dev`, `ingest-lens-client-dev`); wrangler refuses to collide                                                                                                     | —                                       |
 | Pure-static Worker cannot gate auth before serving the SPA | Anyone can load the SPA shell even without being logged in                | Accepted: auth gating is a runtime concern of the SPA's own API calls; static assets are public anyway. If we later need server-side auth-gating, we graduate this to `main`+assets hybrid. | —                                       |
 | CORS preflight caching too aggressive                      | Stale CORS headers after a policy change                                  | Max-Age on preflight capped at 5 min in Task 2.1                                                                                                                                            | —                                       |
 
