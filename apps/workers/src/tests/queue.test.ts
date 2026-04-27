@@ -7,6 +7,7 @@ import {
   bypassAuth,
   createMockEnv,
   mockCreateDb,
+  mockQueue,
   post,
   get,
   del,
@@ -65,6 +66,27 @@ describe("Queue routes", () => {
     it("returns 401 when not authenticated", async () => {
       const res = await app.fetch(del("/api/queues/some-id"), mockEnv);
       expect(res.status).toBe(401);
+    });
+
+    it("deletes the queue and relies on database cascades for dependent rows", async () => {
+      bypassAuth(vi.mocked(authenticate));
+
+      const limitMock = vi.fn().mockResolvedValue([mockQueue]);
+      const whereSelectMock = vi.fn().mockReturnValue({ limit: limitMock });
+      const fromMock = vi.fn().mockReturnValue({ where: whereSelectMock });
+      const selectMock = vi.fn().mockReturnValue({ from: fromMock });
+      const whereDeleteMock = vi.fn().mockResolvedValue([]);
+      const deleteMock = vi.fn().mockReturnValue({ where: whereDeleteMock });
+
+      mockCreateDb({
+        select: selectMock,
+        delete: deleteMock,
+      });
+
+      const res = await app.fetch(del("/api/queues/queue-1", AUTH_HEADER), mockEnv);
+
+      expect(res.status).toBe(200);
+      expect(deleteMock).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -7,6 +7,10 @@ compatibility_flags = ["nodejs_compat"]
 name = "TOPIC_ROOMS"
 class_name = "TopicRoom"
 
+[[durable_objects.bindings]]
+name = "HEAL_STREAM"
+class_name = "HealStreamDO"
+
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = ["TopicRoom"]
+new_sqlite_classes = ["TopicRoom", "HealStreamDO"]

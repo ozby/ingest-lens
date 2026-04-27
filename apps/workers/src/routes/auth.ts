@@ -106,9 +106,10 @@ authRoutes.post("/login", async (c) => {
   return c.json({ status: "success", data: { user: safeUser, token } });
 });
 
-// POST /api/auth/logout — revokes the token immediately by storing jti in KV.
-// The KV entry expires after 3600s (matching JWT TTL), so no persistent blocklist
-// cleanup is needed after the token's natural expiry window.
+// POST /api/auth/logout — records the token jti in KV for best-effort revocation.
+// Cloudflare KV is eventually consistent, so this is a cheap revocation rail rather
+// than a strict globally-immediate logout guarantee. The entry expires after 3600s
+// (matching JWT TTL), so no persistent blocklist cleanup is needed afterward.
 authRoutes.post("/logout", authenticate, async (c) => {
   const { jti } = c.get("user");
   if (jti) {

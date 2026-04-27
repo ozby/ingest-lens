@@ -36,27 +36,35 @@ const mockEnv = createMockEnv(mockDeliveryQueue);
 type QueueWithNullEndpoint = Omit<typeof mockQueue, "pushEndpoint"> & {
   pushEndpoint: null;
 };
-type LeaseMessage = Omit<typeof mockMessage, "receivedAt"> & {
-  receivedAt: Date | null;
-  visibilityExpiresAt: Date | null;
-};
+type LeaseMessage = typeof messageTable.$inferSelect;
 
-function setupDb(queue: typeof mockQueue | QueueWithNullEndpoint | null) {
+function setupDb(
+  queue: typeof mockQueue | QueueWithNullEndpoint | null,
+  messageOverride?: Partial<typeof messageTable.$inferSelect>,
+) {
   const { selectMock } = buildSelectChain(queue ? [queue] : []);
-  const { insertMock } = buildInsertChain([mockMessage]);
-  const { updateMock } = buildUpdateChain();
+  const effectiveMessage = messageOverride ? { ...mockMessage, ...messageOverride } : mockMessage;
+  const { insertMock } = buildInsertChain([effectiveMessage]);
+  const updateMetricsSetMock = vi.fn().mockReturnValue({
+    where: vi
+      .fn()
+      .mockResolvedValue([
+        { queueId: queue?.id ?? "queue-1", messageCount: 1, messagesSent: 1, messagesReceived: 0 },
+      ]),
+  });
+  const { setMock } = buildUpdateChain();
   mockCreateDb({
     select: selectMock,
     insert: insertMock,
-    update: updateMock,
+    update: vi.fn((table: unknown) =>
+      table === queueMetricsTable ? { set: updateMetricsSetMock } : { set: setMock },
+    ),
   });
 }
 
 function setupLeaseDb(initialMessages: LeaseMessage[]) {
   const state = {
     messages: initialMessages.map((message) => ({ ...message })),
-    pendingClaimIds: [] as string[],
-    claimIndex: 0,
   };
 
   const selectMock = vi.fn().mockReturnValue({
@@ -69,67 +77,47 @@ function setupLeaseDb(initialMessages: LeaseMessage[]) {
         };
       }
 
-      if (table === messageTable) {
-        return {
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn(async (limit: number) => {
-              const now = Date.now();
-              const visibleMessages = state.messages.filter(
-                (message) =>
-                  !message.received ||
-                  !message.visibilityExpiresAt ||
-                  message.visibilityExpiresAt.getTime() <= now,
-              );
-              const claimedMessages = visibleMessages
-                .slice(0, limit)
-                .map((message) => ({ ...message }));
-
-              state.pendingClaimIds = claimedMessages.map((message) => message.id);
-              state.claimIndex = 0;
-
-              return claimedMessages;
-            }),
-          }),
-        };
-      }
-
       return {
         where: vi.fn().mockResolvedValue([]),
       };
     }),
   });
 
+  const executeMock = vi.fn().mockImplementation(async () => {
+    const now = Date.now();
+    const visibleMessage = state.messages.find(
+      (message) =>
+        message.deliveryMode === "pull" &&
+        message.expiresAt.getTime() > now &&
+        (!message.received ||
+          !message.visibilityExpiresAt ||
+          message.visibilityExpiresAt.getTime() <= now),
+    );
+
+    if (!visibleMessage) {
+      return [];
+    }
+
+    const receivedAt = new Date(now);
+    const visibilityExpiresAt = new Date(now + 10_000);
+    const claimedMessage = {
+      ...visibleMessage,
+      received: true,
+      receivedAt,
+      visibilityExpiresAt,
+      receivedCount: visibleMessage.receivedCount + 1,
+    };
+
+    state.messages = state.messages.map((message) =>
+      message.id === claimedMessage.id ? claimedMessage : message,
+    );
+
+    return [claimedMessage];
+  });
+
   const updateMock = vi.fn((table: unknown) => ({
-    set: vi.fn((values: Record<string, unknown>) => ({
+    set: vi.fn(() => ({
       where: vi.fn().mockImplementation(async () => {
-        if (table === messageTable) {
-          if (values.received === false) {
-            const now = Date.now();
-            state.messages = state.messages.map((message) =>
-              message.received &&
-              message.visibilityExpiresAt &&
-              message.visibilityExpiresAt.getTime() <= now
-                ? { ...message, received: false, visibilityExpiresAt: null }
-                : message,
-            );
-            return [];
-          }
-
-          const messageId = state.pendingClaimIds[state.claimIndex];
-          state.claimIndex += 1;
-          state.messages = state.messages.map((message) =>
-            message.id === messageId
-              ? {
-                  ...message,
-                  received: true,
-                  receivedAt: values.receivedAt as Date,
-                  visibilityExpiresAt: (values.visibilityExpiresAt as Date | null) ?? null,
-                  receivedCount: message.receivedCount + 1,
-                }
-              : message,
-          );
-        }
-
         if (table === queueMetricsTable) {
           return [];
         }
@@ -151,6 +139,7 @@ function setupLeaseDb(initialMessages: LeaseMessage[]) {
 
   mockCreateDb({
     select: selectMock,
+    execute: executeMock,
     update: updateMock,
     delete: deleteMock,
   });
@@ -178,7 +167,7 @@ describe("Message routes — POST /api/messages/:queueId", () => {
 
   it("enqueues via DELIVERY_QUEUE.send when queue has a pushEndpoint", async () => {
     bypassAuth(vi.mocked(authenticate));
-    setupDb(mockQueue);
+    setupDb(mockQueue, { deliveryMode: "push", enqueueState: "pending" });
 
     const res = await app.fetch(
       post("/api/messages/queue-1", { data: { key: "value" } }, AUTH_HEADER),
@@ -261,6 +250,27 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
   });
 
+  it("returns 502 and surfaces the enqueue failure for push queues", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    setupDb(mockQueue, { deliveryMode: "push", enqueueState: "pending" });
+    mockDeliveryQueue.send.mockRejectedValueOnce(new Error("delivery queue unavailable"));
+
+    const res = await app.fetch(
+      post("/api/messages/queue-1", { data: { key: "value" } }, AUTH_HEADER),
+      mockEnv,
+    );
+
+    expect(res.status).toBe(502);
+    const body = (await res.json()) as {
+      status: string;
+      message: string;
+      data: { message: { enqueueState: string } };
+    };
+    expect(body.status).toBe("error");
+    expect(body.message).toBe("delivery queue unavailable");
+    expect(body.data.message.enqueueState).toBe("failed");
+  });
+
   it("returns 201 with new message when Idempotency-Key is not a duplicate", async () => {
     bypassAuth(vi.mocked(authenticate));
 
@@ -307,10 +317,12 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
     const fromMock = vi.fn().mockReturnValue({ where: whereMock });
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
-    const insertMock = vi.fn();
+    const { insertMock } = buildInsertChain([]);
+    const { updateMock } = buildUpdateChain();
     mockCreateDb({
       select: selectMock,
       insert: insertMock,
+      update: updateMock,
     });
 
     const res = await app.fetch(
@@ -329,7 +341,6 @@ describe("Message routes — POST /api/messages/:queueId", () => {
     };
     expect(body.data.message.id).toBe("msg-1");
     expect(body.data.message.seq).toBe("42");
-    expect(insertMock).not.toHaveBeenCalled();
     expect(mockDeliveryQueue.send).not.toHaveBeenCalled();
   });
 });
@@ -418,19 +429,21 @@ describe("Message routes — response contracts", () => {
     const queueWhereMock = vi.fn().mockReturnValue({ limit: queueLimitMock });
     const queueFromMock = vi.fn().mockReturnValue({ where: queueWhereMock });
 
-    const messagesWhereMock = vi
-      .fn()
-      .mockReturnValue({ limit: vi.fn().mockResolvedValue([mockMessage]) });
-    const messagesFromMock = vi.fn().mockReturnValue({ where: messagesWhereMock });
-
-    const selectMock = vi
-      .fn()
-      .mockImplementationOnce(() => ({ from: queueFromMock }))
-      .mockImplementationOnce(() => ({ from: messagesFromMock }));
+    const selectMock = vi.fn().mockImplementationOnce(() => ({ from: queueFromMock }));
     const { updateMock } = buildUpdateChain();
+    const executeMock = vi.fn().mockResolvedValue([
+      {
+        ...mockMessage,
+        received: true,
+        receivedAt: new Date("2026-04-24T00:00:00.000Z"),
+        visibilityExpiresAt: new Date("2026-04-24T00:00:45.000Z"),
+        receivedCount: mockMessage.receivedCount + 1,
+      },
+    ]);
 
     mockCreateDb({
       select: selectMock,
+      execute: executeMock,
       update: updateMock,
     });
 
@@ -558,6 +571,8 @@ describe("Message routes — visibility leases", () => {
     const state = setupLeaseDb([
       {
         ...mockMessage,
+        deliveryMode: "pull",
+        enqueueState: "not_needed",
         received: false,
         receivedAt: null,
         visibilityExpiresAt: null,
@@ -620,6 +635,8 @@ describe("Message routes — visibility leases", () => {
     const state = setupLeaseDb([
       {
         ...mockMessage,
+        deliveryMode: "pull",
+        enqueueState: "not_needed",
         received: false,
         receivedAt: null,
         visibilityExpiresAt: null,
@@ -684,7 +701,6 @@ describe("Message routes — visibility leases", () => {
       ] as LeaseMessage[],
     };
 
-    let messageSelectCount = 0;
     const selectMock = vi.fn().mockReturnValue({
       from: vi.fn((table: unknown) => {
         if (table === queueTable) {
@@ -698,24 +714,9 @@ describe("Message routes — visibility leases", () => {
         if (table === messageTable) {
           return {
             where: vi.fn().mockReturnValue({
-              limit: vi.fn(async (limit: number) => {
-                messageSelectCount += 1;
-
-                if (messageSelectCount === 2) {
-                  return state.messages.slice(0, limit).map((message) => ({ ...message }));
-                }
-
-                const now = Date.now();
-                return state.messages
-                  .filter(
-                    (message) =>
-                      !message.received ||
-                      !message.visibilityExpiresAt ||
-                      message.visibilityExpiresAt.getTime() <= now,
-                  )
-                  .slice(0, limit)
-                  .map((message) => ({ ...message }));
-              }),
+              limit: vi
+                .fn()
+                .mockResolvedValue(state.messages.length > 0 ? [{ ...state.messages[0] }] : []),
             }),
           };
         }
@@ -726,33 +727,40 @@ describe("Message routes — visibility leases", () => {
       }),
     });
 
+    const executeMock = vi.fn().mockImplementation(async () => {
+      const now = Date.now();
+      const visibleMessage = state.messages.find(
+        (message) =>
+          message.deliveryMode === "pull" &&
+          message.expiresAt.getTime() > now &&
+          (!message.received ||
+            !message.visibilityExpiresAt ||
+            message.visibilityExpiresAt.getTime() <= now),
+      );
+
+      if (!visibleMessage) {
+        return [];
+      }
+
+      const claimedMessage = {
+        ...visibleMessage,
+        received: true,
+        receivedAt: new Date(now),
+        visibilityExpiresAt: new Date(now + 5_000),
+        receivedCount: visibleMessage.receivedCount + 1,
+      };
+
+      state.messages = state.messages.map((message) =>
+        message.id === claimedMessage.id ? claimedMessage : message,
+      );
+
+      return [claimedMessage];
+    });
+
     const updateMock = vi.fn((table: unknown) => ({
-      set: vi.fn((values: Record<string, unknown>) => ({
+      set: vi.fn(() => ({
         where: vi.fn().mockImplementation(async () => {
-          if (table === messageTable) {
-            if (values.received === false) {
-              const now = Date.now();
-              state.messages = state.messages.map((message) =>
-                message.received &&
-                message.visibilityExpiresAt &&
-                message.visibilityExpiresAt.getTime() <= now
-                  ? { ...message, received: false, visibilityExpiresAt: null }
-                  : message,
-              );
-              return [];
-            }
-
-            state.messages = state.messages.map((message) => ({
-              ...message,
-              received: true,
-              receivedAt: values.receivedAt as Date,
-              visibilityExpiresAt: (values.visibilityExpiresAt as Date | null) ?? null,
-              receivedCount: message.receivedCount + 1,
-            }));
-            return [];
-          }
-
-          return [];
+          return table === queueMetricsTable ? [] : [];
         }),
       })),
     }));
@@ -769,6 +777,7 @@ describe("Message routes — visibility leases", () => {
 
     mockCreateDb({
       select: selectMock,
+      execute: executeMock,
       update: updateMock,
       delete: deleteMock,
     });
@@ -801,5 +810,36 @@ describe("Message routes — visibility leases", () => {
     };
     expect(receiveBody.results).toBe(0);
     expect(receiveBody.data.messages).toEqual([]);
+  });
+
+  it("does not lease push-managed messages through the pull API", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-24T00:00:00.000Z"));
+    bypassAuth(vi.mocked(authenticate));
+
+    const state = setupLeaseDb([
+      {
+        ...mockMessage,
+        deliveryMode: "push",
+        enqueueState: "enqueued",
+        received: false,
+        receivedAt: null,
+        visibilityExpiresAt: null,
+      },
+    ]);
+
+    const res = await app.fetch(
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=45", AUTH_HEADER),
+      mockEnv,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      results: number;
+      data: { messages: Array<{ id: string }> };
+    };
+    expect(body.results).toBe(0);
+    expect(body.data.messages).toEqual([]);
+    expect(state.messages[0]?.received).toBe(false);
   });
 });

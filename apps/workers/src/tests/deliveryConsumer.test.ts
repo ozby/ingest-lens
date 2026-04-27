@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { handleDeliveryBatch } from "../consumers/deliveryConsumer";
 import type { DeliveryPayload } from "../db/client";
-import { buildSelectChain, createMockEnv, mockCreateDb } from "./helpers";
+import { buildSelectChain, buildUpdateChain, createMockEnv, mockCreateDb } from "./helpers";
 
 vi.mock("../db/client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../db/client")>();
@@ -14,11 +14,17 @@ const mockRow = {
   seq: 42n,
   data: { hello: "world" },
   queueId: "queue-1",
+  deliveryMode: "push",
+  enqueueState: "enqueued",
+  pushDeliveredAt: null,
+  lastEnqueueError: null,
   expiresAt: new Date("2030-01-01"),
   received: false,
   receivedCount: 0,
   createdAt: new Date("2026-01-01"),
+  updatedAt: new Date("2026-01-01"),
   receivedAt: null,
+  visibilityExpiresAt: null,
 };
 
 function makeMsg(
@@ -39,8 +45,9 @@ function makeMsg(
 
 function setupCreateDb(selectRows: unknown[]) {
   const chain = buildSelectChain(selectRows);
-  mockCreateDb({ select: chain.selectMock });
-  return chain;
+  const update = buildUpdateChain([]);
+  mockCreateDb({ select: chain.selectMock, update: update.updateMock });
+  return { ...chain, ...update };
 }
 
 const basePayload: DeliveryPayload = {
@@ -204,7 +211,8 @@ describe("handleDeliveryBatch", () => {
     const whereMock = vi.fn().mockReturnValue({ limit: limitMockImpl });
     const fromMock = vi.fn().mockReturnValue({ where: whereMock });
     const selectMock = vi.fn().mockReturnValue({ from: fromMock });
-    mockCreateDb({ select: selectMock });
+    const { updateMock } = buildUpdateChain([]);
+    mockCreateDb({ select: selectMock, update: updateMock });
 
     const ack1 = vi.fn();
     const retry1 = vi.fn();

@@ -11,7 +11,7 @@ type HealEvent =
   | { type: "analyzing"; confidence: number; model: string }
   | { type: "rewriting"; suggestionCount: number }
   | { type: "healed"; mappingVersionId: string; latencyMs: number }
-  | { type: "deferred"; reason: "low_confidence"; confidence: number }
+  | { type: "deferred"; reason: "low_confidence" | "persistence_failed"; confidence?: number }
   | { type: "rolled_back"; rolledBackTo: string };
 
 // ---------------------------------------------------------------------------
@@ -23,6 +23,12 @@ interface ApprovedState {
   suggestions: MappingSuggestion[];
 }
 
+interface PendingHealState {
+  fingerprint: string;
+  suggestions: MappingSuggestion[];
+  startedAt: number;
+}
+
 interface TryHealBody {
   batch: { suggestions: MappingSuggestion[]; mappingTraceId: string; driftCategories: string[] };
   payloadFingerprint: string; // shapeFingerprint(payload) computed by the Worker
@@ -32,6 +38,7 @@ interface RollbackBody {
   currentRevisionId: string;
   previousRevision: {
     id: string;
+    ownerId: string;
     intakeAttemptId: string;
     mappingTraceId: string;
     contractId: string;
@@ -47,24 +54,32 @@ interface RollbackBody {
   };
 }
 
+interface CommitHealBody {
+  mappingVersionId: string;
+  payloadFingerprint: string;
+  suggestions: MappingSuggestion[];
+  latencyMs: number;
+}
+
+interface DeferHealBody {
+  reason: "low_confidence" | "persistence_failed";
+  confidence?: number;
+}
+
 const STORAGE_KEY = "approved";
 
 /**
  * HealStreamDO — one instance per sourceSystem:contractId:contractVersion.
  *
- * Serializes concurrent heal writes via DO input gate, persists
- * approved mapping to Neon in order (write → cache → SSE broadcast).
- * Rollback inserts a new revision row with rolledBackFrom set, updates
- * the DO cache, and broadcasts rolled_back.
- *
- * Constraint: Neon write must succeed before DO cache is updated or
- * SSE is broadcast. Throw on failure forces the Worker to fall back to
- * pending_review.
+ * Serializes concurrent heal and rollback state transitions for one
+ * source contract. The Worker still owns Neon persistence for auto-heal;
+ * the DO owns the live cache + SSE stream and rollback revision writes.
  */
 export class HealStreamDO implements DurableObject {
   private readonly state: DurableObjectState;
   private readonly env: Env;
   private approved: ApprovedState | null = null;
+  private pending: PendingHealState | null = null;
   private readonly subscribers: Set<WritableStreamDefaultWriter<Uint8Array>> = new Set();
   private initialized = false;
 
@@ -111,28 +126,33 @@ export class HealStreamDO implements DurableObject {
   // RPC router
   // ---------------------------------------------------------------------------
 
+  private static readonly ROUTES: Record<string, { method: string; handler: string }> = {
+    "/state": { method: "GET", handler: "handleState" },
+    "/tryHeal": { method: "POST", handler: "handleTryHeal" },
+    "/rollback": { method: "POST", handler: "handleRollback" },
+    "/commitHeal": { method: "POST", handler: "handleCommitHeal" },
+    "/defer": { method: "POST", handler: "handleDefer" },
+    "/subscribe": { method: "GET", handler: "handleSubscribe" },
+  };
+
   async fetch(request: Request): Promise<Response> {
     await this.ensureInitialized();
 
     const url = new URL(request.url);
+    const route = HealStreamDO.ROUTES[url.pathname];
 
-    if (request.method === "GET" && url.pathname === "/state") {
-      return Response.json({ approved: this.approved });
-    }
-
-    if (request.method === "POST" && url.pathname === "/tryHeal") {
-      return this.handleTryHeal(request);
-    }
-
-    if (request.method === "POST" && url.pathname === "/rollback") {
-      return this.handleRollback(request);
-    }
-
-    if (request.method === "GET" && url.pathname === "/subscribe") {
-      return this.handleSubscribe();
+    if (route && request.method === route.method) {
+      const method = (this as unknown as Record<string, (r: Request) => Promise<Response>>)[
+        route.handler
+      ];
+      if (method) return method.call(this, request);
     }
 
     return new Response("Not Found", { status: 404 });
+  }
+
+  private async handleState(_request: Request): Promise<Response> {
+    return Response.json({ approved: this.approved });
   }
 
   // ---------------------------------------------------------------------------
@@ -150,6 +170,10 @@ export class HealStreamDO implements DurableObject {
       return Response.json({ healed: false, suggestions: this.approved.suggestions });
     }
 
+    if (this.pending && this.pending.fingerprint === newFingerprint) {
+      return Response.json({ healed: false, suggestions: this.pending.suggestions });
+    }
+
     const startMs = Date.now();
 
     // Broadcast intent events
@@ -161,21 +185,64 @@ export class HealStreamDO implements DurableObject {
     await this.broadcast({ type: "analyzing", confidence: 0.9, model: "auto" });
     await this.broadcast({ type: "rewriting", suggestionCount: batch.suggestions.length });
 
-    // Update in-memory cache and persist to DO storage
-    // Neon writes are owned by the Worker (persistHealedAttempt), not the DO
-    this.approved = { fingerprint: newFingerprint, suggestions: batch.suggestions };
-    await this.state.storage.put(STORAGE_KEY, JSON.stringify(this.approved));
-
-    const mappingVersionId = crypto.randomUUID();
-
-    // Broadcast healed
-    await this.broadcast({
-      type: "healed",
-      mappingVersionId,
-      latencyMs: Date.now() - startMs,
-    });
+    // Reserve heal intent in-memory only. The Worker owns Postgres persistence
+    // and must call /commitHeal with the real revision id before the DO updates
+    // its approved cache or emits a healed event.
+    this.pending = {
+      fingerprint: newFingerprint,
+      suggestions: batch.suggestions,
+      startedAt: startMs,
+    };
 
     return Response.json({ healed: true, suggestions: batch.suggestions });
+  }
+
+  // ---------------------------------------------------------------------------
+  // /commitHeal
+  // ---------------------------------------------------------------------------
+
+  private async handleCommitHeal(request: Request): Promise<Response> {
+    const body = (await request.json()) as CommitHealBody;
+
+    if (!this.pending || this.pending.fingerprint !== body.payloadFingerprint) {
+      return new Response(
+        JSON.stringify({ status: "error", message: "No matching heal reservation" }),
+        {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    this.approved = {
+      fingerprint: body.payloadFingerprint,
+      suggestions: body.suggestions,
+    };
+    this.pending = null;
+    await this.state.storage.put(STORAGE_KEY, JSON.stringify(this.approved));
+
+    await this.broadcast({
+      type: "healed",
+      mappingVersionId: body.mappingVersionId,
+      latencyMs: body.latencyMs,
+    });
+
+    return Response.json({ committed: true });
+  }
+
+  // ---------------------------------------------------------------------------
+  // /defer
+  // ---------------------------------------------------------------------------
+
+  private async handleDefer(request: Request): Promise<Response> {
+    const body = (await request.json()) as DeferHealBody;
+    this.pending = null;
+    await this.broadcast({
+      type: "deferred",
+      reason: body.reason,
+      confidence: body.confidence,
+    });
+    return Response.json({ deferred: true });
   }
 
   // ---------------------------------------------------------------------------
@@ -194,7 +261,7 @@ export class HealStreamDO implements DurableObject {
       .insert(approvedMappingRevisions)
       .values({
         id: rollbackId,
-        ownerId: "rollback",
+        ownerId: previousRevision.ownerId,
         intakeAttemptId: previousRevision.intakeAttemptId,
         mappingTraceId: previousRevision.mappingTraceId,
         contractId: previousRevision.contractId,
@@ -221,6 +288,7 @@ export class HealStreamDO implements DurableObject {
       fingerprint: previousRevision.shapeFingerprint ?? "",
       suggestions: previousRevision.suggestions,
     };
+    this.pending = null;
     await this.state.storage.put(STORAGE_KEY, JSON.stringify(this.approved));
 
     // Broadcast rolled_back

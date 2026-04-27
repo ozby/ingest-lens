@@ -65,6 +65,7 @@ describe("run-e2e", () => {
         "journeys/topic-publish-flow.e2e.ts",
         "journeys/ownership-hardening.e2e.ts",
         "journeys/intake-mapping-flow.e2e.ts",
+        "journeys/self-healing-intake.e2e.ts",
         "journeys/public-fixture-demo-flow.e2e.ts",
         "journeys/client-route-code-splitting.e2e.ts",
         "journeys/ingestlens-branding.e2e.ts",

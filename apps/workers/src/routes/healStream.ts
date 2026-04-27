@@ -1,12 +1,88 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { eq, and, desc } from "drizzle-orm";
-import { approvedMappingRevisions } from "../db/schema";
+import { approvedMappingRevisions, intakeAttempts } from "../db/schema";
 import { createDb, type Env } from "../db/client";
 import { authenticate } from "../middleware/auth";
 
 type AuthVariables = {
   user: { userId: string; username: string };
 };
+
+type AppContext = Context<{
+  Bindings: Env;
+  Variables: AuthVariables;
+}>;
+
+type RollbackContext =
+  | { error: Response }
+  | {
+      current: typeof approvedMappingRevisions.$inferSelect;
+      previous: typeof approvedMappingRevisions.$inferSelect;
+      suggestions: NonNullable<
+        NonNullable<(typeof intakeAttempts.$inferSelect)["suggestionBatch"]>["suggestions"]
+      >;
+    };
+
+async function loadRollbackContext(
+  c: AppContext,
+  contractId: string,
+  contractVersion: string,
+  ownerId: string,
+): Promise<RollbackContext> {
+  const db = createDb(c.env);
+  const revisions = await db
+    .select()
+    .from(approvedMappingRevisions)
+    .where(
+      and(
+        eq(approvedMappingRevisions.contractId, contractId),
+        eq(approvedMappingRevisions.contractVersion, contractVersion),
+        eq(approvedMappingRevisions.ownerId, ownerId),
+      ),
+    )
+    .orderBy(desc(approvedMappingRevisions.createdAt))
+    .limit(2);
+
+  const [current, previous] = revisions;
+  if (!current) {
+    return {
+      error: c.json(
+        { status: "error", message: "No approved revision found for this source." },
+        404,
+      ),
+    };
+  }
+  if (!previous) {
+    return {
+      error: c.json({ status: "error", message: "No previous revision to roll back to." }, 409),
+    };
+  }
+
+  const [previousAttempt] = await db
+    .select()
+    .from(intakeAttempts)
+    .where(
+      and(eq(intakeAttempts.id, previous.intakeAttemptId), eq(intakeAttempts.ownerId, ownerId)),
+    )
+    .limit(1);
+
+  const suggestions = previousAttempt?.suggestionBatch?.suggestions?.filter((suggestion) =>
+    previous.approvedSuggestionIds.includes(suggestion.id),
+  );
+  if (!suggestions || suggestions.length === 0) {
+    return {
+      error: c.json(
+        {
+          status: "error",
+          message: "Previous approved suggestions are unavailable for rollback.",
+        },
+        409,
+      ),
+    };
+  }
+
+  return { current, previous, suggestions };
+}
 
 export const healStreamRoutes = new Hono<{
   Bindings: Env;
@@ -47,31 +123,11 @@ healStreamRoutes.get("/stream/:sourceSystem/:contractId/:contractVersion", async
 healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollback", async (c) => {
   const { sourceSystem, contractId, contractVersion } = c.req.param();
   const ownerId = c.get("user").userId;
-  const db = createDb(c.env);
-
-  // Fetch the two most recent revisions for this source combo
-  const revisions = await db
-    .select()
-    .from(approvedMappingRevisions)
-    .where(
-      and(
-        eq(approvedMappingRevisions.contractId, contractId),
-        eq(approvedMappingRevisions.contractVersion, contractVersion),
-        eq(approvedMappingRevisions.ownerId, ownerId),
-      ),
-    )
-    .orderBy(desc(approvedMappingRevisions.createdAt))
-    .limit(2);
-
-  const [current, previous] = revisions;
-
-  if (!current) {
-    return c.json({ status: "error", message: "No approved revision found for this source." }, 404);
+  const rollbackContext = await loadRollbackContext(c, contractId, contractVersion, ownerId);
+  if ("error" in rollbackContext) {
+    return rollbackContext.error;
   }
-
-  if (!previous) {
-    return c.json({ status: "error", message: "No previous revision to roll back to." }, 409);
-  }
+  const { current, previous, suggestions } = rollbackContext;
 
   const doName = `${sourceSystem}:${contractId}:${contractVersion}`;
   const doId = c.env.HEAL_STREAM.idFromName(doName);
@@ -85,6 +141,7 @@ healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollb
         currentRevisionId: current.id,
         previousRevision: {
           id: previous.id,
+          ownerId,
           intakeAttemptId: previous.intakeAttemptId,
           mappingTraceId: previous.mappingTraceId,
           contractId: previous.contractId,
@@ -96,6 +153,7 @@ healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollb
           sourceFixtureId: previous.sourceFixtureId ?? null,
           deliveryTarget: previous.deliveryTarget,
           shapeFingerprint: previous.shapeFingerprint ?? null,
+          suggestions,
         },
       }),
     }),

@@ -82,7 +82,7 @@ class_name = "HealStreamDO"
 
 [[env.dev.migrations]]
 tag = "v1"
-new_sqlite_classes = ["TopicRoom"]
+new_sqlite_classes = ["TopicRoom", "HealStreamDO"]
 
 [[env.dev.queues.producers]]
 binding = "DELIVERY_QUEUE"
@@ -92,6 +92,7 @@ queue = "delivery-queue-dev"
 queue = "delivery-queue-dev"
 max_batch_size = 10
 max_batch_timeout = 5
+max_concurrency = 8
 max_retries = 5
 dead_letter_queue = "delivery-dlq-dev"
 
@@ -151,7 +152,7 @@ class_name = "HealStreamDO"
 
 [[env.prd.migrations]]
 tag = "v1"
-new_sqlite_classes = ["TopicRoom"]
+new_sqlite_classes = ["TopicRoom", "HealStreamDO"]
 
 [[env.prd.queues.producers]]
 binding = "DELIVERY_QUEUE"
@@ -161,6 +162,7 @@ queue = "delivery-queue-prd"
 queue = "delivery-queue-prd"
 max_batch_size = 10
 max_batch_timeout = 5
+max_concurrency = 8
 max_retries = 5
 dead_letter_queue = "delivery-dlq-prd"
 

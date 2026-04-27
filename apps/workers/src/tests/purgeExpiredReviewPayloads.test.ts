@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDb, type Env } from "../db/client";
-import { intakeAttempts } from "../db/schema";
+import { intakeAttempts, messages } from "../db/schema";
 import { handleScheduled } from "../cron/purgeExpiredReviewPayloads";
 import { buildUpdateChain, createMockEnv, mockCreateDb } from "./helpers";
 
@@ -42,7 +42,9 @@ describe("handleScheduled (purgeExpiredReviewPayloads)", () => {
   it("issues UPDATE intake_attempts SET review_payload=null WHERE reviewPayloadExpiresAt < now()", async () => {
     const { lt } = await import("drizzle-orm");
     const { updateMock, setMock, whereMock } = buildUpdateChain([]);
-    mockCreateDb({ update: updateMock });
+    const deleteWhereMock = vi.fn().mockResolvedValue([]);
+    const deleteMock = vi.fn().mockReturnValue({ where: deleteWhereMock });
+    mockCreateDb({ update: updateMock, delete: deleteMock });
 
     const fixedNow = new Date("2026-04-24T12:00:00.000Z");
     vi.useFakeTimers();
@@ -60,8 +62,12 @@ describe("handleScheduled (purgeExpiredReviewPayloads)", () => {
     expect(setMock).toHaveBeenCalledTimes(1);
     expect(setMock).toHaveBeenCalledWith({ reviewPayload: null });
 
-    expect(vi.mocked(lt)).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(lt)).toHaveBeenCalledWith(intakeAttempts.reviewPayloadExpiresAt, fixedNow);
+    expect(vi.mocked(lt)).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(lt)).toHaveBeenNthCalledWith(
+      1,
+      intakeAttempts.reviewPayloadExpiresAt,
+      fixedNow,
+    );
 
     expect(whereMock).toHaveBeenCalledTimes(1);
     const whereArg = whereMock.mock.calls[0]?.[0] as {
@@ -72,5 +78,17 @@ describe("handleScheduled (purgeExpiredReviewPayloads)", () => {
     expect(whereArg.__op).toBe("lt");
     expect(whereArg.column).toBe(intakeAttempts.reviewPayloadExpiresAt);
     expect(whereArg.value).toEqual(fixedNow);
+
+    expect(deleteMock).toHaveBeenCalledTimes(1);
+    expect(deleteMock).toHaveBeenCalledWith(messages);
+    expect(deleteWhereMock).toHaveBeenCalledTimes(1);
+    const deleteWhereArg = deleteWhereMock.mock.calls[0]?.[0] as {
+      __op: "lt";
+      column: unknown;
+      value: Date;
+    };
+    expect(deleteWhereArg.__op).toBe("lt");
+    expect(deleteWhereArg.column).toBe(messages.expiresAt);
+    expect(deleteWhereArg.value).toEqual(fixedNow);
   });
 });

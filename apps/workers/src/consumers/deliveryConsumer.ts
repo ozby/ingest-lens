@@ -48,6 +48,14 @@ export async function handleDeliveryBatch(
       const latencyMs = Date.now() - startMs;
 
       if (res.ok) {
+        await db
+          .update(messages)
+          .set({
+            pushDeliveredAt: new Date(),
+            lastEnqueueError: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(messages.id, messageId));
         msg.ack();
         recordDelivery(env, { queueId, messageId, topicId, status: "ack", latencyMs, attempt });
         if (topicId !== null) {

@@ -11,7 +11,9 @@ import type { DecodedToken } from "../middleware/auth";
 type MockedDb = ReturnType<typeof createDb>;
 
 export function mockCreateDb(
-  shape: Partial<Record<"select" | "insert" | "update" | "delete", Mock>>,
+  shape: Partial<
+    Record<"select" | "insert" | "update" | "delete" | "transaction" | "execute", Mock>
+  >,
 ): void {
   vi.mocked(createDb).mockReturnValue(shape as unknown as MockedDb);
 }
@@ -47,33 +49,47 @@ export function createMockHealStream(
   opts: {
     tryHealResponse?: unknown;
     tryHealStatus?: number;
+    commitHealStatus?: number;
+    deferStatus?: number;
   } = {},
 ): {
   idFromName: ReturnType<typeof vi.fn>;
   get: ReturnType<typeof vi.fn>;
 } {
+  const HEAL_HANDLERS: Record<
+    string,
+    (
+      opts: {
+        tryHealResponse?: unknown;
+        tryHealStatus?: number;
+        commitHealStatus?: number;
+        deferStatus?: number;
+      },
+      state: { approved: unknown },
+    ) => { status: number; body: unknown }
+  > = {
+    "/tryHeal": (o, _s) => ({
+      status: o.tryHealStatus ?? 404,
+      body: o.tryHealResponse ?? { healed: false, suggestions: [] },
+    }),
+    "/state": (_o, s) => ({ status: 200, body: s }),
+    "/commitHeal": (o, _s) => ({ status: o.commitHealStatus ?? 200, body: { committed: true } }),
+    "/defer": (o, _s) => ({ status: o.deferStatus ?? 200, body: { deferred: true } }),
+  };
+
   const stubFetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
-    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-    if (url.endsWith("/tryHeal")) {
-      const tryHealStatus = opts.tryHealStatus ?? 404;
-      return Promise.resolve(
-        new Response(JSON.stringify(opts.tryHealResponse ?? { healed: false, suggestions: [] }), {
-          status: tryHealStatus,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
-    }
-
-    if (url.endsWith("/state")) {
-      return Promise.resolve(
-        new Response(JSON.stringify(state), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
-    }
-
-    return Promise.resolve(new Response("not found", { status: 404 }));
+    const urlStr =
+      typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+    const path = new URL(urlStr).pathname;
+    const handler = HEAL_HANDLERS[path];
+    if (!handler) return Promise.resolve(new Response("not found", { status: 404 }));
+    const result = handler(opts, state);
+    return Promise.resolve(
+      new Response(JSON.stringify(result.body), {
+        status: result.status,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
   });
   const stub = { fetch: stubFetch };
   const getMock = vi.fn().mockReturnValue(stub);
@@ -120,13 +136,15 @@ export function buildSelectChain(rows: unknown[]): {
   selectMock: Mock;
   fromMock: Mock;
   whereMock: Mock;
+  orderByMock: Mock;
   limitMock: Mock;
 } {
   const limitMock = vi.fn().mockResolvedValue(rows);
-  const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
+  const orderByMock = vi.fn().mockReturnValue({ limit: limitMock });
+  const whereMock = vi.fn().mockReturnValue({ limit: limitMock, orderBy: orderByMock });
   const fromMock = vi.fn().mockReturnValue({ where: whereMock });
   const selectMock = vi.fn().mockReturnValue({ from: fromMock });
-  return { selectMock, fromMock, whereMock, limitMock };
+  return { selectMock, fromMock, whereMock, orderByMock, limitMock };
 }
 
 // select().from().where(inArray(...)) — awaited on where(), no limit
@@ -146,11 +164,16 @@ export function buildInsertChain(rows: unknown[]): {
   insertMock: Mock;
   valuesMock: Mock;
   returningMock: Mock;
+  onConflictDoNothingMock: Mock;
 } {
   const returningMock = vi.fn().mockResolvedValue(rows);
-  const valuesMock = vi.fn().mockReturnValue({ returning: returningMock });
+  const onConflictDoNothingMock = vi.fn().mockReturnValue({ returning: returningMock });
+  const valuesMock = vi.fn().mockReturnValue({
+    returning: returningMock,
+    onConflictDoNothing: onConflictDoNothingMock,
+  });
   const insertMock = vi.fn().mockReturnValue({ values: valuesMock });
-  return { insertMock, valuesMock, returningMock };
+  return { insertMock, valuesMock, returningMock, onConflictDoNothingMock };
 }
 
 // update().set().where() — awaited on where()
@@ -163,6 +186,16 @@ export function buildUpdateChain(rows: unknown[] = []): {
   const setMock = vi.fn().mockReturnValue({ where: whereMock });
   const updateMock = vi.fn().mockReturnValue({ set: setMock });
   return { updateMock, setMock, whereMock };
+}
+
+// delete().where() — awaited on where()
+export function buildDeleteChain(rows: unknown[] = []): {
+  deleteMock: Mock;
+  whereMock: Mock;
+} {
+  const whereMock = vi.fn().mockResolvedValue(rows);
+  const deleteMock = vi.fn().mockReturnValue({ where: whereMock });
+  return { deleteMock, whereMock };
 }
 
 const BASE = "http://localhost";
@@ -199,11 +232,17 @@ export const mockMessage = deepFreeze({
   data: { key: "value" },
   queueId: "queue-1",
   idempotencyKey: null,
+  deliveryMode: "pull",
+  enqueueState: "not_needed",
+  pushDeliveredAt: null,
+  lastEnqueueError: null,
   expiresAt: new Date("2030-01-01"),
   received: false,
   receivedCount: 0,
   createdAt: new Date("2026-01-01"),
+  updatedAt: new Date("2026-01-01"),
   receivedAt: null,
+  visibilityExpiresAt: null,
 });
 
 export const mockTopic = deepFreeze({

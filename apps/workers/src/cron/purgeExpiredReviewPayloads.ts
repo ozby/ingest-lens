@@ -1,12 +1,13 @@
 import { lt } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
-import { intakeAttempts } from "../db/schema";
+import { intakeAttempts, messages } from "../db/schema";
 
 /**
- * Scheduled handler that TTL-purges `reviewPayload` on intake attempts whose
- * `reviewPayloadExpiresAt` has elapsed. Reads are already guarded by
- * `getAttemptPayload`, but the raw payload stays on disk until this purge
- * clears it — so the stored payload does not outlive its configured TTL.
+ * Scheduled handler that:
+ * 1. TTL-purges `reviewPayload` on intake attempts whose
+ *    `reviewPayloadExpiresAt` has elapsed.
+ * 2. Deletes expired queue messages so Postgres retention matches the API
+ *    contract instead of leaving `expiresAt` as metadata only.
  *
  * Clears the column to `null` rather than deleting the attempt row: the
  * attempt history (status, driftCategory, mappingVersionId, telemetry) is
@@ -28,4 +29,6 @@ export async function handleScheduled(
     .update(intakeAttempts)
     .set({ reviewPayload: null })
     .where(lt(intakeAttempts.reviewPayloadExpiresAt, now));
+
+  await db.delete(messages).where(lt(messages.expiresAt, now));
 }

@@ -109,10 +109,11 @@ describe("HealStreamDO", () => {
   });
 
   describe("tryHeal()", () => {
-    it("heals once on first call (returns healed: true)", async () => {
+    it("heals once on first call (returns healed: true and reserves in-memory)", async () => {
       const result = await postTryHeal(healDO, { first_name: "Alice" }, [makeSuggestion()]);
       expect(result.healed).toBe(true);
-      expect(mockState.storage.put).toHaveBeenCalledTimes(1);
+      // tryHeal reserves in pending; storage write happens only on commitHeal
+      expect(mockState.storage.put).not.toHaveBeenCalled();
     });
 
     it("is a no-op on second call with same payload shape (returns healed: false)", async () => {
@@ -125,8 +126,7 @@ describe("HealStreamDO", () => {
       const second = await postTryHeal(healDO, payload, suggestions);
       expect(second.healed).toBe(false);
 
-      // DO storage written exactly once — no-op does not re-persist.
-      expect(mockState.storage.put).toHaveBeenCalledTimes(1);
+      expect(mockState.storage.put).not.toHaveBeenCalled();
     });
 
     it("heals again when payload shape changes", async () => {
@@ -137,6 +137,8 @@ describe("HealStreamDO", () => {
         makeSuggestion(),
       ]);
       expect(second.healed).toBe(true);
+
+      expect(mockState.storage.put).not.toHaveBeenCalled();
     });
   });
 
@@ -146,9 +148,22 @@ describe("HealStreamDO", () => {
       expect(result.approved).toBeNull();
     });
 
-    it("returns approved state with correct fingerprint after heal", async () => {
+    it("returns approved state with correct fingerprint after heal via commitHeal", async () => {
       const payload = { first_name: "Alice" };
       await postTryHeal(healDO, payload, [makeSuggestion()]);
+
+      // Commit the heal so approved state is persisted
+      const commitReq = new Request("https://do/commitHeal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mappingVersionId: "rev-1",
+          payloadFingerprint: shapeFingerprint(payload),
+          suggestions: [makeSuggestion()],
+          latencyMs: 10,
+        }),
+      });
+      await healDO.fetch(commitReq);
 
       const result = await getState(healDO);
       expect(result.approved).not.toBeNull();

@@ -1,7 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { authenticate } from "../middleware/auth";
 import { topicRoutes } from "../routes/topic";
-import { AUTH_HEADER, createMockEnv, get, mockCreateDb, mockTopic } from "./helpers";
+import {
+  AUTH_HEADER,
+  buildSelectChain,
+  buildUnboundedSelectChain,
+  createMockEnv,
+  get,
+  mockCreateDb,
+  mockTopic,
+} from "./helpers";
 
 vi.mock("../middleware/auth", () => ({ authenticate: vi.fn() }));
 vi.mock("../middleware/rateLimiter", () => ({
@@ -34,10 +42,8 @@ describe("GET /:topicId/ws", () => {
     });
 
     const foreignTopic = { ...mockTopic, ownerId: "user-999" };
-    const limitMock = vi.fn().mockResolvedValue([foreignTopic]);
-    const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
-    const fromMock = vi.fn().mockReturnValue({ where: whereMock });
-    const selectMock = vi.fn().mockReturnValue({ from: fromMock });
+    const { fromMock: topicFrom } = buildSelectChain([foreignTopic]);
+    const selectMock = vi.fn().mockReturnValue({ from: topicFrom });
     mockCreateDb({ select: selectMock });
 
     const mockFetch = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
@@ -60,10 +66,19 @@ describe("GET /:topicId/ws", () => {
       await next();
     });
 
-    const limitMock = vi.fn().mockResolvedValue([mockTopic]);
-    const whereMock = vi.fn().mockReturnValue({ limit: limitMock });
-    const fromMock = vi.fn().mockReturnValue({ where: whereMock });
-    const selectMock = vi.fn().mockReturnValue({ from: fromMock });
+    const { fromMock: topicFrom } = buildSelectChain([mockTopic]);
+    const { fromMock: subscriptionsFrom } = buildUnboundedSelectChain([
+      {
+        id: "sub-1",
+        topicId: mockTopic.id,
+        queueId: "queue-1",
+        createdAt: new Date("2026-01-01"),
+      },
+    ]);
+    const selectMock = vi
+      .fn()
+      .mockReturnValueOnce({ from: topicFrom })
+      .mockReturnValueOnce({ from: subscriptionsFrom });
     mockCreateDb({ select: selectMock });
 
     // Use 200 here — Node's Response rejects 101 (CF Workers-only status)

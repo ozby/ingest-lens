@@ -84,7 +84,7 @@ These scenarios require changes beyond configuration tuning:
 | Memory-intensive operations (>128MB)      | Workers memory limit                                                                                 | Offload to a dedicated compute layer (Cloud Run, Fargate)                                                         |
 | True global rate limiting (<50ms latency) | Per-PoP limits only; global coordination requires a round-trip to a central store                    | Upstash Redis with sliding-window scripts, or a Durable Object accepting the latency penalty                      |
 | Exactly-once delivery                     | At-least-once is a fundamental property of the queue; exactly-once requires distributed transactions | Two-phase commit between the DB insert and queue enqueue — impractical on Workers without a coordinator primitive |
-| Multi-tenant data isolation               | Current model uses `ownerId` row-level filtering; no schema separation                               | Migrate to per-tenant Postgres schemas or a tenant-aware proxy layer; requires schema migration strategy          |
+| Multi-tenant data isolation               | Current model uses FK-backed `ownerId` row-level isolation; still no schema separation               | Migrate to per-tenant Postgres schemas or a tenant-aware proxy layer; requires schema migration strategy          |
 
 ## Reading the limits correctly
 

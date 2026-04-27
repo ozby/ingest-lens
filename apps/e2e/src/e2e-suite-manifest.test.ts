@@ -109,6 +109,25 @@ describe("e2e-suite-manifest", () => {
         ],
       },
       {
+        id: "healing",
+        aliases: ["self-heal", "adaptive", "heal-stream"],
+        fileMatchers: ["journeys/self-healing-intake.e2e.ts"],
+        batchKey: "healing",
+        env: undefined,
+        steps: [
+          {
+            runner: "vitest",
+            logName: "healing",
+            configPath: "vitest.journeys.config.ts",
+            fixedFiles: ["journeys/self-healing-intake.e2e.ts"],
+            fixedArgs: undefined,
+            commandArgs: undefined,
+            batchKey: "healing",
+            env: undefined,
+          },
+        ],
+      },
+      {
         id: "demo",
         aliases: ["public", "fixtures"],
         fileMatchers: ["journeys/public-fixture-demo-flow.e2e.ts"],
@@ -204,6 +223,46 @@ describe("e2e-suite-manifest", () => {
         ],
       },
       {
+        id: "s1a-correctness",
+        aliases: ["correctness-lab"],
+        fileMatchers: ["../../apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts"],
+        batchKey: "s1a-correctness",
+        env: { SKIP_REASON: "shell-not-wired" },
+        steps: [
+          {
+            runner: "vitest",
+            logName: "s1a-correctness",
+            configPath: "../../apps/lab/scenarios/s1a-correctness/vitest.config.ts",
+            fixedFiles: ["../../apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts"],
+            fixedArgs: undefined,
+            commandArgs: undefined,
+            batchKey: "s1a-correctness",
+            env: { SKIP_REASON: "shell-not-wired" },
+          },
+        ],
+      },
+      {
+        id: "intake-ui",
+        aliases: ["ui", "browser", "playwright-intake"],
+        fileMatchers: ["journeys/intake-heal-ui.spec.ts"],
+        batchKey: "intake-ui",
+        env: undefined,
+        steps: [
+          {
+            runner: "playwright",
+            logName: "intake-ui",
+            configPath: "playwright.config.ts",
+            fixedFiles: ["journeys/intake-heal-ui.spec.ts"],
+            fixedArgs: undefined,
+            commandArgs: undefined,
+            batchKey: "intake-ui",
+            supportsHeaded: true,
+            supportsDebug: true,
+            env: undefined,
+          },
+        ],
+      },
+      {
         id: "full",
         aliases: ["all", "backend", "blueprints"],
         fileMatchers: [],
@@ -221,6 +280,7 @@ describe("e2e-suite-manifest", () => {
               "journeys/topic-publish-flow.e2e.ts",
               "journeys/ownership-hardening.e2e.ts",
               "journeys/intake-mapping-flow.e2e.ts",
+              "journeys/self-healing-intake.e2e.ts",
               "journeys/public-fixture-demo-flow.e2e.ts",
               "journeys/client-route-code-splitting.e2e.ts",
               "journeys/ingestlens-branding.e2e.ts",
@@ -259,14 +319,22 @@ describe("e2e-suite-manifest", () => {
     expect(resolveE2ESuiteId("queue")).toBe("messaging");
     expect(resolveE2ESuiteId("ownership")).toBe("hardening");
     expect(resolveE2ESuiteId("ai")).toBe("intake");
+    expect(resolveE2ESuiteId("self-heal")).toBe("healing");
+    expect(resolveE2ESuiteId("adaptive")).toBe("healing");
+    expect(resolveE2ESuiteId("heal-stream")).toBe("healing");
     expect(resolveE2ESuiteId("public")).toBe("demo");
     expect(resolveE2ESuiteId("splitting")).toBe("client");
     expect(resolveE2ESuiteId("rebrand")).toBe("branding");
+    expect(resolveE2ESuiteId("ui")).toBe("branding"); // branding aliased as "ui" before intake-ui
+    expect(resolveE2ESuiteId("browser")).toBe("intake-ui");
+    expect(resolveE2ESuiteId("playwright-intake")).toBe("intake-ui");
     expect(resolveE2ESuiteId("neon")).toBe("neon-branch-provider");
     expect(resolveE2ESuiteId("db-branching")).toBe("neon-branch-provider");
     expect(resolveE2ESuiteId("neon-branch-provider")).toBe("neon-branch-provider");
     expect(resolveE2ESuiteId("s1b-latency")).toBe("s1b-latency");
     expect(resolveE2ESuiteId("latency-lab")).toBe("s1b-latency");
+    expect(resolveE2ESuiteId("s1a-correctness")).toBe("s1a-correctness");
+    expect(resolveE2ESuiteId("correctness-lab")).toBe("s1a-correctness");
     expect(resolveE2ESuiteId("all")).toBe("full");
     expect(resolveE2ESuiteId("missing")).toBeNull();
 

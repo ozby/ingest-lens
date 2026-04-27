@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-04-26"
+last_updated: "2026-04-27"
 ---
 
 # Delivery Guarantees
@@ -16,10 +16,12 @@ delivered to that endpoint **at least once**. It does not guarantee exactly once
 
 The contract is:
 
-1. The message is persisted to Postgres before the queue payload is enqueued. If the enqueue fails
-   after the insert, the message exists in the database but is never delivered — this is an acceptable
-   silent failure for the current design (the alternative is a distributed transaction, which the
-   Cloudflare Workers runtime does not support natively).
+1. The message is persisted to Postgres before the queue payload is enqueued. Push-targeted rows are
+   stored with `deliveryMode = "push"` and `enqueueState = "pending"`. If the enqueue succeeds the
+   row is updated to `enqueueState = "enqueued"`; if it fails the row is updated to
+   `enqueueState = "failed"` with `lastEnqueueError` recorded. Direct queue publish returns `502`
+   in that case, and topic/intake publish surfaces the failure explicitly instead of silently
+   pretending the delivery was scheduled.
 
 2. The Cloudflare Queue consumer (`apps/workers/src/consumers/deliveryConsumer.ts`) calls
    `msg.ack()` only after receiving a 2xx response from the push endpoint. Non-2xx responses and
@@ -42,7 +44,8 @@ parameters:
 
 Behavior:
 
-1. The route returns currently visible messages for the owned queue.
+1. The route returns currently visible pull-managed messages for the owned queue
+   (`deliveryMode = "pull"` and `expiresAt > now`), ordered by `seq`.
 2. Returned messages are marked with `received: true`, `receivedAt: <now>`,
    and `visibilityExpiresAt: <now + visibilityTimeout>`. This lease state is
    backed by the `visibility_expires_at` database column added in
@@ -51,15 +54,15 @@ Behavior:
    calls on that queue.
 4. After the lease expires, the message becomes visible again unless it has
    been acknowledged by deletion.
-5. `DELETE /api/messages/:queueId/:messageId` is the acknowledgement path; it
-   removes the leased row so it cannot reappear after the timeout.
+5. `DELETE /api/messages/:queueId/:messageId` is the acknowledgement path for
+   pull-managed rows only; it removes the leased row so it cannot reappear after
+   the timeout. Push-managed rows are rejected with `409`.
 
-**Important concurrency caveat:** the current implementation is still a
-select-then-update flow, not a single atomic claim statement. Concurrent pull
-consumers can race and receive the same visible row before both updates land.
-This is still an at-least-once model. A message may be received more than once
-if the client does not delete it before the lease expires, or if two consumers
-race to claim the same row at nearly the same time.
+Pull claims are now leased by a single atomic Postgres statement using
+`FOR UPDATE SKIP LOCKED`, so concurrent consumers do not race by reading the
+same visible row before the lease update lands. This is still an at-least-once
+model overall: a message may be received more than once if the client does not
+delete it before the lease expires.
 
 Dashboard `activeMessages` counts only leases that are currently in-flight
 (`received = true` with an unexpired `visibility_expires_at`). Expired leases do
@@ -79,8 +82,9 @@ Behavior:
 | Second request with same key `abc` to same queue | `200 OK` — existing message returned, nothing re-enqueued |
 | Request without `Idempotency-Key` header         | `201 Created` — normal insert, no deduplication           |
 
-The uniqueness constraint is scoped to `(queueId, idempotencyKey)`. The same key can be reused
-across different queues without collision.
+The uniqueness constraint is scoped to `(queueId, idempotencyKey)`. The route now relies on the
+database uniqueness constraint directly: insert first, then read back the existing row on conflict.
+The same key can be reused across different queues without collision.
 
 **What idempotency keys do not cover:** Duplicate _delivery_ after a successful insert. The queue
 consumer may still deliver the same message more than once if the consumer crashes after a successful
@@ -146,6 +150,18 @@ Operational recovery:
 
 There is no automated DLQ drain endpoint. Automated replay risks re-triggering a systematic failure.
 Operational recovery is intentionally manual.
+
+## Retention and expiry
+
+Messages are written with an `expiresAt` derived from the owning queue's
+`retentionPeriod`.
+
+- Pull receive ignores expired rows entirely.
+- The scheduled purge job deletes expired message rows from Postgres.
+- Intake review payload cleanup and message retention cleanup run in the same
+  scheduled worker pass.
+
+Retention is therefore enforced both at read time and by background deletion.
 
 ## Empirical verification — Consistency Lab
 

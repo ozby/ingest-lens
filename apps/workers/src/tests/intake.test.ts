@@ -45,22 +45,57 @@ type FakeDbOverrides = {
 };
 
 function createFakeDb(state: FakeDbState, overrides: FakeDbOverrides = {}) {
+  const rowsForTable = (table: unknown) => {
+    if (table === intakeAttempts) return state.attempts;
+    if (table === approvedMappingRevisions) return state.mappingVersions;
+    if (table === messages) return state.messages;
+    if (table === queues) return state.queues;
+    if (table === topics) return state.topics;
+    return [];
+  };
+
   const fake = {
     select: vi.fn(() => ({
       from: vi.fn((table: unknown) => ({
-        where: vi.fn(() => ({
-          limit: vi.fn(async () => {
-            if (table === intakeAttempts) return state.attempts;
-            if (table === approvedMappingRevisions) return state.mappingVersions;
-            if (table === queues) return state.queues;
-            if (table === topics) return state.topics;
-            return [];
-          }),
-        })),
+        where: vi.fn(() => {
+          const rows = rowsForTable(table);
+          return {
+            limit: vi.fn(async () => rows),
+            then: (
+              onFulfilled: (value: unknown[]) => unknown,
+              onRejected?: (reason: unknown) => unknown,
+            ) => Promise.resolve(rows).then(onFulfilled, onRejected),
+          };
+        }),
       })),
     })),
     insert: vi.fn((table: unknown) => ({
       values: vi.fn((values: Record<string, unknown>) => ({
+        onConflictDoNothing: vi.fn(() => ({
+          returning: vi.fn(async () => {
+            if (table !== messages) return [];
+            const duplicate = state.messages.find(
+              (message) =>
+                message.queueId === values.queueId &&
+                message.idempotencyKey === (values.idempotencyKey ?? null),
+            );
+            if (duplicate) {
+              return [];
+            }
+
+            const message = {
+              id: `message-${state.messages.length + 1}`,
+              seq: BigInt(state.messages.length + 1),
+              createdAt: new Date("2026-04-24T00:00:00.000Z"),
+              updatedAt: new Date("2026-04-24T00:00:00.000Z"),
+              receivedAt: null,
+              visibilityExpiresAt: null,
+              ...values,
+            } as unknown as MessageRow;
+            state.messages = [...state.messages, message];
+            return [message];
+          }),
+        })),
         returning: vi.fn(async () => {
           if (table === intakeAttempts) {
             if (overrides.emptyIntakeAttemptInsert) return [];
@@ -88,6 +123,10 @@ function createFakeDb(state: FakeDbState, overrides: FakeDbOverrides = {}) {
               receivedAt: null,
               visibilityExpiresAt: null,
               idempotencyKey: null,
+              deliveryMode: "pull",
+              enqueueState: "not_needed",
+              pushDeliveredAt: null,
+              lastEnqueueError: null,
               ...values,
             } as unknown as MessageRow;
             state.messages = [...state.messages, message];
@@ -113,6 +152,16 @@ function createFakeDb(state: FakeDbState, overrides: FakeDbOverrides = {}) {
                 ];
                 return state.attempts;
               }
+            }
+            if (table === messages && state.messages[0]) {
+              state.messages = [
+                {
+                  ...state.messages[0],
+                  ...values,
+                } as MessageRow,
+                ...state.messages.slice(1),
+              ];
+              return state.messages;
             }
             return [];
           }),
@@ -443,6 +492,40 @@ describe("intake routes", () => {
     expect(deliveryQueue.send).toHaveBeenCalledTimes(1);
   });
 
+  it("marks the attempt as ingest_failed when queue publish fails during approval", async () => {
+    bypassAuth(vi.mocked(authenticate));
+    deliveryQueue.send.mockRejectedValueOnce(new Error("Queue send exploded"));
+    const attempt = createAttemptRow();
+    const state: FakeDbState = {
+      attempts: [attempt],
+      mappingVersions: [],
+      messages: [],
+      queues: [testQueue],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
+
+    const response = await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions/attempt-1/approve",
+        { approvedSuggestionIds: ["suggestion-1"] },
+        AUTH_HEADER,
+      ),
+      createMockEnv(deliveryQueue),
+    );
+
+    expect(response.status).toBe(502);
+    const payload = (await response.json()) as {
+      message: string;
+      data: { attempt: { status: string; ingestStatus: string } };
+    };
+    expect(payload.message).toBe("Queue send exploded");
+    expect(payload.data.attempt.status).toBe("ingest_failed");
+    expect(payload.data.attempt.ingestStatus).toBe("failed");
+    expect(state.attempts[0]?.status).toBe("ingest_failed");
+    expect(state.attempts[0]?.ingestStatus).toBe("failed");
+  });
+
   it("returns 500 when the intakeAttempts INSERT returns no row", async () => {
     bypassAuth(vi.mocked(authenticate));
     vi.mocked(suggestMappings).mockResolvedValueOnce({
@@ -642,131 +725,5 @@ describe("auto-heal fast path", () => {
 
     // Critical assertion: LLM was never invoked on the fast path.
     expect(vi.mocked(suggestMappings)).not.toHaveBeenCalled();
-  });
-});
-
-describe("auto-heal publish lifecycle", () => {
-  it("marks healed attempts as ingested after publish succeeds", async () => {
-    bypassAuth(vi.mocked(authenticate));
-    deliveryQueue.send.mockResolvedValue(undefined);
-    vi.mocked(suggestMappings).mockResolvedValueOnce({
-      kind: "success",
-      batch: createAttemptRow().suggestionBatch!,
-      decisionLog: {
-        provider: "test-runner",
-        model: "test-model",
-        promptVersion: "payload-mapper-v1",
-        validationOutcome: "passed",
-        confidence: { average: 0.96, maximum: 0.96, minimum: 0.96, overall: 0.92 },
-        judgeDisagreements: 0,
-        judgeUnavailableCount: 0,
-      },
-    });
-
-    const state: FakeDbState = {
-      attempts: [],
-      mappingVersions: [],
-      messages: [],
-      queues: [testQueue],
-      topics: [],
-    };
-    vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
-
-    const healStream = createMockHealStream(
-      { approved: null },
-      {
-        tryHealResponse: {
-          healed: true,
-          suggestions: createAttemptRow().suggestionBatch!.suggestions,
-        },
-      },
-    );
-
-    const response = await app.fetch(
-      post(
-        "/api/intake/mapping-suggestions",
-        {
-          contractId: "job-posting-v1",
-          fixtureId: "ashby-job-001",
-          queueId: "queue-1",
-          sourceSystem: "manual",
-        },
-        AUTH_HEADER,
-      ),
-      createMockEnv(deliveryQueue, undefined, undefined, undefined, undefined, undefined, healStream),
-    );
-
-    expect(response.status).toBe(200);
-    const payload = (await response.json()) as {
-      data: { attempt: { status: string; ingestStatus: string }; healPath: boolean };
-    };
-    expect(payload.data.healPath).toBe(true);
-    expect(payload.data.attempt.status).toBe("ingested");
-    expect(payload.data.attempt.ingestStatus).toBe("ingested");
-    expect(state.attempts[0]?.status).toBe("ingested");
-    expect(state.attempts[0]?.ingestStatus).toBe("ingested");
-    expect(deliveryQueue.send).toHaveBeenCalledOnce();
-  });
-
-  it("marks healed attempts as ingest_failed when publish fails", async () => {
-    bypassAuth(vi.mocked(authenticate));
-    deliveryQueue.send.mockRejectedValueOnce(new Error("Queue send exploded"));
-    vi.mocked(suggestMappings).mockResolvedValueOnce({
-      kind: "success",
-      batch: createAttemptRow().suggestionBatch!,
-      decisionLog: {
-        provider: "test-runner",
-        model: "test-model",
-        promptVersion: "payload-mapper-v1",
-        validationOutcome: "passed",
-        confidence: { average: 0.96, maximum: 0.96, minimum: 0.96, overall: 0.92 },
-        judgeDisagreements: 0,
-        judgeUnavailableCount: 0,
-      },
-    });
-
-    const state: FakeDbState = {
-      attempts: [],
-      mappingVersions: [],
-      messages: [],
-      queues: [testQueue],
-      topics: [],
-    };
-    vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
-
-    const healStream = createMockHealStream(
-      { approved: null },
-      {
-        tryHealResponse: {
-          healed: true,
-          suggestions: createAttemptRow().suggestionBatch!.suggestions,
-        },
-      },
-    );
-
-    const response = await app.fetch(
-      post(
-        "/api/intake/mapping-suggestions",
-        {
-          contractId: "job-posting-v1",
-          fixtureId: "ashby-job-001",
-          queueId: "queue-1",
-          sourceSystem: "manual",
-        },
-        AUTH_HEADER,
-      ),
-      createMockEnv(deliveryQueue, undefined, undefined, undefined, undefined, undefined, healStream),
-    );
-
-    expect(response.status).toBe(502);
-    const payload = (await response.json()) as {
-      message: string;
-      data: { attempt: { status: string; ingestStatus: string } };
-    };
-    expect(payload.message).toBe("Queue send exploded");
-    expect(payload.data.attempt.status).toBe("ingest_failed");
-    expect(payload.data.attempt.ingestStatus).toBe("failed");
-    expect(state.attempts[0]?.status).toBe("ingest_failed");
-    expect(state.attempts[0]?.ingestStatus).toBe("failed");
   });
 });

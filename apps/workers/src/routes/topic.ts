@@ -1,11 +1,12 @@
 import { Hono } from "hono";
 import { eq, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
-import { topics, queues, messages } from "../db/schema";
+import { topicSubscriptions, topics, queues } from "../db/schema";
 import { serializeMessage } from "./message-response";
-import { requireOwnedQueue, requireOwnedTopic } from "./ownership";
+import { hydrateTopicsWithSubscriptions, requireOwnedQueue, requireOwnedTopic } from "./ownership";
 import { authenticate } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
+import { createAndDispatchTopicMessages } from "../messages/lifecycle";
 
 type AuthVariables = {
   user: { userId: string; username: string };
@@ -31,12 +32,20 @@ topicRoutes.post("/", async (c) => {
   const ownerId = c.get("user").userId;
   const db = createDb(c.env);
 
-  const [topic] = await db
-    .insert(topics)
-    .values({ name, ownerId, subscribedQueues: [] })
-    .returning();
+  const [topic] = await db.insert(topics).values({ name, ownerId }).returning();
 
-  return c.json({ status: "success", data: { topic } }, 201);
+  return c.json(
+    {
+      status: "success",
+      data: {
+        topic: {
+          ...topic,
+          subscribedQueues: [],
+        },
+      },
+    },
+    201,
+  );
 });
 
 // GET /api/topics — list topics for owner
@@ -45,11 +54,12 @@ topicRoutes.get("/", async (c) => {
   const db = createDb(c.env);
 
   const result = await db.select().from(topics).where(eq(topics.ownerId, ownerId));
+  const hydratedTopics = await hydrateTopicsWithSubscriptions(db, result);
 
   return c.json({
     status: "success",
-    results: result.length,
-    data: { topics: result },
+    results: hydratedTopics.length,
+    data: { topics: hydratedTopics },
   });
 });
 
@@ -125,13 +135,17 @@ topicRoutes.post("/:topicId/subscribe", async (c) => {
     return c.json({ status: "error", message: "Queue is already subscribed to this topic" }, 400);
   }
 
-  const [updated] = await db
-    .update(topics)
-    .set({ subscribedQueues: [...topic.subscribedQueues, queueId] })
-    .where(eq(topics.id, topicId))
-    .returning();
+  await db.insert(topicSubscriptions).values({ topicId, queueId });
 
-  return c.json({ status: "success", data: { topic: updated } });
+  return c.json({
+    status: "success",
+    data: {
+      topic: {
+        ...topic,
+        subscribedQueues: [...topic.subscribedQueues, queueId],
+      },
+    },
+  });
 });
 
 // POST /api/topics/:topicId/publish — publish message to all subscribed queues
@@ -162,46 +176,39 @@ topicRoutes.post("/:topicId/publish", async (c) => {
     .from(queues)
     .where(inArray(queues.id, topic.subscribedQueues));
 
-  const createdMessages = [];
-  for (const queue of subscribedQueues) {
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + queue.retentionPeriod);
+  let dispatched: Awaited<ReturnType<typeof createAndDispatchTopicMessages>>;
+  try {
+    dispatched = await createAndDispatchTopicMessages(c.env, db, subscribedQueues, data, topicId);
+  } catch (error) {
+    return c.json(
+      {
+        status: "error",
+        message: error instanceof Error ? error.message : "Failed to create message",
+      },
+      500,
+    );
+  }
+  const { messages: createdMessages, enqueueFailures } = dispatched;
 
-    const [message] = await db
-      .insert(messages)
-      .values({
-        data,
-        queueId: queue.id,
-        expiresAt,
-        received: false,
-        receivedCount: 0,
-      })
-      .returning();
-
-    if (!message) {
-      return c.json({ status: "error", message: "Failed to create message" }, 500);
-    }
-
-    createdMessages.push(serializeMessage(message));
-
-    // Enqueue delivery via Cloudflare Queues for reliable ack/retry
-    if (queue.pushEndpoint) {
-      await c.env.DELIVERY_QUEUE.send({
-        messageId: message.id,
-        seq: String(message.seq),
-        queueId: queue.id,
-        pushEndpoint: queue.pushEndpoint,
-        topicId,
-        attempt: 0,
-      });
-    }
+  if (enqueueFailures.length > 0) {
+    return c.json(
+      {
+        status: "error",
+        message: "Failed to enqueue one or more topic deliveries",
+        data: {
+          messages: createdMessages.map((message) => serializeMessage(message)),
+          enqueueFailures,
+        },
+      },
+      502,
+    );
   }
 
   return c.json(
     {
       status: "success",
       results: createdMessages.length,
-      data: { messages: createdMessages },
+      data: { messages: createdMessages.map((message) => serializeMessage(message)) },
     },
     201,
   );
