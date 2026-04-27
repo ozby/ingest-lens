@@ -3,16 +3,42 @@ import { eq, or } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { users } from "../db/schema";
 import { generateToken, hashPasswordAsync, verifyPassword } from "../auth/crypto";
-import { authenticate } from "../middleware/auth";
-
-type AuthVariables = {
-  user: { userId: string; username: string };
-};
+import { authenticate, type AuthVariables } from "../middleware/auth";
 
 export const authRoutes = new Hono<{
   Bindings: Env;
   Variables: AuthVariables;
 }>();
+
+function validateRegistration(body: {
+  username: string;
+  email: string;
+  password: string;
+}): Response | null {
+  const { username, email, password } = body;
+  if (!username || username.length < 3 || username.length > 50) {
+    return Response.json(
+      { status: "error", message: "Username must be between 3 and 50 characters" },
+      { status: 400 },
+    );
+  }
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+    return Response.json({ status: "error", message: "Email must be valid" }, { status: 400 });
+  }
+  if (!password || password.length < 12) {
+    return Response.json(
+      { status: "error", message: "Password must be at least 12 characters" },
+      { status: 400 },
+    );
+  }
+  if (password.length > 1024) {
+    return Response.json(
+      { status: "error", message: "Password must be at most 1024 characters" },
+      { status: 400 },
+    );
+  }
+  return null;
+}
 
 authRoutes.post("/register", async (c) => {
   const body = await c.req.json<{
@@ -21,23 +47,10 @@ authRoutes.post("/register", async (c) => {
     password: string;
   }>();
 
-  const { username, email, password } = body;
+  const validationError = validateRegistration(body);
+  if (validationError) return validationError;
 
-  if (!username || username.length < 3 || username.length > 50) {
-    return c.json(
-      {
-        status: "error",
-        message: "Username must be between 3 and 50 characters",
-      },
-      400,
-    );
-  }
-  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-    return c.json({ status: "error", message: "Email must be valid" }, 400);
-  }
-  if (!password || password.length < 12) {
-    return c.json({ status: "error", message: "Password must be at least 12 characters" }, 400);
-  }
+  const { username, email, password } = body;
 
   const db = createDb(c.env);
 

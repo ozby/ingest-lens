@@ -17,7 +17,7 @@ export interface DecodedToken {
   username: string;
 }
 
-type AuthVariables = {
+export type AuthVariables = {
   user: DecodedToken;
 };
 

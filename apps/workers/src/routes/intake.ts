@@ -10,7 +10,7 @@ import type {
 } from "@repo/types";
 import { approvedMappingRevisions, intakeAttempts, queues } from "../db/schema";
 import { createDb, type Env } from "../db/client";
-import { authenticate } from "../middleware/auth";
+import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 import { DEFAULT_MAPPING_PROMPT_VERSION, suggestMappings } from "../intake/aiMappingAdapter";
 import { validateIntakeRequest, defaultHashPayload } from "../intake/validateIntakeRequest";
@@ -26,10 +26,6 @@ import {
   createAndDispatchTopicMessages,
   deriveIngestIdempotencyKey,
 } from "../messages/lifecycle";
-
-type AuthVariables = {
-  user: { userId: string; username: string };
-};
 
 type AppContext = Context<{
   Bindings: Env;
@@ -134,10 +130,6 @@ function toMappingRevision(row: MappingVersionRow): ApprovedMappingRevision {
   };
 }
 
-function createId(): string {
-  return crypto.randomUUID();
-}
-
 async function approveMapping(
   db: ReturnType<typeof createDb>,
   attemptRow: AttemptRow,
@@ -166,7 +158,7 @@ async function approveMapping(
     throw new Error("At least one approved suggestion is required.");
   }
 
-  const mappingVersionId = createId();
+  const mappingVersionId = crypto.randomUUID();
   const now = new Date();
   const record = normalizeWithMapping({
     payload,
@@ -781,8 +773,9 @@ async function persistPendingReview(
   mapped: SuggestMappingsResult,
 ): Promise<typeof intakeAttempts.$inferSelect | null> {
   const now = new Date();
-  const attemptId = createId();
-  const mappingTraceId = mapped.kind === "success" ? mapped.batch.mappingTraceId : createId();
+  const attemptId = crypto.randomUUID();
+  const mappingTraceId =
+    mapped.kind === "success" ? mapped.batch.mappingTraceId : crypto.randomUUID();
   const driftCategory =
     mapped.kind === "success"
       ? (mapped.batch.driftCategories[0] ?? "renamed_field")
@@ -877,8 +870,8 @@ async function tryHealPath(
       value,
       mapped,
       healSuggestions,
-      createId(),
-      createId(),
+      crypto.randomUUID(),
+      crypto.randomUUID(),
       incomingFingerprint,
     );
 
@@ -893,11 +886,20 @@ async function tryHealPath(
       mappingVersion,
       record: normalized,
     });
-  } catch {
+  } catch (error) {
+    console.error(
+      "[intake] heal-path failed:",
+      error instanceof Error ? error.message : String(error),
+    );
     if (healReserved) {
-      await notifyHealDeferred(healDO, "persistence_failed");
+      await notifyHealDeferred(healDO, "persistence_failed").catch((deferError) =>
+        console.error(
+          "[intake] heal-defer notify failed:",
+          deferError instanceof Error ? deferError.message : String(deferError),
+        ),
+      );
     }
-    return null; // fall through to pending_review while no persisted approved state exists
+    return null;
   }
 
   await notifyHealCommitted(
@@ -940,7 +942,7 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
   const validation = validateIntakeRequest(body, {
     clock: () => new Date(),
     hashPayload: defaultHashPayload,
-    idGenerator: createId,
+    idGenerator: () => crypto.randomUUID(),
   });
 
   if (!validation.ok) {
@@ -954,7 +956,8 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     );
   }
 
-  const AUTO_HEAL_THRESHOLD = Number(c.env.AUTO_HEAL_THRESHOLD ?? 0.8);
+  const rawThreshold = Number(c.env.AUTO_HEAL_THRESHOLD);
+  const AUTO_HEAL_THRESHOLD = Number.isFinite(rawThreshold) ? rawThreshold : 0.8;
 
   const doId = c.env.HEAL_STREAM.idFromName(
     `${validation.value.sourceSystem}:${validation.value.contract.id}:${validation.value.contract.version}`,
@@ -977,7 +980,7 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     });
     await c.env.DELIVERY_QUEUE.send({
       type: "intake_audit",
-      attemptId: createId(),
+      attemptId: crypto.randomUUID(),
       sourceSystem: validation.value.sourceSystem,
       sourceHash: validation.value.sourceHash,
       fingerprint: incomingFingerprint,

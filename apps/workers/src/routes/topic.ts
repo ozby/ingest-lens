@@ -4,13 +4,9 @@ import { createDb, type Env } from "../db/client";
 import { topicSubscriptions, topics, queues } from "../db/schema";
 import { serializeMessage } from "./message-response";
 import { hydrateTopicsWithSubscriptions, requireOwnedQueue, requireOwnedTopic } from "./ownership";
-import { authenticate } from "../middleware/auth";
+import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 import { createAndDispatchTopicMessages } from "../messages/lifecycle";
-
-type AuthVariables = {
-  user: { userId: string; username: string };
-};
 
 export const topicRoutes = new Hono<{
   Bindings: Env;

@@ -2,14 +2,10 @@ import { Hono } from "hono";
 import { eq, and } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { queues, queueMetrics } from "../db/schema";
-import { authenticate } from "../middleware/auth";
+import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 import { requireOwnedQueue } from "./ownership";
 import { validatePushEndpoint } from "../lib/validate-push-endpoint";
-
-type AuthVariables = {
-  user: { userId: string; username: string };
-};
 
 export const queueRoutes = new Hono<{
   Bindings: Env;

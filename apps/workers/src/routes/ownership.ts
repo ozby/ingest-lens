@@ -2,10 +2,7 @@ import type { Context } from "hono";
 import { eq, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { queues, topicSubscriptions, topics } from "../db/schema";
-
-type AuthVariables = {
-  user: { userId: string; username: string };
-};
+import type { AuthVariables } from "../middleware/auth";
 
 type AppContext = Context<{
   Bindings: Env;

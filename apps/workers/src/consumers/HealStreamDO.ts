@@ -97,7 +97,13 @@ export class HealStreamDO implements DurableObject {
     this.initialized = true;
     const saved = await this.state.storage.get<string>(STORAGE_KEY);
     if (saved) {
-      this.approved = JSON.parse(saved) as ApprovedState;
+      try {
+        this.approved = JSON.parse(saved) as ApprovedState;
+      } catch {
+        console.error("[HealStreamDO] corrupted storage — resetting to defaults");
+        this.approved = null;
+        await this.state.storage.delete(STORAGE_KEY);
+      }
     }
   }
 

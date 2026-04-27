@@ -4,7 +4,7 @@ import { createDb, type Env } from "../db/client";
 import { messages, queueMetrics } from "../db/schema";
 import { serializeMessage, serializeMessages } from "./message-response";
 import { requireOwnedQueue } from "./ownership";
-import { authenticate } from "../middleware/auth";
+import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 import { createAndDispatchQueueMessage } from "../messages/lifecycle";
 
@@ -12,10 +12,6 @@ const DEFAULT_MAX_MESSAGES = 10;
 const DEFAULT_VISIBILITY_TIMEOUT = 30;
 
 type LeaseMessageRow = typeof messages.$inferSelect;
-
-type AuthVariables = {
-  user: { userId: string; username: string };
-};
 
 export const messageRoutes = new Hono<{
   Bindings: Env;

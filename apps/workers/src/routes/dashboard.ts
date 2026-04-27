@@ -3,12 +3,8 @@ import { and, count, eq, gt, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { intakeAttempts, queues, messages, serverMetrics, queueMetrics } from "../db/schema";
 import { requireOwnedQueue } from "./ownership";
-import { authenticate } from "../middleware/auth";
+import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
-
-type AuthVariables = {
-  user: { userId: string; username: string };
-};
 
 export const dashboardRoutes = new Hono<{
   Bindings: Env;

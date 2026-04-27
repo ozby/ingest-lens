@@ -1,18 +1,20 @@
 import { createMiddleware } from "hono/factory";
 import type { Env } from "../db/client";
-import type { DecodedToken } from "./auth";
+import type { AuthVariables } from "./auth";
 
-type RateLimiterVariables = {
-  user: DecodedToken;
-};
-
-type HonoCtx = { Bindings: Env; Variables: RateLimiterVariables };
+type HonoCtx = { Bindings: Env; Variables: AuthVariables };
 
 function createRateLimiter(selectBinding: (env: Env) => RateLimit | undefined, label: string) {
   return createMiddleware<HonoCtx>(async (c, next) => {
     const binding = selectBinding(c.env);
 
     if (!binding) {
+      if (c.env.NODE_ENV === "production") {
+        return c.json(
+          { status: "error", message: `Server misconfiguration: ${label} binding not available` },
+          500,
+        );
+      }
       console.warn(
         `[rateLimiter] ${label} binding is absent — rate limiting is DISABLED for this request.`,
       );
@@ -20,7 +22,7 @@ function createRateLimiter(selectBinding: (env: Env) => RateLimit | undefined, l
       return;
     }
 
-    const user = c.get("user") as DecodedToken | undefined;
+    const user = c.get("user");
     const key =
       user?.userId ??
       c.req.raw.headers.get("CF-Connecting-IP") ??
