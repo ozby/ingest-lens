@@ -9,7 +9,6 @@
 - `@repo/lab-s1a-correctness` — `apps/lab/scenarios/s1a-correctness`
 - `@repo/lab-s1b-latency` — `apps/lab/scenarios/s1b-latency`
 - `@repo/logger` — `packages/logger`
-- `@repo/neon` — `packages/neon`
 - `@repo/test-utils` — `packages/test-utils`
 - `@repo/types` — `packages/types`
 - `@repo/typescript-config` — `packages/config-typescript`
@@ -107,7 +106,6 @@ is ready.
 - `@repo/lab-s1a-correctness` — `apps/lab/scenarios/s1a-correctness`
 - `@repo/lab-s1b-latency` — `apps/lab/scenarios/s1b-latency`
 - `@repo/logger` — `packages/logger`
-- `@repo/neon` — `packages/neon`
 - `@repo/test-utils` — `packages/test-utils`
 - `@repo/types` — `packages/types`
 - `@repo/typescript-config` — `packages/config-typescript`

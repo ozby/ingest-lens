@@ -3,7 +3,7 @@
  * Orchestrates: neon branch → pulumi up → sync wrangler.toml IDs → wrangler deploy
  * Usage: bun ./src/deploy/deploy.ts <stack>  (run from infra/)
  */
-import { doppler, execWith } from "@webpresso/process-utils/secret-runner";
+import { doppler, execWith } from "@webpresso/runtime/process/secret-runner";
 import { ensureNamedBranch, getNeonConfig } from "@webpresso/neon-core";
 import { execSync } from "node:child_process";
 import process from "node:process";

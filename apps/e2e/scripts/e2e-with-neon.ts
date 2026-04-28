@@ -11,7 +11,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import process from "node:process";
-import { doppler } from "@webpresso/process-utils/secret-runner";
+import { doppler } from "@webpresso/runtime/process/secret-runner";
 import { getNeonConfig, NeonBranchProvider } from "@webpresso/neon-core";
 
 const suite = process.argv.includes("--suite")

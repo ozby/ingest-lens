@@ -15,7 +15,7 @@
     "@pulumi/pulumi": "^3.232.0",
     "@pulumiverse/doppler": "^0.9.0",
     "@webpresso/neon-core": "catalog:",
-    "@webpresso/process-utils": "catalog:"
+    "@webpresso/runtime": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -34,7 +34,7 @@
     "@commitlint/config-conventional": "^19.8.0",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
     "@webpresso/agent-kit": "catalog:",
-    "@webpresso/process-utils": "catalog:",
+    "@webpresso/runtime": "catalog:",
     "@webpresso/stryker-config": "catalog:",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
@@ -66,10 +66,9 @@
     },
     "onlyBuiltDependencies": [
       "@webpresso/agent-kit",
-      "@webpresso/cli-utils",
       "@webpresso/db-branching",
       "@webpresso/neon-core",
-      "@webpresso/process-utils",
+      "@webpresso/runtime",
       "@webpresso/vitest-config",
       "@webpresso/workers-test-kit"
     ]

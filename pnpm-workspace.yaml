@@ -33,10 +33,9 @@ catalog:
 
   # Webpresso standalone packages (git-pointer to individual repos on GitHub)
   "@webpresso/agent-kit": "git+ssh://git@github.com/webpresso/agent-kit.git#main"
-  "@webpresso/cli-utils": "github:webpresso/cli-utils#master"
   "@webpresso/db-branching": "git+ssh://git@github.com/webpresso/db-branching.git#main"
   "@webpresso/neon-core": "git+ssh://git@github.com/webpresso/neon.git#main"
-  "@webpresso/process-utils": "github:webpresso/process-utils#master"
+  "@webpresso/runtime": "git+ssh://git@github.com/webpresso/runtime.git#main"
   "@webpresso/stryker-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config"
 
   # Webpresso tooling (git-pointer to github.com:webpresso/tooling monorepo)

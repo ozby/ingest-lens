@@ -60,8 +60,8 @@ catalogs:
     '@webpresso/neon-core':
       specifier: git+ssh://git@github.com/webpresso/neon.git#main
       version: 0.1.0
-    '@webpresso/process-utils':
-      specifier: github:webpresso/process-utils#master
+    '@webpresso/runtime':
+      specifier: git+ssh://git@github.com/webpresso/runtime.git#main
       version: 0.1.0
     '@webpresso/stryker-config':
       specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config
@@ -177,9 +177,9 @@ importers:
       '@webpresso/agent-kit':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/agent-kit.git#0a82aadee302a602b0a03a54480e47ca391e3e6d
-      '@webpresso/process-utils':
+      '@webpresso/runtime':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/process-utils.git#af2ef042a25b8b59c583c1739d71f859d64b0ef5
+        version: git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189
       '@webpresso/stryker-config':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
@@ -618,9 +618,9 @@ importers:
       '@webpresso/neon-core':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/neon.git#fb7bde72a9d051753e6bccd7a1c9e9eb300ae240
-      '@webpresso/process-utils':
+      '@webpresso/runtime':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/process-utils.git#af2ef042a25b8b59c583c1739d71f859d64b0ef5
+        version: git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -4373,11 +4373,10 @@ packages:
     version: 0.1.0
     engines: {node: '>=20'}
 
-  '@webpresso/process-utils@git+https://git@github.com:webpresso/process-utils.git#af2ef042a25b8b59c583c1739d71f859d64b0ef5':
-    resolution: {commit: af2ef042a25b8b59c583c1739d71f859d64b0ef5, repo: git@github.com:webpresso/process-utils.git, type: git}
+  '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189':
+    resolution: {commit: 49f483a6caa9e5dcb685b3271cbecf067aba5189, repo: git@github.com:webpresso/runtime.git, type: git}
     version: 0.1.0
     engines: {node: '>=24'}
-    hasBin: true
 
   '@webpresso/stryker-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config':
     resolution: {commit: 5405f42c6d4153c5c4d0809293ab227383f494d6, path: packages/stryker-config, repo: git@github.com:webpresso/tooling.git, type: git}
@@ -10244,10 +10243,11 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@webpresso/process-utils@git+https://git@github.com:webpresso/process-utils.git#af2ef042a25b8b59c583c1739d71f859d64b0ef5':
+  '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189':
     dependencies:
       execa: 9.6.1
       ts-pattern: 5.9.0
+      zod: 4.3.6
 
   '@webpresso/stryker-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))':
     dependencies:

@@ -18,7 +18,6 @@ description: Navigate the ozbys-node-pubsub monorepo efficiently. Knows package 
 | `@repo/lab-s1a-correctness` | `apps/lab/scenarios/s1a-correctness` | {{TODO: describe}} | {{TODO: common files}} |
 | `@repo/lab-s1b-latency` | `apps/lab/scenarios/s1b-latency` | {{TODO: describe}} | {{TODO: common files}} |
 | `@repo/logger` | `packages/logger` | {{TODO: describe}} | {{TODO: common files}} |
-| `@repo/neon` | `packages/neon` | {{TODO: describe}} | {{TODO: common files}} |
 | `@repo/test-utils` | `packages/test-utils` | {{TODO: describe}} | {{TODO: common files}} |
 | `@repo/types` | `packages/types` | {{TODO: describe}} | {{TODO: common files}} |
 | `@repo/typescript-config` | `packages/config-typescript` | {{TODO: describe}} | {{TODO: common files}} |
@@ -80,7 +79,6 @@ import { /* ... */ } from '@repo/lab-s1b-latency'
 - `lab-s1a-correctness` → `@repo/lab-s1a-correctness`
 - `lab-s1b-latency` → `@repo/lab-s1b-latency`
 - `logger` → `@repo/logger`
-- `neon` → `@repo/neon`
 - `test-utils` → `@repo/test-utils`
 - `types` → `@repo/types`
 - `typescript-config` → `@repo/typescript-config`
