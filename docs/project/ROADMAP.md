@@ -1,11 +1,16 @@
+---
+type: guide
+last_updated: "2026-04-28"
+---
+
 # Execution Roadmap
 
 Current as of: 2026-04-25
 
-Vision and public positioning live in [`docs/research/product/VISION.md`](docs/research/product/VISION.md);
+Vision and public positioning live in [`docs/research/product/VISION.md`](../research/product/VISION.md);
 this file is execution sequencing only. The system-level mermaid view of
 what has shipped lives in
-[`docs/system-architecture.md`](docs/system-architecture.md).
+[`docs/system-architecture.md`](../system-architecture.md).
 
 ## Status
 

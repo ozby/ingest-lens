@@ -1,8 +1,0 @@
-{
-  "version": "1",
-  "installed": {
-    "tier3Skills": []
-  },
-  "durablePlanningRoot": ".agent/planning/",
-  "lastInit": "2026-04-22T16:05:17.317Z"
-}

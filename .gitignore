@@ -33,6 +33,9 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# Stale editor / generated backup suffixes
+*.new
+
 # MCP / tool session artifacts
 .playwright-mcp/
 !.omx/

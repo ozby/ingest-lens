@@ -449,13 +449,13 @@ Two critical tests identified in eng-review:
 
 Verify the full flow works end-to-end with an Ashby fixture (already in
 `data/payload-mapper/schemas/ats/ashby-candidates.json`). Add the confidence
-band comment from TODOS.md.
+band comment from docs/project/TODOS.md.
 
 **Files:**
 
 - Adapt: `apps/workers/src/intake/aiMappingAdapter.ts` (comment only)
 - Adapt: `apps/workers/src/routes/intake.ts` (comment only)
-- Adapt: `TODOS.md` (mark confidence band TODO done)
+- Adapt: `docs/project/TODOS.md` (mark confidence band TODO done)
 
 **Steps:**
 
@@ -465,14 +465,14 @@ band comment from TODOS.md.
 2. Run `pnpm docs:check` — OK.
 3. Run `pnpm blueprints:check` — OK.
 4. Run `pnpm --filter @repo/workers test` — all green.
-5. Mark confidence band TODO complete in `TODOS.md`.
+5. Mark confidence band TODO complete in `docs/project/TODOS.md`.
 
 **Acceptance:**
 
 - [x] Comment added to `aiMappingAdapter.ts` explaining 0.5-0.79 band behavior
 - [x] `pnpm docs:check` passes
 - [x] `pnpm blueprints:check` passes
-- [x] `TODOS.md` confidence band item marked complete
+- [x] `docs/project/TODOS.md` confidence band item marked complete
 
 ---
 

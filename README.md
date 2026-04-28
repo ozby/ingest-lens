@@ -2,9 +2,47 @@
 
 **AI-assisted integration observability for payload intake, mapping, delivery, and replay-aware debugging.**
 
-Built solo by [Ozby](https://github.com/ozby) as a portfolio of integration primitives — drift detection, mapping revisions, classified delivery, and a measurement harness for delivery semantics.
+Built solo by [Ozby](https://github.com/ozby) as a portfolio of integration primitives: deterministic intake validation, AI-assisted mapping repair, delivery rails, replay, and measurement harnesses for delivery correctness.
 
-## Architecture
+## Why this repo is worth reviewing
+
+- **Adaptive intake repair** — detects payload drift, proposes mapping fixes with AI, validates them deterministically, and routes low-confidence cases to human review.
+- **Delivery primitives with proof** — models queues, topic fan-out, push retries/DLQ, and replay-aware operator workflows.
+- **Measurement over hand-waving** — ships a consistency lab that compares delivery paths for correctness, latency, and operational cost.
+
+## Quick start
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Secrets and database connections are managed via `with-secrets` (Doppler + Neon providers). No `.env` files.
+
+## Repo map
+
+- `apps/workers` — Cloudflare Worker API, intake pipeline, auth, delivery, replay
+- `apps/client` — React SPA for queues, topics, metrics, and intake review flows
+- `apps/lab` — consistency lab UI and workloads for delivery-path comparison
+- `packages/*` — shared types, UI, logging, test helpers, lab core
+- `infra` — Pulumi-managed Cloudflare infrastructure
+- `docs` — architecture, guarantees, ADRs, vision, and project records
+
+## Showcase entrypoints
+
+- **Architecture overview:** [`docs/system-architecture.md`](docs/system-architecture.md)
+- **AI intake + mapping flow:** [`docs/architecture.md`](docs/architecture.md)
+- **Delivery semantics:** [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md)
+- **Scale and tradeoffs:** [`docs/scale-considerations.md`](docs/scale-considerations.md)
+- **Vision + project records:** [`docs/research/product/VISION.md`](docs/research/product/VISION.md), [`docs/project/README.md`](docs/project/README.md)
+
+## Engineering proof points
+
+- **Deterministic safety over AI vibes** — model output is contract-checked, confidence-gated, and reviewable before promotion.
+- **Failure-path honesty** — delivery guarantees, retries, DLQ behavior, and replay semantics are documented as first-class product constraints.
+- **Evidence-backed systems thinking** — the consistency lab compares delivery paths on correctness, latency, and operational cost.
+
+## Architecture at a glance
 
 ```mermaid
 flowchart TD
@@ -18,41 +56,31 @@ flowchart TD
     B --> I[AI intake: shape fingerprint →<br/>fast-path or LLM suggestion →<br/>human review or auto-heal ≥0.8<br/>confidence via HealStreamDO]
 ```
 
-Full system view: [`docs/system-architecture.md`](docs/system-architecture.md).
+<details>
+<summary>Contributor workflows</summary>
 
-## Consistency Lab
+## Verification and demo flows
 
-`apps/lab` runs controlled workloads through Cloudflare Queues, Postgres polling, and Postgres LISTEN/NOTIFY, surfacing correctness and latency measurements. Gated by a runtime kill switch and a $50/day cost ceiling.
-
-## Quick start
-
-```bash
-pnpm install
-pnpm dev                     # starts all dev servers with Doppler secrets
-```
-
-Secrets and database connections are managed via `with-secrets` (Doppler + Neon providers). No `.env` files.
-
-## E2E
+### E2E
 
 ```bash
 pnpm e2e --suite foundation
 pnpm e2e --suite full
 ```
 
-Zero manual env vars. The runner provisions a Neon branch, migrates, starts wrangler, runs tests, and cleans up — all automatically.
-
 Suites: `foundation`, `auth`, `messaging`, `hardening`, `intake`, `demo`, `client`, `branding`, `full`.
 
-Neon branch helpers (run via Doppler wrapper):
+### Verify
 
 ```bash
-with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:list
-with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:create
-with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:cleanup
+pnpm check
+pnpm test
+pnpm build
+pnpm docs:check
+pnpm blueprints:check
 ```
 
-## Local GitHub Actions testing
+### Local GitHub Actions testing
 
 ```bash
 pnpm act:list
@@ -61,42 +89,14 @@ pnpm act:e2e
 pnpm act:cleanup
 ```
 
-Uses a Doppler-backed wrapper (`scripts/act-with-doppler.ts`) that injects secrets from Doppler into `act` containers.
-
-## Verify
+### Deploy
 
 ```bash
-pnpm check                  # format + lint + typecheck
-pnpm test
-pnpm build
-pnpm docs:check
-pnpm blueprints:check
+bun ./infra/src/deploy/deploy.ts dev
+bun ./infra/src/deploy/deploy.ts prd
 ```
 
-## Delivery rails
-
-- **Queues** — direct message delivery
-- **Topics** — fan-out to subscribed queues
-- **Push delivery** — transient errors use exponential backoff; permanent errors route to DLQ immediately
-- **Durable Objects** — topic fan-out and short reconnect replay
-
-Full contract: [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md).
-
-## Deploy
-
-```bash
-bun ./infra/src/deploy/deploy.ts dev   # api.dev.ingest-lens.ozby.dev + dev.ingest-lens.ozby.dev
-bun ./infra/src/deploy/deploy.ts prd   # api.ingest-lens.ozby.dev     + ingest-lens.ozby.dev
-```
-
-**Smoke check:**
-
-```bash
-curl -sI https://dev.ingest-lens.ozby.dev | grep -E 'HTTP|content-type'
-curl -s https://api.dev.ingest-lens.ozby.dev/health
-```
-
-**Rollback:** `wrangler rollback --env <stack>`
+</details>
 
 ## Docs
 
@@ -106,4 +106,4 @@ curl -s https://api.dev.ingest-lens.ozby.dev/health
 - [Scale considerations](docs/scale-considerations.md)
 - [ADR index](docs/adrs/README.md)
 - [Blueprints](blueprints/README.md)
-- [Roadmap](ROADMAP.md)
+- [Project records](docs/project/README.md)

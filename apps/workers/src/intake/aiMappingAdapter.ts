@@ -171,6 +171,13 @@ function hasLowConfidence(batch: MappingSuggestionBatch, threshold: number): boo
   );
 }
 
+function createMappingValidationOptions(input: SuggestMappingsInput) {
+  return {
+    allowedTargetFields: input.targetFields,
+    sourcePayload: input.payload,
+  };
+}
+
 function createWorkersStructuredRunner(env: Pick<Env, "AI">): StructuredRunner {
   if (!env.AI) {
     throw new Error("Workers AI binding is unavailable");
@@ -328,10 +335,7 @@ async function attachJudgeAssessments(
   judgeDisagreements: number;
   judgeUnavailableCount: number;
 }> {
-  let judgeDisagreements = 0;
-  let judgeUnavailableCount = 0;
-
-  const suggestions = await Promise.all(
+  const assessedSuggestions = await Promise.all(
     batch.suggestions.map(async (suggestion) => {
       try {
         const rawAssessment = await runner<JudgeAssessment>({
@@ -344,29 +348,40 @@ async function attachJudgeAssessments(
         });
         const validation = validateJudgeAssessment(rawAssessment);
         if (!validation.ok) {
-          judgeUnavailableCount += 1;
-          return suggestion;
-        }
-
-        if (validation.value.verdict !== "agree") {
-          judgeDisagreements += 1;
+          return {
+            suggestion,
+            judgeDisagreed: false,
+            judgeUnavailable: true,
+          };
         }
 
         return {
-          ...suggestion,
-          judgeAssessment: validation.value,
+          suggestion: {
+            ...suggestion,
+            judgeAssessment: validation.value,
+          },
+          judgeDisagreed: validation.value.verdict !== "agree",
+          judgeUnavailable: false,
         };
       } catch {
-        judgeUnavailableCount += 1;
-        return suggestion;
+        return {
+          suggestion,
+          judgeDisagreed: false,
+          judgeUnavailable: true,
+        };
       }
     }),
   );
 
+  const judgeDisagreements = assessedSuggestions.filter((result) => result.judgeDisagreed).length;
+  const judgeUnavailableCount = assessedSuggestions.filter(
+    (result) => result.judgeUnavailable,
+  ).length;
+
   return {
     batch: {
       ...batch,
-      suggestions,
+      suggestions: assessedSuggestions.map((result) => result.suggestion),
     },
     judgeDisagreements,
     judgeUnavailableCount,
@@ -455,10 +470,7 @@ async function fetchBatch(
               schemaDescription:
                 "Structured mapping suggestions for a deterministic intake workflow.",
               validate: (value) =>
-                validateMappingSuggestionBatch(value, {
-                  allowedTargetFields: input.targetFields,
-                  sourcePayload: input.payload,
-                }),
+                validateMappingSuggestionBatch(value, createMappingValidationOptions(input)),
               maxRetries: 0,
               abortSignal,
             }) as Promise<MappingSuggestionBatch>,
@@ -526,10 +538,10 @@ export async function suggestMappings(
   const batchResult = await fetchBatch(primaryRunner, provider, input, opts);
   if (!batchResult.ok) return batchResult.result;
 
-  const validation = validateMappingSuggestionBatch(batchResult.batch, {
-    allowedTargetFields: input.targetFields,
-    sourcePayload: input.payload,
-  });
+  const validation = validateMappingSuggestionBatch(
+    batchResult.batch,
+    createMappingValidationOptions(input),
+  );
 
   if (!validation.ok) {
     return {

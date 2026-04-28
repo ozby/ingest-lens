@@ -190,7 +190,7 @@ do not spread this work across other tasks.
 - Modify: `.env.example`
 - Modify or delete: `docker-compose.yml`
 - Modify: `blueprints/README.md`
-- Modify: `ROADMAP.md`
+- Modify: `docs/project/ROADMAP.md`
 - Delete after diff review: `AGENTS.md.new`
 - Delete after diff review: `.agent/guides/agent-guardrails.md.new`
 - Delete after diff review: `.agent/guides/parallel-execution.md.new`
@@ -210,7 +210,7 @@ do not spread this work across other tasks.
 
 **Steps (TDD):**
 
-1. Run `rg -n "Mongo|Redis|Express|api-server|notification-server|node-pubsub|\\.new" .env.example docker-compose.yml blueprints/README.md ROADMAP.md .agent docs AGENTS.md` to capture the stale-artifact baseline.
+1. Run `rg -n "Mongo|Redis|Express|api-server|notification-server|node-pubsub|\\.new" .env.example docker-compose.yml blueprints/README.md docs/project/ROADMAP.md .agent docs AGENTS.md` to capture the stale-artifact baseline.
 2. Rewrite or remove stale local-stack guidance for Workers/Postgres/Doppler reality, and update blueprint/roadmap references to the current IngestLens sequence.
 3. Review each tracked `.new` file against its canonical counterpart, then delete only files proven redundant.
 4. Run `pnpm blueprints:check && pnpm docs:check && pnpm format:check`.
@@ -219,7 +219,7 @@ do not spread this work across other tasks.
 
 - [ ] No stale Mongo/Redis/Express stack is presented as current in the owned files.
 - [ ] Tracked redundant `.new` files are either deleted or intentionally retained with rationale.
-- [ ] `ROADMAP.md` and `blueprints/README.md` point at the current planned IngestLens work.
+- [ ] `docs/project/ROADMAP.md` and `blueprints/README.md` point at the current planned IngestLens work.
 - [ ] `pnpm blueprints:check`, `pnpm docs:check`, and `pnpm format:check` pass.
 
 ### Phase 2: Demo narrative and UI story polish [Complexity: S]
@@ -392,7 +392,7 @@ rails behind the higher-level integration observability story.
 - **ADR README exists:** `docs/adrs/README.md` confirmed present, along with a new ADR `0004-ingestlens-ai-intake-architecture.md` that already uses IngestLens naming.
 - **`docs/research/product/VISION.md` exists:** confirmed present.
 - **All target files for Task 1.1 exist:** `README.md`, `docs/architecture.md`, `docs/delivery-guarantees.md`, `docs/scale-considerations.md` all present.
-- **All target files for Task 1.4 exist:** `ROADMAP.md`, `AGENTS.md`, `docker-compose.yml`, `.env.example` all present.
+- **All target files for Task 1.4 exist:** `docs/project/ROADMAP.md`, `AGENTS.md`, `docker-compose.yml`, `.env.example` all present.
 - **Client `vitest.config.ts` confirmed:** exists at `apps/client/vitest.config.ts`.
 - **Client pages and components confirmed:** `NavBar.tsx`, `Sidebar.tsx`, `Index.tsx`, `Dashboard.tsx`, `Queues.tsx`, `Topics.tsx` all present at the paths specified in Tasks 1.3, 2.2, 2.3.
 

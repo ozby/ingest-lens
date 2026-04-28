@@ -12,7 +12,7 @@ mapping revision, replays the source payload deterministically, and proves the
 result through telemetry and existing delivery rails.
 
 This file is the canonical product-vision source. `README.md` is the public
-landing page, `ROADMAP.md` is execution sequencing, and individual blueprints are
+landing page, `docs/project/ROADMAP.md` is execution sequencing, and individual blueprints are
 the implementation contracts. When those documents disagree, update this file
 first and then make the others conform.
 

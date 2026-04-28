@@ -1,4 +1,11 @@
-# TODOS
+---
+type: guide
+last_updated: "2026-04-28"
+---
+
+# TODO log
+
+No active root TODOs remain. This file is kept as an archive for completed or historical housekeeping notes that no longer belong in the repo root.
 
 ## Self-Healing Stream (adaptive intake)
 

@@ -400,6 +400,76 @@ describe("suggestMappings", () => {
     expect(result.decisionLog.judgeUnavailableCount).toBe(0);
   });
 
+  it("aggregates mixed judge outcomes across multiple suggestions", async () => {
+    const baseSuggestion = createValidBatch().suggestions[0];
+    const fakeRunner: StructuredRunner = async () => ({
+      ...createValidBatch(),
+      suggestions: [
+        baseSuggestion,
+        {
+          ...baseSuggestion,
+          id: "suggestion-2",
+          sourcePath: "/location/city",
+          targetField: "locationCity",
+          evidenceSample: "Berlin",
+        },
+        {
+          ...baseSuggestion,
+          id: "suggestion-3",
+          sourcePath: "/company/name",
+          targetField: "companyName",
+          evidenceSample: "IngestLens",
+        },
+      ],
+    });
+    let judgeAttempt = 0;
+    const judgeRunner: StructuredRunner = async () => {
+      judgeAttempt += 1;
+      if (judgeAttempt === 1) {
+        return {
+          verdict: "agree",
+          concerns: [],
+          confidence: 0.93,
+          recommendedAction: "approve",
+          explanation: "Direct semantic match.",
+        } satisfies JudgeAssessment;
+      }
+      if (judgeAttempt === 2) {
+        return {
+          verdict: "warn",
+          concerns: ["Human review recommended."],
+          confidence: 0.51,
+          recommendedAction: "review",
+          explanation: "Looks plausible but not certain.",
+        } satisfies JudgeAssessment;
+      }
+      throw new Error("judge unavailable");
+    };
+
+    const result = await suggestMappings(
+      {
+        ...createInput(),
+        enableJudge: true,
+      },
+      {
+        primaryRunner: fakeRunner,
+        judgeRunner,
+      },
+    );
+
+    expect(result.kind).toBe("success");
+    if (result.kind !== "success") {
+      return;
+    }
+
+    expect(result.batch.suggestions).toHaveLength(3);
+    expect(result.batch.suggestions[0]?.judgeAssessment?.verdict).toBe("agree");
+    expect(result.batch.suggestions[1]?.judgeAssessment?.verdict).toBe("warn");
+    expect(result.batch.suggestions[2]?.judgeAssessment).toBeUndefined();
+    expect(result.decisionLog.judgeDisagreements).toBe(1);
+    expect(result.decisionLog.judgeUnavailableCount).toBe(1);
+  });
+
   it("gracefully ignores invalid judge output", async () => {
     const fakeRunner: StructuredRunner = async () => createValidBatch();
     const judgeRunner: StructuredRunner = async () =>

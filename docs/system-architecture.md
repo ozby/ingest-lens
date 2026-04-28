@@ -164,4 +164,4 @@ flowchart LR
 - [Delivery guarantees](./delivery-guarantees.md)
 - [Scale considerations](./scale-considerations.md)
 - [ADR index](./adrs/README.md)
-- [Roadmap](../ROADMAP.md)
+- [Project records](./project/README.md)

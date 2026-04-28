@@ -77,7 +77,7 @@ Invoke `$plan-refine <slug>`. The skill will:
 
 ## Execution roadmap
 
-For the current wave order, Mermaid dependency DAG, and which blueprints are ready-next, see [`ROADMAP.md`](../ROADMAP.md) at the repo root.
+For the current wave order, Mermaid dependency DAG, and which blueprints are ready-next, see [`docs/project/ROADMAP.md`](../docs/project/ROADMAP.md).
 
 ## Research alignment notes
 
@@ -96,7 +96,7 @@ research artifact these blueprints implement.
 
 ## Gap audit snapshot
 
-Superseded by [`ROADMAP.md`](../ROADMAP.md). See the roadmap for the current execution order, dependency chain, and readiness assessment.
+Superseded by [`docs/project/ROADMAP.md`](../docs/project/ROADMAP.md). See the roadmap for the current execution order, dependency chain, and readiness assessment.
 
 ## Validation
 
