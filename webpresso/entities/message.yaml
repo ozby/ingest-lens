@@ -1,0 +1,83 @@
+entity: messages
+displayName: Message
+description: Queued message with delivery tracking
+database:
+  schema: public
+  table: messages
+fields:
+  - name: id
+    type: text
+    primary: true
+    required: true
+  - name: seq
+    type: bigint
+    required: true
+  - name: data
+    type: jsonb
+    required: true
+  - name: idempotency_key
+    type: text
+  - name: delivery_mode
+    type: text
+    required: true
+    default: pull
+    enum:
+      - pull
+      - push
+  - name: enqueue_state
+    type: text
+    required: true
+    default: not_needed
+    enum:
+      - not_needed
+      - pending
+      - enqueued
+      - failed
+  - name: push_delivered_at
+    type: timestamp
+  - name: last_enqueue_error
+    type: text
+  - name: received
+    type: boolean
+    required: true
+    default: false
+  - name: received_at
+    type: timestamp
+  - name: visibility_expires_at
+    type: timestamp
+  - name: expires_at
+    type: timestamp
+    required: true
+  - name: received_count
+    type: integer
+    required: true
+    default: 0
+  - name: created_at
+    type: timestamp
+    required: true
+  - name: updated_at
+    type: timestamp
+    required: true
+indexes:
+  - columns: [queue_id, idempotency_key]
+    unique: true
+    name: messages_queue_idempotency_idx
+  - columns: [queue_id, delivery_mode, expires_at, received, visibility_expires_at, seq]
+    name: messages_pull_lease_idx
+  - columns: [delivery_mode, enqueue_state, created_at]
+    name: messages_enqueue_state_idx
+relationships:
+  - name: queue
+    type: object
+    target: queues
+    using:
+      foreign_key: queue_id
+permissions:
+  select:
+    access: owner_only
+  insert:
+    access: authenticated
+  update:
+    access: owner_only
+  delete:
+    access: owner_only

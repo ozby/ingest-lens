@@ -1,0 +1,99 @@
+entity: intake_attempts
+displayName: Intake Attempt
+description: AI mapping attempt — tracks source payload ingestion through LLM mapping, validation, and approval lifecycle
+database:
+  schema: public
+  table: intake_attempts
+fields:
+  - name: id
+    type: text
+    primary: true
+    required: true
+  - name: mapping_trace_id
+    type: text
+    required: true
+  - name: contract_id
+    type: text
+    required: true
+  - name: contract_version
+    type: text
+    required: true
+  - name: mapping_version_id
+    type: text
+  - name: source_system
+    type: text
+    required: true
+  - name: source_kind
+    type: text
+    required: true
+  - name: source_fixture_id
+    type: text
+  - name: source_hash
+    type: text
+    required: true
+  - name: delivery_target
+    type: jsonb
+    required: true
+  - name: status
+    type: text
+    required: true
+  - name: ingest_status
+    type: text
+    required: true
+  - name: drift_category
+    type: text
+    required: true
+  - name: model_name
+    type: text
+    required: true
+  - name: prompt_version
+    type: text
+    required: true
+  - name: overall_confidence
+    type: real
+    required: true
+    default: 0
+  - name: redacted_summary
+    type: text
+    required: true
+  - name: validation_errors
+    type: jsonb
+    required: true
+  - name: suggestion_batch
+    type: jsonb
+  - name: review_payload
+    type: jsonb
+  - name: review_payload_expires_at
+    type: timestamp
+  - name: rejection_reason
+    type: text
+  - name: ingest_error
+    type: text
+  - name: approved_at
+    type: timestamp
+  - name: created_at
+    type: timestamp
+    required: true
+  - name: updated_at
+    type: timestamp
+    required: true
+indexes:
+  - columns: [owner_id, created_at]
+    name: intake_attempts_owner_created_idx
+  - columns: [mapping_trace_id]
+    name: intake_attempts_mapping_trace_idx
+relationships:
+  - name: owner
+    type: object
+    target: users
+    using:
+      foreign_key: owner_id
+permissions:
+  select:
+    access: owner_only
+  insert:
+    access: authenticated
+  update:
+    access: owner_only
+  delete:
+    access: owner_only

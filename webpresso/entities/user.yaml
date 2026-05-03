@@ -1,0 +1,55 @@
+entity: users
+displayName: User
+description: Authenticated user account
+database:
+  schema: public
+  table: users
+fields:
+  - name: id
+    type: text
+    primary: true
+    required: true
+  - name: username
+    type: text
+    required: true
+    unique: true
+  - name: email
+    type: text
+    required: true
+    unique: true
+    validation:
+      email: true
+  - name: password
+    type: text
+    required: true
+  - name: created_at
+    type: timestamp
+    required: true
+  - name: updated_at
+    type: timestamp
+    required: true
+relationships:
+  - name: queues
+    type: array
+    target: queues
+    using:
+      foreign_key: owner_id
+  - name: topics
+    type: array
+    target: topics
+    using:
+      foreign_key: owner_id
+  - name: intake_attempts
+    type: array
+    target: intake_attempts
+    using:
+      foreign_key: owner_id
+permissions:
+  select:
+    access: owner_only
+  insert:
+    access: authenticated
+  update:
+    access: owner_only
+  delete:
+    access: owner_only

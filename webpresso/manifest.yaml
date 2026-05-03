@@ -1,0 +1,11 @@
+apiVersion: webpresso.dev/v1
+entry: src/main.tsx
+auth:
+  basePath: /auth
+  providers:
+    - type: email
+    - type: google
+      clientId: GOOGLE_CLIENT_ID
+  cookieDomain: .ingest-lens.dev
+build:
+  outDir: dist

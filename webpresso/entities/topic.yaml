@@ -1,0 +1,43 @@
+entity: topics
+displayName: Topic
+description: Pub/sub topic owned by a user
+database:
+  schema: public
+  table: topics
+fields:
+  - name: id
+    type: text
+    primary: true
+    required: true
+  - name: name
+    type: text
+    required: true
+  - name: created_at
+    type: timestamp
+    required: true
+  - name: updated_at
+    type: timestamp
+    required: true
+indexes:
+  - columns: [owner_id]
+    name: topics_owner_idx
+relationships:
+  - name: owner
+    type: object
+    target: users
+    using:
+      foreign_key: owner_id
+  - name: subscriptions
+    type: array
+    target: topic_subscriptions
+    using:
+      foreign_key: topic_id
+permissions:
+  select:
+    access: owner_only
+  insert:
+    access: authenticated
+  update:
+    access: owner_only
+  delete:
+    access: owner_only

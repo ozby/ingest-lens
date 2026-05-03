@@ -1,0 +1,61 @@
+entity: queues
+displayName: Queue
+description: Message queue owned by a user
+database:
+  schema: public
+  table: queues
+fields:
+  - name: id
+    type: text
+    primary: true
+    required: true
+  - name: name
+    type: text
+    required: true
+  - name: retention_period
+    type: integer
+    required: true
+    default: 14
+  - name: schema
+    type: jsonb
+  - name: push_endpoint
+    type: text
+  - name: created_at
+    type: timestamp
+    required: true
+  - name: updated_at
+    type: timestamp
+    required: true
+indexes:
+  - columns: [owner_id]
+    name: queues_owner_idx
+relationships:
+  - name: owner
+    type: object
+    target: users
+    using:
+      foreign_key: owner_id
+  - name: messages
+    type: array
+    target: messages
+    using:
+      foreign_key: queue_id
+  - name: topic_subscriptions
+    type: array
+    target: topic_subscriptions
+    using:
+      foreign_key: queue_id
+  - name: queue_metrics
+    type: object
+    target: queue_metrics
+    using:
+      foreign_key: queue_id
+permissions:
+  select:
+    access: owner_only
+  insert:
+    access: authenticated
+  update:
+    access: owner_only
+  delete:
+    access: owner_only

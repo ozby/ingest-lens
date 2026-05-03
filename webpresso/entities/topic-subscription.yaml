@@ -1,0 +1,40 @@
+entity: topic_subscriptions
+displayName: Topic Subscription
+description: Subscription connecting a topic to a queue for fan-out delivery
+database:
+  schema: public
+  table: topic_subscriptions
+fields:
+  - name: id
+    type: text
+    primary: true
+    required: true
+  - name: created_at
+    type: timestamp
+    required: true
+indexes:
+  - columns: [topic_id, queue_id]
+    unique: true
+    name: topic_subscriptions_topic_queue_idx
+  - columns: [topic_id]
+    name: topic_subscriptions_topic_idx
+  - columns: [queue_id]
+    name: topic_subscriptions_queue_idx
+relationships:
+  - name: topic
+    type: object
+    target: topics
+    using:
+      foreign_key: topic_id
+  - name: queue
+    type: object
+    target: queues
+    using:
+      foreign_key: queue_id
+permissions:
+  select:
+    access: owner_only
+  insert:
+    access: authenticated
+  delete:
+    access: owner_only

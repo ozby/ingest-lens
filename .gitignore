@@ -103,3 +103,4 @@ apps/workers/reports/
 # git pointer; never commit a vendored copy.
 /tooling/
 .gstack/
+.webpresso/
