@@ -34,15 +34,15 @@ catalog:
   "@webpresso/db-branching": "git+ssh://git@github.com/webpresso/db-branching.git#main"
   "@webpresso/neon-core": "git+ssh://git@github.com/webpresso/neon.git#main"
   "@webpresso/runtime": "git+ssh://git@github.com/webpresso/runtime.git#main"
-  "@webpresso/schema-engine": 0.1.0-alpha.5
-  "@webpresso/schema-frontend": 0.1.0-alpha.5
-  "@webpresso/schema-loaders": 0.1.0-alpha.5
-  "@webpresso/schema-spec": 0.1.0-alpha.5
-  "@webpresso/stryker-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config"
+  "@webpresso/schema-engine": 0.1.0-alpha.7
+  "@webpresso/schema-frontend": 0.1.0-alpha.7
+  "@webpresso/schema-loaders": 0.1.0-alpha.7
+  "@webpresso/schema-spec": 0.1.0-alpha.7
+  "@webpresso/stryker-config": ^0.1.0
 
-  # Webpresso tooling (git-pointer to github.com:webpresso/tooling monorepo)
-  "@webpresso/typescript-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/typescript-config"
-  "@webpresso/vitest-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/vitest-config"
+  # Webpresso tooling (GitHub Packages npm registry)
+  "@webpresso/typescript-config": ^0.1.0
+  "@webpresso/vitest-config": ^0.1.0
   "@webpresso/workers-test-kit": "git+ssh://git@github.com/webpresso/workers-test-kit.git#main"
   axios: ^1.15.2
   bunchee: ^6.10.0
