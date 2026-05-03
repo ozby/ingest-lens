@@ -34,10 +34,10 @@ catalog:
   "@webpresso/db-branching": "git+ssh://git@github.com/webpresso/db-branching.git#main"
   "@webpresso/neon-core": "git+ssh://git@github.com/webpresso/neon.git#main"
   "@webpresso/runtime": "git+ssh://git@github.com/webpresso/runtime.git#main"
-  "@webpresso/schema-engine": 0.1.0-alpha.1
-  "@webpresso/schema-frontend": 0.1.0-alpha.1
-  "@webpresso/schema-loaders": 0.1.0-alpha.1
-  "@webpresso/schema-spec": 0.1.0-alpha.1
+  "@webpresso/schema-engine": 0.1.0-alpha.5
+  "@webpresso/schema-frontend": 0.1.0-alpha.5
+  "@webpresso/schema-loaders": 0.1.0-alpha.5
+  "@webpresso/schema-spec": 0.1.0-alpha.5
   "@webpresso/stryker-config": "git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config"
 
   # Webpresso tooling (git-pointer to github.com:webpresso/tooling monorepo)

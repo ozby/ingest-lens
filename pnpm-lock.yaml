@@ -64,17 +64,17 @@ catalogs:
       specifier: git+ssh://git@github.com/webpresso/runtime.git#main
       version: 0.1.0
     '@webpresso/schema-engine':
-      specifier: 0.1.0-alpha.1
-      version: 0.1.0-alpha.1
+      specifier: 0.1.0-alpha.5
+      version: 0.1.0-alpha.5
     '@webpresso/schema-frontend':
-      specifier: 0.1.0-alpha.1
-      version: 0.1.0-alpha.1
+      specifier: 0.1.0-alpha.5
+      version: 0.1.0-alpha.5
     '@webpresso/schema-loaders':
-      specifier: 0.1.0-alpha.1
-      version: 0.1.0-alpha.1
+      specifier: 0.1.0-alpha.5
+      version: 0.1.0-alpha.5
     '@webpresso/schema-spec':
-      specifier: 0.1.0-alpha.1
-      version: 0.1.0-alpha.1
+      specifier: 0.1.0-alpha.5
+      version: 0.1.0-alpha.5
     '@webpresso/stryker-config':
       specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config
       version: 0.0.1
@@ -194,16 +194,16 @@ importers:
         version: git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189
       '@webpresso/schema-engine':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.1(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)
+        version: 0.1.0-alpha.5(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)
       '@webpresso/schema-frontend':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))
+        version: 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))
       '@webpresso/schema-loaders':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+        version: 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       '@webpresso/schema-spec':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+        version: 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       '@webpresso/stryker-config':
         specifier: 'catalog:'
         version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
@@ -4427,32 +4427,27 @@ packages:
     version: 0.1.0
     engines: {node: '>=20'}
 
-  '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#16517ad8dcb95d1f7490ae90cdedda7c9d6e3dc6':
-    resolution: {commit: 16517ad8dcb95d1f7490ae90cdedda7c9d6e3dc6, repo: git@github.com:webpresso/runtime.git, type: git}
-    version: 0.1.0
-    engines: {node: '>=24'}
-
   '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189':
     resolution: {commit: 49f483a6caa9e5dcb685b3271cbecf067aba5189, repo: git@github.com:webpresso/runtime.git, type: git}
     version: 0.1.0
     engines: {node: '>=24'}
 
-  '@webpresso/schema-engine@0.1.0-alpha.1':
-    resolution: {integrity: sha512-WM47DtZEPzlnK/HCVX9MSNvvJI+agVd1voQ298atypNW6SejHjjUeB5BGfLG9yoCk+51Hw1TLIdFJa78wIZZZQ==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-engine/0.1.0-alpha.1/dcab69202d6613d84a580cc29ad97847f61a335f}
+  '@webpresso/schema-engine@0.1.0-alpha.5':
+    resolution: {integrity: sha512-cmq1ja22FB4NVu5LdSgNouhXufsWXYs5goWnbl4TqfHNsEB8i497IzCgCSNrvNKAwCc9P5EKncbM459lZ6wUUA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-engine/0.1.0-alpha.5/43ab48d0154887e1f9492080289c909b496b2498}
     peerDependencies:
       '@hookform/resolvers': ^5.2.2
       '@tanstack/react-router': ^1.168.10
       react: ^19.2.1
       react-hook-form: ^7.66.1
 
-  '@webpresso/schema-frontend@0.1.0-alpha.1':
-    resolution: {integrity: sha512-JnjLHCVe2+zxraLigwyneSTJvFrpl8uoUHGQV6cOQe6JFiEfuwE4yDKpUx2Fp+RC2IfuXgLNVilaL/wxbdeToA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-frontend/0.1.0-alpha.1/6c4037d09fa612f7768dcbdc9d525abdb2188287}
+  '@webpresso/schema-frontend@0.1.0-alpha.5':
+    resolution: {integrity: sha512-HPoE75JFvM7TOhSnboldQsyMkj9NBUb9XVhLq6AuLbKyfLrC7DUqOti73aKjG5MGHuckcFgVylIyMxWDH4LiIw==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-frontend/0.1.0-alpha.5/8c704355e5f98a64b1e10d78acc0769931f20b4e}
 
-  '@webpresso/schema-loaders@0.1.0-alpha.1':
-    resolution: {integrity: sha512-nJvSJC3QHvRNTecID9sy4NIWkpp/UHvVyDa0RmPzIuW/uO8v3StYBDP4y4ut5ZW/SvZuX2kVTahS7NUr7IC3PA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-loaders/0.1.0-alpha.1/abb5327f714253861d01a2d10451888dbbe78dec}
+  '@webpresso/schema-loaders@0.1.0-alpha.5':
+    resolution: {integrity: sha512-k47BFdI3IfJk8h6H/PCGvATF8wvI3UeANNPv7CqsbNaG3Xn2r6Qm6+VF9EvmNV1e0/6H4Ewde1MKbnkZezV1vA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-loaders/0.1.0-alpha.5/7f1b8b3f65f84336594cf6f020eee3bcb08f1133}
 
-  '@webpresso/schema-spec@0.1.0-alpha.1':
-    resolution: {integrity: sha512-0JumJJJjCHObdBk1kWmKGxKnY6grFDs5EbZOREEsCtE+oKxMpuQJsU8pq5lwXqc+yN3rSAnnqctqNP4D3nVZHw==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-spec/0.1.0-alpha.1/1110740b4e1a784453b638006b19f8b3865a1d99}
+  '@webpresso/schema-spec@0.1.0-alpha.5':
+    resolution: {integrity: sha512-9eIHOgdZgHz246NrwdfXCm93PFQiR5N+Q/lfDRIPT7pp+tTNa+eUErbRAIISxIBrQjaWfP82C843/wudEWPIng==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-spec/0.1.0-alpha.5/b71d42774c837004343c4f1d2b4dac7f060af010}
     peerDependencies:
       graphql-request: ^7.4.0
       react: ^19.2.1
@@ -10508,28 +10503,21 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#16517ad8dcb95d1f7490ae90cdedda7c9d6e3dc6':
-    dependencies:
-      execa: 9.6.1
-      ts-pattern: 5.9.0
-      zod: 4.3.6
-
   '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189':
     dependencies:
       execa: 9.6.1
       ts-pattern: 5.9.0
       zod: 4.3.6
 
-  '@webpresso/schema-engine@0.1.0-alpha.1(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)':
+  '@webpresso/schema-engine@0.1.0-alpha.5(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)':
     dependencies:
       '@babel/generator': 7.29.1
       '@babel/types': 7.29.0
       '@hookform/resolvers': 5.2.2(react-hook-form@7.73.1(react@19.2.5))
       '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@webpresso/runtime': git+https://git@github.com:webpresso/runtime.git#16517ad8dcb95d1f7490ae90cdedda7c9d6e3dc6
-      '@webpresso/schema-frontend': 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))
-      '@webpresso/schema-loaders': 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
-      '@webpresso/schema-spec': 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-frontend': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))
+      '@webpresso/schema-loaders': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       diff: 8.0.4
       drizzle-orm: 1.0.0-rc.1(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(postgres@3.4.9)(zod@4.3.6)
       graphql: 16.13.2
@@ -10575,21 +10563,20 @@ snapshots:
       - typebox
       - valibot
 
-  '@webpresso/schema-frontend@0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))':
+  '@webpresso/schema-frontend@0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))':
     dependencies:
       '@tanstack/react-query': 5.99.2(react@19.2.5)
       '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@webpresso/runtime': git+https://git@github.com:webpresso/runtime.git#16517ad8dcb95d1f7490ae90cdedda7c9d6e3dc6
-      '@webpresso/schema-spec': 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
       zod: 4.3.6
     transitivePeerDependencies:
       - graphql-request
 
-  '@webpresso/schema-loaders@0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
+  '@webpresso/schema-loaders@0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
     dependencies:
-      '@webpresso/schema-spec': 0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       gray-matter: 4.0.3
       yaml: 2.8.4
       zod: 4.3.6
@@ -10597,7 +10584,7 @@ snapshots:
       - graphql-request
       - react
 
-  '@webpresso/schema-spec@0.1.0-alpha.1(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
+  '@webpresso/schema-spec@0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
     dependencies:
       graphql-request: 7.4.0(graphql@16.13.2)
       react: 19.2.5
