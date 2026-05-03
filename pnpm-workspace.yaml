@@ -34,10 +34,10 @@ catalog:
   "@webpresso/db-branching": 0.1.0
   "@webpresso/neon-core": 0.1.0
   "@webpresso/runtime": 0.2.0
-  "@webpresso/schema-engine": 0.1.0-alpha.7
-  "@webpresso/schema-frontend": 0.1.0-alpha.7
-  "@webpresso/schema-loaders": 0.1.0-alpha.7
-  "@webpresso/schema-spec": 0.1.0-alpha.7
+  "@webpresso/schema-engine": 0.1.0-alpha.8
+  "@webpresso/schema-frontend": 0.1.0-alpha.8
+  "@webpresso/schema-loaders": 0.1.0-alpha.8
+  "@webpresso/schema-spec": 0.1.0-alpha.8
   "@webpresso/stryker-config": 0.1.0
 
   # Webpresso tooling (GitHub Packages npm registry)
@@ -61,8 +61,8 @@ catalog:
   # Task runner
   vite-plus: 0.1.19
 
-  # Webpresso standalone packages (git-pointer to individual repos on GitHub)
-  webpresso: "github:webpresso/webpresso#main"
+  # Webpresso umbrella (npm-registry, scoped on GitHub Packages)
+  "@webpresso/webpresso": 0.1.0-alpha.8
 
 catalogs:
   tooling:
