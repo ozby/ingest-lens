@@ -104,3 +104,4 @@ apps/workers/reports/
 /tooling/
 .gstack/
 .webpresso/
+.npmrc

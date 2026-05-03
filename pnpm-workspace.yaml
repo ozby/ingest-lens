@@ -30,9 +30,6 @@ catalog:
 
   # Shared build tools
   "@vitejs/plugin-react": ^6.0.1
-
-  # Webpresso standalone packages (git-pointer to individual repos on GitHub)
-  webpresso: "git+ssh://git@github.com/webpresso/webpresso.git#main"
   "@webpresso/agent-kit": "git+ssh://git@github.com/webpresso/agent-kit.git#main"
   "@webpresso/db-branching": "git+ssh://git@github.com/webpresso/db-branching.git#main"
   "@webpresso/neon-core": "git+ssh://git@github.com/webpresso/neon.git#main"
@@ -59,6 +56,9 @@ catalog:
 
   # Task runner
   vite-plus: 0.1.19
+
+  # Webpresso standalone packages (git-pointer to individual repos on GitHub)
+  webpresso: "github:webpresso/webpresso#main"
 
 catalogs:
   tooling:

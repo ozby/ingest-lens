@@ -2,6 +2,9 @@
   "name": "ozbys-node-pubsub",
   "private": true,
   "type": "module",
+  "imports": {
+    "#generated/*": "./.webpresso/generated/*"
+  },
   "scripts": {
     "act:ci": "bun ./scripts/act-with-doppler.ts push -W .github/workflows/ci.yml",
     "act:cleanup": "bun ./scripts/act-with-doppler.ts workflow_dispatch -W .github/workflows/cleanup-stale-neon-e2e-branches.yml -j cleanup",
@@ -35,14 +38,17 @@
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
     "@webpresso/agent-kit": "catalog:",
     "@webpresso/runtime": "catalog:",
+    "@webpresso/schema-engine": "0.1.0-alpha.0",
+    "@webpresso/schema-frontend": "0.1.0-alpha.0",
+    "@webpresso/schema-loaders": "0.1.0-alpha.0",
+    "@webpresso/schema-spec": "0.1.0-alpha.0",
     "@webpresso/stryker-config": "catalog:",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
     "husky": "catalog:",
     "oxlint": "catalog:tooling",
     "secretlint": "^9.3.0",
-    "vite-plus": "catalog:",
-    "webpresso": "catalog:"
+    "vite-plus": "catalog:"
   },
   "engines": {
     "node": ">=24"

@@ -1,5 +1,5 @@
 apiVersion: webpresso.dev/v1
-entry: src/main.tsx
+entry: apps/client/src/main.tsx
 auth:
   basePath: /auth
   providers:
