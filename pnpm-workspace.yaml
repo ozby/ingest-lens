@@ -38,11 +38,11 @@ catalog:
   "@webpresso/schema-frontend": 0.1.0-alpha.7
   "@webpresso/schema-loaders": 0.1.0-alpha.7
   "@webpresso/schema-spec": 0.1.0-alpha.7
-  "@webpresso/stryker-config": ^0.1.0
+  "@webpresso/stryker-config": 0.1.0
 
   # Webpresso tooling (GitHub Packages npm registry)
-  "@webpresso/typescript-config": ^0.1.0
-  "@webpresso/vitest-config": ^0.1.0
+  "@webpresso/typescript-config": 0.1.0
+  "@webpresso/vitest-config": 0.1.0
   "@webpresso/workers-test-kit": 0.1.0
   axios: ^1.15.2
   bunchee: ^6.10.0
