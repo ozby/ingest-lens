@@ -55,37 +55,37 @@ catalogs:
       specifier: ^6.0.1
       version: 6.0.1
     '@webpresso/agent-kit':
-      specifier: git+ssh://git@github.com/webpresso/agent-kit.git#main
-      version: 0.1.0
+      specifier: 0.2.0
+      version: 0.2.0
     '@webpresso/neon-core':
-      specifier: git+ssh://git@github.com/webpresso/neon.git#main
+      specifier: 0.1.0
       version: 0.1.0
     '@webpresso/runtime':
-      specifier: git+ssh://git@github.com/webpresso/runtime.git#main
-      version: 0.1.0
+      specifier: 0.2.0
+      version: 0.2.0
     '@webpresso/schema-engine':
-      specifier: 0.1.0-alpha.5
-      version: 0.1.0-alpha.5
+      specifier: 0.1.0-alpha.7
+      version: 0.1.0-alpha.7
     '@webpresso/schema-frontend':
-      specifier: 0.1.0-alpha.5
-      version: 0.1.0-alpha.5
+      specifier: 0.1.0-alpha.7
+      version: 0.1.0-alpha.7
     '@webpresso/schema-loaders':
-      specifier: 0.1.0-alpha.5
-      version: 0.1.0-alpha.5
+      specifier: 0.1.0-alpha.7
+      version: 0.1.0-alpha.7
     '@webpresso/schema-spec':
-      specifier: 0.1.0-alpha.5
-      version: 0.1.0-alpha.5
+      specifier: 0.1.0-alpha.7
+      version: 0.1.0-alpha.7
     '@webpresso/stryker-config':
-      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/stryker-config
-      version: 0.0.1
+      specifier: ^0.1.0
+      version: 0.1.0
     '@webpresso/typescript-config':
-      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/typescript-config
+      specifier: ^0.1.0
       version: 0.1.0
     '@webpresso/vitest-config':
-      specifier: git+ssh://git@github.com/webpresso/tooling.git#main&path:packages/vitest-config
-      version: 0.0.1
+      specifier: ^0.1.0
+      version: 0.1.0
     '@webpresso/workers-test-kit':
-      specifier: git+ssh://git@github.com/webpresso/workers-test-kit.git#main
+      specifier: 0.1.0
       version: 0.1.0
     axios:
       specifier: ^1.15.2
@@ -188,31 +188,31 @@ importers:
         version: 9.3.4
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/agent-kit.git#0a82aadee302a602b0a03a54480e47ca391e3e6d
+        version: 0.2.0
       '@webpresso/runtime':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189
+        version: 0.2.0
       '@webpresso/schema-engine':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.5(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)
+        version: 0.1.0-alpha.7(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)
       '@webpresso/schema-frontend':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))
+        version: 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))
       '@webpresso/schema-loaders':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+        version: 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       '@webpresso/schema-spec':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+        version: 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       '@webpresso/stryker-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
+        version: 0.1.0(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       husky:
         specifier: 'catalog:'
         version: 9.1.7
@@ -420,10 +420,10 @@ importers:
         version: 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       oxlint:
         specifier: catalog:tooling
         version: 1.61.0(oxlint-tsgolint@0.21.1)
@@ -444,7 +444,7 @@ importers:
     dependencies:
       '@webpresso/neon-core':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/neon.git#fb7bde72a9d051753e6bccd7a1c9e9eb300ae240
+        version: 0.1.0
     devDependencies:
       '@playwright/test':
         specifier: ^1.49.0
@@ -457,10 +457,10 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       oxlint:
         specifier: catalog:tooling
         version: 1.61.0(oxlint-tsgolint@0.21.1)
@@ -491,13 +491,13 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       '@webpresso/workers-test-kit':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/workers-test-kit.git#30650a8f1ccf3bc2a87442efa48563dde2c1931f(@cloudflare/workers-types@4.20260423.1)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/workers-types@4.20260423.1)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       oxlint:
         specifier: catalog:tooling
         version: 1.61.0(oxlint-tsgolint@0.21.1)
@@ -528,10 +528,10 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       oxlint:
         specifier: catalog:tooling
         version: 1.61.0(oxlint-tsgolint@0.21.1)
@@ -556,10 +556,10 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       oxlint:
         specifier: catalog:tooling
         version: 1.61.0(oxlint-tsgolint@0.21.1)
@@ -605,16 +605,16 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/stryker-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
+        version: 0.1.0(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       '@webpresso/workers-test-kit':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/workers-test-kit.git#30650a8f1ccf3bc2a87442efa48563dde2c1931f(@cloudflare/workers-types@4.20260423.1)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/workers-types@4.20260423.1)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       drizzle-kit:
         specifier: catalog:workers
         version: 0.31.10
@@ -641,10 +641,10 @@ importers:
         version: 0.9.0(ts-node@10.9.2(@swc/core@1.15.30(@swc/helpers@0.5.21))(@types/node@25.6.0)(typescript@5.8.2))(typescript@5.8.2)
       '@webpresso/neon-core':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/neon.git#fb7bde72a9d051753e6bccd7a1c9e9eb300ae240
+        version: 0.1.0
       '@webpresso/runtime':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189
+        version: 0.2.0
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -654,10 +654,10 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -684,10 +684,10 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       drizzle-kit:
         specifier: catalog:workers
         version: 0.31.10
@@ -717,13 +717,13 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/stryker-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
+        version: 0.1.0(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'
         version: 6.10.0(typescript@5.8.2)
@@ -753,13 +753,13 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/stryker-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
+        version: 0.1.0(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'
         version: 6.10.0(typescript@5.8.2)
@@ -780,10 +780,10 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       vitest:
         specifier: catalog:tooling
         version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
@@ -859,10 +859,10 @@ importers:
         version: 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
       '@webpresso/typescript-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config
+        version: 0.1.0
       '@webpresso/vitest-config':
         specifier: 'catalog:'
-        version: git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+        version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       bunchee:
         specifier: 'catalog:'
         version: 6.10.0(typescript@5.8.2)
@@ -4411,75 +4411,58 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#0a82aadee302a602b0a03a54480e47ca391e3e6d':
-    resolution: {commit: 0a82aadee302a602b0a03a54480e47ca391e3e6d, repo: git@github.com:webpresso/agent-kit.git, type: git}
-    version: 0.1.0
+  '@webpresso/agent-kit@0.2.0':
+    resolution: {integrity: sha512-SDU4ZEl6NxDSzdGpZ1JHMl62TQqZlYgUFJIcqI0lDdn/mt8hlW+RG9gJ40lfYmNNYAw3vBccA4UcCoGxYJtAUQ==, tarball: https://npm.pkg.github.com/download/@webpresso/agent-kit/0.2.0/bf1196fd92fccb75c9b2d281125609b209ba5e6a}
     engines: {node: '>=24'}
     hasBin: true
 
-  '@webpresso/db-branching@git+https://git@github.com:webpresso/db-branching.git#448ac9aa81a91df68bd6a2b2ddbee3b4844fb015':
-    resolution: {commit: 448ac9aa81a91df68bd6a2b2ddbee3b4844fb015, repo: git@github.com:webpresso/db-branching.git, type: git}
-    version: 0.1.0
+  '@webpresso/neon-core@0.1.0':
+    resolution: {integrity: sha512-4nfIDkncpruqP+rOeLV+NCA7nAOS41ovtIyzZs+6U2TZU5aYDC/wHIa+z+crK4HS/8/x/AU1CgmEMK9JtTArsw==, tarball: https://npm.pkg.github.com/download/@webpresso/neon-core/0.1.0/c348877bbb551e40d6f5e4b7703e0ba386c4b7e6}
     engines: {node: '>=20'}
 
-  '@webpresso/neon-core@git+https://git@github.com:webpresso/neon.git#fb7bde72a9d051753e6bccd7a1c9e9eb300ae240':
-    resolution: {commit: fb7bde72a9d051753e6bccd7a1c9e9eb300ae240, repo: git@github.com:webpresso/neon.git, type: git}
-    version: 0.1.0
-    engines: {node: '>=20'}
-
-  '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189':
-    resolution: {commit: 49f483a6caa9e5dcb685b3271cbecf067aba5189, repo: git@github.com:webpresso/runtime.git, type: git}
-    version: 0.1.0
+  '@webpresso/runtime@0.2.0':
+    resolution: {integrity: sha512-kDq4mx22THGio6YJIDC9GmIDreT+nIubp4+CUOHlS6IBreaG+t7F3+wGjMmZHXaViGfFXIxcqOftecJ5YpaX3g==, tarball: https://npm.pkg.github.com/download/@webpresso/runtime/0.2.0/73ebd18fcab51b086cbb8a210ce9ce89cb8d92cc}
     engines: {node: '>=24'}
 
-  '@webpresso/schema-engine@0.1.0-alpha.5':
-    resolution: {integrity: sha512-cmq1ja22FB4NVu5LdSgNouhXufsWXYs5goWnbl4TqfHNsEB8i497IzCgCSNrvNKAwCc9P5EKncbM459lZ6wUUA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-engine/0.1.0-alpha.5/43ab48d0154887e1f9492080289c909b496b2498}
+  '@webpresso/schema-engine@0.1.0-alpha.7':
+    resolution: {integrity: sha512-EkmKw2WI9cOSMQQn+hOUDf9l+ILzvuAkHoluu+ttH0H6zxBBABVjAbMi3PBSFUHI3vs5kjWQ8MC2AIyXUCMNgg==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-engine/0.1.0-alpha.7/86865b93c4bd6bf0f5780b1ad26bf7ac9df666a7}
     peerDependencies:
       '@hookform/resolvers': ^5.2.2
       '@tanstack/react-router': ^1.168.10
       react: ^19.2.1
       react-hook-form: ^7.66.1
 
-  '@webpresso/schema-frontend@0.1.0-alpha.5':
-    resolution: {integrity: sha512-HPoE75JFvM7TOhSnboldQsyMkj9NBUb9XVhLq6AuLbKyfLrC7DUqOti73aKjG5MGHuckcFgVylIyMxWDH4LiIw==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-frontend/0.1.0-alpha.5/8c704355e5f98a64b1e10d78acc0769931f20b4e}
+  '@webpresso/schema-frontend@0.1.0-alpha.7':
+    resolution: {integrity: sha512-GLWq/lep5pehoROyoiEZm5CVkkvjVn89kKDuLH2gVPJ7XtVfmt63K+muIZ03RsJA7qS+BqgjfjCuoDx1QHYIDA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-frontend/0.1.0-alpha.7/db2cb5b598f77a593c8c9861ee3b779345510969}
 
-  '@webpresso/schema-loaders@0.1.0-alpha.5':
-    resolution: {integrity: sha512-k47BFdI3IfJk8h6H/PCGvATF8wvI3UeANNPv7CqsbNaG3Xn2r6Qm6+VF9EvmNV1e0/6H4Ewde1MKbnkZezV1vA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-loaders/0.1.0-alpha.5/7f1b8b3f65f84336594cf6f020eee3bcb08f1133}
+  '@webpresso/schema-loaders@0.1.0-alpha.7':
+    resolution: {integrity: sha512-DFtYdWkB74iQhcHWuFx5bxea5WbCQUXIO7Hs+I4ctreh0aF4Ib4DbZDO3iEg0khHUqJ704SsXZC+0yKqBCksoA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-loaders/0.1.0-alpha.7/da40eb23972d313e6e193162316638dd79d9750c}
 
-  '@webpresso/schema-spec@0.1.0-alpha.5':
-    resolution: {integrity: sha512-9eIHOgdZgHz246NrwdfXCm93PFQiR5N+Q/lfDRIPT7pp+tTNa+eUErbRAIISxIBrQjaWfP82C843/wudEWPIng==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-spec/0.1.0-alpha.5/b71d42774c837004343c4f1d2b4dac7f060af010}
+  '@webpresso/schema-spec@0.1.0-alpha.7':
+    resolution: {integrity: sha512-oPzcYcCQtqoyvyYUPCO6JKeSFuK0+PUas38sxClhROPeTxGs1hkA6+I1ePg3IQ9zoPcFV1O+wYQPXdDeD/bP/A==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-spec/0.1.0-alpha.7/7327cc40dc5fb9dff4e7cc88f8863c9cc3d042f6}
     peerDependencies:
       graphql-request: ^7.4.0
       react: ^19.2.1
 
-  '@webpresso/stryker-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config':
-    resolution: {commit: 5405f42c6d4153c5c4d0809293ab227383f494d6, path: packages/stryker-config, repo: git@github.com:webpresso/tooling.git, type: git}
-    version: 0.0.1
+  '@webpresso/stryker-config@0.1.0':
+    resolution: {integrity: sha512-anXHEzK+/Ucx0lffQaXTPL3lb5WTNgCPM4WVhGQ5nvvgUXWVLd6OMaj933vKjO+BCopt0hicgCV9tULT3YSaLA==, tarball: https://npm.pkg.github.com/download/@webpresso/stryker-config/0.1.0/a5f396a86421d101819854add94e67e7293d097b}
     peerDependencies:
       '@stryker-mutator/core': '>=9 <10'
       '@stryker-mutator/vitest-runner': '>=9 <10'
 
-  '@webpresso/typescript-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config':
-    resolution: {commit: 5405f42c6d4153c5c4d0809293ab227383f494d6, path: packages/typescript-config, repo: git@github.com:webpresso/tooling.git, type: git}
-    version: 0.1.0
+  '@webpresso/typescript-config@0.1.0':
+    resolution: {integrity: sha512-GHVf9svlbwan/pHktgvIkIsDsC8xtKNz8qk3+3IBDoahN6hsU89q2gaD/REEpajMuk/iCUKnSKqhpn0kaLJvGw==, tarball: https://npm.pkg.github.com/download/@webpresso/typescript-config/0.1.0/490577c71bb812eb9054f3c131aff1db60c7c75e}
 
-  '@webpresso/vitest-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config':
-    resolution: {commit: 5405f42c6d4153c5c4d0809293ab227383f494d6, path: packages/vitest-config, repo: git@github.com:webpresso/tooling.git, type: git}
-    version: 0.0.1
+  '@webpresso/vitest-config@0.1.0':
+    resolution: {integrity: sha512-kjP/5zysKHmmH85xKo44GdgyDwFeZopUMfHOZrAhTsD+cEQxHmrMuyEIvDQ/lFsWyNKT8D3LpFxJtP7+ZsE1jA==, tarball: https://npm.pkg.github.com/download/@webpresso/vitest-config/0.1.0/2723fa03e50f449b8405dba38bc3bc5d0b1ea23b}
     peerDependencies:
       '@cloudflare/vitest-pool-workers': '>=0.14 <1'
       '@vitejs/plugin-react': '>=5 <7'
       vite-plus: '>=0.1.19 <1'
       vitest: '>=4 <5'
-    peerDependenciesMeta:
-      '@cloudflare/vitest-pool-workers':
-        optional: true
-      '@vitejs/plugin-react':
-        optional: true
 
-  '@webpresso/workers-test-kit@git+https://git@github.com:webpresso/workers-test-kit.git#30650a8f1ccf3bc2a87442efa48563dde2c1931f':
-    resolution: {commit: 30650a8f1ccf3bc2a87442efa48563dde2c1931f, repo: git@github.com:webpresso/workers-test-kit.git, type: git}
-    version: 0.1.0
+  '@webpresso/workers-test-kit@0.1.0':
+    resolution: {integrity: sha512-0lF+Oi6SJRtdhFqyE//rzMvs4zyEsENFzR/Pa1ibzABCSPwR8TxG5WznaOvYcKhThGwDDbxu0H5DSYAK8A5nWw==, tarball: https://npm.pkg.github.com/download/@webpresso/workers-test-kit/0.1.0/9959aae98e74e9ced84e3ea7c065e209cf2f10ba}
     engines: {node: '>=20'}
     peerDependencies:
       '@cloudflare/workers-types': '>=4.0.0'
@@ -10480,7 +10463,7 @@ snapshots:
   '@voidzero-dev/vite-plus-win32-x64-msvc@0.1.19':
     optional: true
 
-  '@webpresso/agent-kit@git+https://git@github.com:webpresso/agent-kit.git#0a82aadee302a602b0a03a54480e47ca391e3e6d':
+  '@webpresso/agent-kit@0.2.0':
     dependencies:
       '@manypkg/find-root': 3.1.0
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.3.6)
@@ -10494,30 +10477,27 @@ snapshots:
       - '@cfworker/json-schema'
       - supports-color
 
-  '@webpresso/db-branching@git+https://git@github.com:webpresso/db-branching.git#448ac9aa81a91df68bd6a2b2ddbee3b4844fb015': {}
-
-  '@webpresso/neon-core@git+https://git@github.com:webpresso/neon.git#fb7bde72a9d051753e6bccd7a1c9e9eb300ae240':
+  '@webpresso/neon-core@0.1.0':
     dependencies:
       '@neondatabase/api-client': 1.13.0
-      '@webpresso/db-branching': git+https://git@github.com:webpresso/db-branching.git#448ac9aa81a91df68bd6a2b2ddbee3b4844fb015
     transitivePeerDependencies:
       - debug
 
-  '@webpresso/runtime@git+https://git@github.com:webpresso/runtime.git#49f483a6caa9e5dcb685b3271cbecf067aba5189':
+  '@webpresso/runtime@0.2.0':
     dependencies:
       execa: 9.6.1
       ts-pattern: 5.9.0
       zod: 4.3.6
 
-  '@webpresso/schema-engine@0.1.0-alpha.5(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)':
+  '@webpresso/schema-engine@0.1.0-alpha.7(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)':
     dependencies:
       '@babel/generator': 7.29.1
       '@babel/types': 7.29.0
       '@hookform/resolvers': 5.2.2(react-hook-form@7.73.1(react@19.2.5))
       '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@webpresso/schema-frontend': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))
-      '@webpresso/schema-loaders': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
-      '@webpresso/schema-spec': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-frontend': 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))
+      '@webpresso/schema-loaders': 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       diff: 8.0.4
       drizzle-orm: 1.0.0-rc.1(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(postgres@3.4.9)(zod@4.3.6)
       graphql: 16.13.2
@@ -10563,20 +10543,20 @@ snapshots:
       - typebox
       - valibot
 
-  '@webpresso/schema-frontend@0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))':
+  '@webpresso/schema-frontend@0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))':
     dependencies:
       '@tanstack/react-query': 5.99.2(react@19.2.5)
       '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      '@webpresso/schema-spec': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
       zod: 4.3.6
     transitivePeerDependencies:
       - graphql-request
 
-  '@webpresso/schema-loaders@0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
+  '@webpresso/schema-loaders@0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
     dependencies:
-      '@webpresso/schema-spec': 0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       gray-matter: 4.0.3
       yaml: 2.8.4
       zod: 4.3.6
@@ -10584,28 +10564,27 @@ snapshots:
       - graphql-request
       - react
 
-  '@webpresso/schema-spec@0.1.0-alpha.5(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
+  '@webpresso/schema-spec@0.1.0-alpha.7(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
     dependencies:
       graphql-request: 7.4.0(graphql@16.13.2)
       react: 19.2.5
       zod: 4.3.6
 
-  '@webpresso/stryker-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/stryker-config(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))':
+  '@webpresso/stryker-config@0.1.0(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))':
     dependencies:
       '@stryker-mutator/core': 9.6.1(@types/node@25.6.0)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
 
-  '@webpresso/typescript-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/typescript-config': {}
+  '@webpresso/typescript-config@0.1.0': {}
 
-  '@webpresso/vitest-config@git+https://git@github.com:webpresso/tooling.git#5405f42c6d4153c5c4d0809293ab227383f494d6&path:packages/vitest-config(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
+  '@webpresso/vitest-config@0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
     dependencies:
-      vite-plus: 0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
-      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
-    optionalDependencies:
       '@cloudflare/vitest-pool-workers': 0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       '@vitejs/plugin-react': 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+      vite-plus: 0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@5.8.2)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
 
-  '@webpresso/workers-test-kit@git+https://git@github.com:webpresso/workers-test-kit.git#30650a8f1ccf3bc2a87442efa48563dde2c1931f(@cloudflare/workers-types@4.20260423.1)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
+  '@webpresso/workers-test-kit@0.1.0(@cloudflare/workers-types@4.20260423.1)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
     dependencies:
       '@cloudflare/workers-types': 4.20260423.1
       vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))

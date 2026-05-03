@@ -30,10 +30,10 @@ catalog:
 
   # Shared build tools
   "@vitejs/plugin-react": ^6.0.1
-  "@webpresso/agent-kit": "git+ssh://git@github.com/webpresso/agent-kit.git#main"
-  "@webpresso/db-branching": "git+ssh://git@github.com/webpresso/db-branching.git#main"
-  "@webpresso/neon-core": "git+ssh://git@github.com/webpresso/neon.git#main"
-  "@webpresso/runtime": "git+ssh://git@github.com/webpresso/runtime.git#main"
+  "@webpresso/agent-kit": 0.2.0
+  "@webpresso/db-branching": 0.1.0
+  "@webpresso/neon-core": 0.1.0
+  "@webpresso/runtime": 0.2.0
   "@webpresso/schema-engine": 0.1.0-alpha.7
   "@webpresso/schema-frontend": 0.1.0-alpha.7
   "@webpresso/schema-loaders": 0.1.0-alpha.7
@@ -43,7 +43,7 @@ catalog:
   # Webpresso tooling (GitHub Packages npm registry)
   "@webpresso/typescript-config": ^0.1.0
   "@webpresso/vitest-config": ^0.1.0
-  "@webpresso/workers-test-kit": "git+ssh://git@github.com/webpresso/workers-test-kit.git#main"
+  "@webpresso/workers-test-kit": 0.1.0
   axios: ^1.15.2
   bunchee: ^6.10.0
   class-variance-authority: ^0.7.1
