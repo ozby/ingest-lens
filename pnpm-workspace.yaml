@@ -31,8 +31,8 @@ catalog:
   # Shared build tools
   "@vitejs/plugin-react": ^6.0.1
   "@webpresso/agent-kit": 0.2.0
-  "@webpresso/db-branching": 0.1.0
-  "@webpresso/neon-core": 0.1.0
+  "@webpresso/db-branching": 0.2.1
+  "@webpresso/neon-branching": 0.2.1
   "@webpresso/runtime": 0.3.0
   "@webpresso/schema-engine": 0.1.0-alpha.8
   "@webpresso/schema-frontend": 0.1.0-alpha.8

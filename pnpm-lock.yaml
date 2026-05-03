@@ -57,9 +57,9 @@ catalogs:
     '@webpresso/agent-kit':
       specifier: 0.2.0
       version: 0.2.0
-    '@webpresso/neon-core':
-      specifier: 0.1.0
-      version: 0.1.0
+    '@webpresso/neon-branching':
+      specifier: 0.2.1
+      version: 0.2.1
     '@webpresso/runtime':
       specifier: 0.3.0
       version: 0.3.0
@@ -442,9 +442,9 @@ importers:
 
   apps/e2e:
     dependencies:
-      '@webpresso/neon-core':
+      '@webpresso/neon-branching':
         specifier: 'catalog:'
-        version: 0.1.0
+        version: 0.2.1
     devDependencies:
       '@playwright/test':
         specifier: ^1.49.0
@@ -639,9 +639,9 @@ importers:
       '@pulumiverse/doppler':
         specifier: ^0.9.0
         version: 0.9.0(ts-node@10.9.2(@swc/core@1.15.30(@swc/helpers@0.5.21))(@types/node@25.6.0)(typescript@5.8.2))(typescript@5.8.2)
-      '@webpresso/neon-core':
+      '@webpresso/neon-branching':
         specifier: 'catalog:'
-        version: 0.1.0
+        version: 0.2.1
       '@webpresso/runtime':
         specifier: 'catalog:'
         version: 0.3.0
@@ -4424,8 +4424,12 @@ packages:
     engines: {node: '>=24'}
     hasBin: true
 
-  '@webpresso/neon-core@0.1.0':
-    resolution: {integrity: sha512-4nfIDkncpruqP+rOeLV+NCA7nAOS41ovtIyzZs+6U2TZU5aYDC/wHIa+z+crK4HS/8/x/AU1CgmEMK9JtTArsw==, tarball: https://npm.pkg.github.com/download/@webpresso/neon-core/0.1.0/c348877bbb551e40d6f5e4b7703e0ba386c4b7e6}
+  '@webpresso/db-branching@0.2.1':
+    resolution: {integrity: sha512-gAdw2F180QR+YiG5IVB3QL+r2NCJA+5uMlA5hjGqD0fbYwxcOgLvU+bdeOpVph5kNoCZAlc21uyrZCfwAAuOkw==, tarball: https://npm.pkg.github.com/download/@webpresso/db-branching/0.2.1/b5ef9bb01a3c66c59155fe0d57305b84a4b5dc91}
+    engines: {node: '>=20'}
+
+  '@webpresso/neon-branching@0.2.1':
+    resolution: {integrity: sha512-1LlYbuNaL7bUO+tLlq9eVZi/q7L7EjmMvZ3eBv5SFPfkV4YAoRwyxYbNvIkre4RDxyYiZhJ7MtRXi8Vsr52Dug==, tarball: https://npm.pkg.github.com/download/@webpresso/neon-branching/0.2.1/eed0fe600047ba3301206b1d5a01ec79e650d524}
     engines: {node: '>=20'}
 
   '@webpresso/runtime@0.3.0':
@@ -10514,9 +10518,12 @@ snapshots:
       - '@cfworker/json-schema'
       - supports-color
 
-  '@webpresso/neon-core@0.1.0':
+  '@webpresso/db-branching@0.2.1': {}
+
+  '@webpresso/neon-branching@0.2.1':
     dependencies:
       '@neondatabase/api-client': 1.13.0
+      '@webpresso/db-branching': 0.2.1
     transitivePeerDependencies:
       - debug
 
