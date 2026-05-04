@@ -36,6 +36,7 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
+    "@types/react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
     "@webpresso/runtime": "catalog:",
     "@webpresso/schema-engine": "catalog:",
@@ -45,8 +46,10 @@
     "@webpresso/stryker-config": "catalog:",
     "@webpresso/typescript-config": "catalog:",
     "@webpresso/vitest-config": "catalog:",
+    "@webpresso/webpresso": "catalog:",
     "husky": "catalog:",
     "oxlint": "catalog:tooling",
+    "react": "catalog:",
     "secretlint": "^9.3.0",
     "vite-plus": "catalog:"
   },
