@@ -25,7 +25,7 @@
     "check-types": "vp run check-types",
     "commitlint": "commitlint",
     "secretlint": "secretlint",
-    "setup:agent-kit": "pnpm exec ak setup --yes",
+    "setup:agent-kit": "pnpm exec ak setup --yes --with omx,gstack",
     "postinstall": "pnpm run setup:agent-kit",
     "prepare": "husky",
     "docs:check": "ak audit docs-frontmatter",
