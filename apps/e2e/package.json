@@ -8,6 +8,7 @@
     "check-types": "tsgo --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "test:journeys": "vitest run --config vitest.journeys.config.ts",
+    "auth:dev-bench": "playwright test journeys/webpresso-auth-dev.spec.ts",
     "e2e:run": "bun src/cli/run-e2e.ts",
     "db:branch:create": "bun scripts/db-branch-create.ts",
     "db:branch:delete": "bun scripts/db-branch-delete.ts",

@@ -7,6 +7,7 @@ Repo-owned end-to-end surface for IngestLens. Zero manual env vars — secrets a
 ```bash
 pnpm e2e --suite full                        # from repo root — auto-provisions Neon branch
 pnpm exec ak e2e --suite foundation           # against an already-running worker
+pnpm --filter @repo/e2e run auth:dev-bench   # against deployed dev.ingest-lens.ozby.dev
 ```
 
 The root `pnpm e2e` script (`apps/e2e/scripts/e2e-with-neon.ts`):
@@ -31,6 +32,18 @@ Defined in `src/e2e-suite-manifest.ts`:
 - `client` — client route code-splitting and bundle budgets
 - `branding` — IngestLens UI branding surfaces
 - `full` — runs all suites
+
+## Deployed dev auth bench
+
+`pnpm --filter @repo/e2e run auth:dev-bench` exercises the deployed Webpresso auth
+flow end to end against:
+
+- `https://dev.ingest-lens.ozby.dev`
+- `https://api.dev.ingest-lens.ozby.dev`
+
+It verifies sign-up, sign-in, organization membership, one authenticated queue
+CRUD round-trip, cross-subdomain cookie issuance, sign-out session clearing,
+and protected-route redirect back to the auth landing page.
 
 ## Neon branch helpers
 

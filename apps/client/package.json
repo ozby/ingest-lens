@@ -49,6 +49,7 @@
     "@repo/types": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.99.2",
+    "@webpresso/webpresso": "catalog:",
     "axios": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",

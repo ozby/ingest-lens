@@ -1,4 +1,6 @@
+import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
+import { createBetterAuth } from "../auth/better-auth-server";
 import { base64UrlDecode } from "../auth/crypto";
 import type { Env } from "../db/client";
 
@@ -20,6 +22,36 @@ export interface DecodedToken {
 export type AuthVariables = {
   user: DecodedToken;
 };
+
+interface BetterAuthSessionUser {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+}
+
+interface BetterAuthSessionData {
+  user?: BetterAuthSessionUser;
+}
+
+type AuthContext = Context<{
+  Bindings: Env;
+  Variables: AuthVariables;
+}>;
+
+function extractSessionUser(
+  sessionData: BetterAuthSessionData | null,
+): { ok: false } | { ok: true; userId: string; username: string } {
+  const userId = sessionData?.user?.id;
+  if (!userId) {
+    return { ok: false };
+  }
+
+  return {
+    ok: true,
+    userId,
+    username: sessionData.user?.name ?? sessionData.user?.email ?? userId,
+  };
+}
 
 async function verifyJwtSignature(
   token: string,
@@ -90,13 +122,41 @@ async function validatePayload(
   };
 }
 
+async function authenticateWithBetterAuthSession(
+  c: AuthContext,
+): Promise<{ ok: false } | { ok: true; userId: string; username: string }> {
+  if (!c.req.header("Cookie")) {
+    return { ok: false };
+  }
+
+  // F6: call getSession directly — no subrequest to /auth/get-session
+  const auth = createBetterAuth(c.env);
+  const sessionData = (await auth.api.getSession({
+    headers: c.req.raw.headers,
+    query: { disableCookieCache: true },
+  })) as BetterAuthSessionData | null;
+
+  return extractSessionUser(sessionData);
+}
+
 export const authenticate = createMiddleware<{
   Bindings: Env;
   Variables: AuthVariables;
 }>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return c.json({ status: "error", message: "Authentication required" }, 401);
+    const betterAuthSession = await authenticateWithBetterAuthSession(c);
+    if (!betterAuthSession.ok) {
+      return c.json({ status: "error", message: "Authentication required" }, 401);
+    }
+
+    c.set("user", {
+      jti: "better-auth-session",
+      userId: betterAuthSession.userId,
+      username: betterAuthSession.username,
+    });
+    await next();
+    return;
   }
 
   const token = authHeader.slice(7);

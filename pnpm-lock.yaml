@@ -85,8 +85,8 @@ catalogs:
       specifier: 0.1.0
       version: 0.1.0
     '@webpresso/webpresso':
-      specifier: 0.1.0-alpha.20
-      version: 0.1.0-alpha.20
+      specifier: 0.1.1-alpha.6
+      version: 0.1.1-alpha.6
     '@webpresso/workers-test-kit':
       specifier: 0.1.0
       version: 0.1.0
@@ -221,7 +221,7 @@ importers:
         version: 0.1.0(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(@vitejs/plugin-react@6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vite-plus@0.1.19(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(jsdom@20.0.3)(tsx@4.21.0)(typescript@6.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       '@webpresso/webpresso':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.20(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.3.6))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)
+        version: 0.1.1-alpha.6(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.3.6))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(hono@4.12.15)(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)
       husky:
         specifier: 'catalog:'
         version: 9.1.7
@@ -336,6 +336,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.99.2
         version: 5.99.2(react@19.2.5)
+      '@webpresso/webpresso':
+        specifier: 'catalog:'
+        version: 0.1.1-alpha.6(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.0.17))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.0.17))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(hono@4.12.15)(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)
       axios:
         specifier: 'catalog:'
         version: 1.15.2
@@ -587,6 +590,9 @@ importers:
       '@sinclair/typebox':
         specifier: ^0.34.49
         version: 0.34.49
+      '@webpresso/webpresso':
+        specifier: 'catalog:'
+        version: 0.1.1-alpha.6(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.3.6))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(hono@4.12.14)(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)
       ai:
         specifier: ^6.0.168
         version: 6.0.168(zod@4.3.6)
@@ -4606,6 +4612,11 @@ packages:
       vitest:
         optional: true
 
+  '@webpresso/codegen-core@0.1.1-alpha.6':
+    resolution: {integrity: sha512-5N0/5owK9sHgHA4sJFg3ZsAAsf/6MkOPD7BN2J/C7B9dp2eZp+QaIAdyH2L7mIYYJGg6AfmtR81J91Cc2JFp7Q==, tarball: https://npm.pkg.github.com/download/@webpresso/codegen-core/0.1.1-alpha.6/02b373b5ba363e41a1d159d0c8a0d196789e24e8}
+    peerDependencies:
+      vitest: ^4.0.0
+
   '@webpresso/db-branching@0.2.1':
     resolution: {integrity: sha512-gAdw2F180QR+YiG5IVB3QL+r2NCJA+5uMlA5hjGqD0fbYwxcOgLvU+bdeOpVph5kNoCZAlc21uyrZCfwAAuOkw==, tarball: https://npm.pkg.github.com/download/@webpresso/db-branching/0.2.1/b5ef9bb01a3c66c59155fe0d57305b84a4b5dc91}
     engines: {node: '>=20'}
@@ -4635,14 +4646,34 @@ packages:
       react-hook-form:
         optional: true
 
+  '@webpresso/schema-engine@0.1.1-alpha.6':
+    resolution: {integrity: sha512-Vg2u9s55RmjDqnwHcLctpJB223ePtS2bh4R66G4PvSUYwKL0TY5SbBBDM9QKj27taZzZ3TBS81JpidfhJWrNOw==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-engine/0.1.1-alpha.6/6b9dcdc3d7cf031c86526b77420fd359a37e4250}
+    peerDependencies:
+      '@hookform/resolvers': ^5.2.2
+      '@tanstack/react-router': ^1.168.10
+      react: ^19.2.1
+      react-hook-form: ^7.66.1
+
   '@webpresso/schema-frontend@0.1.0-alpha.20':
     resolution: {integrity: sha512-GS3r4o8Yxa+KYyboxcEuWa1TSMrTGFHspzkrEA7AeR2RBUIGkxxnxYDaFvosRnwdko0koUQSag8i6FWj5IKOXw==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-frontend/0.1.0-alpha.20/e75274e86510ec81679724db1561d6237ce29990}
+
+  '@webpresso/schema-frontend@0.1.1-alpha.6':
+    resolution: {integrity: sha512-d86Qcmi/AM++scp6MvgTShcHwEFyqOTUjJlffSNi398mBNOhmCjxpYZ9ztMcFWESxhiZeuvgO9eOGLLf+o/vpQ==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-frontend/0.1.1-alpha.6/ef36d5730960273f5ce28b4bc69d3938f8987c4a}
 
   '@webpresso/schema-loaders@0.1.0-alpha.20':
     resolution: {integrity: sha512-AM/Ekoeoul0A6CCCRjbZnpRaBLNQKYO7KiykYHqXTXbmi0aUQ/GgAaXFfSp+QGTR08KCPVcoMizeMjv4KwF0/Q==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-loaders/0.1.0-alpha.20/f46758522188df3f5da324bf171b391fc8c84bc2}
 
+  '@webpresso/schema-loaders@0.1.1-alpha.6':
+    resolution: {integrity: sha512-Q43f/HcG61RYFCT0QuQmXbWji4e//aiT1neOj6nsURSo+RpbZm13NqY3zOMZd4lM88JuVndprvcMKpuwfEY2RA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-loaders/0.1.1-alpha.6/4072ca9374eeb348bee8903e6e2a0a3d0640ba51}
+
   '@webpresso/schema-spec@0.1.0-alpha.20':
     resolution: {integrity: sha512-uLdT5PsI5kApU9XxCUjm6chhCveOUl20wTS+f38PPh6Y+v9XEDu+zJJHn7lH0Zb4NR+39Z4vWleazh2ZFUgEaA==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-spec/0.1.0-alpha.20/4752340c8d9e92cf6fa444fa3e9ca60ef88fd7ee}
+    peerDependencies:
+      graphql-request: ^7.4.0
+      react: ^19.2.1
+
+  '@webpresso/schema-spec@0.1.1-alpha.6':
+    resolution: {integrity: sha512-C8WAyVp/qlfkpjGasiieU4TrAsRC8SN7a5lKQs4P7eqAeCMJFV6D1iWKgwHuK/59ACDo38T/5S+ty0EQQel3hg==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-spec/0.1.1-alpha.6/0046e137d17944c674d6d266e3a2a11d7c147a90}
     peerDependencies:
       graphql-request: ^7.4.0
       react: ^19.2.1
@@ -4669,11 +4700,12 @@ packages:
       '@vitejs/plugin-react':
         optional: true
 
-  '@webpresso/webpresso@0.1.0-alpha.20':
-    resolution: {integrity: sha512-ONAgPp3hn+F+ewC8Gr7P64zxxbeVQqsTJ992Mi5ulBlfKk7aBOAFQr43eQ9VMafEDPbG4vxut4pViXJ60wqXTQ==, tarball: https://npm.pkg.github.com/download/@webpresso/webpresso/0.1.0-alpha.20/a4c8429b6602194156c691789f62d009a7a1dffc}
+  '@webpresso/webpresso@0.1.1-alpha.6':
+    resolution: {integrity: sha512-I+J5XLx5v7n7QSn93sctcv1J1/q/19JGlhJWi2AjQF/NdC7IL9WjUXCFpMdi1/Sa4bOd0hrmX+N0d8KSa1We0w==, tarball: https://npm.pkg.github.com/download/@webpresso/webpresso/0.1.1-alpha.6/a4241c748f2ebdd4ea2b54509b72b49e956685b2}
     engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
+      hono: '>=4.0.0'
       react: ^19.2.1
       react-dom: ^19.2.1
 
@@ -7993,6 +8025,21 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
+  '@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.0.17))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0)':
+    dependencies:
+      '@better-auth/utils': 0.4.0
+      '@better-fetch/fetch': 1.1.21
+      '@opentelemetry/semantic-conventions': 1.40.0
+      '@standard-schema/spec': 1.1.0
+      better-call: 1.3.5(zod@4.0.17)
+      jose: 6.2.2
+      kysely: 0.28.17
+      nanostores: 1.3.0
+      zod: 4.3.6
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20260423.1
+      '@opentelemetry/api': 1.9.0
+
   '@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0)':
     dependencies:
       '@better-auth/utils': 0.4.0
@@ -8036,6 +8083,19 @@ snapshots:
     dependencies:
       '@better-auth/core': 1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0)
       '@better-auth/utils': 0.4.0
+
+  '@better-auth/sso@1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.0.17))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-auth@1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(better-call@1.3.5(zod@4.0.17))':
+    dependencies:
+      '@better-auth/core': 1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.0.17))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0)
+      '@better-auth/utils': 0.4.0
+      '@better-fetch/fetch': 1.1.21
+      better-auth: 1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      better-call: 1.3.5(zod@4.0.17)
+      fast-xml-parser: 5.7.2
+      jose: 6.2.2
+      samlify: 2.10.2
+      tldts: 6.1.86
+      zod: 4.3.6
 
   '@better-auth/sso@1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-auth@1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(better-call@1.3.5(zod@4.3.6))':
     dependencies:
@@ -10989,6 +11049,17 @@ snapshots:
       - graphql-request
       - react
 
+  '@webpresso/codegen-core@0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
+    dependencies:
+      '@webpresso/schema-loaders': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+      yaml: 2.8.4
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - graphql-request
+      - react
+
   '@webpresso/db-branching@0.2.1': {}
 
   '@webpresso/neon-branching@0.2.1':
@@ -11062,11 +11133,78 @@ snapshots:
       - valibot
       - vitest
 
+  '@webpresso/schema-engine@0.1.1-alpha.6(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))':
+    dependencies:
+      '@babel/generator': 7.29.1
+      '@babel/types': 7.29.0
+      '@hookform/resolvers': 5.2.2(react-hook-form@7.73.1(react@19.2.5))
+      '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@webpresso/codegen-core': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@webpresso/schema-frontend': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))
+      '@webpresso/schema-loaders': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      diff: 8.0.4
+      drizzle-orm: 1.0.0-rc.1(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(postgres@3.4.9)(zod@4.3.6)
+      graphql: 16.13.2
+      graphql-request: 7.4.0(graphql@16.13.2)
+      react: 19.2.5
+      react-hook-form: 7.73.1(react@19.2.5)
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@cloudflare/workers-types'
+      - '@effect/sql-pg'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@sinclair/typebox'
+      - '@sqlitecloud/drivers'
+      - '@tidbcloud/serverless'
+      - '@tursodatabase/database'
+      - '@tursodatabase/database-common'
+      - '@tursodatabase/database-wasm'
+      - '@types/better-sqlite3'
+      - '@types/mssql'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - arktype
+      - better-sqlite3
+      - bun-types
+      - effect
+      - expo-sqlite
+      - mssql
+      - mysql2
+      - pg
+      - postgres
+      - sql.js
+      - sqlite3
+      - typebox
+      - valibot
+      - vitest
+
   '@webpresso/schema-frontend@0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))':
     dependencies:
       '@tanstack/react-query': 5.99.2(react@19.2.5)
       '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@webpresso/schema-spec': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - graphql-request
+
+  '@webpresso/schema-frontend@0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))':
+    dependencies:
+      '@tanstack/react-query': 5.99.2(react@19.2.5)
+      '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
       zod: 4.3.6
@@ -11083,7 +11221,23 @@ snapshots:
       - graphql-request
       - react
 
+  '@webpresso/schema-loaders@0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
+    dependencies:
+      '@webpresso/schema-spec': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      gray-matter: 4.0.3
+      yaml: 2.8.4
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - graphql-request
+      - react
+
   '@webpresso/schema-spec@0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
+    dependencies:
+      graphql-request: 7.4.0(graphql@16.13.2)
+      react: 19.2.5
+      zod: 4.3.6
+
+  '@webpresso/schema-spec@0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)':
     dependencies:
       graphql-request: 7.4.0(graphql@16.13.2)
       react: 19.2.5
@@ -11104,18 +11258,219 @@ snapshots:
       '@cloudflare/vitest-pool-workers': 0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.5)(@vitest/snapshot@4.1.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       '@vitejs/plugin-react': 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
 
-  '@webpresso/webpresso@0.1.0-alpha.20(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.3.6))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)':
+  '@webpresso/webpresso@0.1.1-alpha.6(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.0.17))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.0.17))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(hono@4.12.15)(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)':
+    dependencies:
+      '@better-auth/sso': 1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.0.17))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-auth@1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(better-call@1.3.5(zod@4.0.17))
+      '@clack/prompts': 1.3.0
+      '@playwright/test': 1.59.1
+      '@webpresso/codegen-core': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@webpresso/runtime': 0.3.0
+      '@webpresso/schema-engine': 0.1.1-alpha.6(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@webpresso/schema-frontend': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))
+      '@webpresso/schema-loaders': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      better-auth: 1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      hono: 4.12.15
+      oxlint: 0.15.15
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      typescript: 6.0.3
+      vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)
+      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@better-auth/core'
+      - '@better-auth/utils'
+      - '@better-fetch/fetch'
+      - '@cloudflare/workers-types'
+      - '@edge-runtime/vm'
+      - '@effect/sql-pg'
+      - '@electric-sql/pglite'
+      - '@hookform/resolvers'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@lynx-js/react'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@sinclair/typebox'
+      - '@sqlitecloud/drivers'
+      - '@sveltejs/kit'
+      - '@tanstack/react-router'
+      - '@tanstack/react-start'
+      - '@tanstack/solid-start'
+      - '@tidbcloud/serverless'
+      - '@tursodatabase/database'
+      - '@tursodatabase/database-common'
+      - '@tursodatabase/database-wasm'
+      - '@types/better-sqlite3'
+      - '@types/mssql'
+      - '@types/node'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@vitejs/devtools'
+      - '@vitest/browser-playwright'
+      - '@vitest/browser-preview'
+      - '@vitest/browser-webdriverio'
+      - '@vitest/coverage-istanbul'
+      - '@vitest/coverage-v8'
+      - '@vitest/ui'
+      - '@xata.io/client'
+      - arktype
+      - better-call
+      - better-sqlite3
+      - bun-types
+      - drizzle-kit
+      - drizzle-orm
+      - effect
+      - esbuild
+      - expo-sqlite
+      - graphql-request
+      - happy-dom
+      - jiti
+      - jsdom
+      - less
+      - mongodb
+      - mssql
+      - msw
+      - mysql2
+      - next
+      - pg
+      - postgres
+      - prisma
+      - react-hook-form
+      - sass
+      - sass-embedded
+      - solid-js
+      - sql.js
+      - sqlite3
+      - stylus
+      - sugarss
+      - svelte
+      - terser
+      - tsx
+      - typebox
+      - valibot
+      - vue
+      - yaml
+
+  '@webpresso/webpresso@0.1.1-alpha.6(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.3.6))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(hono@4.12.14)(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)':
     dependencies:
       '@better-auth/sso': 1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-auth@1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(better-call@1.3.5(zod@4.3.6))
       '@clack/prompts': 1.3.0
       '@playwright/test': 1.59.1
-      '@webpresso/codegen-core': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@webpresso/codegen-core': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       '@webpresso/runtime': 0.3.0
-      '@webpresso/schema-engine': 0.1.0-alpha.20(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
-      '@webpresso/schema-frontend': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))
-      '@webpresso/schema-loaders': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
-      '@webpresso/schema-spec': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-engine': 0.1.1-alpha.6(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@webpresso/schema-frontend': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))
+      '@webpresso/schema-loaders': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       better-auth: 1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      hono: 4.12.14
+      oxlint: 0.15.15
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+      typescript: 6.0.3
+      vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)
+      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@better-auth/core'
+      - '@better-auth/utils'
+      - '@better-fetch/fetch'
+      - '@cloudflare/workers-types'
+      - '@edge-runtime/vm'
+      - '@effect/sql-pg'
+      - '@electric-sql/pglite'
+      - '@hookform/resolvers'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@lynx-js/react'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@sinclair/typebox'
+      - '@sqlitecloud/drivers'
+      - '@sveltejs/kit'
+      - '@tanstack/react-router'
+      - '@tanstack/react-start'
+      - '@tanstack/solid-start'
+      - '@tidbcloud/serverless'
+      - '@tursodatabase/database'
+      - '@tursodatabase/database-common'
+      - '@tursodatabase/database-wasm'
+      - '@types/better-sqlite3'
+      - '@types/mssql'
+      - '@types/node'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@vitejs/devtools'
+      - '@vitest/browser-playwright'
+      - '@vitest/browser-preview'
+      - '@vitest/browser-webdriverio'
+      - '@vitest/coverage-istanbul'
+      - '@vitest/coverage-v8'
+      - '@vitest/ui'
+      - '@xata.io/client'
+      - arktype
+      - better-call
+      - better-sqlite3
+      - bun-types
+      - drizzle-kit
+      - drizzle-orm
+      - effect
+      - esbuild
+      - expo-sqlite
+      - graphql-request
+      - happy-dom
+      - jiti
+      - jsdom
+      - less
+      - mongodb
+      - mssql
+      - msw
+      - mysql2
+      - next
+      - pg
+      - postgres
+      - prisma
+      - react-hook-form
+      - sass
+      - sass-embedded
+      - solid-js
+      - sql.js
+      - sqlite3
+      - stylus
+      - sugarss
+      - svelte
+      - terser
+      - tsx
+      - typebox
+      - valibot
+      - vue
+      - yaml
+
+  '@webpresso/webpresso@0.1.1-alpha.6(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(@types/node@25.6.0)(better-call@1.3.5(zod@4.3.6))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(esbuild@0.28.0)(graphql-request@7.4.0(graphql@16.13.2))(hono@4.12.15)(jiti@2.6.1)(jsdom@20.0.3)(postgres@3.4.9)(react-dom@19.2.5(react@19.2.5))(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(tsx@4.21.0)':
+    dependencies:
+      '@better-auth/sso': 1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.3.6))(jose@6.2.2)(kysely@0.28.17)(nanostores@1.3.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(better-auth@1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))))(better-call@1.3.5(zod@4.3.6))
+      '@clack/prompts': 1.3.0
+      '@playwright/test': 1.59.1
+      '@webpresso/codegen-core': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@webpresso/runtime': 0.3.0
+      '@webpresso/schema-engine': 0.1.1-alpha.6(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      '@webpresso/schema-frontend': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))
+      '@webpresso/schema-loaders': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      '@webpresso/schema-spec': 0.1.1-alpha.6(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
+      better-auth: 1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
+      hono: 4.12.15
       oxlint: 0.15.15
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
@@ -11368,6 +11723,15 @@ snapshots:
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
+
+  better-call@1.3.5(zod@4.0.17):
+    dependencies:
+      '@better-auth/utils': 0.4.0
+      '@better-fetch/fetch': 1.1.21
+      rou3: 0.7.12
+      set-cookie-parser: 3.1.0
+    optionalDependencies:
+      zod: 4.0.17
 
   better-call@1.3.5(zod@4.3.6):
     dependencies:

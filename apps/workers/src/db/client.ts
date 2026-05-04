@@ -31,7 +31,7 @@ export type Env = {
 };
 
 export function createDb(env: Env) {
-  const connectionString = env.HYPERDRIVE?.connectionString ?? env.DATABASE_URL;
+  const connectionString = env.DATABASE_URL ?? env.HYPERDRIVE?.connectionString;
   if (!connectionString) throw new Error("No database connection available");
   const client = postgres(connectionString);
   return drizzle(client, { schema });

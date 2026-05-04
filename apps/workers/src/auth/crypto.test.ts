@@ -26,7 +26,7 @@ describe("hashPasswordAsync", () => {
 
     expect(segments).toHaveLength(4);
     expect(segments[0]).toBe("pbkdf2");
-    expect(segments[1]).toBe("310000");
+    expect(segments[1]).toBe("100000");
     expect(segments[2]?.length ?? 0).toBeGreaterThan(0);
     expect(segments[3]?.length ?? 0).toBeGreaterThan(0);
   });

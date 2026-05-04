@@ -1,15 +1,15 @@
-# Static SPA Worker — no main script, no Durable Objects, no KV, no Hyperdrive.
-# Deployed via Workers Assets (pure-static). Wrangler auto-names each env's
-# Worker as `ingest-lens-client-<env>` and atomically creates the Worker +
-# route + DNS + cert via `custom_domain = true`.
+# SPA Worker with Workers Assets plus a tiny `/auth/*` proxy so the framework's
+# auth client can stay on same-origin `/auth` while the API worker remains on
+# `api.<env>.ingest-lens.ozby.dev`.
 name = "ingest-lens-client"
+main = "src/worker.ts"
 compatibility_date = "2024-12-01"
 account_id = "e93986039ea9bd9729fa534a29e9e88f" # ozby account — not a secret; CF account IDs are public identifiers
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
-# No `binding` — wrangler 4.x forbids bindings on assets-only Workers (no `main` entry).
 
 # ─── dev environment ──────────────────────────────────────────────────────
 # Deployed Worker name: ingest-lens-client-dev
@@ -19,6 +19,9 @@ not_found_handling = "single-page-application"
 workers_dev = false
 routes = [{ pattern = "dev.ingest-lens.ozby.dev", custom_domain = true }]
 
+[env.dev.vars]
+AUTH_PROXY_BASE_URL = "https://api.dev.ingest-lens.ozby.dev"
+
 # ─── prd environment ──────────────────────────────────────────────────────
 # Deployed Worker name: ingest-lens-client-prd
 # Custom domain: ingest-lens.ozby.dev
@@ -26,3 +29,6 @@ routes = [{ pattern = "dev.ingest-lens.ozby.dev", custom_domain = true }]
 [env.prd]
 workers_dev = false
 routes = [{ pattern = "ingest-lens.ozby.dev", custom_domain = true }]
+
+[env.prd.vars]
+AUTH_PROXY_BASE_URL = "https://api.ingest-lens.ozby.dev"
