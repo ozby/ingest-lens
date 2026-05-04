@@ -6,6 +6,6 @@ auth:
     - type: email
     - type: google
       clientId: GOOGLE_CLIENT_ID
-  cookieDomain: .ozby.dev
+  cookieDomain: .ingest-lens.ozby.dev
 build:
   outDir: dist
