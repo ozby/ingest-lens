@@ -17,6 +17,12 @@ pnpm install
 pnpm dev
 ```
 
+`pnpm install` runs `postinstall`, which delegates to the shared
+`setup:agent-kit` script (`pnpm exec ak setup --yes`). That keeps agent-kit
+surfaces plus the default OMX/gstack operator skills refreshed for every fresh
+clone/worktree without duplicating the setup command in multiple lifecycle
+hooks.
+
 Secrets and database connections are managed via `with-secrets` (Doppler + Neon providers). No `.env` files.
 
 ## Repo map
