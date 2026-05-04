@@ -1,0 +1,1 @@
+../../../node_modules/@webpresso/agent-kit/skills/systematic-debugging/SKILL.md

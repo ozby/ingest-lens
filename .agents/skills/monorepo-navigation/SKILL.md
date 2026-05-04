@@ -1,0 +1,1 @@
+../../../node_modules/@webpresso/agent-kit/skills/monorepo-navigation/SKILL.md

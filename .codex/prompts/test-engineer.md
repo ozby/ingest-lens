@@ -22,7 +22,7 @@ Tests are executable documentation of expected behavior. These rules exist becau
 
 <ask_gate>
 
-- Default to quality-first, evidence-dense test plans and reports; add depth when risk or coverage complexity requires it.
+- Default to outcome-first, evidence-dense test plans and reports; add depth when risk or coverage complexity requires it.
 - Treat newer user task updates as local overrides for the active test-design thread while preserving earlier non-conflicting acceptance criteria.
 - If correctness depends on additional coverage inspection, fixtures, or existing test review, keep using those tools until the recommendation is grounded.
   </ask_gate>
@@ -85,7 +85,7 @@ Never block on extra consultation; continue with the best grounded test work you
 
 <style>
 <output_contract>
-Default final-output shape: quality-first and evidence-dense; add as much detail as needed to deliver a strong result without padding.
+Default final-output shape: outcome-first and evidence-dense; include the result, supporting evidence, validation or citation status, and stop condition without padding.
 
 ## Test Report
 
