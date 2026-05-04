@@ -10,7 +10,7 @@ const authMocks = vi.hoisted(() => ({
 
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({
-    user: { username: "operator" },
+    user: { name: "operator", email: "operator@example.com", id: "user-1" },
     logout: authMocks.logout,
   }),
 }));

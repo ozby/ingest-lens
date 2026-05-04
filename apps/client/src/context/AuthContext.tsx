@@ -1,118 +1,77 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { IUser } from "@repo/types";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { signIn, signUp, signOut, useSession } from "@webpresso/webpresso/auth/react";
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+};
 
 interface AuthContextType {
-  user: IUser | null;
+  user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, email: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 type AuthProviderProps = {
   children: React.ReactNode;
 };
 
-const AuthContext = createContext<AuthContextType>({
+const AuthContext = React.createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
   login: async () => {},
   register: async () => {},
-  logout: () => {},
+  logout: async () => {},
 });
 
 export function useAuth(): AuthContextType {
-  return useContext(AuthContext);
-}
-
-type ApiService = (typeof import("../services/api"))["default"];
-
-let cachedApiService: ApiService | null = null;
-
-async function loadApiService(): Promise<ApiService> {
-  if (cachedApiService) {
-    return cachedApiService;
-  }
-
-  const { default: apiService } = await import("../services/api");
-  cachedApiService = apiService;
-  return apiService;
+  return React.useContext(AuthContext);
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<IUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const session = useSession();
 
-  useEffect(() => {
-    const initAuth = async () => {
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        try {
-          const apiService = await loadApiService();
-          const user = await apiService.getCurrentUser();
-          setUser(user);
-        } catch (error) {
-          console.error("Failed to fetch user", error);
-          const apiService = await loadApiService();
-          apiService.clearToken();
-        }
-      }
-      setIsLoading(false);
-    };
+  const user: AuthUser | null = session.data
+    ? { id: session.data.user.id, name: session.data.user.name, email: session.data.user.email }
+    : null;
 
-    initAuth();
-  }, []);
-
-  const login = async (username: string, password: string) => {
-    try {
-      setIsLoading(true);
-      const apiService = await loadApiService();
-      const { user } = await apiService.login({ username, password });
-      setUser(user);
-      toast.success("Login successful");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Login failed", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
+  const login = async (email: string, password: string) => {
+    const result = await signIn({ email, password });
+    if (result.error) {
+      throw new Error(result.error);
     }
+    toast.success("Login successful");
+    navigate("/dashboard");
   };
 
-  const register = async (username: string, password: string, email: string) => {
-    try {
-      setIsLoading(true);
-      const apiService = await loadApiService();
-      const { user } = await apiService.register({ username, password, email });
-      setUser(user);
-      toast.success("Registration successful");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Registration failed", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
+  const register = async (email: string, password: string, name: string) => {
+    const result = await signUp({ email, password, name });
+    if (result.error) {
+      throw new Error(result.error);
     }
+    toast.success("Registration successful");
+    navigate("/dashboard");
   };
 
-  const logout = () => {
-    cachedApiService?.clearToken();
-    setUser(null);
-    navigate("/");
+  const logout = async () => {
+    await signOut();
     toast.success("Logged out successfully");
-    localStorage.removeItem("authToken");
+    navigate("/");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isLoading,
+        isLoading: session.isPending,
         isAuthenticated: !!user,
         login,
         register,

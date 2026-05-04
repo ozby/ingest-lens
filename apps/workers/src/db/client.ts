@@ -14,6 +14,7 @@ export type DeliveryPayload = {
 export type Env = {
   HYPERDRIVE: Hyperdrive;
   DATABASE_URL?: string; // local dev fallback
+  BETTER_AUTH_SECRET: string;
   JWT_SECRET: string;
   NODE_ENV?: string;
   ALLOWED_ORIGIN?: string; // per-env SPA origin for CORS (e.g. https://dev.ingest-lens.ozby.dev)

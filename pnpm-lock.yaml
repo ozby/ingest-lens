@@ -593,6 +593,9 @@ importers:
       ajv:
         specifier: ^8.18.0
         version: 8.18.0
+      better-auth:
+        specifier: ^1.6.9
+        version: 1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       drizzle-orm:
         specifier: catalog:workers
         version: 0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(kysely@0.28.17)(postgres@3.4.9)
@@ -4591,6 +4594,9 @@ packages:
     resolution: {integrity: sha512-jMqfDjLroN2af6nXSk589/5iqJECaypwdSKIMWpKr5PODxqYLT3ue8yMXGqub8Zm3syyMNBqHvp+zGG2h6Hd3Q==, tarball: https://npm.pkg.github.com/download/@webpresso/codegen-core/0.1.0-alpha.20/ccd3ed6558972af1c927b3860552c2b9d99d938c}
     peerDependencies:
       vitest: ^4.0.0
+    peerDependenciesMeta:
+      vitest:
+        optional: true
 
   '@webpresso/db-branching@0.2.1':
     resolution: {integrity: sha512-gAdw2F180QR+YiG5IVB3QL+r2NCJA+5uMlA5hjGqD0fbYwxcOgLvU+bdeOpVph5kNoCZAlc21uyrZCfwAAuOkw==, tarball: https://npm.pkg.github.com/download/@webpresso/db-branching/0.2.1/b5ef9bb01a3c66c59155fe0d57305b84a4b5dc91}
@@ -4611,6 +4617,15 @@ packages:
       '@tanstack/react-router': ^1.168.10
       react: ^19.2.1
       react-hook-form: ^7.66.1
+    peerDependenciesMeta:
+      '@hookform/resolvers':
+        optional: true
+      '@tanstack/react-router':
+        optional: true
+      react:
+        optional: true
+      react-hook-form:
+        optional: true
 
   '@webpresso/schema-frontend@0.1.0-alpha.20':
     resolution: {integrity: sha512-GS3r4o8Yxa+KYyboxcEuWa1TSMrTGFHspzkrEA7AeR2RBUIGkxxnxYDaFvosRnwdko0koUQSag8i6FWj5IKOXw==, tarball: https://npm.pkg.github.com/download/@webpresso/schema-frontend/0.1.0-alpha.20/e75274e86510ec81679724db1561d6237ce29990}
@@ -10956,9 +10971,10 @@ snapshots:
     dependencies:
       '@webpresso/schema-loaders': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       '@webpresso/schema-spec': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
-      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
       yaml: 2.8.4
       zod: 4.3.6
+    optionalDependencies:
+      vitest: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0))
     transitivePeerDependencies:
       - graphql-request
       - react
@@ -10983,8 +10999,6 @@ snapshots:
     dependencies:
       '@babel/generator': 7.29.1
       '@babel/types': 7.29.0
-      '@hookform/resolvers': 5.2.2(react-hook-form@7.73.1(react@19.2.5))
-      '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@webpresso/codegen-core': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
       '@webpresso/schema-frontend': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))
       '@webpresso/schema-loaders': 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
@@ -10993,9 +11007,12 @@ snapshots:
       drizzle-orm: 1.0.0-rc.1(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(postgres@3.4.9)(zod@4.3.6)
       graphql: 16.13.2
       graphql-request: 7.4.0(graphql@16.13.2)
+      zod: 4.3.6
+    optionalDependencies:
+      '@hookform/resolvers': 5.2.2(react-hook-form@7.73.1(react@19.2.5))
+      '@tanstack/react-router': 1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react: 19.2.5
       react-hook-form: 7.73.1(react@19.2.5)
-      zod: 4.3.6
     transitivePeerDependencies:
       - '@aws-sdk/client-rds-data'
       - '@cloudflare/workers-types'

@@ -109,6 +109,7 @@ export function createMockEnv(
   return {
     HYPERDRIVE: createMockHyperdrive(),
     DATABASE_URL: "postgresql://localhost/test",
+    BETTER_AUTH_SECRET: "test-better-auth-secret-32-chars!!",
     JWT_SECRET: "test-secret",
     ALLOWED_ORIGIN: "https://dev.ingest-lens.ozby.dev",
     AI: ai,

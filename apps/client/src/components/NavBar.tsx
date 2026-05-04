@@ -51,7 +51,7 @@ const NavBar: React.FC<NavBarProps> = ({ toggleSidebar }) => {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="h-4 w-4 text-primary" />
                 </div>
-                <span className="hidden md:inline-block font-medium">{user?.username}</span>
+                <span className="hidden md:inline-block font-medium">{user?.name}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

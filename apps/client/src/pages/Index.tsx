@@ -18,9 +18,9 @@ import { toast } from "sonner";
 const Index = () => {
   const { login, register, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
-    username: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -38,7 +38,7 @@ const Index = () => {
     e.preventDefault();
     try {
       setAuthLoading(true);
-      await login(loginForm.username, loginForm.password);
+      await login(loginForm.email, loginForm.password);
     } catch (error) {
       console.error("Login failed", error);
       toast.error("Login failed. Please check your credentials.");
@@ -57,7 +57,7 @@ const Index = () => {
 
     try {
       setAuthLoading(true);
-      await register(registerForm.username, registerForm.password, registerForm.email);
+      await register(registerForm.email, registerForm.password, registerForm.name);
     } catch (error) {
       console.error("Registration failed", error);
       toast.error("Registration failed. Please try again.");
@@ -105,14 +105,14 @@ const Index = () => {
               <form onSubmit={handleLoginSubmit}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
-                      id="username"
-                      type="text"
-                      placeholder="Your username"
+                      id="email"
+                      type="email"
+                      placeholder="Your email address"
                       required
-                      value={loginForm.username}
-                      onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -152,16 +152,14 @@ const Index = () => {
               <form onSubmit={handleRegisterSubmit}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="reg-username">Username</Label>
+                    <Label htmlFor="reg-name">Name</Label>
                     <Input
-                      id="reg-username"
+                      id="reg-name"
                       type="text"
-                      placeholder="Choose a username"
+                      placeholder="Your display name"
                       required
-                      value={registerForm.username}
-                      onChange={(e) =>
-                        setRegisterForm({ ...registerForm, username: e.target.value })
-                      }
+                      value={registerForm.name}
+                      onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">

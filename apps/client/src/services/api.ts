@@ -1,9 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import {
   ApiResponse,
-  AuthResponse,
   CreateIntakeSuggestionRequest,
-  CurrentUserData,
   DeleteMessageData,
   MessageData,
   QueueMetricsData,
@@ -19,11 +17,8 @@ import {
   IQueueMetrics,
   IServerMetrics,
   ITopic,
-  IUser,
-  LoginCredentials,
   PublishTopicRequest,
   ReceiveMessagesQuery,
-  RegisterCredentials,
   SendMessageRequest,
   ApproveIntakeSuggestionRequest,
   RejectIntakeSuggestionRequest,
@@ -63,7 +58,6 @@ export function extractData<T>(response: AxiosResponse<ApiResponse<T>>): T {
 
 class ApiService {
   private api: ReturnType<typeof axios.create>;
-  private token: string | null = null;
 
   constructor() {
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -72,17 +66,9 @@ class ApiService {
       headers: {
         "Content-Type": "application/json",
       },
+      // BetterAuth uses session cookies — withCredentials ensures cookies are sent cross-origin
+      withCredentials: true,
     });
-
-    this.api.interceptors.request.use(
-      (config) => {
-        if (this.token) {
-          config.headers.Authorization = `Bearer ${this.token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error),
-    );
 
     this.api.interceptors.response.use(
       (response) => response,
@@ -92,40 +78,6 @@ class ApiService {
         return Promise.reject(error);
       },
     );
-
-    this.token = localStorage.getItem("authToken");
-  }
-
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<ApiResponse<AuthResponse>>("/api/auth/login", credentials);
-    const data = extractData(response);
-    this.setToken(data.token);
-    return data;
-  }
-
-  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await this.api.post<ApiResponse<AuthResponse>>(
-      "/api/auth/register",
-      credentials,
-    );
-    const data = extractData(response);
-    this.setToken(data.token);
-    return data;
-  }
-
-  async getCurrentUser(): Promise<IUser> {
-    const response = await this.api.get<ApiResponse<CurrentUserData>>("/api/auth/me");
-    return extractData(response).user;
-  }
-
-  setToken(token: string): void {
-    this.token = token;
-    localStorage.setItem("authToken", token);
-  }
-
-  clearToken(): void {
-    this.token = null;
-    localStorage.removeItem("authToken");
   }
 
   async getServerMetrics(): Promise<IServerMetrics> {

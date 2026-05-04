@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import type { Env } from "./db/client";
-import { authRoutes } from "./routes/auth";
+import { createBetterAuth } from "./auth/better-auth-server";
 import { queueRoutes } from "./routes/queue";
 import { messageRoutes } from "./routes/message";
 import { topicRoutes } from "./routes/topic";
@@ -33,11 +33,15 @@ app.use("*", logger());
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
+// BetterAuth routes at /auth/* — rate-limited for brute-force protection
+app.use("/auth/*", authRateLimiter);
+app.on(["GET", "POST"], "/auth/*", (c) => {
+  const auth = createBetterAuth(c.env);
+  return auth.handler(c.req.raw);
+});
+
 // All API routes: general 100 req/60s
 app.use("/api/*", rateLimiter);
-// Auth routes additionally constrained to 5 req/60s (brute-force protection)
-app.use("/api/auth/*", authRateLimiter);
-app.route("/api/auth", authRoutes);
 app.route("/api/queues", queueRoutes);
 app.route("/api/messages", messageRoutes);
 app.route("/api/topics", topicRoutes);

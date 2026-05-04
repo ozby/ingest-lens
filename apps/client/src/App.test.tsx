@@ -25,18 +25,32 @@ const adminIntakeRouteHeading = "Intake admin review";
 const apiMocks = vi.hoisted(() => ({
   clearToken: vi.fn(),
   getAllQueueMetrics: vi.fn(),
-  getCurrentUser: vi.fn(),
   getIntakeSuggestions: vi.fn(),
   getQueues: vi.fn(),
   getServerActivityHistory: vi.fn(),
   getServerMetrics: vi.fn(),
   getTopics: vi.fn(),
-  login: vi.fn(),
-  register: vi.fn(),
+}));
+
+const authMocks = vi.hoisted(() => ({
+  useSession: vi.fn(),
+  signIn: vi.fn(),
+  signUp: vi.fn(),
+  signOut: vi.fn(),
+  createAuthClient: vi.fn(),
+  organizationClient: vi.fn(),
 }));
 
 vi.mock("@/services/api", () => ({ default: apiMocks }));
 vi.mock("./services/api", () => ({ default: apiMocks }));
+vi.mock("@webpresso/webpresso/auth/react", () => ({
+  useSession: authMocks.useSession,
+  signIn: authMocks.signIn,
+  signUp: authMocks.signUp,
+  signOut: authMocks.signOut,
+  createAuthClient: authMocks.createAuthClient,
+  organizationClient: authMocks.organizationClient,
+}));
 
 // Eager page references: the same route tree the production App renders, but
 // without lazy() — so the MemoryRouter in createRoutesStub resolves pages
@@ -76,35 +90,52 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   });
 }
 
+function mockSignedOut() {
+  authMocks.useSession.mockReturnValue({ data: null, isPending: false });
+}
+
+function mockSignedIn() {
+  authMocks.useSession.mockReturnValue({
+    data: {
+      user: { id: "user-1", name: "demo", email: "demo@example.com" },
+      session: {
+        id: "session-1",
+        userId: "user-1",
+        token: "tok",
+        expiresAt: new Date("2030-01-01"),
+        createdAt: new Date("2026-01-01"),
+        updatedAt: new Date("2026-01-01"),
+      },
+    },
+    isPending: false,
+  });
+}
+
 describe("App route tree", () => {
   beforeEach(() => {
     for (const mockFn of Object.values(apiMocks)) {
       mockFn.mockReset();
     }
+    authMocks.useSession.mockReset();
     localStorage.clear();
   });
 
   it("shows the auth landing page at the root route when signed out", async () => {
+    mockSignedOut();
     render(<Stub initialEntries={["/"]} />);
 
     await screen.findByText(landingPageCopy);
   });
 
-  it("redirects protected routes to the auth landing page when no token is present", async () => {
+  it("redirects protected routes to the auth landing page when no session is present", async () => {
+    mockSignedOut();
     render(<Stub initialEntries={["/dashboard"]} />);
 
     await screen.findByText(landingPageCopy);
   });
 
   it("renders the protected dashboard when auth bootstrap succeeds", async () => {
-    localStorage.setItem("authToken", "token");
-    apiMocks.getCurrentUser.mockResolvedValueOnce({
-      id: "user-1",
-      username: "demo",
-      email: "demo@example.com",
-      createdAt: new Date("2026-04-01T00:00:00Z"),
-      updatedAt: new Date("2026-04-01T00:00:00Z"),
-    });
+    mockSignedIn();
     apiMocks.getQueues.mockResolvedValueOnce([]);
     apiMocks.getTopics.mockResolvedValueOnce([]);
     apiMocks.getAllQueueMetrics.mockResolvedValueOnce([]);
@@ -124,14 +155,7 @@ describe("App route tree", () => {
   });
 
   it("renders the protected intake route after auth bootstrap", async () => {
-    localStorage.setItem("authToken", "token");
-    apiMocks.getCurrentUser.mockResolvedValueOnce({
-      id: "user-1",
-      username: "demo",
-      email: "demo@example.com",
-      createdAt: new Date("2026-04-01T00:00:00Z"),
-      updatedAt: new Date("2026-04-01T00:00:00Z"),
-    });
+    mockSignedIn();
     apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
 
     render(<Stub initialEntries={["/intake"]} />);
@@ -140,14 +164,7 @@ describe("App route tree", () => {
   });
 
   it("renders the protected metrics route after auth bootstrap", async () => {
-    localStorage.setItem("authToken", "token");
-    apiMocks.getCurrentUser.mockResolvedValueOnce({
-      id: "user-1",
-      username: "demo",
-      email: "demo@example.com",
-      createdAt: new Date("2026-04-01T00:00:00Z"),
-      updatedAt: new Date("2026-04-01T00:00:00Z"),
-    });
+    mockSignedIn();
     apiMocks.getServerMetrics.mockResolvedValueOnce({
       startTime: new Date("2026-04-01T00:00:00Z"),
       totalRequests: 42,
@@ -163,14 +180,7 @@ describe("App route tree", () => {
   });
 
   it("renders the protected admin intake review route after auth bootstrap", async () => {
-    localStorage.setItem("authToken", "token");
-    apiMocks.getCurrentUser.mockResolvedValueOnce({
-      id: "user-1",
-      username: "demo",
-      email: "demo@example.com",
-      createdAt: new Date("2026-04-01T00:00:00Z"),
-      updatedAt: new Date("2026-04-01T00:00:00Z"),
-    });
+    mockSignedIn();
     apiMocks.getIntakeSuggestions.mockResolvedValueOnce([]);
 
     render(<Stub initialEntries={["/admin/intake"]} />);

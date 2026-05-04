@@ -1,24 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type {
-  AuthResponse,
-  IMessage,
-  IUser,
-  IntakeAttemptRecord,
-  IntakeApprovalData,
-} from "@repo/types";
+import type { IMessage, IntakeAttemptRecord, IntakeApprovalData } from "@repo/types";
 
 const axiosMocks = vi.hoisted(() => {
   const get = vi.fn();
   const post = vi.fn();
   const del = vi.fn();
-  const requestUse = vi.fn();
   const responseUse = vi.fn();
   const client = {
     get,
     post,
     delete: del,
     interceptors: {
-      request: { use: requestUse },
       response: { use: responseUse },
     },
   };
@@ -27,7 +19,6 @@ const axiosMocks = vi.hoisted(() => {
     get,
     post,
     del,
-    requestUse,
     responseUse,
     create: vi.fn(() => client),
   };
@@ -160,56 +151,6 @@ describe("api service contracts", () => {
 
     await expect(apiService.deleteMessage("queue-1", "msg-1")).resolves.toBe("msg-1");
     expect(axiosMocks.del).toHaveBeenCalledWith("/api/messages/queue-1/msg-1");
-  });
-
-  it("reads login responses with the shared user payload including updatedAt", async () => {
-    const user: IUser = {
-      id: "user-1",
-      username: "testuser",
-      email: "test@example.com",
-      createdAt: new Date("2026-01-01T00:00:00Z"),
-      updatedAt: new Date("2026-01-02T00:00:00Z"),
-    };
-    const authResponse: AuthResponse = {
-      token: "token-123",
-      user,
-    };
-
-    axiosMocks.post.mockResolvedValueOnce({
-      data: {
-        status: "success",
-        data: authResponse,
-      },
-    });
-
-    await expect(
-      apiService.login({ username: "testuser", password: "password123" }),
-    ).resolves.toEqual(authResponse);
-    expect(axiosMocks.post).toHaveBeenCalledWith("/api/auth/login", {
-      username: "testuser",
-      password: "password123",
-    });
-    expect(localStorage.getItem("authToken")).toBe("token-123");
-  });
-
-  it("reads current-user responses with the shared user payload including updatedAt", async () => {
-    const user: IUser = {
-      id: "user-1",
-      username: "testuser",
-      email: "test@example.com",
-      createdAt: new Date("2026-01-01T00:00:00Z"),
-      updatedAt: new Date("2026-01-02T00:00:00Z"),
-    };
-
-    axiosMocks.get.mockResolvedValueOnce({
-      data: {
-        status: "success",
-        data: { user },
-      },
-    });
-
-    await expect(apiService.getCurrentUser()).resolves.toEqual(user);
-    expect(axiosMocks.get).toHaveBeenCalledWith("/api/auth/me");
   });
 
   it("creates mapping-suggestion attempts from the intake helper", async () => {
