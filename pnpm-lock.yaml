@@ -645,6 +645,9 @@ importers:
 
   infra:
     dependencies:
+      '@ozby/wrangler-sync':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@pulumi/cloudflare':
         specifier: ^6.14.0
         version: 6.14.0(ts-node@10.9.2(@swc/core@1.15.30(@swc/helpers@0.5.21))(@types/node@25.6.0)(typescript@6.0.3))(typescript@6.0.3)
@@ -2836,6 +2839,11 @@ packages:
     resolution: {integrity: sha512-ZM9T3/OpaQ3qvrk/VuHO2EQmhNH4cOZdr/b/Ju9VKwBr+ahhqMn3W5srrplWQWxfsb0yd1yBj7iD0jdAps2iLg==}
     cpu: [x64]
     os: [win32]
+
+  '@ozby/wrangler-sync@0.1.0':
+    resolution: {integrity: sha512-T+tM3hQhb1f9tfrx8TaXFWr1pEeDkuOrEsbxB49eOuwuQgvlEgsYp4GSw1sUBzACFfYd36bL8RAB5mI5h6HymQ==, tarball: https://npm.pkg.github.com/download/@ozby/wrangler-sync/0.1.0/4d3ccdc75a006b213ac59099743fa4f2c7edd7bc}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@playwright/test@1.59.1':
     resolution: {integrity: sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg==}
@@ -9307,6 +9315,8 @@ snapshots:
 
   '@oxlint/win32-x64@0.15.15':
     optional: true
+
+  '@ozby/wrangler-sync@0.1.0': {}
 
   '@playwright/test@1.59.1':
     dependencies:
