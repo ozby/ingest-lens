@@ -19,6 +19,38 @@ pnpm --filter @repo/workers lint         # lint
 pnpm --filter @repo/workers build        # build
 ```
 
+## Tool routing (use this before raw shell)
+
+For verification and repo workflow, prefer the structured agent-kit MCP lanes
+over raw shell commands whenever they are available:
+
+- **Tests** → use `ak_test`
+- **Typecheck** → use `ak_typecheck`
+- **Lint** → use `ak_lint`
+- **QA / full verification** → use `ak_qa`
+- **Blueprint lifecycle / audits** → use `ak_blueprint_*` and `ak_audit`
+
+Why:
+
+- these keep output compact and structured
+- they preserve more useful context than dumping raw terminal logs
+- they reduce tool-noise when working in long agent sessions
+
+Practical rule:
+
+- use raw shell for **install/bootstrap reproduction**, `gh`/registry queries,
+  or narrow one-off inspection
+- use `ak_*` for **normal verification**
+
+If context-mode / `ctx_*` tools are available in the host, prefer them for:
+
+- large-output command capture
+- log analysis
+- batch repo inspection
+
+Do not default to `pnpm test`, `pnpm check-types`, `pnpm lint`, `vitest`, or
+other raw verification commands when an `ak_*` lane can prove the same claim.
+
 ## Dev Conventions
 
 - **Hard cuts:** delete legacy in the same PR as the replacement — no compat shims, no feature flags
