@@ -32,11 +32,8 @@ catalog:
   "@vitejs/plugin-react": ^6.0.1
   "@webpresso/db-branching": ^0.2.1
   "@webpresso/db-branching-neon": ^0.2.1
+  "@webpresso/agent-kit": ^0.18.2
   "@webpresso/runtime": ^0.3.0
-  "@webpresso/schema-engine": 0.1.0-alpha.20
-  "@webpresso/schema-frontend": 0.1.0-alpha.20
-  "@webpresso/schema-loaders": 0.1.0-alpha.20
-  "@webpresso/schema-spec": 0.1.0-alpha.20
   "@webpresso/agent-stryker": ^0.2.0
 
   # Webpresso tooling (GitHub Packages npm registry)
@@ -83,9 +80,17 @@ confirmModulesPurge: false
 allowBuilds:
   "@webpresso/db-branching": true
   "@webpresso/db-branching-neon": true
+  "@webpresso/agent-kit": true
   "@webpresso/runtime": true
   "@webpresso/agent-vitest": true
   "@webpresso/agent-workers-test": true
+  "@swc/core": true
+  better-sqlite3: true
+  esbuild: true
+  protobufjs: true
+  sharp: true
+  tldjs: true
+  workerd: true
 
 overrides:
   "@commitlint/config-validator>ajv": "8.18.0"
