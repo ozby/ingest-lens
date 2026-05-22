@@ -1,1 +1,0 @@
-../../.agent/commands/decide.md

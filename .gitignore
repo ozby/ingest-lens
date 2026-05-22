@@ -38,37 +38,17 @@ Thumbs.db
 
 # MCP / tool session artifacts
 .playwright-mcp/
-!.omx/
-.omx/*
-!.omx/contracts/
-!.omx/contracts/**
-!.omx/plans/
-!.omx/plans/**
-!.omx/state/
-.omx/state/*
-!.omx/state/lifecycle/
-!.omx/state/lifecycle/**
-.codex/.tmp/
-.codex/cache/
-.codex/log/
-.codex/memories/
-.codex/sessions/
-.codex/shell_snapshots/
-.codex/tmp/
-.codex/.personality_migration
-.codex/auth.json
-.codex/history.jsonl
-.codex/hooks.json
-.codex/installation_id
-.codex/logs_2.sqlite*
-.codex/models_cache.json
-.codex/state_5.sqlite*
-.codex/version.json
-.claude/logs/
-.claude/projects/
-.claude/settings.json
-.claude/tmp/
-.claude/*.local.*
+
+# Agent/runtime surfaces are generated locally by setup tools; never commit them.
+.agent/
+.agents/
+.claude/
+.cursor/
+.windsurf/
+.opencode/
+.gemini/
+.codex/
+.omx/
 
 # Stryker incremental cache
 .stryker-incremental.json
@@ -79,14 +59,6 @@ Thumbs.db
 # Wrangler local dev state and secrets
 .wrangler/
 .dev.vars
-.codex/*
-!.codex/agents/
-!.codex/agents/**
-!.codex/skills/
-!.codex/skills/**
-.codex/skills/.system/**
-!.codex/prompts/
-!.codex/prompts/**
 
 # Vitest per-run reports (machine-local)
 .test-reports/
@@ -105,30 +77,7 @@ apps/workers/reports/
 .gstack/
 .webpresso/
 
-# >>> managed by @webpresso/agent-kit (rule-sync)
-.agent/rules/
-.cursor/rules/
-.windsurf/rules/
-.claude/rules/
-.gemini/commands/
-# <<< managed by @webpresso/agent-kit (rule-sync)
-
-# >>> managed by @webpresso/agent-kit (skill-sync)
-.agent/skills/
-.cursor/skills/
-.windsurf/skills/
-.claude/skills/
-.gemini/commands/
-.agents/skills/
-# <<< managed by @webpresso/agent-kit (skill-sync)
-
 # agent-kit compile cache (always regeneratable)
-.agent/.compile-manifest.json
-.agent/.compile.hash
-.agent/.blueprints.db
-.agent/.blueprints.lock
-.agent/.rotation-log.jsonl
-.agent/.tail-hint-history.jsonl
 .rulesync/
 
 # >>> managed by @webpresso/agent-kit (catalog-installed)
@@ -167,5 +116,3 @@ agent-rules/rtk-routing.md
 agent-rules/supported-agent-clis.md
 agent-rules/ts-coding-conventions.md
 # <<< managed by @webpresso/agent-kit (catalog-installed)
-.agent/.merged.provenance.json
-.opencode/commands/

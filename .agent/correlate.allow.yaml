@@ -1,5 +1,0 @@
-# .agent/correlate.allow.yaml — cross-org correlation allowlist
-# Both sides must allowlist for correlation to resolve.
-# See docs/cross-repo-correlation.md for the permission model.
-permits: []
-  # - acme-corp   # permit correlations with blueprints in acme-corp org

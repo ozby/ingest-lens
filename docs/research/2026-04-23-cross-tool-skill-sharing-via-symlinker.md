@@ -121,7 +121,7 @@ agent-kit's symlinker is narrower (5–6 surfaces) but tighter-integrated with t
 
 ### Codex prompts mapping is deprecated-surface
 
-- The `.codex/prompts/` entry I just added to `DEFAULT_CONSUMERS` points at a sunsetting surface. Codex skills (`.codex/skills/`) is the forward path. Worse, Codex scans **only `~/.codex/prompts/`** (home), not project-local — so the symlinks at `.codex/prompts/*.md` in a repo were never going to be discovered ([Codex custom-prompts docs](https://developers.openai.com/codex/custom-prompts)):
+- The `.codex/prompts/` entry I just added to `DEFAULT_CONSUMERS` points at a sunsetting surface. The real repo-local forward path is `.agents/skills/` (not `.codex/skills/`). Worse, Codex scans **only `~/.codex/prompts/`** (home), not project-local — so the symlinks at `.codex/prompts/*.md` in a repo were never going to be discovered ([Codex custom-prompts docs](https://developers.openai.com/codex/custom-prompts)):
   > Custom prompts require explicit invocation and live in your local Codex home directory (for example, `~/.codex`), so they're not shared through your repository.
 
 ### `.opencode/skills/` is redundant

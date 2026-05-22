@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
-// Keep shared skills in sync across .agent/, .claude/, and .codex/.
+// Keep shared skills in sync across .agent/, .claude/, and .agents/.
 //
 // Source of truth: .agent/skills/<name>/SKILL.md
 //   - .claude/skills  -> ../.agent/skills        (folder symlink)
-//   - .codex/skills/<name> -> ../../.agent/skills/<name>
+//   - .agents/skills/<name> -> ../../.agent/skills/<name>
 //         for every <name> that also exists under .agent/skills/
 //
-// Codex-native-only skills already present under .codex/skills/ are left alone.
+// Repo-local Codex/Amp/OpenCode-fallback skills already present under .agents/skills/ are left alone.
 // Running this script is idempotent.
 
 import fs from "node:fs";
@@ -17,7 +17,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 const agentSkills = path.join(repoRoot, ".agent", "skills");
 const claudeDir = path.join(repoRoot, ".claude");
 const claudeSkills = path.join(claudeDir, "skills");
-const codexSkills = path.join(repoRoot, ".codex", "skills");
+const repoAgentSkills = path.join(repoRoot, ".agents", "skills");
 
 type LogKind = "ok" | "skip" | "link" | "warn";
 
@@ -77,13 +77,13 @@ function main(): void {
   ensureDir(claudeDir);
   linkDir(claudeSkills, "../.agent/skills");
 
-  ensureDir(codexSkills);
+  ensureDir(repoAgentSkills);
   const sharedSkills = fs
     .readdirSync(agentSkills)
     .filter((name) => fs.statSync(path.join(agentSkills, name)).isDirectory());
 
   for (const skill of sharedSkills) {
-    const target = path.join(codexSkills, skill);
+    const target = path.join(repoAgentSkills, skill);
     linkDir(target, path.join("..", "..", ".agent", "skills", skill));
   }
 

@@ -1,1 +1,0 @@
-../../node_modules/@webpresso/agent-kit/catalog/agent/agents/explorer.md

@@ -1,1 +1,0 @@
-../../node_modules/.pnpm/@webpresso+agent-kit@0.15.0_valibot@1.4.0_typescript@6.0.3_/node_modules/@webpresso/agent-kit/catalog/agent/rules/generated-code-governance.md

@@ -1,1 +1,0 @@
-../../../.agent/skills/systematic-debugging/test-pressure-2.md

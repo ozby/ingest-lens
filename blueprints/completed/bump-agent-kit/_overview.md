@@ -56,7 +56,7 @@ package.json
 .agent/ (canonical source — unchanged)
   ↓  ak symlink sync  (slim symlinker — only Codex/Amp/Gemini get symlinked)
 .gemini/commands/  ← re-synced
-.codex/           ← re-synced (if present)
+.agents/skills/   ← re-synced for Codex/Amp-compatible repo skills
 Claude Code uses localskills distribution (separate from symlinker)
 
 CI pipeline (ci.yml) adds step:
