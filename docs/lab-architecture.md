@@ -18,13 +18,13 @@ intake behavior live in [`architecture.md`](./architecture.md).
 
 ```mermaid
 flowchart LR
-  B[Browser] --> L[Lab Worker<br/>(apps/lab, Hono SSR + htmx)]
+  B[Browser] --> L["Lab Worker<br/>(apps/lab, Hono SSR + htmx)"]
   L --> KS{KILL_SWITCH_KV}
   KS -->|off| X[404]
   KS -->|on| SL[SessionLock]
   SL --> G[LabConcurrencyGauge]
-  G --> S1A[S1aRunnerDO<br/>correctness]
-  G --> S1B[S1bRunnerDO<br/>latency]
+  G --> S1A["S1aRunnerDO<br/>correctness"]
+  G --> S1B["S1bRunnerDO<br/>latency"]
   S1A --> P1[CF Queues path]
   S1A --> P2[PgPolling path]
   S1A --> P3[PgDirectNotify path]
