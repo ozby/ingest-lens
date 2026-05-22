@@ -17,11 +17,18 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm install` runs `postinstall`, which delegates to the shared
-`setup:agent` script (`bun ./scripts/run-webpresso-cli.ts agent setup --yes
---overwrite`). The wrapper resolves the installed unified CLI entrypoint
-directly, so this repo does not depend on whichever package currently owns the
-ambient `webpresso` bin in `node_modules/.bin`.
+`pnpm install` runs `postinstall`, which bootstraps the repo with the same flow
+as `webpresso setup --yes --overwrite`. If you need to rerun bootstrap
+manually, use:
+
+```bash
+pnpm exec webpresso setup --yes --overwrite
+```
+
+The repo keeps a small internal wrapper for install-time automation so
+`postinstall` resolves the installed unified CLI entrypoint directly instead of
+depending on whichever package currently owns the ambient `webpresso` bin in
+`node_modules/.bin`.
 
 Secrets and database connections are managed via `with-secrets` (Doppler + Neon providers). No `.env` files.
 
@@ -38,6 +45,7 @@ Secrets and database connections are managed via `with-secrets` (Doppler + Neon 
 
 - **Architecture overview:** [`docs/system-architecture.md`](docs/system-architecture.md)
 - **AI intake + mapping flow:** [`docs/architecture.md`](docs/architecture.md)
+- **Consistency Lab architecture:** [`docs/lab-architecture.md`](docs/lab-architecture.md)
 - **Delivery semantics:** [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md)
 - **Scale and tradeoffs:** [`docs/scale-considerations.md`](docs/scale-considerations.md)
 - **Vision + project records:** [`docs/research/product/VISION.md`](docs/research/product/VISION.md), [`docs/project/README.md`](docs/project/README.md)
@@ -51,16 +59,21 @@ Secrets and database connections are managed via `with-secrets` (Doppler + Neon 
 ## Architecture at a glance
 
 ```mermaid
-flowchart TD
-    A[Third-party payload or operator action] --> B[Cloudflare Worker API]
-    B --> C[Validate auth + ownership]
-    C --> D[Postgres via Hyperdrive]
-    D --> E[Queue/topic delivery rails]
-    E --> F[Cloudflare Queues consumer]
-    F --> G[Push delivery + retry / DLQ]
-    F --> H[TopicRoom fan-out + WS replay]
-    B --> I[AI intake: shape fingerprint →<br/>fast-path or LLM suggestion →<br/>human review or auto-heal ≥0.8<br/>confidence via HealStreamDO]
+flowchart LR
+    UI[Browser / SPA] --> API[Cloudflare Worker API]
+    OPER[Operator or API client] --> API
+    SRC[Third-party payload source] --> API
+    API --> DB[(Postgres via Hyperdrive)]
+    API --> Q[(DELIVERY_QUEUE)]
+    Q --> API
+    API --> RT[Realtime Durable Objects]
+    RT --> UI
+    API --> AI[Workers AI mapping suggestions]
 ```
+
+The Consistency Lab is a separate Worker used to measure delivery-path
+behavior, not part of the primary production request path. See
+[`docs/lab-architecture.md`](docs/lab-architecture.md).
 
 <details>
 <summary>Contributor workflows</summary>
@@ -108,6 +121,7 @@ bun ./infra/src/deploy/deploy.ts prd
 
 - [System architecture](docs/system-architecture.md)
 - [Architecture](docs/architecture.md)
+- [Consistency Lab architecture](docs/lab-architecture.md)
 - [Delivery guarantees](docs/delivery-guarantees.md)
 - [Scale considerations](docs/scale-considerations.md)
 - [ADR index](docs/adrs/README.md)

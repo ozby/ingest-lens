@@ -104,7 +104,6 @@ apps/workers/reports/
 /tooling/
 .gstack/
 .webpresso/
-.npmrc
 
 # >>> managed by @webpresso/agent-kit (rule-sync)
 .agent/rules/
@@ -112,7 +111,6 @@ apps/workers/reports/
 .windsurf/rules/
 .claude/rules/
 .gemini/commands/
-.codex/agents/
 # <<< managed by @webpresso/agent-kit (rule-sync)
 
 # >>> managed by @webpresso/agent-kit (skill-sync)
@@ -121,7 +119,7 @@ apps/workers/reports/
 .windsurf/skills/
 .claude/skills/
 .gemini/commands/
-.codex/agents/
+.agents/skills/
 # <<< managed by @webpresso/agent-kit (skill-sync)
 
 # agent-kit compile cache (always regeneratable)
@@ -132,3 +130,42 @@ apps/workers/reports/
 .agent/.rotation-log.jsonl
 .agent/.tail-hint-history.jsonl
 .rulesync/
+
+# >>> managed by @webpresso/agent-kit (catalog-installed)
+agent-skills/better-auth-best-practices/
+agent-skills/deep-research/
+agent-skills/fix/
+agent-skills/frontend-design/
+agent-skills/hooks-doctor/
+agent-skills/logging-best-practices/
+agent-skills/lore-protocol/
+agent-skills/monorepo-navigation/
+agent-skills/plan-refine/
+agent-skills/pll/
+agent-skills/react-doctor/
+agent-skills/systematic-debugging/
+agent-skills/tanstack-query/
+agent-skills/tech-debt/
+agent-skills/test-driven-development/
+agent-skills/testing-philosophy/
+agent-skills/vercel-react-best-practices/
+agent-skills/verify/
+agent-skills/web-design-guidelines/
+agent-rules/agent-guide.md
+agent-rules/blueprint-scoping.md
+agent-rules/changeset-release.md
+agent-rules/cmd-execution.md
+agent-rules/context-mode-routing.md
+agent-rules/extraction-parity.md
+agent-rules/generated-code-governance.md
+agent-rules/gstack-routing.md
+agent-rules/no-timeout-as-fix.md
+agent-rules/package-conventions.md
+agent-rules/pre-implementation.md
+agent-rules/repo-restrictions.md
+agent-rules/rtk-routing.md
+agent-rules/supported-agent-clis.md
+agent-rules/ts-coding-conventions.md
+# <<< managed by @webpresso/agent-kit (catalog-installed)
+.agent/.merged.provenance.json
+.opencode/commands/

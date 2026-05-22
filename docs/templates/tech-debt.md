@@ -1,5 +1,6 @@
 ---
 type: tech-debt
+last_updated: "{{date}}"
 status: open
 severity: "{{severity}}"
 category: "{{category}}"

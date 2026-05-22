@@ -17,6 +17,16 @@ describe("run-webpresso-cli", () => {
     expect(packageJson.devDependencies?.["node-addon-api"]).toBe("^8.5.0");
   });
 
+  it("uses plain `ak setup` for contributor-triggered setup", () => {
+    const packageJson = JSON.parse(
+      readFileSync(resolve(import.meta.dirname, "..", "package.json"), "utf8"),
+    ) as {
+      scripts?: Record<string, string>;
+    };
+
+    expect(packageJson.scripts?.["setup:agent"]).toBe("ak setup");
+  });
+
   it("skips gstack during postinstall so project bootstrap does not fail on global gstack checkout health", () => {
     const packageJson = JSON.parse(
       readFileSync(resolve(import.meta.dirname, "..", "package.json"), "utf8"),
@@ -25,9 +35,12 @@ describe("run-webpresso-cli", () => {
     };
 
     expect(packageJson.scripts?.postinstall).toContain("AK_SKIP_GSTACK=1");
+    expect(packageJson.scripts?.postinstall).toContain(
+      "bun ./scripts/run-webpresso-cli.ts setup --yes --overwrite",
+    );
   });
 
-  it("allows @webpresso/agent-kit build scripts in pnpm-workspace because install runs agent setup", () => {
+  it("allows @webpresso/agent-kit build scripts in pnpm-workspace because install runs unified setup", () => {
     const workspaceYaml = readFileSync(
       resolve(import.meta.dirname, "..", "pnpm-workspace.yaml"),
       "utf8",
@@ -54,12 +67,12 @@ describe("run-webpresso-cli", () => {
     });
   });
 
-  it("passes non-`agent` roots through to agent-kit unchanged", () => {
+  it("passes top-level `setup` through to agent-kit unchanged", () => {
     const resolvePackageJson = () => "/repo/node_modules/@webpresso/agent-kit/package.json";
 
-    expect(routeInvocation(["blueprint", "audit", "--all"], resolvePackageJson)).toEqual({
+    expect(routeInvocation(["setup", "--yes", "--overwrite"], resolvePackageJson)).toEqual({
       command: "/repo/node_modules/@webpresso/agent-kit/src/cli/cli.ts",
-      args: ["blueprint", "audit", "--all"],
+      args: ["setup", "--yes", "--overwrite"],
     });
   });
 
