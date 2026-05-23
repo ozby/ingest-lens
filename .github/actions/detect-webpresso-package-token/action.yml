@@ -24,11 +24,11 @@ runs:
         fi
 
         tmp_npmrc="$(mktemp)"
-        cat >"$tmp_npmrc" <<'EOF'
-@webpresso:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}
-always-auth=true
-EOF
+        printf '%s\n' \
+          '@webpresso:registry=https://npm.pkg.github.com' \
+          '//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}' \
+          'always-auth=true' \
+          >"$tmp_npmrc"
 
         tarball_url="$(
           GH_PACKAGES_TOKEN="$GH_PACKAGES_TOKEN" \
