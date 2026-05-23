@@ -32,9 +32,17 @@ jobs:
             --recursive
             ./
 
-      - uses: ./.github/actions/setup-monorepo
+      - name: Setup monorepo dependencies
+        if: ${{ secrets.GH_PACKAGES_TOKEN != '' }}
+        uses: ./.github/actions/setup-monorepo
 
       - name: Secretlint
+        if: ${{ secrets.GH_PACKAGES_TOKEN != '' }}
         run: |
           pnpm exec secretlint "**/*"
         continue-on-error: false
+
+      - name: Secretlint skipped (no package token)
+        if: ${{ secrets.GH_PACKAGES_TOKEN == '' }}
+        run: |
+          echo "GH_PACKAGES_TOKEN is not configured; skipping dependency-backed secretlint step."
