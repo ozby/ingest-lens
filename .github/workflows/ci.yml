@@ -16,9 +16,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  token-gate:
+    name: Detect package token
+    runs-on: ubuntu-latest
+    outputs:
+      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+    steps:
+      - name: Detect GH_PACKAGES_TOKEN presence
+        id: detect
+        env:
+          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+        run: |
+          if [ -n "${GH_PACKAGES_TOKEN}" ]; then
+            echo "has_packages_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_packages_token=false" >> "$GITHUB_OUTPUT"
+          fi
+
   setup:
     name: Install
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -28,9 +46,9 @@ jobs:
 
   check:
     name: Check (lint + types)
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [token-gate, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -40,9 +58,9 @@ jobs:
 
   test:
     name: Test
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [token-gate, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -52,9 +70,9 @@ jobs:
 
   catalog-drift:
     name: Catalog drift
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [token-gate, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -64,9 +82,9 @@ jobs:
 
   blueprint-validate:
     name: Blueprint validation
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [token-gate, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -76,9 +94,9 @@ jobs:
 
   lore-commits:
     name: Validate Lore commits
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [token-gate, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -102,9 +120,9 @@ jobs:
 
   mutation:
     name: Mutation (affected)
-    if: ${{ github.event_name == 'pull_request' && env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ github.event_name == 'pull_request' && needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [token-gate, test]
     steps:
       - uses: actions/checkout@v6
         with:

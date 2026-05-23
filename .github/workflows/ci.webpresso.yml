@@ -20,8 +20,26 @@ env:
   NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
 jobs:
+  token-gate:
+    name: Detect package token
+    runs-on: ubuntu-latest
+    outputs:
+      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+    steps:
+      - name: Detect GH_PACKAGES_TOKEN presence
+        id: detect
+        env:
+          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+        run: |
+          if [ -n "${GH_PACKAGES_TOKEN}" ]; then
+            echo "has_packages_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_packages_token=false" >> "$GITHUB_OUTPUT"
+          fi
+
   check:
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -40,7 +58,8 @@ jobs:
       - run: pnpm run lint
 
   test:
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -58,7 +77,8 @@ jobs:
       - run: pnpm run test
 
   wp-audits:
-    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
