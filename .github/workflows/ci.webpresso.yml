@@ -16,11 +16,12 @@ env:
   # @webpresso/schema-*). The repo's `.npmrc` references
   # ${GH_PACKAGES_TOKEN}; without this env entry the substitution becomes
   # empty and pnpm gets 401 Unauthorized on any @webpresso/* dep.
-  GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN != '' && secrets.GH_PACKAGES_TOKEN || github.token }}
-  NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN != '' && secrets.GH_PACKAGES_TOKEN || github.token }}
+  GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+  NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
 jobs:
   check:
+    if: ${{ secrets.GH_PACKAGES_TOKEN != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -39,6 +40,7 @@ jobs:
       - run: pnpm run lint
 
   test:
+    if: ${{ secrets.GH_PACKAGES_TOKEN != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -56,6 +58,7 @@ jobs:
       - run: pnpm run test
 
   wp-audits:
+    if: ${{ secrets.GH_PACKAGES_TOKEN != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

@@ -6,6 +6,7 @@ on:
 
 jobs:
   agent-kit:
+    if: ${{ secrets.GH_PACKAGES_TOKEN != '' }}
     uses: webpresso/agent-kit-action/.github/workflows/audit.yml@v1
     secrets: inherit
     with:
