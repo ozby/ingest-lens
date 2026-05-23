@@ -6,7 +6,5 @@
     "types": ["vitest/globals", "node"],
     "noUncheckedIndexedAccess": false,
     "verbatimModuleSyntax": false
-  },
-  "include": ["."],
-  "exclude": ["dist", "build", "node_modules"]
+  }
 }

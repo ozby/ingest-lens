@@ -71,7 +71,7 @@ messageRoutes.post("/:queueId", async (c) => {
 
   const db = createDb(c.env);
 
-  const queue = await requireOwnedQueue(c, queueId);
+  const queue = await requireOwnedQueue(c, queueId, {}, db);
   if (queue instanceof Response) {
     return queue;
   }
@@ -118,7 +118,7 @@ messageRoutes.get("/:queueId", async (c) => {
 
   const db = createDb(c.env);
 
-  const queue = await requireOwnedQueue(c, queueId);
+  const queue = await requireOwnedQueue(c, queueId, {}, db);
   if (queue instanceof Response) {
     return queue;
   }
@@ -165,7 +165,7 @@ messageRoutes.get("/:queueId/:messageId", async (c) => {
   const messageId = c.req.param("messageId");
   const db = createDb(c.env);
 
-  const queue = await requireOwnedQueue(c, queueId);
+  const queue = await requireOwnedQueue(c, queueId, {}, db);
   if (queue instanceof Response) {
     return queue;
   }
@@ -189,7 +189,7 @@ messageRoutes.delete("/:queueId/:messageId", async (c) => {
   const messageId = c.req.param("messageId");
   const db = createDb(c.env);
 
-  const queue = await requireOwnedQueue(c, queueId);
+  const queue = await requireOwnedQueue(c, queueId, {}, db);
   if (queue instanceof Response) {
     return queue;
   }

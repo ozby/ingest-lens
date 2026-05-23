@@ -1,12 +1,12 @@
 ---
 type: adr
-last_updated: "2026-04-24"
+last_updated: "2026-05-23"
 ---
 
 # Architecture Decision Records
 
 This directory contains Architecture Decision Records (ADRs) for the
-IngestLens showcase and its underlying delivery platform. ADRs capture the
+IngestLens system and its underlying delivery platform. ADRs capture the
 _why_ behind significant decisions so future maintainers (including future you)
 understand the reasoning, not just the outcome.
 

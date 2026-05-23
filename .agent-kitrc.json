@@ -1,7 +1,31 @@
 {
   "version": "1",
   "installed": {
-    "tier3Skills": []
+    "tier3Skills": [
+      "base-kit",
+      "better-auth-best-practices",
+      "react-doctor",
+      "tanstack-query",
+      "web-design-guidelines"
+    ]
+  },
+  "hosts": {
+    "selected": ["codex", "claude", "opencode"],
+    "requiredCapabilities": ["verify", "plan-refine"],
+    "visibility": {
+      "codex": {
+        "verify": "visible-after-restart",
+        "plan-refine": "visible-after-restart"
+      },
+      "claude": {
+        "verify": "visible-after-restart",
+        "plan-refine": "visible-after-restart"
+      },
+      "opencode": {
+        "verify": "visible-after-restart",
+        "plan-refine": "visible-after-restart"
+      }
+    }
   },
   "rules": {
     "overrides": []

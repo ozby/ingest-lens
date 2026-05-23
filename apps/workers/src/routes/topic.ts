@@ -89,10 +89,15 @@ topicRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const db = createDb(c.env);
 
-  const topic = await requireOwnedTopic(c, id, {
-    notFound: `Topic not found with ID: ${id}`,
-    unauthorized: "Not authorized to delete this topic",
-  });
+  const topic = await requireOwnedTopic(
+    c,
+    id,
+    {
+      notFound: `Topic not found with ID: ${id}`,
+      unauthorized: "Not authorized to delete this topic",
+    },
+    db,
+  );
 
   if (topic instanceof Response) {
     return topic;
@@ -115,20 +120,25 @@ topicRoutes.post("/:topicId/subscribe", async (c) => {
 
   const db = createDb(c.env);
 
-  const topic = await requireOwnedTopic(c, topicId, {
-    unauthorized: "Not authorized to modify this topic",
-  });
+  const topic = await requireOwnedTopic(
+    c,
+    topicId,
+    {
+      unauthorized: "Not authorized to modify this topic",
+    },
+    db,
+  );
   if (topic instanceof Response) {
     return topic;
   }
 
-  const queue = await requireOwnedQueue(c, queueId);
+  const queue = await requireOwnedQueue(c, queueId, {}, db);
   if (queue instanceof Response) {
     return queue;
   }
 
   if (topic.subscribedQueues.includes(queueId)) {
-    return c.json({ status: "error", message: "Queue is already subscribed to this topic" }, 400);
+    return c.json({ status: "error", message: "Queue is already subscribed to this topic" }, 409);
   }
 
   await db.insert(topicSubscriptions).values({ topicId, queueId });
@@ -156,9 +166,14 @@ topicRoutes.post("/:topicId/publish", async (c) => {
 
   const db = createDb(c.env);
 
-  const topic = await requireOwnedTopic(c, topicId, {
-    unauthorized: "Not authorized to publish to this topic",
-  });
+  const topic = await requireOwnedTopic(
+    c,
+    topicId,
+    {
+      unauthorized: "Not authorized to publish to this topic",
+    },
+    db,
+  );
   if (topic instanceof Response) {
     return topic;
   }

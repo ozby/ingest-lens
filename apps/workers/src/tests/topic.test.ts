@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
+import { createDb } from "../db/client";
 import { authenticate } from "../middleware/auth";
 import { queueMetrics as queueMetricsTable } from "../db/schema";
 import {
@@ -201,12 +202,46 @@ describe("Topic routes", () => {
       );
 
       expect(res.status).toBe(200);
+      expect(vi.mocked(createDb)).toHaveBeenCalledTimes(1);
       expect(valuesMock).toHaveBeenCalledWith({ topicId: "topic-1", queueId: "queue-1" });
       const body = (await res.json()) as {
         status: string;
         data: { topic: { subscribedQueues: string[] } };
       };
       expect(body.data.topic.subscribedQueues).toEqual(["queue-1"]);
+    });
+
+    it("returns 409 when the queue is already subscribed", async () => {
+      bypassAuth(vi.mocked(authenticate));
+
+      const { fromMock: topicFrom } = buildSelectChain([mockTopic]);
+      const { fromMock: subscriptionsFrom } = buildUnboundedSelectChain(
+        buildSubscriptionRows(mockTopic.id, mockTopic.subscribedQueues),
+      );
+      const { fromMock: queueFrom } = buildSelectChain([mockQueue]);
+      const selectMock = vi
+        .fn()
+        .mockReturnValueOnce({ from: topicFrom })
+        .mockReturnValueOnce({ from: subscriptionsFrom })
+        .mockReturnValueOnce({ from: queueFrom });
+      const { insertMock } = buildInsertChain([]);
+
+      mockCreateDb({
+        select: selectMock,
+        insert: insertMock,
+      });
+
+      const res = await app.fetch(
+        post("/api/topics/topic-1/subscribe", { queueId: "queue-1" }, AUTH_HEADER),
+        mockEnv,
+      );
+
+      expect(res.status).toBe(409);
+      expect(insertMock).not.toHaveBeenCalled();
+      await expect(res.json()).resolves.toMatchObject({
+        status: "error",
+        message: "Queue is already subscribed to this topic",
+      });
     });
   });
 

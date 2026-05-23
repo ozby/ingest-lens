@@ -1,3 +1,45 @@
 {
-  "extends": "@webpresso/agent-tsconfig/base.json"
+  "extends": "@webpresso/agent-tsconfig/base.json",
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/client/tsconfig.json"
+    },
+    {
+      "path": "./apps/e2e/tsconfig.json"
+    },
+    {
+      "path": "./apps/lab/tsconfig.json"
+    },
+    {
+      "path": "./apps/lab/scenarios/s1a-correctness/tsconfig.json"
+    },
+    {
+      "path": "./apps/lab/scenarios/s1b-latency/tsconfig.json"
+    },
+    {
+      "path": "./apps/workers/tsconfig.json"
+    },
+    {
+      "path": "./infra/tsconfig.json"
+    },
+    {
+      "path": "./packages/lab-core/tsconfig.json"
+    },
+    {
+      "path": "./packages/logger/tsconfig.json"
+    },
+    {
+      "path": "./packages/test-utils/tsconfig.json"
+    },
+    {
+      "path": "./packages/types/tsconfig.json"
+    },
+    {
+      "path": "./packages/ui/tsconfig.json"
+    },
+    {
+      "path": "./scripts/tsconfig.json"
+    }
+  ]
 }

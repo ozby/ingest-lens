@@ -1,6 +1,6 @@
 ---
 type: research
-last_updated: "2026-04-24"
+last_updated: "2026-05-23"
 ---
 
 # IngestLens Vision
@@ -23,10 +23,10 @@ first and then make the others conform.
 
 ## Audience
 
-The primary audience is an engineering hiring panel or senior technical reviewer.
-The repo should demonstrate how an experienced engineer chooses a bounded product
-slice, labels truth state honestly, designs failure boundaries, and verifies work
-before claiming it is ready.
+The primary audience is a senior technical reviewer evaluating system design and
+execution quality. The repo should demonstrate how an experienced engineer
+chooses a bounded product slice, labels truth state honestly, designs failure
+boundaries, and verifies work before claiming it is ready.
 
 The product story should still read like a real operator tool, not like an
 internal process demo. The process is proof; **IngestLens is the public story**.
@@ -217,7 +217,7 @@ generic ingestion mapping repair, not HR intake.
 
 ## Elegant v1 architecture constraints
 
-To keep the showcase maintainable, v1 must prefer fewer moving parts over a
+To keep the system maintainable, v1 must prefer fewer moving parts over a
 platform-shaped abstraction explosion:
 
 1. **Contracts as code.** Target contracts and demo mappings live in typed repo
@@ -245,7 +245,7 @@ The researched product wedge is **ingestion review and replay**. AI helps repair
 generic integration-data mappings, while a human admin controls approved-mapping-revision
 promotion and deterministic replay. The first demo lens is public job-posting
 data because it is concrete, messy, public, and safe to ship without private
-records. LLM-as-judge is a good showcase addition as an admin-assist risk
+records. LLM-as-judge is a good optional addition as an admin-assist risk
 reviewer and offline eval explainer, but it is not the production approver and
 must not gate ingestion. See
 [`docs/research/2026-04-24-self-healing-data-ingestion-architecture.md`](../2026-04-24-self-healing-data-ingestion-architecture.md).
@@ -270,7 +270,7 @@ canonical flow and contract source. The durable shape is deliberately small:
 
 ## Blueprint execution map
 
-1. **`showcase-hardening-100`** — make the substrate safe and honest first:
+1. **`foundation-hardening-100`** — make the substrate safe and honest first:
    object-level authz, contract drift, typecheck, dependency audit, CI gates,
    tests, and metrics truthfulness.
 2. **`client-route-code-splitting`** — remove bundle-size warnings and add a
@@ -285,20 +285,20 @@ canonical flow and contract source. The durable shape is deliberately small:
 
 ## Known gaps that must not be hidden
 
-| Gap                                        | Why it matters                                                                                                            | Owning blueprint                   |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Existing authz holes in delivery rails     | Approval/publish cannot be trusted until queue/topic/message ownership is consistent.                                     | `showcase-hardening-100`           |
-| No `/api/intake/*` route yet               | The core IngestLens workflow is planned, not shipped.                                                                     | `ai-payload-intake-mapper`         |
-| No `/intake` client page yet               | Public UI cannot honestly claim end-to-end intake until this exists.                                                      | `ai-payload-intake-mapper`         |
-| No shared intake/target-contract model yet | Worker/client/eval cannot share mapping, drift, and replay semantics.                                                     | `ai-payload-intake-mapper`         |
-| Worker does not yet consume `@repo/types`  | Shared contracts require package wiring, not just a new file.                                                             | `ai-payload-intake-mapper`         |
-| No AI binding or deterministic adapter     | Live AI must be isolated and tests must pass without Cloudflare credentials.                                              | `ai-payload-intake-mapper`         |
-| No mapping persistence tables              | Auditability requires attempts, drift categories, approved mapping revisions, approvals, validation errors, and metadata. | `ai-payload-intake-mapper`         |
-| No runtime fixture access implementation   | The decision is now bundled curated Worker fixtures, but the code does not exist yet.                                     | `public-dataset-demo-ingestion`    |
-| No `mappingTraceId` lifecycle yet          | Suggestion, approval, publish, telemetry, and replay need one correlation id.                                             | `ai-payload-intake-mapper`         |
-| No raw-payload expiry/cleanup yet          | Review payloads need short TTL and redacted long-term metadata.                                                           | `ai-payload-intake-mapper`         |
-| Dashboard has placeholder signals          | Observability must be measured or explicitly labelled synthetic.                                                          | `showcase-hardening-100` / AI work |
-| Demo guide not canonical yet               | There should be one guide, not competing demo docs.                                                                       | `public-dataset-demo-ingestion`    |
+| Gap                                        | Why it matters                                                                                                            | Owning blueprint                     |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| Existing authz holes in delivery rails     | Approval/publish cannot be trusted until queue/topic/message ownership is consistent.                                     | `foundation-hardening-100`           |
+| No `/api/intake/*` route yet               | The core IngestLens workflow is planned, not shipped.                                                                     | `ai-payload-intake-mapper`           |
+| No `/intake` client page yet               | Public UI cannot honestly claim end-to-end intake until this exists.                                                      | `ai-payload-intake-mapper`           |
+| No shared intake/target-contract model yet | Worker/client/eval cannot share mapping, drift, and replay semantics.                                                     | `ai-payload-intake-mapper`           |
+| Worker does not yet consume `@repo/types`  | Shared contracts require package wiring, not just a new file.                                                             | `ai-payload-intake-mapper`           |
+| No AI binding or deterministic adapter     | Live AI must be isolated and tests must pass without Cloudflare credentials.                                              | `ai-payload-intake-mapper`           |
+| No mapping persistence tables              | Auditability requires attempts, drift categories, approved mapping revisions, approvals, validation errors, and metadata. | `ai-payload-intake-mapper`           |
+| No runtime fixture access implementation   | The decision is now bundled curated Worker fixtures, but the code does not exist yet.                                     | `public-dataset-demo-ingestion`      |
+| No `mappingTraceId` lifecycle yet          | Suggestion, approval, publish, telemetry, and replay need one correlation id.                                             | `ai-payload-intake-mapper`           |
+| No raw-payload expiry/cleanup yet          | Review payloads need short TTL and redacted long-term metadata.                                                           | `ai-payload-intake-mapper`           |
+| Dashboard has placeholder signals          | Observability must be measured or explicitly labelled synthetic.                                                          | `foundation-hardening-100` / AI work |
+| Demo guide not canonical yet               | There should be one guide, not competing demo docs.                                                                       | `public-dataset-demo-ingestion`      |
 
 ## Demo success criteria
 

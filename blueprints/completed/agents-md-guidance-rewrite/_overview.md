@@ -15,14 +15,14 @@ tags:
 # Principal-level AGENTS.md rewrite
 
 **Goal:** Replace the OMX-flavoured generated `AGENTS.md` with a
-hand-written, principal-engineer-voiced contract that describes how a new
+hand-written repository contract that describes how a new
 contributor (human or agent) should operate in this repo: where to plan,
 where to implement, where to verify, and what the non-negotiables are.
 
 ## Planning Summary
 
 - **Current state:** `AGENTS.md` is the OMX auto-generated block, useful for tooling but weak as a human-readable operating contract.
-- **Target:** A concise top-level `AGENTS.md` that layers a principal-level contract _above_ the OMX-generated block, framed around: "plan before you code (blueprints), write tests first, leave a lore trailer, never ship behind `--no-verify`." Retain OMX compatibility by keeping the generated markers intact.
+- **Target:** A concise top-level `AGENTS.md` that layers a repository-guidance contract _above_ the OMX-generated block, framed around: "plan before you code (blueprints), write tests first, leave a lore trailer, never ship behind `--no-verify`." Retain OMX compatibility by keeping the generated markers intact.
 
 ## Architecture Overview
 
@@ -55,7 +55,7 @@ AGENTS.md
 
 ### Phase 1: Draft [Complexity: S]
 
-#### [docs] Task 1.1: Draft principal-layer content
+#### [docs] Task 1.1: Draft repository-guidance layer
 
 **Status:** pending **Depends:** None
 
@@ -113,8 +113,8 @@ AGENTS.md
 
 Findings:
 
-- OMX marker pattern `<!-- omx:generated:agents-md -->` is already present in the current `AGENTS.md`. Confirmed safe region for the principal layer above.
-- `.agent/rules/` + `.agent/guides/` + `docs/README.md` all now exist and can be linked from the principal layer. That substantially lowers the risk of Task 1.1 (the hand-written content has real anchors).
+- OMX marker pattern `<!-- omx:generated:agents-md -->` is already present in the current `AGENTS.md`. Confirmed safe region for the repository-guidance layer above.
+- `.agent/rules/` + `.agent/guides/` + `docs/README.md` all now exist and can be linked from the repository-guidance layer. That substantially lowers the risk of Task 1.1 (the hand-written content has real anchors).
 - Acceptance "total length ≤ 150 lines" is enforceable via `awk 'NR>150 && /PRINCIPAL:END/'`.
 
 Fixes applied:

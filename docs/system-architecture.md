@@ -66,7 +66,10 @@ flowchart LR
 ## Runtime notes
 
 - **Edge SPA worker** (`apps/client`): Workers Assets host with SPA fallback
-  for deep links. No server-side rendering.
+  for deep links. No server-side rendering. In the browser code, transport is
+  intentionally split from UI notifications: `src/services/api-client.ts` owns
+  HTTP/envelope behavior, while `src/services/api.ts` is the app-facing wrapper
+  that wires toast behavior.
 - **API worker** (`apps/workers`): Hono on Cloudflare Workers. Owns auth,
   queue/topic CRUD, push delivery consumer, AI intake routes, and WebSocket
   upgrade for `TopicRoom` DOs.

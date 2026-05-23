@@ -166,7 +166,7 @@ The node-pubsub repo's stated mission per `docs/research/product/VISION.md` is "
 Relevance to the vision:
 
 - **Positive signal**: showing that a repo cleanly publishes skills across 6+ AI-tool surfaces from a single canonical source is a strong artifact of meta-infrastructure thinking. It's exactly the kind of thing a hiring leader scans for in the "AI discipline" bucket.
-- **Risk**: if the mappings we just added are demonstrably wrong (deprecated Codex prompts, redundant opencode/skills, missing cursor/windsurf rules/, no Windows copy mode, no security scan), the artifact reads as "built a thing and didn't notice the ecosystem moved" — the opposite of principal-level signal.
+- **Risk**: if the mappings we just added are demonstrably wrong (deprecated Codex prompts, redundant opencode/skills, missing cursor/windsurf rules/, no Windows copy mode, no security scan), the artifact reads as "built a thing and didn't notice the ecosystem moved" — the opposite of strong design and maintenance signal.
 
 The fix is to correct the mappings — doing so earns back the signal.
 

@@ -222,6 +222,10 @@ sequenceDiagram
   end
 ```
 
+Client note: the browser keeps HTTP/envelope handling in a toast-free transport
+layer (`apps/client/src/services/api-client.ts`) and leaves user-facing
+notification policy to the app wrapper (`apps/client/src/services/api.ts`).
+
 ### Direct queue publish
 
 ```text

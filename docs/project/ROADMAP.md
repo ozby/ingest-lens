@@ -1,23 +1,34 @@
 ---
 type: guide
-last_updated: "2026-04-28"
+last_updated: "2026-05-23"
 ---
 
 # Execution Roadmap
 
-Current as of: 2026-04-25
+Current as of: 2026-05-23
 
 Vision and public positioning live in [`docs/research/product/VISION.md`](../research/product/VISION.md);
 this file is execution sequencing only. The system-level mermaid view of
 what has shipped lives in
 [`docs/system-architecture.md`](../system-architecture.md).
 
+## Related navigation
+
+- [`./REVIEWER-GUIDE.md`](./REVIEWER-GUIDE.md)
+- [`./README.md`](./README.md)
+- [`../../blueprints/README.md`](../../blueprints/README.md)
+
 ## Status
 
 Wave 1 (engineering rigor), Wave 2 (public identity / IngestLens
-rebrand), and Wave 3 (integration-platform AI showcase) have all
-**shipped**. The repo currently has no in-progress or planned blueprints
-— `blueprints/in-progress/` and `blueprints/planned/` are empty.
+rebrand), and Wave 3 (integration-platform AI demo) have all
+**shipped**.
+
+The repo currently has one active simplification program:
+
+- **[`system-clarity-hardening`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)** — an in-progress broad cleanup
+  wave focused on reviewer-first docs, architecture distillation,
+  contract normalization, and reducing high-signal incidental complexity.
 
 ## Completed
 
@@ -34,7 +45,7 @@ rebrand), and Wave 3 (integration-platform AI showcase) have all
 | stryker-mutation-guardrails        | Per-package mutation testing + CI gate                                            |
 | adr-lore-commit-protocol           | ADR system + lore commit trailers                                                 |
 | integration-payload-mapper-dataset | Dataset + eval harness for payload mapper                                         |
-| agents-md-principal-rewrite        | CLAUDE.md principal-level rewrite                                                 |
+| agents-md-guidance-rewrite         | CLAUDE.md repository-guidance rewrite                                             |
 | cf-rate-limiting                   | Rate limiter middleware for Workers                                               |
 | analytics-engine-telemetry         | Delivery-attempt telemetry via Analytics Engine                                   |
 | cf-queues-delivery                 | Push delivery + retry/DLQ via Cloudflare Queues                                   |
@@ -47,7 +58,7 @@ rebrand), and Wave 3 (integration-platform AI showcase) have all
 | consistency-lab-01a-correctness    | Scenario 1a: inversion / duplicate / Kendall-tau across 3 paths                   |
 | consistency-lab-01b-latency        | Scenario 1b: p50/p95/p99 latency + cost annotation                                |
 | consistency-lab-ops                | Heartbeat cron, cost ceiling auto-kill, audit log                                 |
-| showcase-hardening-100             | Security, contract, typecheck, CI, dependency, test, and metrics blockers closed  |
+| foundation-hardening-100           | Security, contract, typecheck, CI, dependency, test, and metrics blockers closed  |
 | rebrand-ingestlens                 | Rebrand public surfaces from node-pubsub to IngestLens                            |
 | ai-oss-tooling-adapter             | Adopt the minimal OSS AI/validation stack behind one Worker adapter               |
 | ai-payload-intake-mapper           | Workers AI suggestion-only payload mapping with validation and approval           |
@@ -77,8 +88,10 @@ blueprints, but are load-bearing for the current state:
 
 ## What's next
 
-There is no committed wave queued. The natural follow-on candidates,
-none of which are blueprints yet:
+The current priority is to finish
+[`system-clarity-hardening`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)
+before adding new surface-area breadth. After that wave closes, the natural
+follow-on candidates are:
 
 - `manual-replay-after-approval` — surface a re-run button for already-approved
   mapping revisions (deferred from `ai-payload-intake-mapper` v1).

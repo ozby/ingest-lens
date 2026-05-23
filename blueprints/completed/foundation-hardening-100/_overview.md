@@ -7,7 +7,7 @@ last_updated: "2026-04-25"
 progress: "100% — merged to main on 2026-04-25"
 depends_on: []
 tags:
-  - showcase
+  - hardening
   - security
   - testing
   - ci
@@ -15,7 +15,7 @@ tags:
   - observability
 ---
 
-# Showcase hardening to 100
+# Foundation hardening to 100
 
 **Goal:** Make the existing system honest before adding branding or AI: object-level
 authorization is enforced, API/client contracts agree, typecheck and CI are
@@ -25,7 +25,7 @@ metrics represent measured facts rather than fabricated demo values.
 ## Planning Summary
 
 - Goal input: harden the one-year-old take-home assignment until it can survive
-  principal-level interview scrutiny.
+  close technical scrutiny.
 - Complexity: L because this touches authz, API contracts, CI, dependency
   hygiene, tests, and observability.
 - Definition of "100%": all verification gates pass and every critical/high
@@ -67,7 +67,7 @@ Hardened state
 
 | Decision        | Choice                                                    | Rationale                                                                                    |
 | --------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Hardening first | This blueprint blocks AI and rebrand work                 | A polished demo over broken authz/typecheck harms interview signal.                          |
+| Hardening first | This blueprint blocks AI and rebrand work                 | A polished demo over broken authz/typecheck undermines trust in the system.                  |
 | Authz pattern   | Central ownership helpers (Fx1, Fx2, Fx3)                 | One helper cluster prevents repeat drift across messages, dashboard, topics, and WebSockets. |
 | Contracts       | Shared DTOs + worker/client contract tests (Fx4)          | Current failure mode is response-shape drift, not missing endpoints alone.                   |
 | Type safety     | Fix source-of-truth manifests before CI polish (Fx5, Fx9) | Portable package resolution must be green before any repo-wide gate is trustworthy.          |
@@ -505,7 +505,7 @@ remove leftover `.new` files only after confirming the canonical files exist.
 | Password KDF         | WebCrypto PBKDF2                                                        | Runtime API                     | No new deps, Workers-compatible, future-proof encoded format. (Fx6)               |
 | Test harness         | Vitest with package-filtered pnpm commands                              | Existing repo tooling           | Matches current packages and supports explicit failing-test-first flow. (Fx7)     |
 | Security remediation | Root `pnpm audit` + minimal overrides/upgrades                          | Existing repo tooling           | Fix vulnerable transitive packages without adding app runtime dependencies. (Fx8) |
-| Metrics presentation | Measured dashboard payloads or visibly labelled fixtures                | Existing client/worker surfaces | Honest showcase metrics are more important than decorative charts. (Fx10)         |
+| Metrics presentation | Measured dashboard payloads or visibly labelled fixtures                | Existing client/worker surfaces | Honest measured metrics are more important than decorative charts. (Fx10)         |
 
 ## Refinement Summary
 

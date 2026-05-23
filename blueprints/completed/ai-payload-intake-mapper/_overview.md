@@ -6,7 +6,7 @@ created: "2026-04-23"
 last_updated: "2026-04-25"
 progress: "100% — merged to main on 2026-04-25"
 depends_on:
-  - showcase-hardening-100
+  - foundation-hardening-100
   - rebrand-ingestlens
   - ai-oss-tooling-adapter
 tags:
@@ -519,7 +519,7 @@ rejects, replays, ingests, or blocks deterministic gates.
 
 | Type       | Blueprint                       | Relationship                                                                               |
 | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------ |
-| Upstream   | `showcase-hardening-100`        | This blueprint should not land before the repo-wide security/type/CI baseline is hardened. |
+| Upstream   | `foundation-hardening-100`      | This blueprint should not land before the repo-wide security/type/CI baseline is hardened. |
 | Upstream   | `rebrand-ingestlens`            | Intake route/page copy should use IngestLens naming and navigation language.               |
 | Upstream   | `ai-oss-tooling-adapter`        | Supplies the approved OSS dependency boundary, schema validators, and source-path helper.  |
 | Downstream | `public-dataset-demo-ingestion` | Can add live public dataset ingestion polish after the deterministic intake mapper exists. |

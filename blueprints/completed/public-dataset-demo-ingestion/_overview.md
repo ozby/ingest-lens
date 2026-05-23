@@ -6,7 +6,7 @@ created: "2026-04-23"
 last_updated: "2026-04-25"
 progress: "100% — merged to main on 2026-04-25"
 depends_on:
-  - showcase-hardening-100
+  - foundation-hardening-100
   - rebrand-ingestlens
   - ai-payload-intake-mapper
 tags:
@@ -86,7 +86,7 @@ Optional freshness mode
 
 **Depends:** None
 
-Execute this blueprint only after the frontmatter `depends_on` gates (`showcase-hardening-100`, `rebrand-ingestlens`, `ai-payload-intake-mapper`) are complete. Make the public-data story legible before polishing the demo: bind the guide and
+Execute this blueprint only after the frontmatter `depends_on` gates (`foundation-hardening-100`, `rebrand-ingestlens`, `ai-payload-intake-mapper`) are complete. Make the public-data story legible before polishing the demo: bind the guide and
 README updates to the verified pinned ATS fixture path, explain what the sample
 is and is not, and call out that the demo reuses the upstream intake API rather
 than inventing a separate "demo mode" backend. (Fx: dataset-path-verified,
@@ -313,7 +313,7 @@ dataset-path-verified)
 
 | Type     | Blueprint                            | Relationship                                                                                                                          |
 | -------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Upstream | `showcase-hardening-100`             | Demo polish assumes honest auth, CI, and verification baselines.                                                                      |
+| Upstream | `foundation-hardening-100`           | Demo polish assumes honest auth, CI, and verification baselines.                                                                      |
 | Upstream | `rebrand-ingestlens`                 | Public docs and Intake copy should use the IngestLens framing.                                                                        |
 | Upstream | `ai-payload-intake-mapper`           | Creates `apps/workers/src/routes/intake.ts`, `apps/client/src/pages/Intake.tsx`, and the mapping/approval API this blueprint extends. |
 | Related  | `integration-payload-mapper-dataset` | Supplies the pinned ATS dataset and evaluation framing already committed under `data/payload-mapper/`.                                |
@@ -384,7 +384,7 @@ dataset-path-verified)
 
 10. **`apps/workers/src/intake/` subdirectory:** Several intake module files (`aiMappingAdapter.ts`, `contracts.ts`, `evaluateMappings.ts`, `normalize.ts`, `schemas.ts`, `sourcePath.ts`, `validateIntakeRequest.ts`, `validators.ts`) already exist. Task 1.2's "Create: `apps/workers/src/intake/demoFixtures.ts`" should be "Modify".
 
-11. **No stale `depends_on` blueprint slugs:** `showcase-hardening-100`, `rebrand-ingestlens`, and `ai-payload-intake-mapper` are all present in `blueprints/planned/`. The frontmatter `depends_on` list is accurate.
+11. **No stale `depends_on` blueprint slugs:** `foundation-hardening-100`, `rebrand-ingestlens`, and `ai-payload-intake-mapper` are all present in `blueprints/planned/`. The frontmatter `depends_on` list is accurate.
 
 12. **Toolchain commands verified:** `pnpm docs:check`, `pnpm format:check`, `pnpm blueprints:check`, `pnpm check-types`, `pnpm build`, `pnpm --filter @repo/workers test`, `pnpm --filter @repo/workers check-types`, `pnpm --filter @repo/workers lint` — all commands match the root `package.json` scripts and workspace package names. The type checker is invoked via `vp run check-types` which maps to `tsgo --noEmit` per project convention (not `tsc`).
 

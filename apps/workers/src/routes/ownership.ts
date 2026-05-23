@@ -72,8 +72,8 @@ export async function requireOwnedQueue(
   c: AppContext,
   queueId: string,
   messages: Partial<OwnershipMessages> = {},
+  db: DbLike = createDb(c.env),
 ): Promise<typeof queues.$inferSelect | Response> {
-  const db = createDb(c.env);
   const ownerId = c.get("user").userId;
   const resolved = { ...DEFAULT_QUEUE_MESSAGES, ...messages };
 
@@ -94,8 +94,8 @@ export async function requireOwnedTopic(
   c: AppContext,
   topicId: string,
   messages: Partial<OwnershipMessages> = {},
+  db: DbLike = createDb(c.env),
 ): Promise<TopicWithSubscriptions | Response> {
-  const db = createDb(c.env);
   const ownerId = c.get("user").userId;
   const resolved = { ...DEFAULT_TOPIC_MESSAGES, ...messages };
 

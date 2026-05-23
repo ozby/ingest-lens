@@ -1,6 +1,6 @@
 ---
 type: adr
-last_updated: "2026-04-24"
+last_updated: "2026-05-23"
 ---
 
 # ADR 0003: Auth Story (v1 API Keys)
@@ -68,9 +68,9 @@ defer JWTs is visible and reversible.
   machine-to-machine integrations if the platform gains a certificate
   provisioning story
 
-## Showcase Worker password-storage addendum
+## Worker password-storage addendum
 
-The showcase Worker's user-password storage is hardened separately from the
+The Worker's user-password storage is hardened separately from the
 v1 API-key decision above.
 
 - **Stored format:** `pbkdf2$<iterations>$<salt>$<hash>`

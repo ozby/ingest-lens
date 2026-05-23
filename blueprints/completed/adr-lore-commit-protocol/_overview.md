@@ -127,10 +127,10 @@ docs/conventions/lore-commit-protocol.md
 
 ## Cross-Plan References
 
-| Type    | Blueprint                     | Relationship                      |
-| ------- | ----------------------------- | --------------------------------- |
-| Related | `commit-hooks-guardrails`     | commit-msg hook owner             |
-| Related | `agents-md-principal-rewrite` | Communication surface points here |
+| Type    | Blueprint                    | Relationship                      |
+| ------- | ---------------------------- | --------------------------------- |
+| Related | `commit-hooks-guardrails`    | commit-msg hook owner             |
+| Related | `agents-md-guidance-rewrite` | Communication surface points here |
 
 ## Non-goals
 

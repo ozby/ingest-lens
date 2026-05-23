@@ -10,6 +10,15 @@ Each subdirectory represents a lifecycle state:
 - `parked/` — intentionally paused. Include a reason in the spec's frontmatter.
 - `archived/` — superseded or abandoned. Not deleted — the record matters.
 
+## Current active blueprint
+
+- [`in-progress/system-clarity-hardening/_overview.md`](./in-progress/system-clarity-hardening/_overview.md)
+
+## Related navigation
+
+- [`../docs/project/REVIEWER-GUIDE.md`](../docs/project/REVIEWER-GUIDE.md)
+- [`../docs/project/README.md`](../docs/project/README.md)
+
 ## Authoring
 
 - Use `docs/templates/blueprint.md` as the starting point.

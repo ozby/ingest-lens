@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IMessage, IntakeAttemptRecord, IntakeApprovalData } from "@repo/types";
 
+const toastMocks = vi.hoisted(() => ({
+  error: vi.fn(),
+}));
+
 const axiosMocks = vi.hoisted(() => {
   const get = vi.fn();
   const post = vi.fn();
@@ -31,14 +35,53 @@ vi.mock("axios", () => ({
   create: axiosMocks.create,
 }));
 
-import apiService from "./api";
+vi.mock("sonner", () => ({
+  toast: toastMocks,
+}));
+
+import apiService, { createApiService } from "./api";
 
 describe("api service contracts", () => {
   beforeEach(() => {
     axiosMocks.get.mockReset();
     axiosMocks.post.mockReset();
     axiosMocks.del.mockReset();
+    axiosMocks.responseUse.mockReset();
+    toastMocks.error.mockReset();
     localStorage.clear();
+  });
+
+  it("supports caller-owned error handling instead of hard-coded UI coupling", async () => {
+    const onError = vi.fn();
+    createApiService({ onError });
+
+    const onRejected = axiosMocks.responseUse.mock.calls.at(-1)?.[1];
+    const error = {
+      response: {
+        data: {
+          message: "Queue is already subscribed to this topic",
+        },
+      },
+    };
+
+    expect(onRejected).toBeTypeOf("function");
+    await expect(onRejected?.(error)).rejects.toBe(error);
+    expect(onError).toHaveBeenCalledWith("Queue is already subscribed to this topic", error);
+  });
+
+  it("keeps toast ownership in the default app-facing service wrapper", async () => {
+    const onRejected = axiosMocks.responseUse.mock.calls[0]?.[1];
+    const error = {
+      response: {
+        data: {
+          message: "Topic has no subscribers",
+        },
+      },
+    };
+
+    expect(onRejected).toBeTypeOf("function");
+    await expect(onRejected?.(error)).rejects.toBe(error);
+    expect(toastMocks.error).toHaveBeenCalledWith("Topic has no subscribers");
   });
 
   it("reads queue metrics from the shared queueMetrics key", async () => {

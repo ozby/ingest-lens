@@ -512,9 +512,14 @@ async function publishQueueTarget(
   envelope: Record<string, unknown>,
   idempotencyKey: string | null,
 ): Promise<void> {
-  const queue = await requireOwnedQueue(c, queueId, {
-    unauthorized: "Not authorized to approve this queue target",
-  });
+  const queue = await requireOwnedQueue(
+    c,
+    queueId,
+    {
+      unauthorized: "Not authorized to approve this queue target",
+    },
+    db,
+  );
   if (queue instanceof Response) {
     throw new Error("Queue target is unavailable for approval.");
   }
@@ -537,9 +542,14 @@ async function publishTopicTarget(
   envelope: Record<string, unknown>,
   idempotencyKey: string | null,
 ): Promise<void> {
-  const topic = await requireOwnedTopic(c, topicId, {
-    unauthorized: "Not authorized to approve this topic target",
-  });
+  const topic = await requireOwnedTopic(
+    c,
+    topicId,
+    {
+      unauthorized: "Not authorized to approve this topic target",
+    },
+    db,
+  );
   if (topic instanceof Response) {
     throw new Error("Topic target is unavailable for approval.");
   }

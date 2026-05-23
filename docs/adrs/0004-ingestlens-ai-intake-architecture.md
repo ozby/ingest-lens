@@ -1,6 +1,6 @@
 ---
 type: adr
-last_updated: "2026-04-24"
+last_updated: "2026-05-23"
 ---
 
 # ADR 0004: IngestLens Adaptive Ingestion Architecture
@@ -11,7 +11,7 @@ last_updated: "2026-04-24"
 
 ## Context
 
-IngestLens is being positioned as a generic ingestion-observability showcase:
+IngestLens is being positioned as a generic ingestion-observability system:
 messy third-party payloads enter an intake flow, deterministic drift checks
 identify mapping or contract uncertainty, an AI-assisted mapper proposes field
 mapping repairs, an admin/operator approves or rejects the suggestion in a
@@ -82,7 +82,7 @@ human can approve it.
 
 ### 2a. The admin approval panel is the control point
 
-The public showcase needs an explicit admin/operator surface, not a hidden approval
+The public system needs an explicit admin/operator surface, not a hidden approval
 button inside a generic intake screen. The protected client route is
 `/admin/intake`. It provides:
 
@@ -161,7 +161,7 @@ Worker intake code, for example
 Reasons:
 
 - It works in deployed Workers and local tests without filesystem assumptions.
-- It avoids adding R2/KV just to serve eight showcase records.
+- It avoids adding R2/KV just to serve eight bundled records.
 - It keeps the full dataset out of the Worker bundle.
 
 Runtime live fetch stays out of v1. If freshness is needed, add a pre-demo
@@ -227,7 +227,7 @@ Every intake attempt creates one `mappingTraceId`. The same id appears in:
 - Analytics Engine datapoints;
 - dashboard/replay views.
 
-This makes the showcase auditable instead of merely decorative.
+This makes the system auditable instead of merely decorative.
 
 ### 7. V1 intentionally avoids a platform-shaped abstraction explosion
 
@@ -269,7 +269,7 @@ deterministic pinned-fixture path is shipped and measured.
   sample changes.
 - Short-lived raw payload persistence adds cleanup/expiry behavior to implement.
 - Suggestion-only AI is less flashy than autonomous mapping, but it avoids the
-  wrong showcase signal: a probabilistic system silently corrupting integration
+  wrong operating signal: a probabilistic system silently corrupting integration
   data. Human-approved mapping revisions are the self-healing mechanism.
 
 ### Neutral / follow-ups

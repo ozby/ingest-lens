@@ -195,7 +195,7 @@ what happened.
 
 Proceed with four blueprints in order:
 
-1. **showcase-hardening-100** — make the current system honest: authz,
+1. **foundation-hardening-100** — make the current system honest: authz,
    typecheck, contracts, CI, tests, dependency audit, no fake metrics.
 2. **rebrand-ingestlens** — remove `node-pubsub` from public surfaces and tell
    the IntegrationOps story.

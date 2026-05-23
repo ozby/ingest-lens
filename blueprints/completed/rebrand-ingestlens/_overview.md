@@ -6,7 +6,7 @@ created: "2026-04-23"
 last_updated: "2026-04-25"
 progress: "100% — merged to main on 2026-04-25"
 depends_on:
-  - showcase-hardening-100
+  - foundation-hardening-100
 tags:
   - branding
   - docs
@@ -55,7 +55,7 @@ After
 | F2  | Medium   | `docs/guides/public-dataset-demo.md` already exists.          | Codebase verification shows `docs/guides/public-dataset-demo.md: false`; the downstream dataset blueprint owns the guide, while this blueprint only prepares README links/copy for that canonical path. | (Fx2) Make Task 2.1 update README copy/link expectations for `docs/guides/public-dataset-demo.md` without creating a competing guide. |
 | F3  | Medium   | UI smoke tests from upstream probably already exist.          | `find apps/client -type f \( -name '*test.*' -o -name '*spec.*' \)` returned no committed client tests.                                                                                                 | (Fx3) Require first-pass Vitest smoke tests in UI tasks before copy changes ship.                                                     |
 | F4  | Low      | Existing task boundaries are safe for parallel execution.     | `README.md` was shared by Tasks 1.1, 1.2, and 2.1; client shell/page files were also bundled too coarsely.                                                                                              | (Fx4) Split README/docs, client shell, client page, and hygiene work into serialized or conflict-free tasks so CP stays 0.            |
-| F5  | Low      | Cross-plan names might need renaming during refinement.       | `showcase-hardening-100`, `ai-payload-intake-mapper`, and `public-dataset-demo-ingestion` already reference `rebrand-ingestlens` consistently.                                                          | (Fx5) Keep blueprint names stable; add a note that `docs/guides/public-dataset-demo.md` is the shared downstream guide path.          |
+| F5  | Low      | Cross-plan names might need renaming during refinement.       | `foundation-hardening-100`, `ai-payload-intake-mapper`, and `public-dataset-demo-ingestion` already reference `rebrand-ingestlens` consistently.                                                        | (Fx5) Keep blueprint names stable; add a note that `docs/guides/public-dataset-demo.md` is the shared downstream guide path.          |
 
 ## Key Decisions
 
@@ -81,7 +81,7 @@ After
 **Effort:** S
 
 Own all README-first truth-state work in one place so no other same-wave task
-needs to touch `README.md`. Execute this blueprint only after the frontmatter `depends_on` gate (`showcase-hardening-100`) is complete. Apply (Fx1, Fx4): make the first screen explain the
+needs to touch `README.md`. Execute this blueprint only after the frontmatter `depends_on` gate (`foundation-hardening-100`) is complete. Apply (Fx1, Fx4): make the first screen explain the
 product in under 30 seconds, use shipped/partial/planned labels, and swap the
 queue-first story for intake -> mapping -> normalized event -> delivery ->
 observability without overselling unbuilt features.
@@ -331,13 +331,13 @@ rails behind the higher-level integration observability story.
 
 | Type       | Blueprint                       | Relationship                                                                                            |
 | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Upstream   | `showcase-hardening-100`        | Rebrand starts after critical reliability defects are fixed.                                            |
+| Upstream   | `foundation-hardening-100`      | Rebrand starts after critical reliability defects are fixed.                                            |
 | Downstream | `ai-payload-intake-mapper`      | AI feature uses IngestLens naming and README/UI truth-state language.                                   |
 | Downstream | `public-dataset-demo-ingestion` | Dataset-demo work should create and extend the canonical public dataset guide and pinned-fixture story. |
 
 ### Cross-Plan Notes
 
-- (Fx5) Blueprint names are already consistent across `showcase-hardening-100`,
+- (Fx5) Blueprint names are already consistent across `foundation-hardening-100`,
   `rebrand-ingestlens`, `ai-payload-intake-mapper`, and
   `public-dataset-demo-ingestion`; no rename cascade is needed.
 - (Fx2, Fx5) `docs/guides/public-dataset-demo.md` is the canonical guide path owned by
@@ -399,8 +399,8 @@ rails behind the higher-level integration observability story.
 ### What remains
 
 - **Worker name in `wrangler.toml` was `node-pubsub`:** Renamed to `ingest-lens` (completed). The deployed worker names are now `ingest-lens-dev` and `ingest-lens-prd`.
-- **`.new` files are only in worktrees, not in the main tree:** All `*.new` files found live under `.worktrees/client-route-code-splitting/` and `.worktrees/showcase-hardening-100/`, not in the main working tree. Task 1.4's delete list targets main-tree paths (`AGENTS.md.new`, `.agent/.../*.new`, etc.). These do not currently exist in the main tree — Task 1.4 should skip those deletes or confirm the files are already gone.
-- **README/docs rebrand copy (Task 1.1):** Cannot confirm content state without reading files; assumed outstanding pending `showcase-hardening-100` gate.
+- **`.new` files are only in worktrees, not in the main tree:** All `*.new` files found live under `.worktrees/client-route-code-splitting/` and `.worktrees/foundation-hardening-100/`, not in the main working tree. Task 1.4's delete list targets main-tree paths (`AGENTS.md.new`, `.agent/.../*.new`, etc.). These do not currently exist in the main tree — Task 1.4 should skip those deletes or confirm the files are already gone.
+- **README/docs rebrand copy (Task 1.1):** Cannot confirm content state without reading files; assumed outstanding pending `foundation-hardening-100` gate.
 - **`docs/adrs/README.md` brand language (Task 1.2):** Needs review for stale `node-pubsub` references.
 - **`docs/research/product/VISION.md` brand language (Task 1.2):** Needs review.
 - **Client page copy (Tasks 2.2, 2.3):** Test files exist but whether the implementation copy passes those tests is unverified.

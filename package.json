@@ -25,7 +25,7 @@
     "check-types": "vp run check-types",
     "commitlint": "commitlint",
     "secretlint": "secretlint",
-    "setup:agent": "ak setup",
+    "setup:agent": "wp setup",
     "postinstall": "AK_SKIP_GSTACK=1 bun ./scripts/run-webpresso-cli.ts setup --yes --overwrite",
     "prepare": "husky",
     "docs:check": "bun ./scripts/run-webpresso-cli.ts agent audit docs-frontmatter",

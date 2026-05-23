@@ -1,6 +1,6 @@
 ---
 type: docs-index
-last_updated: "2026-04-21"
+last_updated: "2026-05-23"
 ---
 
 # Documentation
@@ -71,19 +71,22 @@ from the matching template.
 
 ## Linting
 
-Run via `pnpm lint:docs`:
+Current repo-owned docs checks are:
 
-- **markdownlint-cli2** — `.markdownlint.json` at repo root. Installed as a devDependency.
-- **lychee** — `lychee.toml` at repo root. `lychee` is a Rust binary, not an npm package. Install locally with `brew install lychee` (macOS) or from a CI action; `pnpm docs:links` invokes it directly from `$PATH` and will no-op with a warning if the binary is missing.
 - **Vite+ formatter** — `pnpm format:check` runs `vp fmt --check` for markdown and code formatting.
 - **frontmatter check** — `pnpm docs:check` enforces rules 1–3 above.
 
+If markdown or link linting is added back as a scripted repo check, document the
+exact package script here instead of referring to ad hoc commands.
+
 ## Key entry points
 
-- `AGENTS.md` — top-level operating contract (principal layer + generated).
-- `README.md` — project README.
-- `.agent/rules/README.md` — mechanically enforced rules index.
-- `.agent/guides/README.md` — agent-operational guide index.
-- `blueprints/README.md` — implementation plan index and lifecycle.
-- `docs/system/` — architecture and runtime invariants (stable).
-- `docs/guides/` — patterns and how-tos (stable).
+- [`../AGENTS.md`](../AGENTS.md) — top-level operating contract.
+- [`../README.md`](../README.md) — project README.
+- [`./project/REVIEWER-GUIDE.md`](./project/REVIEWER-GUIDE.md) — fastest repo orientation path.
+- [`./project/README.md`](./project/README.md) — project-state and execution records.
+- [`../.agent/guides/agent-guardrails.md`](../.agent/guides/agent-guardrails.md) — agent-operational guardrails.
+- [`../.agent/workflows/README.md`](../.agent/workflows/README.md) — agent workflow index.
+- [`../blueprints/README.md`](../blueprints/README.md) — implementation plan index and lifecycle.
+- [`./system-architecture.md`](./system-architecture.md) — architecture and runtime invariants.
+- [`./guides/`](./guides/) — patterns and how-tos.

@@ -43,12 +43,25 @@ Secrets and database connections are managed via `with-secrets` (Doppler + Neon 
 
 ## Showcase entrypoints
 
+- **Active cleanup wave:** [`blueprints/in-progress/system-clarity-hardening/_overview.md`](blueprints/in-progress/system-clarity-hardening/_overview.md)
+- **Reviewer guide (start here):** [`docs/project/REVIEWER-GUIDE.md`](docs/project/REVIEWER-GUIDE.md)
 - **Architecture overview:** [`docs/system-architecture.md`](docs/system-architecture.md)
 - **AI intake + mapping flow:** [`docs/architecture.md`](docs/architecture.md)
 - **Consistency Lab architecture:** [`docs/lab-architecture.md`](docs/lab-architecture.md)
 - **Delivery semantics:** [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md)
 - **Scale and tradeoffs:** [`docs/scale-considerations.md`](docs/scale-considerations.md)
 - **Vision + project records:** [`docs/research/product/VISION.md`](docs/research/product/VISION.md), [`docs/project/README.md`](docs/project/README.md)
+
+## Reviewer path
+
+If you are new to the repo and want the fastest technical orientation, use this path:
+
+1. Read the [reviewer guide](docs/project/REVIEWER-GUIDE.md) for the 15-minute walkthrough.
+2. Scan the [system architecture](docs/system-architecture.md) for boundaries and request/data flow.
+3. Read the [AI intake architecture](docs/architecture.md) and [delivery guarantees](docs/delivery-guarantees.md) to see where the design is intentionally strict.
+4. Use the [execution roadmap](docs/project/ROADMAP.md) and the active
+   [`system-clarity-hardening` blueprint](blueprints/in-progress/system-clarity-hardening/_overview.md)
+   to understand what is stable versus what is being simplified now.
 
 ## Engineering proof points
 

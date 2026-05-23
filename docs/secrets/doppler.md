@@ -1,6 +1,6 @@
 ---
 type: runbook
-last_updated: "2026-04-24"
+last_updated: "2026-05-23"
 ---
 
 # Doppler Secret Management Runbook
@@ -125,13 +125,13 @@ doppler setup --project node-pubsub --config dev
 
 ```bash
 pnpm dev
-# expands to: doppler run --config dev -- turbo run dev
+# expands to: doppler run --project ozby-shell --config dev -- vp run dev
 ```
 
 To run a command against a non-linked project, pass `--project` explicitly:
 
 ```bash
-bun ./scripts/with-doppler.ts --project ozby-shell dev pnpm --filter @repo/infra preview
+doppler run --project ozby-shell --config dev -- corepack pnpm --filter @repo/infra preview
 ```
 
 To skip Doppler injection (e.g., CI where secrets are pre-loaded into the environment):
@@ -191,7 +191,8 @@ fallback for bootstrap or migration periods.
 | Set a secret               | `doppler secrets set KEY=value --config dev`      |
 | Download secrets as `.env` | `doppler secrets download --no-file --format env` |
 
-`pnpm act:*` expands through `scripts/act-with-doppler.ts`, which:
+The local workflow scripts (`pnpm act:ci`, `pnpm act:e2e`, `pnpm act:cleanup`,
+and `pnpm act:list`) expand through `scripts/act-with-doppler.ts`, which:
 
 - infers a least-privilege secret profile from the target workflow/job,
 - only contacts Doppler when that profile actually needs managed secrets,

@@ -109,10 +109,15 @@ queueRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const db = createDb(c.env);
 
-  const queue = await requireOwnedQueue(c, id, {
-    notFound: `Queue not found with ID: ${id}`,
-    unauthorized: "You do not have permission to delete this queue",
-  });
+  const queue = await requireOwnedQueue(
+    c,
+    id,
+    {
+      notFound: `Queue not found with ID: ${id}`,
+      unauthorized: "You do not have permission to delete this queue",
+    },
+    db,
+  );
   if (queue instanceof Response) {
     return queue;
   }

@@ -1,6 +1,6 @@
 ---
 type: research
-last_updated: "2026-04-24"
+last_updated: "2026-05-23"
 ---
 
 # Scale Considerations
@@ -12,7 +12,7 @@ future AI intake layer.
 
 ## Current design point
 
-The current showcase is designed for a moderate-traffic integration workflow:
+The current system is designed for a moderate-traffic integration workflow:
 tens of thousands of messages per day, hundreds of concurrent publishers, and a
 handful of topics with dozens of subscribers each.
 

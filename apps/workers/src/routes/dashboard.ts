@@ -167,9 +167,14 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
   const db = createDb(c.env);
   const now = new Date();
 
-  const queue = await requireOwnedQueue(c, queueId, {
-    unauthorized: "Not authorized to view metrics for this queue",
-  });
+  const queue = await requireOwnedQueue(
+    c,
+    queueId,
+    {
+      unauthorized: "Not authorized to view metrics for this queue",
+    },
+    db,
+  );
   if (queue instanceof Response) {
     return queue;
   }

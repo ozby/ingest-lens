@@ -1,6 +1,6 @@
 ---
 type: adr
-last_updated: "2026-04-22"
+last_updated: "2026-05-23"
 ---
 
 # ADR 0002: Pub/Sub In-Process vs. Durable Queue
@@ -24,8 +24,8 @@ The delivery dispatcher implementation lives in
 (exponential back-off, max attempts) is in
 `apps/api-server/src/platform/domain/retry.ts`.
 
-This is a principal-engineer showcase repo operating at low volume (< 100
-events/s sustained). The primary constraints are:
+This repo is operating at low volume (< 100 events/s sustained). The
+primary constraints are:
 
 - Operational simplicity: no external dependencies beyond Postgres
 - Latency: sub-100 ms end-to-end delivery on happy path

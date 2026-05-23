@@ -271,7 +271,7 @@ rg -n "from ['\"](ai|workers-ai-provider|ajv|@sinclair/typebox)" apps packages
 - `ai-payload-intake-mapper` should consume the adapter and validators from this blueprint instead of choosing its own model/validation stack.
 - `admin-review-replay-console` should display suggestion confidence, validation failures, and optional judge concerns, but must not import AI SDK code.
 - `public-dataset-demo-ingestion` should provide messy public fixtures; this blueprint only defines how suggestions are generated and validated.
-- `showcase-hardening-100` should include the adapter boundary tests and no-SaaS dependency posture in final repository hygiene.
+- `foundation-hardening-100` should include the adapter boundary tests and no-SaaS dependency posture in final repository hygiene.
 
 ## Edge Cases to Preserve
 
