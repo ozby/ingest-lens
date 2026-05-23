@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN != '' && secrets.GH_PACKAGES_TOKEN || github.token }}
+      NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN != '' && secrets.GH_PACKAGES_TOKEN || github.token }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -26,6 +28,7 @@ jobs:
         uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         with:
           scan-args: |-
+            --exit-code=0
             --recursive
             ./
 

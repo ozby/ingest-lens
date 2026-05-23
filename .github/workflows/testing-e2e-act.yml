@@ -10,6 +10,8 @@ jobs:
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN != '' && secrets.GH_PACKAGES_TOKEN || github.token }}
+      NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN != '' && secrets.GH_PACKAGES_TOKEN || github.token }}
 
     steps:
       - uses: actions/checkout@v6
@@ -17,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: "@webpresso"
 
       - name: Enable Corepack pnpm
         run: |
