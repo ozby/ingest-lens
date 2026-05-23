@@ -112,7 +112,7 @@ pnpm docs:check
 pnpm blueprints:check
 ```
 
-### Local GitHub Actions testing
+### Local GitHub Actions testing (public Webpresso CI surface)
 
 ```bash
 pnpm act:list

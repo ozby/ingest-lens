@@ -192,7 +192,8 @@ fallback for bootstrap or migration periods.
 | Download secrets as `.env` | `doppler secrets download --no-file --format env` |
 
 The local workflow scripts (`pnpm act:ci`, `pnpm act:e2e`, `pnpm act:cleanup`,
-and `pnpm act:list`) expand through `scripts/act-with-doppler.ts`, which:
+and `pnpm act:list`) expand through `scripts/act-with-webpresso.ts` (legacy
+`act-with-doppler.ts` remains as a thin compatibility wrapper), which:
 
 - infers a least-privilege secret profile from the target workflow/job,
 - only contacts Doppler when that profile actually needs managed secrets,
@@ -219,7 +220,7 @@ Current `act` profiles:
 Override inference explicitly when needed:
 
 ```bash
-bun ./scripts/act-with-doppler.ts \
+bun ./scripts/act-with-webpresso.ts \
   --secret-profile neon-control-plane \
   workflow_dispatch \
   -W .github/workflows/cleanup-stale-neon-e2e-branches.yml \

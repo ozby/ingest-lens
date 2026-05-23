@@ -13,8 +13,9 @@ import {
   normalizeActSecrets,
   normalizeActSecretsWithOptions,
   parseDopplerSource,
+  parseSecretSource,
   renderSecretsFile,
-} from "./act-with-doppler.ts";
+} from "./act-with-webpresso.ts";
 
 describe("parseDopplerSource", () => {
   it("parses project and config", () => {
@@ -28,6 +29,15 @@ describe("parseDopplerSource", () => {
     expect(() => parseDopplerSource("ozby-shell")).toThrow(
       'Invalid Doppler source "ozby-shell". Expected <project>:<config>.',
     );
+  });
+});
+
+describe("parseSecretSource", () => {
+  it("parses project and config", () => {
+    expect(parseSecretSource("ozby-shell:dev")).toEqual({
+      project: "ozby-shell",
+      config: "dev",
+    });
   });
 });
 
