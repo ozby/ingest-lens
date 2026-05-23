@@ -8,7 +8,7 @@ on:
 jobs:
   full-suite:
     # Fork-PR safety: only run on push-to-main or same-repo PRs.
-    if: ${{ (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) && env.GH_PACKAGES_TOKEN != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 

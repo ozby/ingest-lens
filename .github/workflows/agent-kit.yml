@@ -4,9 +4,12 @@ on:
   push:
     branches: [main]
 
+env:
+  GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+
 jobs:
   agent-kit:
-    if: ${{ secrets.GH_PACKAGES_TOKEN != '' }}
+    if: ${{ env.GH_PACKAGES_TOKEN != '' }}
     uses: webpresso/agent-kit-action/.github/workflows/audit.yml@v1
     secrets: inherit
     with:
