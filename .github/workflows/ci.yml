@@ -22,16 +22,14 @@ jobs:
     outputs:
       has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
     steps:
-      - name: Detect GH_PACKAGES_TOKEN presence
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Detect GH_PACKAGES_TOKEN package access
         id: detect
-        env:
-          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-        run: |
-          if [ -n "${GH_PACKAGES_TOKEN}" ]; then
-            echo "has_packages_token=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_packages_token=false" >> "$GITHUB_OUTPUT"
-          fi
+        uses: ./.github/actions/detect-webpresso-package-token
+        with:
+          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
 
   setup:
     name: Install
