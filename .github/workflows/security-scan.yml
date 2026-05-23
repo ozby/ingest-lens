@@ -23,7 +23,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: OSV Scanner
-        uses: google/osv-scanner-action@v2
+        uses: google/osv-scanner-action@v2.3.8
         with:
           scan-args: |-
             --recursive

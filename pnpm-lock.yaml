@@ -55,8 +55,8 @@ catalogs:
       specifier: ^6.0.1
       version: 6.0.1
     '@webpresso/agent-kit':
-      specifier: ^0.15.0
-      version: 0.15.0
+      specifier: ^0.18.8
+      version: 0.18.8
     '@webpresso/agent-stryker':
       specifier: ^0.2.0
       version: 0.2.0
@@ -69,24 +69,15 @@ catalogs:
     '@webpresso/agent-workers-test':
       specifier: ^0.2.0
       version: 0.2.0
+    '@webpresso/db-branching':
+      specifier: ^0.2.1
+      version: 0.2.1
     '@webpresso/db-branching-neon':
       specifier: ^0.2.1
       version: 0.2.1
     '@webpresso/runtime':
       specifier: ^0.3.0
       version: 0.3.0
-    '@webpresso/schema-engine':
-      specifier: 0.1.0-alpha.20
-      version: 0.1.0-alpha.20
-    '@webpresso/schema-frontend':
-      specifier: 0.1.0-alpha.20
-      version: 0.1.0-alpha.20
-    '@webpresso/schema-loaders':
-      specifier: 0.1.0-alpha.20
-      version: 0.1.0-alpha.20
-    '@webpresso/schema-spec':
-      specifier: 0.1.0-alpha.20
-      version: 0.1.0-alpha.20
     '@webpresso/webpresso':
       specifier: ^0.1.1
       version: 0.1.1
@@ -211,21 +202,12 @@ importers:
       '@webpresso/runtime':
         specifier: 'catalog:'
         version: 0.3.0
-      '@webpresso/schema-engine':
-        specifier: 'catalog:'
-        version: 0.1.0-alpha.20(@cloudflare/workers-types@4.20260423.1)(@hookform/resolvers@5.2.2(react-hook-form@7.73.1(react@19.2.5)))(@opentelemetry/api@1.9.0)(@sinclair/typebox@0.34.49)(@tanstack/react-router@1.169.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(better-sqlite3@12.9.0)(effect@3.20.0)(postgres@3.4.9)(react-hook-form@7.73.1(react@19.2.5))(react@19.2.5)(valibot@1.4.0(typescript@6.0.3))(vitest@4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@20.0.3)(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)))
-      '@webpresso/schema-frontend':
-        specifier: 'catalog:'
-        version: 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))
-      '@webpresso/schema-loaders':
-        specifier: 'catalog:'
-        version: 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
-      '@webpresso/schema-spec':
-        specifier: 'catalog:'
-        version: 0.1.0-alpha.20(graphql-request@7.4.0(graphql@16.13.2))(react@19.2.5)
       husky:
         specifier: 'catalog:'
         version: 9.1.7
+      node-addon-api:
+        specifier: ^8.5.0
+        version: 8.5.0
       oxlint:
         specifier: catalog:tooling
         version: 1.61.0(oxlint-tsgolint@0.22.0)
