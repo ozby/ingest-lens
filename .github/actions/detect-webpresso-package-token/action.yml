@@ -1,14 +1,27 @@
 name: Detect Webpresso package token
-description: Checks whether GH_PACKAGES_TOKEN can download @webpresso npm tarballs.
+description: Proves whether GH_PACKAGES_TOKEN can fetch every private @webpresso/@ozby tarball in pnpm-lock.yaml.
 inputs:
   gh-packages-token:
     description: Token used for npm.pkg.github.com
     required: false
     default: ""
+  trusted-context:
+    description: "true for same-repo PRs, push, schedule, and workflow_dispatch; false for fork PRs"
+    required: true
+  lockfile-path:
+    description: Lockfile whose private GitHub Packages tarballs must be fetched
+    required: false
+    default: pnpm-lock.yaml
 outputs:
   has_packages_token:
-    description: "true when token is present and can fetch @webpresso package tarballs"
+    description: "true when trusted package auth can fetch all private lockfile tarballs"
     value: ${{ steps.detect.outputs.has_packages_token }}
+  authoritative:
+    description: "true when this was a trusted-context authoritative gate; false only for explicit fork skips"
+    value: ${{ steps.detect.outputs.authoritative }}
+  package_count:
+    description: Number of private GitHub Packages tarballs checked from the lockfile
+    value: ${{ steps.detect.outputs.package_count }}
 runs:
   using: composite
   steps:
@@ -16,44 +29,6 @@ runs:
       shell: bash
       env:
         GH_PACKAGES_TOKEN: ${{ inputs.gh-packages-token }}
-      run: |
-        if [ -z "${GH_PACKAGES_TOKEN:-}" ]; then
-          echo "has_packages_token=false" >> "$GITHUB_OUTPUT"
-          echo "GH_PACKAGES_TOKEN is missing."
-          exit 0
-        fi
-
-        tmp_npmrc="$(mktemp)"
-        printf '%s\n' \
-          '@webpresso:registry=https://npm.pkg.github.com' \
-          '//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}' \
-          'always-auth=true' \
-          >"$tmp_npmrc"
-
-        tarball_url="$(
-          GH_PACKAGES_TOKEN="$GH_PACKAGES_TOKEN" \
-          NPM_CONFIG_USERCONFIG="$tmp_npmrc" \
-          npm view @webpresso/agent-kit@latest dist.tarball --registry=https://npm.pkg.github.com 2>/dev/null || true
-        )"
-
-        rm -f "$tmp_npmrc"
-
-        if [ -z "${tarball_url:-}" ]; then
-          echo "has_packages_token=false" >> "$GITHUB_OUTPUT"
-          echo "GH_PACKAGES_TOKEN cannot resolve @webpresso/agent-kit metadata."
-          exit 0
-        fi
-
-        http_code="$(
-          curl -sSL -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${GH_PACKAGES_TOKEN}" \
-            "$tarball_url"
-        )"
-
-        if [ "$http_code" = "200" ]; then
-          echo "has_packages_token=true" >> "$GITHUB_OUTPUT"
-          echo "GH_PACKAGES_TOKEN can download @webpresso packages."
-        else
-          echo "has_packages_token=false" >> "$GITHUB_OUTPUT"
-          echo "GH_PACKAGES_TOKEN cannot download @webpresso packages (HTTP ${http_code})."
-        fi
+        TRUSTED_CONTEXT: ${{ inputs.trusted-context }}
+        LOCKFILE_PATH: ${{ inputs.lockfile-path }}
+      run: node "$GITHUB_ACTION_PATH/private-package-proof.mjs"

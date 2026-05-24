@@ -17,14 +17,14 @@ describe("run-webpresso-cli", () => {
     expect(packageJson.devDependencies?.["node-addon-api"]).toBe("^8.5.0");
   });
 
-  it("uses plain `ak setup` for contributor-triggered setup", () => {
+  it("uses plain `wp setup` for contributor-triggered setup", () => {
     const packageJson = JSON.parse(
       readFileSync(resolve(import.meta.dirname, "..", "package.json"), "utf8"),
     ) as {
       scripts?: Record<string, string>;
     };
 
-    expect(packageJson.scripts?.["setup:agent"]).toBe("ak setup");
+    expect(packageJson.scripts?.["setup:agent"]).toBe("wp setup");
   });
 
   it("skips gstack during postinstall so project bootstrap does not fail on global gstack checkout health", () => {

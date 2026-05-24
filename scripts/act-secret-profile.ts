@@ -36,7 +36,7 @@ const ACT_SECRET_PROFILES: Record<ActSecretProfileId, ActSecretProfile> = {
     description: "Neon control-plane credentials for branch lifecycle automation.",
     allowedKeys: ["NEON_API_KEY", "NEON_PROJECT_ID", "NEON_PARENT_BRANCH_ID"],
     requiredKeys: ["NEON_API_KEY", "NEON_PROJECT_ID", "NEON_PARENT_BRANCH_ID"],
-    defaultSources: ["ozby-shell:dev"],
+    defaultSources: [],
   },
 };
 

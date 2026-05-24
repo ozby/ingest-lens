@@ -20,6 +20,7 @@ jobs:
         uses: ./.github/actions/detect-webpresso-package-token
         with:
           gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          trusted-context: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
   full-suite:
     # Fork-PR safety: only run on push-to-main or same-repo PRs.
@@ -32,6 +33,7 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
 
     steps:
       - uses: actions/checkout@v6
@@ -45,21 +47,21 @@ jobs:
       - name: Enable Corepack pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@10.33.0 --activate
+          corepack prepare pnpm@11.1.1 --activate
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: Install Doppler CLI
-        run: |
-          curl -Ls https://cli.doppler.com/install.sh | sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Inject e2e secrets from Doppler
+        if: env.HAS_DOPPLER_TOKEN == '1'
+        uses: dopplerhq/secrets-fetch-action@v2.0.0
+        with:
+          doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
+          inject-env-vars: true
+
       - name: Run e2e suite (auto-provisions Neon branch)
-        env:
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
         run: pnpm e2e --suite full

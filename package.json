@@ -6,10 +6,10 @@
     "#generated/*": "./.webpresso/generated/*"
   },
   "scripts": {
-    "act:ci": "bun ./scripts/act-with-webpresso.ts push -W .github/workflows/ci.yml",
-    "act:cleanup": "bun ./scripts/act-with-webpresso.ts workflow_dispatch -W .github/workflows/cleanup-stale-neon-e2e-branches.yml -j cleanup",
-    "act:e2e": "bun ./scripts/act-with-webpresso.ts workflow_dispatch -W .github/workflows/testing-e2e-act.yml -j full-suite-local",
-    "act:list": "bun ./scripts/act-with-webpresso.ts -l",
+    "act:ci": "bun ./scripts/act-with-webpresso.ts ci",
+    "act:cleanup": "bun ./scripts/act-with-webpresso.ts cleanup",
+    "act:e2e": "bun ./scripts/act-with-webpresso.ts e2e",
+    "act:list": "bun ./scripts/act-with-webpresso.ts list",
     "build": "vp run build",
     "catalog:check": "bun ./scripts/run-webpresso-cli.ts agent audit catalog-drift",
     "check": "vp check",

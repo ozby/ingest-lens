@@ -1,11 +1,11 @@
 ---
 type: blueprint
 title: Adopt public Webpresso CI secret surfaces
-status: planned
+status: completed
 complexity: M
 created: "2026-05-23"
-last_updated: "2026-05-23"
-progress: "0% (planned; waiting on upstream public ci/secret surfaces)"
+last_updated: "2026-05-24"
+progress: "Completed 2026-05-24; IngestLens keeps presets only and delegates to wp ci act"
 owner: ozby
 depends_on: []
 tags:
@@ -33,9 +33,10 @@ workflow/profile behavior and keeping repo-local code limited to preset data.
   `secret-aware-worker-tail-mcp` must first land with corrected public
   secret-gate assumptions and public `webpresso/ci-*`-style exports (or
   equivalent public helper surfaces).
-- Current local baseline: `scripts/act-with-doppler.ts` and
-  `scripts/act-secret-profile.ts` already model the behavior we want to carry
-  forward as preset data rather than engine code.
+- Current implementation: `scripts/act-with-webpresso.ts` contains only
+  repo-owned preset mapping and delegates execution to `wp ci act` through
+  `scripts/run-webpresso-cli.ts`; `scripts/act-secret-profile.ts` keeps
+  explicit profile metadata.
 
 ## Product wedge anchor
 
@@ -48,12 +49,11 @@ internals.
 
 ```text
 Before
-  package scripts -> scripts/act-with-doppler.ts -> Doppler/act wrapper engine
+  package scripts -> consumer-owned Doppler/temp-file/raw act wrapper engine
   local preset rules and local execution engine live in the same repo
-  adaptation requires mirroring internal Webpresso implementation details
 
 After
-  package scripts -> public webpresso/ci-* surface
+  package scripts -> scripts/act-with-webpresso.ts presets -> wp ci act
   repo keeps only workflow/profile preset data and docs
   provider logic stays behind public Webpresso runtime/secret contracts
 ```
@@ -79,13 +79,9 @@ After
 
 #### [backend] Task 1.1: Replace the local CI wrapper engine with public `webpresso/ci-*`
 
-**Status:** blocked
+**Status:** done
 
 **Depends:** None
-
-**Blocked:** Wait for the upstream public Webpresso package to ship
-`webpresso/ci-act` and `webpresso/ci-preset` (or equivalent public helper
-surfaces) with no dependency on consumer-local `apps/scripts/src/...` paths.
 
 Swap the current local execution engine over to the upstream public helper
 surface. Keep any remaining local code limited to preset data or a thin adapter
@@ -93,7 +89,7 @@ that passes repo-specific workflow/profile definitions into the public API.
 
 **Files:**
 
-- Modify: `scripts/act-with-doppler.ts`
+- Modify: `scripts/act-with-webpresso.ts`
 - Modify: `scripts/act-secret-profile.ts`
 - Modify: `package.json`
 
@@ -107,9 +103,9 @@ that passes repo-specific workflow/profile definitions into the public API.
 
 **Acceptance:**
 
-- [ ] Consumer code no longer depends on a local CI secret-wrapper engine
-- [ ] No consumer code mirrors `apps/scripts/src/...` internal Webpresso paths
-- [ ] Package scripts still expose `act:ci`, `act:e2e`, `act:cleanup`, and `act:list`
+- [x] Consumer code no longer depends on a local CI secret-wrapper engine
+- [x] No consumer code mirrors `apps/scripts/src/...` internal Webpresso paths
+- [x] Package scripts still expose `act:ci`, `act:e2e`, `act:cleanup`, and `act:list`
 
 #### [qa] Task 1.2: Preserve workflow/profile parity during the migration
 
@@ -131,7 +127,7 @@ Current required parity:
 **Files:**
 
 - Modify: `scripts/act-secret-profile.ts`
-- Modify: `scripts/act-with-doppler.test.ts`
+- Modify: `scripts/act-with-webpresso.test.ts`
 
 **Steps (TDD):**
 
@@ -142,9 +138,9 @@ Current required parity:
 
 **Acceptance:**
 
-- [ ] Existing workflow/profile mappings still pass under the new public surface
-- [ ] Allowed keys, required keys, and default sources remain explicit and tested
-- [ ] The focused script test suite remains green
+- [x] Existing workflow/profile mappings still pass under the new public surface
+- [x] Allowed keys, required keys, and default sources remain explicit and tested
+- [x] The focused script test suite remains green
 
 #### [docs] Task 1.3: Update scripts and docs to the public Webpresso surface
 
@@ -170,15 +166,15 @@ Webpresso CI/secret surface rather than the local wrapper engine.
 
 **Acceptance:**
 
-- [ ] Contributor docs describe the public Webpresso CI/secret surface
-- [ ] Docs no longer imply that local CI behavior depends on a bespoke local engine
-- [ ] Docs/frontmatter verification passes
+- [x] Contributor docs describe the public Webpresso CI/secret surface
+- [x] Docs no longer imply that local CI behavior depends on a bespoke local engine
+- [x] Docs/frontmatter verification passes
 
 ## Verification Gates
 
 | Gate                | Command                                                                                                  | Success Criteria |
 | ------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
-| Focused tests       | `bun test scripts/act-with-doppler.test.ts`                                                              | All pass         |
+| Focused tests       | `bun test scripts/act-with-webpresso.test.ts scripts/private-package-proof.test.js`                                                              | All pass         |
 | Docs/frontmatter    | `AK_SKIP_UPDATE_CHECK=1 bun ./scripts/run-webpresso-cli.ts agent audit docs-frontmatter`                 | Pass             |
 | Blueprint lifecycle | `AK_SKIP_UPDATE_CHECK=1 bun ./scripts/run-webpresso-cli.ts agent audit blueprint-lifecycle --legacy-omx` | Pass             |
 

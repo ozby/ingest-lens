@@ -1,366 +1,171 @@
 #!/usr/bin/env bun
 
-import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, isAbsolute, join } from "node:path";
 import process from "node:process";
+import { runWebpressoCli } from "./run-webpresso-cli.ts";
 import {
+  getActSecretProfile,
   isActSecretProfileId,
-  listMissingRequiredSecrets,
-  pickAllowedSecrets,
   resolveActSecretProfile,
   type ActSecretProfile,
+  type ActSecretProfileId,
 } from "./act-secret-profile.ts";
 
-export type DopplerSource = {
-  project: string;
-  config: string;
+export type CiActPresetId = "ci" | "e2e" | "cleanup" | "list";
+
+const FORBIDDEN_PUBLIC_HELPER_FLAGS = new Set([
+  "--secret",
+  "--secret-file",
+  "--secret-source",
+  "--chef-token",
+  "--direct",
+  "--allow-host-mutation",
+  "--allow-local-chef-token",
+  "--bind",
+]);
+
+export interface CiActPreset {
+  id: CiActPresetId;
+  description: string;
+  workflow: string;
+  job?: string;
+  secretProfile: ActSecretProfile;
+}
+
+export interface CiActInvocation {
+  command: "bun";
+  args: string[];
+  preset: CiActPreset;
+}
+
+const CI_ACT_PRESETS: Record<CiActPresetId, Omit<CiActPreset, "secretProfile"> & {
+  secretProfileId: ActSecretProfileId;
+}> = {
+  ci: {
+    id: "ci",
+    description: "Local dry-run/execution preset for the main CI workflow.",
+    workflow: "ci-main",
+    secretProfileId: "none",
+  },
+  e2e: {
+    id: "e2e",
+    description: "Local preset for the act-only e2e workflow.",
+    workflow: "testing-e2e-act",
+    job: "full-suite-local",
+    secretProfileId: "none",
+  },
+  cleanup: {
+    id: "cleanup",
+    description: "Local preset for Neon branch cleanup maintenance.",
+    workflow: "cleanup-stale-neon-e2e-branches",
+    job: "cleanup",
+    secretProfileId: "neon-control-plane",
+  },
+  list: {
+    id: "list",
+    description: "Prepare a public-helper dry-run for the main CI workflow.",
+    workflow: "ci-main",
+    secretProfileId: "none",
+  },
 };
 
-export function parseSecretSource(spec: string): DopplerSource {
-  const [project, config] = spec.split(":");
-  if (!project || !config) {
-    throw new Error(`Invalid secret source "${spec}". Expected <project>:<config>.`);
-  }
-  return { project, config };
+export function getCiActPreset(id: CiActPresetId): CiActPreset {
+  const preset = CI_ACT_PRESETS[id];
+  return {
+    id: preset.id,
+    description: preset.description,
+    workflow: preset.workflow,
+    job: preset.job,
+    secretProfile: getActSecretProfile(preset.secretProfileId),
+  };
 }
 
-export function parseDopplerSource(spec: string): DopplerSource {
-  const [project, config] = spec.split(":");
-  if (!project || !config) {
-    throw new Error(`Invalid Doppler source "${spec}". Expected <project>:<config>.`);
-  }
-  return { project, config };
+export function listCiActPresets(): CiActPreset[] {
+  return (Object.keys(CI_ACT_PRESETS) as CiActPresetId[]).map(getCiActPreset);
 }
 
-export function injectDefaultActArgs(
-  args: string[],
-  platform = process.platform,
-  arch = process.arch,
-): string[] {
-  const hasArchitectureFlag = args.includes("--container-architecture");
-  if (platform === "darwin" && arch === "arm64" && !hasArchitectureFlag) {
-    return ["--container-architecture", "linux/amd64", ...args];
-  }
-  return args;
+function isCiActPresetId(value: string): value is CiActPresetId {
+  return value in CI_ACT_PRESETS;
 }
 
-export function extractAbsoluteFileDependencyDirectories(
-  manifests: Array<Record<string, unknown>>,
-): string[] {
-  const directories = new Set<string>();
-  const dependencyKeys = [
-    "dependencies",
-    "devDependencies",
-    "optionalDependencies",
-    "peerDependencies",
-  ] as const;
-
-  for (const manifest of manifests) {
-    for (const dependencyKey of dependencyKeys) {
-      const dependencies = manifest[dependencyKey];
-      if (!dependencies || typeof dependencies !== "object" || Array.isArray(dependencies)) {
-        continue;
-      }
-
-      for (const value of Object.values(dependencies)) {
-        if (typeof value !== "string" || !value.startsWith("file:")) {
-          continue;
-        }
-        const filePath = value.slice("file:".length);
-        if (!isAbsolute(filePath)) {
-          continue;
-        }
-        directories.add(dirname(filePath));
-      }
-    }
-  }
-
-  return [...directories].sort();
-}
-
-export function injectContainerMountArgs(args: string[], mountDirectories: string[]): string[] {
-  if (mountDirectories.length === 0) {
-    return args;
-  }
-
-  const mountFlags = mountDirectories
-    .map((directory) => `-v ${directory}:${directory}:ro`)
-    .join(" ");
-  const nextArgs = [...args];
-  const containerOptionsIndex = nextArgs.findIndex((arg) => arg === "--container-options");
-
-  if (containerOptionsIndex >= 0 && nextArgs[containerOptionsIndex + 1]) {
-    nextArgs[containerOptionsIndex + 1] =
-      `${nextArgs[containerOptionsIndex + 1]} ${mountFlags}`.trim();
-    return nextArgs;
-  }
-
-  return ["--container-options", mountFlags, ...nextArgs];
-}
-
-export function normalizeActSecrets(
-  secretMaps: Array<Record<string, string>>,
-): Record<string, string> {
-  return normalizeActSecretsWithOptions(secretMaps, { mapGithubPatToToken: false });
-}
-
-export function normalizeActSecretsWithOptions(
-  secretMaps: Array<Record<string, string>>,
-  options: { mapGithubPatToToken: boolean },
-): Record<string, string> {
-  const merged: Record<string, string> = {};
-
-  for (const secretMap of secretMaps) {
-    for (const [key, value] of Object.entries(secretMap)) {
-      if (value.length > 0) {
-        merged[key] = value;
-      }
-    }
-  }
-
-  if (options.mapGithubPatToToken && !merged.GITHUB_TOKEN && merged.GITHUB_PAT) {
-    merged.GITHUB_TOKEN = merged.GITHUB_PAT;
-  }
-
-  return merged;
-}
-
-export function renderSecretsFile(secretMap: Record<string, string>): string {
-  return Object.entries(secretMap)
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
-    .join("\n");
-}
-
-function assertBinary(name: string, installHint: string): void {
-  try {
-    execFileSync(name, ["--version"], { stdio: "ignore" });
-  } catch {
-    console.error(`\n❌  ${name} not found. ${installHint}\n`);
-    process.exit(1);
-  }
-}
-
-interface ParsedArgState {
-  actArgs: string[];
-  strictSecrets: boolean;
-  explicitSources: DopplerSource[];
-  explicitProfileId: ActSecretProfile["id"] | undefined;
-  workflowPath: string | undefined;
-  jobName: string | undefined;
-}
-
-function processCustomFlag(state: ParsedArgState, argv: string[], index: number): number | null {
-  const arg = argv[index];
-  if (arg === "--strict-secrets") {
-    state.strictSecrets = true;
-    return index;
-  }
-  if (arg === "--secret-source") {
-    const spec = argv[index + 1];
-    if (!spec) throw new Error("--secret-source requires a value like <project>:<config>.");
-    state.explicitSources.push(parseSecretSource(spec));
-    return index + 1;
-  }
-  if (arg === "--secret-profile") {
-    const profileId = argv[index + 1];
-    if (!profileId || !isActSecretProfileId(profileId)) {
-      throw new Error("--secret-profile requires one of: none, github-api, neon-control-plane.");
-    }
-    state.explicitProfileId = profileId;
-    return index + 1;
-  }
-  if (arg === "--secret-file") {
-    throw new Error(
-      "Do not pass --secret-file directly to act-with-webpresso.ts. It generates the file automatically.",
+function printPresetList(): void {
+  for (const preset of listCiActPresets()) {
+    const job = preset.job ? ` job=${preset.job}` : "";
+    console.log(
+      `${preset.id}\tworkflow=${preset.workflow}${job}\tprofile=${preset.secretProfile.id}`,
     );
   }
-  return null;
 }
 
-function processOneArg(state: ParsedArgState, argv: string[], index: number): number {
-  const customResult = processCustomFlag(state, argv, index);
-  if (customResult !== null) return customResult;
-  const arg = argv[index];
-  if ((arg === "-W" || arg === "--workflows") && argv[index + 1]) {
-    state.workflowPath = argv[index + 1];
-  }
-  if ((arg === "-j" || arg === "--job") && argv[index + 1]) {
-    state.jobName = argv[index + 1];
-  }
-  state.actArgs.push(arg);
-  return index;
-}
-
-function parseCliArgs(argv: string[]): {
-  actArgs: string[];
-  strictSecrets: boolean;
-  sources: DopplerSource[];
-  secretProfile: ActSecretProfile;
-} {
-  const state: ParsedArgState = {
-    actArgs: [],
-    strictSecrets: false,
-    explicitSources: [],
-    explicitProfileId: undefined,
-    workflowPath: undefined,
-    jobName: undefined,
-  };
-
-  for (let index = 0; index < argv.length; index += 1) {
-    index = processOneArg(state, argv, index);
+export function buildCiActInvocation(argv: readonly string[]): CiActInvocation {
+  const [presetArg = "ci", ...rest] = argv;
+  if (!isCiActPresetId(presetArg)) {
+    throw new Error(
+      `Unknown CI act preset "${presetArg}". Expected one of: ${Object.keys(CI_ACT_PRESETS).join(", ")}.`,
+    );
   }
 
-  const secretProfile = resolveActSecretProfile({
-    workflowPath: state.workflowPath,
-    jobName: state.jobName,
-    explicitProfileId: state.explicitProfileId,
-  });
+  const preset = getCiActPreset(presetArg);
+  const args = ["./scripts/run-webpresso-cli.ts", "ci", "act", "--workflow", preset.workflow];
+
+  if (preset.job) args.push("--job", preset.job);
+  if (preset.secretProfile.id !== "none") args.push("--env-profile", preset.secretProfile.id);
+  let execute = presetArg !== "list";
+  for (let index = 0; index < rest.length; index += 1) {
+    const arg = rest[index];
+    if (arg === "--dry-run") {
+      execute = false;
+      continue;
+    }
+    if (arg === "--execute") {
+      execute = true;
+      continue;
+    }
+    if (arg === "--secret-profile") {
+      const profileId = rest[index + 1];
+      if (!profileId || !isActSecretProfileId(profileId)) {
+        throw new Error("--secret-profile requires one of: none, github-api, neon-control-plane.");
+      }
+      const resolved = resolveActSecretProfile({ explicitProfileId: profileId });
+      if (resolved.id !== preset.secretProfile.id) {
+        throw new Error(
+          `Preset ${preset.id} owns profile ${preset.secretProfile.id}; refusing override to ${resolved.id}.`,
+        );
+      }
+      index += 1;
+      continue;
+    }
+    if (FORBIDDEN_PUBLIC_HELPER_FLAGS.has(arg) || arg.startsWith("--secret=") || arg.startsWith("--secret-file=") || arg.startsWith("--secret-source=") || arg.startsWith("--chef-token=")) {
+      throw new Error(
+        `${arg} is not accepted by IngestLens presets; use the public wp ci act secret gate.`,
+      );
+    }
+    args.push(arg);
+  }
+
+  if (execute) args.push("--execute");
 
   return {
-    actArgs: state.actArgs,
-    strictSecrets: state.strictSecrets,
-    sources: resolveDopplerSources(secretProfile, state.explicitSources),
-    secretProfile,
+    command: "bun",
+    args,
+    preset,
   };
 }
 
-function resolveDopplerSources(
-  secretProfile: ActSecretProfile,
-  explicitSources: readonly DopplerSource[],
-): DopplerSource[] {
-  if (explicitSources.length > 0) {
-    return [...explicitSources];
-  }
-
-  if (secretProfile.allowedKeys.length === 0) {
-    return [];
-  }
-
-  const envSources = process.env.ACT_DOPPLER_SOURCES?.split(",")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .map(parseSecretSource);
-  if ((envSources?.length ?? 0) > 0) {
-    return envSources ?? [];
-  }
-
-  return secretProfile.defaultSources.map(parseSecretSource);
-}
-
-function loadDopplerSecrets(
-  source: DopplerSource,
-  allowedKeys: readonly string[],
-): Record<string, string> | null {
-  try {
-    const output = execFileSync(
-      "doppler",
-      [
-        "secrets",
-        "download",
-        "--project",
-        source.project,
-        "--config",
-        source.config,
-        "--no-file",
-        "--format",
-        "json",
-      ],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+export function main(argv = process.argv.slice(2)): void {
+  if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h") {
+    console.log(
+      "Usage: bun ./scripts/act-with-webpresso.ts <ci|e2e|cleanup|list> [--dry-run|--execute]",
     );
-    return pickAllowedSecrets(JSON.parse(output) as Record<string, string>, allowedKeys);
-  } catch (error) {
-    const reason = error instanceof Error ? error.message.split("\n")[0] : String(error);
-    console.warn(`⚠️  Skipping Doppler source ${source.project}:${source.config} (${reason})`);
-    return null;
-  }
-}
-
-function loadAmbientSecrets(allowedKeys: readonly string[]): Record<string, string> {
-  return pickAllowedSecrets(process.env as Record<string, string>, allowedKeys);
-}
-
-function loadManifestObjects(): Array<Record<string, unknown>> {
-  const manifests: Array<Record<string, unknown>> = [];
-  const manifestPaths = [
-    "package.json",
-    ...["apps", "packages"].flatMap((directory) =>
-      readdirSync(directory, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => join(directory, entry.name, "package.json")),
-    ),
-    join("infra", "package.json"),
-  ];
-
-  for (const manifestPath of manifestPaths) {
-    try {
-      manifests.push(JSON.parse(readFileSync(manifestPath, "utf8")) as Record<string, unknown>);
-    } catch {
-      // ignore missing/non-JSON manifests
-    }
+    console.log("\nPresets:");
+    printPresetList();
+    return;
   }
 
-  return manifests;
-}
-
-export function main(): void {
-  const { actArgs, strictSecrets, sources, secretProfile } = parseCliArgs(process.argv.slice(2));
-  assertBinary("act", "Install via: brew install act");
-  if (sources.length > 0) {
-    assertBinary("doppler", "Install via: brew install dopplerhq/cli/doppler");
-  }
-
-  const dopplerResults = sources.map((source) =>
-    loadDopplerSecrets(source, secretProfile.allowedKeys),
+  const invocation = buildCiActInvocation(argv);
+  console.error(
+    `▶ wp ci act preset=${invocation.preset.id} workflow=${invocation.preset.workflow} profile=${invocation.preset.secretProfile.id}`,
   );
-  if (strictSecrets && dopplerResults.some((result) => result === null)) {
-    process.exit(1);
-  }
-
-  const secretMap = normalizeActSecretsWithOptions(
-    [
-      ...dopplerResults.filter((result): result is Record<string, string> => result !== null),
-      loadAmbientSecrets(secretProfile.allowedKeys),
-    ],
-    {
-      mapGithubPatToToken:
-        secretProfile.id === "github-api" && process.env.ACT_MAP_GITHUB_PAT === "1",
-    },
-  );
-  const missingRequiredKeys = listMissingRequiredSecrets(secretMap, secretProfile.requiredKeys);
-  if (strictSecrets && missingRequiredKeys.length > 0) {
-    console.error(
-      `\n❌  Missing required secrets for profile "${secretProfile.id}": ${missingRequiredKeys.join(", ")}\n`,
-    );
-    process.exit(1);
-  }
-
-  const tempDirectory = mkdtempSync(join(tmpdir(), "act-secrets-"));
-  const secretFile = join(tempDirectory, "secrets.env");
-
-  try {
-    writeFileSync(secretFile, `${renderSecretsFile(secretMap)}\n`, "utf8");
-    const mountDirectories = extractAbsoluteFileDependencyDirectories(loadManifestObjects());
-    const finalArgs = [
-      ...injectContainerMountArgs(injectDefaultActArgs(actArgs), mountDirectories),
-      "--secret-file",
-      secretFile,
-    ];
-    console.error(
-      `▶ act ${finalArgs.join(" ")}\n  secret profile: ${secretProfile.id}\n  injected secrets: ${Object.keys(secretMap).sort().join(", ") || "(none)"}`,
-    );
-
-    const result = spawnSync("act", finalArgs, {
-      stdio: "inherit",
-      shell: false,
-    });
-
-    process.exit(result.status ?? 1);
-  } finally {
-    rmSync(tempDirectory, { recursive: true, force: true });
-  }
+  process.exit(runWebpressoCli(invocation.args.slice(1)));
 }
 
 if (import.meta.main) {

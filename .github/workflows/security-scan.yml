@@ -37,6 +37,7 @@ jobs:
         uses: ./.github/actions/detect-webpresso-package-token
         with:
           gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          trusted-context: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
       - name: Setup monorepo dependencies
         if: ${{ steps.detect.outputs.has_packages_token == 'true' }}
@@ -51,4 +52,4 @@ jobs:
       - name: Secretlint skipped (token missing or no package access)
         if: ${{ steps.detect.outputs.has_packages_token != 'true' }}
         run: |
-          echo "GH_PACKAGES_TOKEN is missing or cannot download @webpresso packages; skipping dependency-backed secretlint step."
+          echo "Fork PR is non-authoritative for private packages; skipping dependency-backed secretlint step."

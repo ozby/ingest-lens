@@ -6,11 +6,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  token-gate:
+    name: Prove private package auth
+    runs-on: ubuntu-latest
+    outputs:
+      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Prove GH_PACKAGES_TOKEN can fetch lockfile private packages
+        id: detect
+        uses: ./.github/actions/detect-webpresso-package-token
+        with:
+          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          trusted-context: "true"
+
   cleanup:
+    needs: token-gate
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
       HAS_DIRECT_NEON_SECRETS: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' && secrets.NEON_PARENT_BRANCH_ID != '' && '1' || '' }}
 
@@ -24,7 +44,7 @@ jobs:
       - name: Enable Corepack pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@10.33.0 --activate
+          corepack prepare pnpm@11.1.1 --activate
 
       - uses: oven-sh/setup-bun@v2
         with:

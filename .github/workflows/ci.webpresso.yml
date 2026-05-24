@@ -9,7 +9,7 @@ env:
   # Opt the workflow's JavaScript actions into Node.js 24 ahead of the
   # 2026-06-02 GitHub default switch (replaces the deprecation warning
   # surfaced by actions/checkout@v4, actions/setup-node@v4, and
-  # pnpm/action-setup@v4 internally running on Node 20).
+  # legacy package-manager setup actions running on Node 20).
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   # Authenticate to GitHub Packages so `pnpm install --frozen-lockfile`
   # can fetch @webpresso/* scoped deps (e.g. @webpresso/runtime-*,
@@ -32,6 +32,7 @@ jobs:
         uses: ./.github/actions/detect-webpresso-package-token
         with:
           gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          trusted-context: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
   check:
     if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
@@ -39,17 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24"
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@webpresso"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-monorepo
       - run: pnpm run typecheck
       - run: pnpm run lint
 
@@ -59,17 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24"
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@webpresso"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-monorepo
       - run: pnpm run test
 
   wp-audits:
@@ -78,17 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24"
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@webpresso"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-monorepo
       - name: Run wp audit guardrails
         run: |
           WP="$(pwd)/node_modules/.bin/wp"

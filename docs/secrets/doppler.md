@@ -192,22 +192,19 @@ fallback for bootstrap or migration periods.
 | Download secrets as `.env` | `doppler secrets download --no-file --format env` |
 
 The local workflow scripts (`pnpm act:ci`, `pnpm act:e2e`, `pnpm act:cleanup`,
-and `pnpm act:list`) expand through `scripts/act-with-webpresso.ts`, which:
-
-- infers a least-privilege secret profile from the target workflow/job,
-- only contacts Doppler when that profile actually needs managed secrets,
-- filters injected values to the profile allowlist,
-- never forwards `DOPPLER_SERVICE_TOKEN` or `DOPPLER_TOKEN` into the `act` container,
-- can opt into `GITHUB_PAT` → `GITHUB_TOKEN` mapping with `ACT_MAP_GITHUB_PAT=1`
-  for the `github-api` profile,
-- mounts absolute local `file:/...` package sources into the act job container,
-- and injects the result into `act` via a temporary `--secret-file`.
+and `pnpm act:list`) now keep only IngestLens preset policy in
+`scripts/act-with-webpresso.ts` and delegate execution to the public
+`wp ci act` surface via `scripts/run-webpresso-cli.ts`. The repo-owned preset
+layer selects workflow/job/profile defaults; it does not load Doppler secrets,
+create temporary secret files, alias PATs, or assemble raw `act` argv. Secret
+loading/redaction belongs to the Webpresso helper contract.
 
 The GitHub workflows themselves now use the Node 24-native action majors
 (`actions/checkout@v6`, `actions/setup-node@v6`) and activate pnpm with
-Corepack (`corepack prepare pnpm@10.33.0 --activate`) instead of
-`pnpm/action-setup`. This removes the remaining Node 20 deprecation warning
-path while keeping local `act` runs and hosted runners aligned.
+Corepack (`corepack prepare pnpm@11.1.1 --activate`) instead of
+legacy package-manager setup actions. This matches `packageManager` and removes the remaining
+Node 20 deprecation warning path while keeping local `act` runs and hosted
+runners aligned.
 
 Current `act` profiles:
 
@@ -219,11 +216,7 @@ Current `act` profiles:
 Override inference explicitly when needed:
 
 ```bash
-bun ./scripts/act-with-webpresso.ts \
-  --secret-profile neon-control-plane \
-  workflow_dispatch \
-  -W .github/workflows/cleanup-stale-neon-e2e-branches.yml \
-  -j cleanup
+bun ./scripts/act-with-webpresso.ts cleanup --dry-run
 ```
 
 ---

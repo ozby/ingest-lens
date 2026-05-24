@@ -18,9 +18,15 @@ const suite = process.argv.includes("--suite")
   ? process.argv[process.argv.indexOf("--suite") + 1]
   : "auth";
 
-// ── Load secrets from Doppler ──────────────────────────────────────────
-const dopplerEnv = await doppler({ project: "ozby-shell", config: "dev" }).load();
-const neonConfig = getNeonConfig(dopplerEnv);
+function hasAmbientNeonSecrets(env: NodeJS.ProcessEnv): boolean {
+  return Boolean(env.NEON_API_KEY && env.NEON_PROJECT_ID && env.NEON_PARENT_BRANCH_ID);
+}
+
+// ── Load secrets from the already-authorized CI env, falling back to Doppler locally ──
+const secretEnv = hasAmbientNeonSecrets(process.env)
+  ? (process.env as Record<string, string>)
+  : await doppler({ project: "ozby-shell", config: "dev" }).load();
+const neonConfig = getNeonConfig(secretEnv);
 const provider = new NeonBranchProvider(neonConfig);
 
 let branchId: string | null = null;
@@ -100,7 +106,7 @@ try {
 
   // ── 3. Start wrangler dev ─────────────────────────────────────────
   console.log("🚀 Starting wrangler dev...");
-  const jwtSecret = dopplerEnv.JWT_SECRET ?? "local-dev-jwt-secret";
+  const jwtSecret = secretEnv.JWT_SECRET ?? "local-dev-jwt-secret";
   const worker = spawn(
     "pnpm",
     [

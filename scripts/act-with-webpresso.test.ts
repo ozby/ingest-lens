@@ -6,48 +6,11 @@ import {
   pickAllowedSecrets,
   resolveActSecretProfile,
 } from "./act-secret-profile.ts";
-import {
-  extractAbsoluteFileDependencyDirectories,
-  injectContainerMountArgs,
-  injectDefaultActArgs,
-  normalizeActSecrets,
-  normalizeActSecretsWithOptions,
-  parseDopplerSource,
-  parseSecretSource,
-  renderSecretsFile,
-} from "./act-with-webpresso.ts";
-
-describe("parseDopplerSource", () => {
-  it("parses project and config", () => {
-    expect(parseDopplerSource("ozby-shell:dev")).toEqual({
-      project: "ozby-shell",
-      config: "dev",
-    });
-  });
-
-  it("rejects malformed specs", () => {
-    expect(() => parseDopplerSource("ozby-shell")).toThrow(
-      'Invalid Doppler source "ozby-shell". Expected <project>:<config>.',
-    );
-  });
-});
-
-describe("parseSecretSource", () => {
-  it("parses project and config", () => {
-    expect(parseSecretSource("ozby-shell:dev")).toEqual({
-      project: "ozby-shell",
-      config: "dev",
-    });
-  });
-});
+import { buildCiActInvocation, getCiActPreset, listCiActPresets } from "./act-with-webpresso.ts";
 
 describe("act secret profiles", () => {
   it("defaults local CI and local E2E workflows to zero injected secrets", () => {
-    expect(
-      resolveActSecretProfile({
-        workflowPath: ".github/workflows/ci.yml",
-      }).id,
-    ).toBe("none");
+    expect(resolveActSecretProfile({ workflowPath: ".github/workflows/ci.yml" }).id).toBe("none");
     expect(
       resolveActSecretProfile({
         workflowPath: ".github/workflows/testing-e2e-act.yml",
@@ -90,95 +53,50 @@ describe("act secret profiles", () => {
   });
 });
 
-describe("injectDefaultActArgs", () => {
-  it("adds linux/amd64 on Apple silicon when missing", () => {
-    expect(injectDefaultActArgs(["-l"], "darwin", "arm64")).toEqual([
-      "--container-architecture",
-      "linux/amd64",
-      "-l",
+describe("CI act presets", () => {
+  it("keeps repo-owned policy as presets only", () => {
+    expect(listCiActPresets().map((preset) => [preset.id, preset.workflow, preset.secretProfile.id])).toEqual([
+      ["ci", "ci-main", "none"],
+      ["e2e", "testing-e2e-act", "none"],
+      ["cleanup", "cleanup-stale-neon-e2e-branches", "neon-control-plane"],
+      ["list", "ci-main", "none"],
     ]);
   });
 
-  it("does not duplicate an explicit architecture", () => {
-    expect(
-      injectDefaultActArgs(["--container-architecture", "linux/arm64", "-l"], "darwin", "arm64"),
-    ).toEqual(["--container-architecture", "linux/arm64", "-l"]);
-  });
-});
-
-describe("extractAbsoluteFileDependencyDirectories", () => {
-  it("collects unique absolute file dependency parent directories", () => {
-    expect(
-      extractAbsoluteFileDependencyDirectories([
-        {
-          dependencies: {
-            a: "file:/Users/test/.agent-kit-packs/a.tgz",
-            b: "workspace:*",
-          },
-        },
-        {
-          devDependencies: {
-            c: "file:/Users/test/.agent-kit-packs/c.tgz",
-            d: "file:/opt/shared/d.tgz",
-          },
-        },
-      ]),
-    ).toEqual(["/Users/test/.agent-kit-packs", "/opt/shared"]);
-  });
-});
-
-describe("injectContainerMountArgs", () => {
-  it("prepends mount flags when no container options exist", () => {
-    expect(injectContainerMountArgs(["push"], ["/Users/test/.agent-kit-packs"])).toEqual([
-      "--container-options",
-      "-v /Users/test/.agent-kit-packs:/Users/test/.agent-kit-packs:ro",
-      "push",
+  it("builds a public wp ci act invocation instead of raw act args", () => {
+    expect(buildCiActInvocation(["cleanup"]).args).toEqual([
+      "./scripts/run-webpresso-cli.ts",
+      "ci",
+      "act",
+      "--workflow",
+      "cleanup-stale-neon-e2e-branches",
+      "--job",
+      "cleanup",
+      "--env-profile",
+      "neon-control-plane",
+      "--execute",
     ]);
   });
 
-  it("appends mount flags to existing container options", () => {
-    expect(
-      injectContainerMountArgs(
-        ["--container-options", "--cpus 2", "push"],
-        ["/Users/test/.agent-kit-packs"],
-      ),
-    ).toEqual([
-      "--container-options",
-      "--cpus 2 -v /Users/test/.agent-kit-packs:/Users/test/.agent-kit-packs:ro",
-      "push",
-    ]);
-  });
-});
-
-describe("normalizeActSecrets", () => {
-  it("merges sources without aliasing GITHUB_PAT by default", () => {
-    expect(
-      normalizeActSecrets([{ NEON_API_KEY: "neon-key" }, { GITHUB_PAT: "pat-value" }]),
-    ).toEqual({
-      GITHUB_PAT: "pat-value",
-      NEON_API_KEY: "neon-key",
-    });
+  it("passes cleanup secret profile to the public helper", () => {
+    expect(buildCiActInvocation(["cleanup", "--dry-run"]).args).toContain("neon-control-plane");
   });
 
-  it("aliases GITHUB_PAT to GITHUB_TOKEN when explicitly requested", () => {
-    expect(
-      normalizeActSecretsWithOptions([{ GITHUB_PAT: "pat-value" }], {
-        mapGithubPatToToken: true,
-      }),
-    ).toEqual({
-      GITHUB_PAT: "pat-value",
-      GITHUB_TOKEN: "pat-value",
-    });
+  it("allows dry-runs without changing preset ownership", () => {
+    expect(buildCiActInvocation(["e2e", "--dry-run"]).args).not.toContain("--execute");
+    expect(getCiActPreset("e2e").secretProfile.id).toBe("none");
   });
-});
 
-describe("renderSecretsFile", () => {
-  it("renders dotenv-compatible key=value lines", () => {
-    expect(
-      renderSecretsFile({
-        BETA: "two",
-        ALPHA: "one",
-      }),
-    ).toBe('ALPHA="one"\nBETA="two"');
+  it("rejects provider-specific secret files, unsafe helper flags, and profile overrides", () => {
+    expect(() => buildCiActInvocation(["cleanup", "--secret-file", "/tmp/secrets"])).toThrow(
+      "--secret-file is not accepted",
+    );
+    for (const flag of ["--chef-token", "--direct", "--allow-host-mutation", "--allow-local-chef-token", "--bind"]) {
+      expect(() => buildCiActInvocation(["ci", flag])).toThrow("is not accepted");
+    }
+    expect(() => buildCiActInvocation(["ci", "--chef-token=top-secret"])).toThrow("is not accepted");
+    expect(() => buildCiActInvocation(["ci", "--secret-profile", "neon-control-plane"])).toThrow(
+      "refusing override",
+    );
   });
 });

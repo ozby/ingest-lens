@@ -25,11 +25,18 @@ jobs:
       - name: Enable Corepack pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@10.33.0 --activate
+          corepack prepare pnpm@11.1.1 --activate
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+
+      - name: Prove private package auth
+        uses: ./.github/actions/detect-webpresso-package-token
+        with:
+          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+          trusted-context: "true"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

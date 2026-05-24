@@ -12,7 +12,7 @@ pnpm --filter @repo/e2e run auth:dev-bench   # against deployed dev.ingest-lens.
 
 The root `pnpm e2e` script (`apps/e2e/scripts/e2e-with-neon.ts`):
 
-1. Loads secrets from Doppler
+1. Uses already-injected Neon/JWT env vars in CI, or falls back to Doppler locally
 2. Creates an ephemeral Neon branch (1h TTL)
 3. Runs migrations
 4. Starts `wrangler dev`
@@ -47,7 +47,7 @@ and protected-route redirect back to the auth landing page.
 
 ## Neon branch helpers
 
-All require Doppler-injected secrets:
+All require Neon control-plane secrets. CI injects them before invoking the runner; local runs may still use Doppler:
 
 ```bash
 with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:create
