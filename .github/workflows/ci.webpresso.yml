@@ -17,9 +17,25 @@ env:
   # ${GH_PACKAGES_TOKEN}; without this env entry the substitution becomes
   # empty and pnpm gets 401 Unauthorized on any @webpresso/* dep.
   GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+  NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
 jobs:
+  token-gate:
+    name: Detect package token
+    runs-on: ubuntu-latest
+    outputs:
+      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Detect GH_PACKAGES_TOKEN package access
+        id: detect
+        uses: ./.github/actions/detect-webpresso-package-token
+        with:
+          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+
   check:
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -28,6 +44,8 @@ jobs:
         with:
           node-version: "24"
           cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: "@webpresso"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -36,6 +54,8 @@ jobs:
       - run: pnpm run lint
 
   test:
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -44,6 +64,8 @@ jobs:
         with:
           node-version: "24"
           cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: "@webpresso"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -51,6 +73,8 @@ jobs:
       - run: pnpm run test
 
   wp-audits:
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -59,6 +83,8 @@ jobs:
         with:
           node-version: "24"
           cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: "@webpresso"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest

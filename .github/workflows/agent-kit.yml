@@ -5,7 +5,25 @@ on:
     branches: [main]
 
 jobs:
+  token-gate:
+    name: Detect package token
+    runs-on: ubuntu-latest
+    outputs:
+      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Detect GH_PACKAGES_TOKEN package access
+        id: detect
+        uses: ./.github/actions/detect-webpresso-package-token
+        with:
+          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+
   agent-kit:
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     uses: webpresso/agent-kit-action/.github/workflows/audit.yml@v1
+    secrets: inherit
     with:
       pr-comment: ${{ github.event_name == 'pull_request' }}

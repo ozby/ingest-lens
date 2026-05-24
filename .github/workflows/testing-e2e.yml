@@ -6,14 +6,32 @@ on:
   pull_request:
 
 jobs:
+  token-gate:
+    name: Detect package token
+    runs-on: ubuntu-latest
+    outputs:
+      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Detect GH_PACKAGES_TOKEN package access
+        id: detect
+        uses: ./.github/actions/detect-webpresso-package-token
+        with:
+          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+
   full-suite:
     # Fork-PR safety: only run on push-to-main or same-repo PRs.
-    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) && needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6
@@ -21,6 +39,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: "@webpresso"
 
       - name: Enable Corepack pnpm
         run: |
