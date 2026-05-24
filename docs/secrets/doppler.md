@@ -192,8 +192,7 @@ fallback for bootstrap or migration periods.
 | Download secrets as `.env` | `doppler secrets download --no-file --format env` |
 
 The local workflow scripts (`pnpm act:ci`, `pnpm act:e2e`, `pnpm act:cleanup`,
-and `pnpm act:list`) expand through `scripts/act-with-webpresso.ts` (legacy
-`act-with-doppler.ts` remains as a thin compatibility wrapper), which:
+and `pnpm act:list`) expand through `scripts/act-with-webpresso.ts`, which:
 
 - infers a least-privilege secret profile from the target workflow/job,
 - only contacts Doppler when that profile actually needs managed secrets,

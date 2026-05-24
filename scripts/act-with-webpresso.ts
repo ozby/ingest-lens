@@ -164,12 +164,6 @@ function processCustomFlag(state: ParsedArgState, argv: string[], index: number)
     state.explicitSources.push(parseSecretSource(spec));
     return index + 1;
   }
-  if (arg === "--doppler-source") {
-    const spec = argv[index + 1];
-    if (!spec) throw new Error("--doppler-source requires a value like <project>:<config>.");
-    state.explicitSources.push(parseSecretSource(spec));
-    return index + 1;
-  }
   if (arg === "--secret-profile") {
     const profileId = argv[index + 1];
     if (!profileId || !isActSecretProfileId(profileId)) {
@@ -180,7 +174,7 @@ function processCustomFlag(state: ParsedArgState, argv: string[], index: number)
   }
   if (arg === "--secret-file") {
     throw new Error(
-      "Do not pass --secret-file directly to act-with-doppler.ts. It generates the file automatically.",
+      "Do not pass --secret-file directly to act-with-webpresso.ts. It generates the file automatically.",
     );
   }
   return null;
