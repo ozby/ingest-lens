@@ -44,9 +44,9 @@ Deploy the SPA as a pure-static Cloudflare Workers Assets Worker:
 - The API Worker (`apps/workers/`) gains per-env `ALLOWED_ORIGIN` vars and
   exact-origin CORS middleware so browser `fetch()` calls to
   `api.dev.ingest-lens.ozby.dev` are permitted from `dev.ingest-lens.ozby.dev`.
-- `VITE_API_BASE_URL` is injected at build time via Vite mode-specific env
-  files (`.env.dev` / `.env.prd`), consumed as
-  `import.meta.env.VITE_API_BASE_URL` in the API service.
+- `VITE_API_BASE_URL` is injected at build time through the Vite env surface
+  (`import.meta.env.VITE_API_BASE_URL`) using the active mode and/or shell
+  environment; no repo-local `.env.dev` / `.env.prd` files are required.
 - `infra/src/deploy/deploy.ts` is extended with a Phase 4 that builds and
   deploys the client Worker immediately after the API Worker.
 

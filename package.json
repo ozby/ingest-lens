@@ -1,10 +1,7 @@
 {
-  "name": "ozbys-node-pubsub",
+  "name": "ingest-lens",
   "private": true,
   "type": "module",
-  "imports": {
-    "#generated/*": "./.webpresso/generated/*"
-  },
   "scripts": {
     "act:ci": "bun ./scripts/act-with-webpresso.ts push -W .github/workflows/ci.yml",
     "act:cleanup": "bun ./scripts/act-with-webpresso.ts workflow_dispatch -W .github/workflows/cleanup-stale-neon-e2e-branches.yml -j cleanup",
@@ -16,7 +13,7 @@
     "clean": "vp run clean",
     "client:bundle:check": "WP_SKIP_UPDATE_CHECK=1 wp audit bundle-budget apps/client/dist --max-js-asset-bytes 512000 --max-html-eager-js-asset-bytes 262144 --max-html-eager-js-total-bytes 393216",
     "dev": "doppler run --project ozby-shell --config dev -- vp run dev",
-    "dev:no-doppler": "vp run dev",
+    "dev:offline": "vp run dev",
     "format": "vp fmt",
     "format:check": "vp fmt --check",
     "lint": "vp run lint",
