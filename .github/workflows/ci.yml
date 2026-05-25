@@ -66,6 +66,22 @@ jobs:
       - uses: ./.github/actions/setup-monorepo
       - run: pnpm test
 
+  guardrails:
+    name: Guardrails
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    runs-on: ubuntu-latest
+    needs: [token-gate, setup]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-monorepo
+      - name: Run wp audit guardrails
+        run: |
+          WP="$(pwd)/node_modules/.bin/wp"
+          [ -x "$WP" ] || WP=wp
+          "$WP" audit guardrails
+
   catalog-drift:
     name: Catalog drift
     if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
@@ -91,7 +107,7 @@ jobs:
       - run: pnpm blueprints:check
 
   lore-commits:
-    name: Validate Lore commits
+    name: Validate Lore trailers
     if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
     runs-on: ubuntu-latest
     needs: [token-gate, setup]
@@ -112,7 +128,7 @@ jobs:
           FAIL=0
           for SHA in $COMMITS; do
             git log -1 --format="%B" "$SHA" > /tmp/commit-msg.txt
-            WP_SKIP_UPDATE_CHECK=1 wp audit commit-message --lore-warn --message-file /tmp/commit-msg.txt || FAIL=1
+            WP_SKIP_UPDATE_CHECK=1 wp audit commit-message --require-lore --message-file /tmp/commit-msg.txt || FAIL=1
           done
           exit $FAIL
 

@@ -5,21 +5,21 @@ last_updated: "2026-05-23"
 
 # Doppler Secret Management Runbook
 
-This runbook covers the complete setup for the `node-pubsub` Doppler project.
+This runbook covers the complete setup for the `ingest-lens` Doppler project.
 All commands require the [Doppler CLI](https://docs.doppler.com/docs/install-cli) and a Doppler account with access to both projects.
 
 > **Two Doppler projects are used:**
 >
-> - `node-pubsub` — application secrets (MongoDB URI, JWT, ports, etc.)
+> - `ingest-lens` — application secrets (MongoDB URI, JWT, ports, etc.)
 > - `ozby-shell` — infrastructure credentials (`CLOUDFLARE_API_TOKEN`, `PULUMI_ACCESS_TOKEN`, Neon DB connection strings). These are kept in a separate project because they are shared across multiple repos and scoped to an operator account rather than a single application.
 
 ---
 
-## 1. Create the `node-pubsub` Project in Doppler
+## 1. Create the `ingest-lens` Project in Doppler
 
 1. Log in to [dashboard.doppler.com](https://dashboard.doppler.com).
 2. Select your workspace (or create one).
-3. Click **+ New Project** → name it `node-pubsub`.
+3. Click **+ New Project** → name it `ingest-lens`.
 4. Doppler auto-creates three default configs: `dev`, `stg`, `prd`. Delete `stg` — we use `preview` instead.
 
 ---
@@ -38,7 +38,7 @@ prd              ← production
 
 To create the `preview` root config and its children in the Doppler dashboard:
 
-1. In the `node-pubsub` project, click **+ Add Config**.
+1. In the `ingest-lens` project, click **+ Add Config**.
 2. Name it `preview` (type: **Branch**).
 3. Add `preview_main` as a branch config under `preview`.
 4. `preview_pr_<n>` configs are created dynamically in Phase 3 (not yet implemented).
@@ -47,7 +47,7 @@ To create the `preview` root config and its children in the Doppler dashboard:
 
 ## 3. Required Secrets per Config
 
-### `node-pubsub` project
+### `ingest-lens` project
 
 | Secret              | `dev`                           | `preview` (root / inherited) | `prd`                        |
 | ------------------- | ------------------------------- | ---------------------------- | ---------------------------- |
@@ -87,7 +87,7 @@ pnpm --filter @repo/infra up:prd
 - `MONGODB_URI` must be set in every config individually — it is never shared.
 - `JWT_SECRET` should be set once at the `preview` root and inherited by child configs; override in `prd` with a separate value.
 - `NODE_ENV`, `API_PORT`, and `NOTIFICATION_PORT` can be set at `preview` root and overridden per-child as needed.
-- All Cloudflare and Pulumi credentials live exclusively in `ozby-shell` — never in `node-pubsub`.
+- All Cloudflare and Pulumi credentials live exclusively in `ozby-shell` — never in `ingest-lens`.
 
 ---
 
@@ -112,13 +112,13 @@ Run once from the repo root (saves `.doppler` config to the directory):
 
 ```bash
 doppler setup
-# Select workspace → node-pubsub → dev
+# Select workspace → ingest-lens → dev
 ```
 
 This writes a `.doppler` directory entry (already in `.gitignore`). You can also pass flags for non-interactive setup:
 
 ```bash
-doppler setup --project node-pubsub --config dev
+doppler setup --project ingest-lens --config dev
 ```
 
 ### 4d. Start the dev server
@@ -134,10 +134,11 @@ To run a command against a non-linked project, pass `--project` explicitly:
 doppler run --project ozby-shell --config dev -- corepack pnpm --filter @repo/infra preview
 ```
 
-To skip Doppler injection (e.g., CI where secrets are pre-loaded into the environment):
+To skip Doppler injection for local/offline debugging (for example, when the
+required values are already present in your shell environment):
 
 ```bash
-pnpm dev:no-doppler
+pnpm dev:offline
 ```
 
 ---
@@ -146,7 +147,7 @@ pnpm dev:no-doppler
 
 **Never use a personal token in CI.** Use a service token scoped to the specific config.
 
-1. In the Doppler dashboard, go to `node-pubsub` → **Access** → **Service Tokens**.
+1. In the Doppler dashboard, go to `ingest-lens` → **Access** → **Service Tokens**.
 2. Click **+ Generate** → select the config (e.g., `preview_main`) → set an expiry.
 3. Copy the token (shown once).
 4. Add it as a secret in your CI provider (GitHub Actions: `Settings → Secrets → DOPPLER_SERVICE_TOKEN`).
@@ -183,7 +184,7 @@ fallback for bootstrap or migration periods.
 | -------------------------- | ------------------------------------------------- |
 | Link local directory       | `doppler setup`                                   |
 | Run dev with secrets       | `pnpm dev`                                        |
-| Run dev without Doppler    | `pnpm dev:no-doppler`                             |
+| Run dev without Doppler    | `pnpm dev:offline`                                |
 | Run local CI workflow      | `pnpm act:ci`                                     |
 | Run local E2E workflow     | `pnpm act:e2e`                                    |
 | Run local cleanup workflow | `pnpm act:cleanup`                                |

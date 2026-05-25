@@ -1,0 +1,5 @@
+{
+  "referenceConsumerBaselines": {
+    "@webpresso/db-branching": "0.2.1"
+  }
+}

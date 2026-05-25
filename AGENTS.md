@@ -93,6 +93,16 @@ architecture decisions in this repo's ADR or planning location if one exists.
 Add repo-local instructions, preferences, and exceptions here. Content inside
 this block is preserved verbatim across `ak sync` runs.
 
+### Tech stack addendum
+
+- Cloudflare Workers + Wrangler
+- React + Vite
+- Vitest
+- TypeScript
+- Pulumi
+- Doppler
+- Webpresso/Agent Kit (`wp`, blueprints, audits)
+
 <!-- <<< user-owned (repo-customizations) -->
 
 <!-- >>> managed by @webpresso/agent-kit (planning-and-release) -->
@@ -177,6 +187,10 @@ Full details: `.agent/rules/package-conventions.md`
 
 ## Escalation map
 
-{{TODO: populate escalation map — who to ping for which subsystem.}}
+- Client UI (`apps/client`, `packages/ui`) — frontend lane owner / UI maintainer
+- Workers API (`apps/workers`) — backend lane owner / Workers maintainer
+- Infra + deploy (`infra`, Wrangler, Pulumi, Doppler) — infrastructure operator
+- E2E + Neon branch tooling (`apps/e2e`) — QA / release lane owner
+- Agent/runtime surfaces (`.agent`, audits, blueprints, CI guardrails) — repo operator
 
 <!-- <<< user-owned (escalation-map) -->
