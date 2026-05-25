@@ -9,6 +9,8 @@ These guarantees describe the **current delivery substrate behind IngestLens**.
 Queues/topics are shipped execution primitives; future intake/mapping features
 must inherit these same guarantees instead of redefining them.
 
+Reviewer-facing proof map: [`guides/claim-e2e-traceability.md`](./guides/claim-e2e-traceability.md).
+
 ## At-least-once delivery
 
 When a message is published to a queue with a `pushEndpoint`, the system guarantees that it will be
@@ -34,6 +36,8 @@ The contract is:
 
 **Implication for receivers:** Your push endpoint must be idempotent. The same message may arrive
 twice. If duplicate processing is harmful, use idempotency keys (see below).
+
+Executable proof: [`../apps/e2e/journeys/queue-message-flow.e2e.ts`](../apps/e2e/journeys/queue-message-flow.e2e.ts), [`../apps/e2e/journeys/topic-publish-flow.e2e.ts`](../apps/e2e/journeys/topic-publish-flow.e2e.ts).
 
 ## Pull receive visibility leases
 
@@ -104,6 +108,8 @@ Non-2xx responses are classified before deciding how to retry:
 the message with no operator visibility. Routing to the DLQ gives operators a single place to triage
 all failed deliveries regardless of cause, filterable by the `failure_class` attribute on the DLQ
 message.
+
+Executable proof: [`../apps/e2e/journeys/ownership-hardening.e2e.ts`](../apps/e2e/journeys/ownership-hardening.e2e.ts), [`../apps/e2e/journeys/topic-publish-flow.e2e.ts`](../apps/e2e/journeys/topic-publish-flow.e2e.ts).
 
 **Receivers: do not return 4xx for transient failures.** A `401 Unauthorized` or `410 Gone`
 response tells the system the endpoint is permanently misconfigured. Return `5xx` for transient
@@ -185,6 +191,8 @@ connection from a Durable Object using the CF Workers `connect()` API.
 
 Results are surfaced as live SSE streams and stored in `lab.events_archive` for replay. The lab
 is gated by `KillSwitchKV` and can be disabled at runtime without a deploy.
+
+Executable proof: [`../apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts`](../apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts), [`../apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts`](../apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts).
 
 See [architecture.md](architecture.md) for the full Consistency Lab component breakdown.
 

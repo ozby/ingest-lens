@@ -67,7 +67,9 @@ Doppler project: node-pubsub
 
 #### [ops] Task 1.1: Create Doppler project + configs
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -75,14 +77,16 @@ Doppler project: node-pubsub
 
 **Acceptance:**
 
-- [ ] Project `node-pubsub` exists with `dev`, `preview`, `preview_main`, `prd` configs.
-- [ ] Root `preview` contains only shared secrets (no `DATABASE_URL`).
+- [x] Project `node-pubsub` exists with `dev`, `preview`, `preview_main`, `prd` configs.
+- [x] Root `preview` contains only shared secrets (no `DATABASE_URL`).
 
 ### Phase 2: Local wiring [Complexity: S]
 
 #### [dx] Task 2.1: Integrate `doppler run` into pnpm dev commands
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -91,14 +95,16 @@ Doppler project: node-pubsub
 
 **Acceptance:**
 
-- [ ] `pnpm dev` shells through `doppler run --config dev --` automatically.
-- [ ] Missing-secret errors fail loud with an actionable message.
+- [x] `pnpm dev` shells through `doppler run --config dev --` automatically.
+- [x] Missing-secret errors fail loud with an actionable message.
 
 ### Phase 3: PR lifecycle [Complexity: M]
 
 #### [ops] Task 3.1: Auto-create + cleanup `preview_pr_<n>` configs
 
-**Status:** pending **Depends:** Task 1.1 **Blocked:** cloudflare-pulumi-infra blueprint must land first (stack names drive config names).
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -107,8 +113,8 @@ Doppler project: node-pubsub
 
 **Acceptance:**
 
-- [ ] PR open → matching `preview_pr_<n>` config created, inheriting from `preview`.
-- [ ] PR close → config deleted; stack destroyed first.
+- [x] PR open → matching `preview_pr_<n>` config created, inheriting from `preview`.
+- [x] PR close → config deleted; stack destroyed first.
 
 ## Verification Gates
 

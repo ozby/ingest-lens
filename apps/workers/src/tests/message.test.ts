@@ -482,6 +482,77 @@ describe("Message routes — response contracts", () => {
     expect(body.data.visibilityTimeout).toBe(45);
   });
 
+  it("normalizes raw SQL snake_case lease rows into the shared message payload", async () => {
+    bypassAuth(vi.mocked(authenticate));
+
+    const queueLimitMock = vi.fn().mockResolvedValue([mockQueue]);
+    const queueWhereMock = vi.fn().mockReturnValue({ limit: queueLimitMock });
+    const queueFromMock = vi.fn().mockReturnValue({ where: queueWhereMock });
+
+    const selectMock = vi.fn().mockImplementationOnce(() => ({ from: queueFromMock }));
+    const { updateMock } = buildUpdateChain();
+    const executeMock = vi.fn().mockResolvedValue([
+      {
+        id: mockMessage.id,
+        seq: mockMessage.seq,
+        data: mockMessage.data,
+        queue_id: mockMessage.queueId,
+        idempotency_key: mockMessage.idempotencyKey,
+        delivery_mode: mockMessage.deliveryMode,
+        enqueue_state: mockMessage.enqueueState,
+        push_delivered_at: mockMessage.pushDeliveredAt,
+        last_enqueue_error: mockMessage.lastEnqueueError,
+        received: true,
+        received_at: new Date("2026-04-24T00:00:00.000Z"),
+        visibility_expires_at: new Date("2026-04-24T00:00:45.000Z"),
+        expires_at: mockMessage.expiresAt,
+        received_count: mockMessage.receivedCount + 1,
+        created_at: mockMessage.createdAt,
+        updated_at: mockMessage.updatedAt,
+      },
+    ]);
+
+    mockCreateDb({
+      select: selectMock,
+      execute: executeMock,
+      update: updateMock,
+    });
+
+    const res = await app.fetch(
+      get("/api/messages/queue-1?maxMessages=1&visibilityTimeout=45", AUTH_HEADER),
+      mockEnv,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      status: string;
+      results: number;
+      data: {
+        messages: Array<{
+          id: string;
+          queueId: string;
+          createdAt: string;
+          expiresAt: string;
+          receivedCount: number;
+        }>;
+        visibilityTimeout: number;
+      };
+    };
+    expect(body.status).toBe("success");
+    expect(body.results).toBe(1);
+    expect(body.data.messages).toEqual([
+      expect.objectContaining({
+        id: mockMessage.id,
+        queueId: mockMessage.queueId,
+        createdAt: mockMessage.createdAt.toISOString(),
+        expiresAt: mockMessage.expiresAt.toISOString(),
+        received: true,
+        receivedCount: mockMessage.receivedCount + 1,
+      }),
+    ]);
+    expect(body.data.visibilityTimeout).toBe(45);
+  });
+
   it("returns single-message payloads under the shared message key", async () => {
     bypassAuth(vi.mocked(authenticate));
 

@@ -13,6 +13,17 @@ export interface BetterAuthHandler {
   };
 }
 
+function isLocalOrigin(origin: string | undefined): boolean {
+  if (!origin) return false;
+
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 function toDomainUsername(name: string, id: string): string {
   const normalized = name
     .trim()
@@ -26,18 +37,20 @@ function toDomainUsername(name: string, id: string): string {
 export function createBetterAuth(env: Env): BetterAuthHandler {
   const db = createDb(env);
   const baseURL = `${env.ALLOWED_ORIGIN ?? "http://127.0.0.1:8787"}/auth`;
+  const localOrigin = isLocalOrigin(env.ALLOWED_ORIGIN);
+  const trustedOrigins = [
+    "https://dev.ingest-lens.ozby.dev",
+    "https://ingest-lens.ozby.dev",
+    ...(env.ALLOWED_ORIGIN ? [env.ALLOWED_ORIGIN] : []),
+  ];
 
   // Framework host kit: plugin bundle (bearer, organization, deviceAuthorization, jwt),
   // basePath, crossSubDomainCookies, and trustedOrigins from manifest + env.
   const hostConfig = createWebpressoAuthHost(
     {
       auth: {
-        cookieDomain: ".ingest-lens.ozby.dev",
-        trustedOrigins: [
-          "https://dev.ingest-lens.ozby.dev",
-          "https://ingest-lens.ozby.dev",
-          ...(env.ALLOWED_ORIGIN ? [env.ALLOWED_ORIGIN] : []),
-        ],
+        ...(localOrigin ? {} : { cookieDomain: ".ingest-lens.ozby.dev" }),
+        trustedOrigins,
       },
     },
     { secret: env.BETTER_AUTH_SECRET ?? "" },

@@ -135,7 +135,7 @@ lab work. It unblocks scenarios 1a and 1b and every scenario after.
 
 #### [core] Task 1.1: Workspace + contract types
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -171,7 +171,7 @@ the `SessionContext` type. No implementation, only types.
 
 #### [core] Task 1.2: `SessionLock` Durable Object
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -216,7 +216,7 @@ F6T pattern notes (from CF docs):
 
 #### [core] Task 1.3: `LabConcurrencyGauge` Durable Object (F-02 redesign)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -253,7 +253,7 @@ gauge slots).
 
 #### [core] Task 1.4: `Sanitizer` module
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -287,7 +287,7 @@ frames, connection strings) can leak.
 
 #### [core] Task 1.5: `TelemetryCollector` + archive persistence (F-05)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1, 1.4, 1.6
 
@@ -328,7 +328,7 @@ The collector exposes two surfaces:
 
 #### [core] Task 1.6: `lab.*` schema migration (F-12)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1 (contract types reference these tables)
 
@@ -381,7 +381,7 @@ Scope enforcement (F-12):
 
 #### [core] Task 1.7: `Histogram` + `PricingTable` (moved from Lane C, F-10)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -430,7 +430,7 @@ Accurate Quantiles Using t-Digests" (2019).
 
 #### [core] Task 1.8: `KillSwitchKV` helper (F-01)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -465,7 +465,7 @@ per-request with a 5-second local cache so hot paths don't pay a KV read.
 
 #### [core] Task 1.9: `@repo/test-utils` extraction (F-codebase note)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 

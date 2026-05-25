@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildJourneyRunCommand, parseRunE2eArgs, resolveJourneySelection } from "./run-e2e";
+import {
+  buildJourneyRunCommand,
+  buildJourneyRunCommands,
+  parseRunE2eArgs,
+  resolveJourneySelection,
+} from "./run-e2e";
 
 describe("run-e2e", () => {
   it("parses supported CLI flags", () => {
@@ -50,10 +55,8 @@ describe("run-e2e", () => {
         passthrough: ["--reporter=verbose"],
       }),
     ).toEqual({
-      command: "pnpm",
+      command: "./node_modules/.bin/vitest",
       args: [
-        "exec",
-        "vitest",
         "run",
         "--config",
         "vitest.journeys.config.ts",
@@ -73,5 +76,38 @@ describe("run-e2e", () => {
       ],
       suiteId: "full",
     });
+  });
+
+  it("builds every declared step for mixed suites", () => {
+    expect(
+      buildJourneyRunCommands({
+        suite: "client",
+        files: [],
+        passthrough: ["--reporter=dot"],
+      }),
+    ).toEqual([
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "journeys/client-route-code-splitting.e2e.ts",
+          "--reporter=dot",
+        ],
+        suiteId: "client",
+      },
+      {
+        command: "./node_modules/.bin/playwright",
+        args: [
+          "test",
+          "--config",
+          "playwright.config.ts",
+          "journeys/client-surfaces.spec.ts",
+          "--reporter=dot",
+        ],
+        suiteId: "client",
+      },
+    ]);
   });
 });

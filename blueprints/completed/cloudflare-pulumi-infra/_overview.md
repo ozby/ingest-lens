@@ -74,7 +74,9 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 #### [infra] Task 1.1: Create `infra/` workspace
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -88,13 +90,15 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 **Acceptance:**
 
-- [ ] `pnpm --filter @repo/infra exec pulumi preview --stack dev-local` runs without unresolved references.
+- [x] `pnpm --filter @repo/infra exec pulumi preview --stack dev-local` runs without unresolved references.
 
 ### Phase 2: Account resources [Complexity: L]
 
 #### [infra] Task 2.1: Provision DNS + Workers routing
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -103,11 +107,13 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 **Acceptance:**
 
-- [ ] Preview stack produces the expected DNS + route records.
+- [x] Preview stack produces the expected DNS + route records.
 
 #### [infra] Task 2.2: Provision Hyperdrive + Neon + R2 + KV
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -116,14 +122,16 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 **Acceptance:**
 
-- [ ] Hyperdrive binding declared for each environment.
-- [ ] Neon project + branch provisioned per stack.
+- [x] Hyperdrive binding declared for each environment.
+- [x] Neon project + branch provisioned per stack.
 
 ### Phase 3: Deploy wiring [Complexity: M]
 
 #### [infra] Task 3.1: Generate wrangler.toml from Pulumi outputs
 
-**Status:** pending **Depends:** Task 2.1, Task 2.2
+**Status:** done
+
+**Depends:** Task 2.1, Task 2.2
 
 **Files:**
 
@@ -133,8 +141,8 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 
 **Acceptance:**
 
-- [ ] Generated `wrangler.toml` for each Worker matches the Pulumi outputs.
-- [ ] `pnpm --filter @repo/infra deploy --stack preview-pr-123` deploys a preview cleanly.
+- [x] Generated `wrangler.toml` for each Worker matches the Pulumi outputs.
+- [x] `pnpm --filter @repo/infra deploy --stack preview-pr-123` deploys a preview cleanly.
 
 ## Verification Gates
 

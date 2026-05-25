@@ -32,7 +32,6 @@ catalog:
   "@vitejs/plugin-react": ^6.0.1
   "@webpresso/db-branching": ^0.2.1
   "@webpresso/db-branching-neon": ^0.2.1
-  "@webpresso/agent-kit": ^0.18.8
   "@webpresso/runtime": ^0.3.0
   "@webpresso/agent-stryker": ^0.2.0
 

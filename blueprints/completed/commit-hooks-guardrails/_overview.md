@@ -65,7 +65,9 @@ commitlint.config.ts
 
 #### [dx] Task 1.1: Wire lint-staged
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -74,11 +76,13 @@ commitlint.config.ts
 
 **Acceptance:**
 
-- [ ] `git commit -m "foo"` on a 5-file change finishes under 3s (P95 on a modern laptop).
+- [x] `git commit -m "foo"` on a 5-file change finishes under 3s (P95 on a modern laptop).
 
 #### [dx] Task 1.2: Wire commitlint + scope-enum
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -88,12 +92,14 @@ commitlint.config.ts
 
 **Acceptance:**
 
-- [ ] Non-conventional commits are rejected with a helpful message.
-- [ ] `scope` must match a real workspace name.
+- [x] Non-conventional commits are rejected with a helpful message.
+- [x] `scope` must match a real workspace name.
 
 #### [dx] Task 1.3: Wire secretlint pre-commit
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -102,13 +108,15 @@ commitlint.config.ts
 
 **Acceptance:**
 
-- [ ] Committing a file containing a fake AWS-shaped secret is blocked locally.
+- [x] Committing a file containing a fake AWS-shaped secret is blocked locally.
 
 ### Phase 2: Pre-push guards [Complexity: S]
 
 #### [dx] Task 2.1: Pre-push blueprint validation + affected mutation
 
-**Status:** pending **Depends:** Task 1.1 **Blocked:** stryker-mutation-guardrails must pilot first.
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -116,8 +124,8 @@ commitlint.config.ts
 
 **Acceptance:**
 
-- [ ] Push is blocked if `pnpm blueprint:validate` fails.
-- [ ] Push is blocked if mutation score on affected packages drops below `break`.
+- [x] Push is blocked if `pnpm blueprint:validate` fails.
+- [x] Push is blocked if mutation score on affected packages drops below `break`.
 
 ## Verification Gates
 

@@ -74,7 +74,7 @@ After
 
 #### [docs] Task 1.1: Rewrite README and supporting docs as the IngestLens landing page
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -102,14 +102,14 @@ observability without overselling unbuilt features.
 
 **Acceptance:**
 
-- [ ] `README.md` first screen says `IngestLens` and explains the product quickly.
-- [ ] `README.md` includes exact local run/verify commands from a clean checkout.
-- [ ] `docs/architecture.md`, `docs/delivery-guarantees.md`, and `docs/scale-considerations.md` no longer present stale topology as current state.
-- [ ] `pnpm docs:check` and `pnpm format:check` pass after the rewrite.
+- [x] `README.md` first screen says `IngestLens` and explains the product quickly.
+- [x] `README.md` includes exact local run/verify commands from a clean checkout.
+- [x] `docs/architecture.md`, `docs/delivery-guarantees.md`, and `docs/scale-considerations.md` no longer present stale topology as current state.
+- [x] `pnpm docs:check` and `pnpm format:check` pass after the rewrite.
 
 #### [brand] Task 1.2: Align product vision, ADR index, and worker-facing brand surfaces
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -135,14 +135,14 @@ legacy internals.
 
 **Acceptance:**
 
-- [ ] Product vision and ADR index use `IngestLens` for the public story.
-- [ ] Worker-facing naming is either rebranded or explicitly deferred with rationale.
-- [ ] Historical ADR references remain understandable.
-- [ ] `pnpm docs:check` and `pnpm format:check` pass.
+- [x] Product vision and ADR index use `IngestLens` for the public story.
+- [x] Worker-facing naming is either rebranded or explicitly deferred with rationale.
+- [x] Historical ADR references remain understandable.
+- [x] `pnpm docs:check` and `pnpm format:check` pass.
 
 #### [ui-shell] Task 1.3: Rebrand client shell copy with first-pass smoke coverage
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -168,14 +168,14 @@ conflicts.
 
 **Acceptance:**
 
-- [ ] A committed client smoke test covers shell branding.
-- [ ] Nav and sidebar copy say what IngestLens is for.
-- [ ] Shell copy keeps delivery primitives honest rather than hiding them.
-- [ ] `pnpm --filter client test`, `pnpm --filter client check-types`, and `pnpm --filter client build` pass.
+- [x] A committed client smoke test covers shell branding.
+- [x] Nav and sidebar copy say what IngestLens is for.
+- [x] Shell copy keeps delivery primitives honest rather than hiding them.
+- [x] `pnpm --filter client test`, `pnpm --filter client check-types`, and `pnpm --filter client build` pass.
 
 #### [hygiene] Task 1.4: Remove stale local-stack and template artifacts without collateral churn
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -217,16 +217,16 @@ do not spread this work across other tasks.
 
 **Acceptance:**
 
-- [ ] No stale Mongo/Redis/Express stack is presented as current in the owned files.
-- [ ] Tracked redundant `.new` files are either deleted or intentionally retained with rationale.
-- [ ] `docs/project/ROADMAP.md` and `blueprints/README.md` point at the current planned IngestLens work.
-- [ ] `pnpm blueprints:check`, `pnpm docs:check`, and `pnpm format:check` pass.
+- [x] No stale Mongo/Redis/Express stack is presented as current in the owned files.
+- [x] Tracked redundant `.new` files are either deleted or intentionally retained with rationale.
+- [x] `docs/project/ROADMAP.md` and `blueprints/README.md` point at the current planned IngestLens work.
+- [x] `pnpm blueprints:check`, `pnpm docs:check`, and `pnpm format:check` pass.
 
 ### Phase 2: Demo narrative and UI story polish [Complexity: S]
 
 #### [demo] Task 2.1: Add README demo entrypoint pointing at the canonical guide
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.4
 
@@ -247,14 +247,14 @@ Apply (Fx2, Fx5) by making README point at the canonical demo guide path without
 
 **Acceptance:**
 
-- [ ] README points to `docs/guides/public-dataset-demo.md` as the canonical demo guide.
-- [ ] README does not duplicate the full script.
-- [ ] README labels the guide/demo truth state honestly until the guide exists.
-- [ ] `pnpm docs:check` and `pnpm format:check` pass.
+- [x] README points to `docs/guides/public-dataset-demo.md` as the canonical demo guide.
+- [x] README does not duplicate the full script.
+- [x] README labels the guide/demo truth state honestly until the guide exists.
+- [x] `pnpm docs:check` and `pnpm format:check` pass.
 
 #### [ui-landing] Task 2.2: Reframe landing and dashboard pages around intake observability
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.3
 
@@ -279,14 +279,14 @@ with delivery-rail copy updates.
 
 **Acceptance:**
 
-- [ ] The first client screens say what IngestLens does.
-- [ ] Empty states guide the demo user toward payload ingestion and mapping review.
-- [ ] No fake enterprise or connector-marketplace claims are introduced.
-- [ ] `pnpm --filter client test`, `pnpm --filter client check-types`, and `pnpm --filter client build` pass.
+- [x] The first client screens say what IngestLens does.
+- [x] Empty states guide the demo user toward payload ingestion and mapping review.
+- [x] No fake enterprise or connector-marketplace claims are introduced.
+- [x] `pnpm --filter client test`, `pnpm --filter client check-types`, and `pnpm --filter client build` pass.
 
 #### [ui-rails] Task 2.3: Reword queues and topics as honest delivery rails
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.3
 
@@ -311,10 +311,10 @@ rails behind the higher-level integration observability story.
 
 **Acceptance:**
 
-- [ ] Queue/topic pages support the IngestLens narrative without hiding the underlying primitives.
-- [ ] Empty states connect delivery rails back to the payload ingestion demo.
-- [ ] No fake enterprise or marketplace positioning appears.
-- [ ] `pnpm --filter client test`, `pnpm --filter client check-types`, and `pnpm --filter client build` pass.
+- [x] Queue/topic pages support the IngestLens narrative without hiding the underlying primitives.
+- [x] Empty states connect delivery rails back to the payload ingestion demo.
+- [x] No fake enterprise or marketplace positioning appears.
+- [x] `pnpm --filter client test`, `pnpm --filter client check-types`, and `pnpm --filter client build` pass.
 
 ## Verification Gates
 

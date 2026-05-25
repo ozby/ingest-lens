@@ -60,7 +60,9 @@ before:                              after:
 
 #### [spike] Task 1.1: Baseline current Turbo command surface
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 Capture the exact Turbo pipeline and all per-workspace `turbo` references so the migration is reversible.
 
@@ -76,14 +78,16 @@ Capture the exact Turbo pipeline and all per-workspace `turbo` references so the
 
 **Acceptance:**
 
-- [ ] Surface doc lists every `turbo` call site.
-- [ ] Timings recorded so after-migration parity can be measured.
+- [x] Surface doc lists every `turbo` call site.
+- [x] Timings recorded so after-migration parity can be measured.
 
 ### Phase 2: Toolchain swap [Complexity: M]
 
 #### [deps] Task 2.1: Add vite-plus to the pnpm catalog
 
-**Status:** pending **Depends:** Task 1.1 **Blocked:** pnpm-catalogs-adoption blueprint must land first so the catalog exists.
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -98,12 +102,14 @@ Capture the exact Turbo pipeline and all per-workspace `turbo` references so the
 
 **Acceptance:**
 
-- [ ] `pnpm install` completes without peer warnings.
-- [ ] `pnpm exec vp --version` prints the expected version.
+- [x] `pnpm install` completes without peer warnings.
+- [x] `pnpm exec vp --version` prints the expected version.
 
 #### [refactor] Task 2.2: Swap root scripts from `turbo run` to `vp run`
 
-**Status:** pending **Depends:** Task 2.1
+**Status:** done
+
+**Depends:** Task 2.1
 
 **Files:**
 
@@ -113,15 +119,17 @@ Capture the exact Turbo pipeline and all per-workspace `turbo` references so the
 
 **Acceptance:**
 
-- [ ] `pnpm qa` runs end-to-end against `vp`.
-- [ ] No remaining `turbo` references in any `package.json` or `*.yml`.
-- [ ] CI green on a PR branch.
+- [x] `pnpm qa` runs end-to-end against `vp`.
+- [x] No remaining `turbo` references in any `package.json` or `*.yml`.
+- [x] CI green on a PR branch.
 
 ### Phase 3: Hardening [Complexity: S]
 
 #### [qa] Task 3.1: Parity check and rollback recipe
 
-**Status:** pending **Depends:** Task 2.2
+**Status:** done
+
+**Depends:** Task 2.2
 
 **Files:**
 
@@ -130,8 +138,8 @@ Capture the exact Turbo pipeline and all per-workspace `turbo` references so the
 
 **Acceptance:**
 
-- [ ] Parity table (cold/warm timings before vs. after) attached.
-- [ ] Rollback recipe (restore `turbo.json`, revert scripts) documented.
+- [x] Parity table (cold/warm timings before vs. after) attached.
+- [x] Rollback recipe (restore `turbo.json`, revert scripts) documented.
 
 ## Verification Gates
 

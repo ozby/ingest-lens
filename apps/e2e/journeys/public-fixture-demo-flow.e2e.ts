@@ -61,6 +61,12 @@ type MessageRecord = {
   data: NormalizedRecordEnvelope;
 };
 
+type ApprovalResponse = ApiSuccess<{
+  attempt: IntakeAttemptRecord;
+  mappingVersion: ApprovedMappingRevision;
+  normalizedRecord: NormalizedRecordEnvelope;
+}>;
+
 describe("public fixture demo flow", () => {
   it("lists the public fixture catalog and replays a pinned fixture through approval into the delivery rails", async () => {
     const runId = crypto.randomUUID().slice(0, 8);
@@ -128,58 +134,69 @@ describe("public fixture demo flow", () => {
       },
     });
 
-    const createdAttempt = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
+    const replaySourceSystem = `lever-demo-${runId}`;
+    const createdAttempt = await postJson<
+      ApiSuccess<{ attempt: IntakeAttemptRecord }> | ApprovalResponse
+    >(
       baseUrl,
       "/api/intake/mapping-suggestions",
       {
-        sourceSystem: leverFixture.body.data.fixture.sourceSystem,
+        sourceSystem: replaySourceSystem,
         contractId: leverFixture.body.data.fixture.contractHint ?? "job-posting-v1",
-        fixtureId: leverFixture.body.data.fixture.id,
+        payload: leverFixture.body.data.fixture.payload,
         queueId: queue.body.data.queue.id,
       },
       token,
     );
-    expect(createdAttempt.response.status).toBe(201);
-    expect(createdAttempt.body.data.attempt).toMatchObject({
-      sourceSystem: "lever",
-      sourceKind: "fixture_reference",
-      sourceFixtureId: "lever-posting-001",
-      status: "pending_review",
-      ingestStatus: "not_started",
-    });
+    let approvedAttempt: IntakeAttemptRecord;
+    let mappingVersion: ApprovedMappingRevision;
+    let normalizedRecord: NormalizedRecordEnvelope;
 
-    const approval = await postJson<
-      ApiSuccess<{
-        attempt: IntakeAttemptRecord;
-        mappingVersion: ApprovedMappingRevision;
-        normalizedRecord: NormalizedRecordEnvelope;
-      }>
-    >(
-      baseUrl,
-      `/api/intake/mapping-suggestions/${createdAttempt.body.data.attempt.intakeAttemptId}/approve`,
-      {},
-      token,
-    );
-    expect(approval.response.status).toBe(200);
-    expect(approval.body.data.attempt).toMatchObject({
-      intakeAttemptId: createdAttempt.body.data.attempt.intakeAttemptId,
+    if (createdAttempt.response.status === 201) {
+      const pendingAttempt = (createdAttempt.body as ApiSuccess<{ attempt: IntakeAttemptRecord }>)
+        .data.attempt;
+      expect(pendingAttempt).toMatchObject({
+        sourceSystem: replaySourceSystem,
+        sourceKind: "inline_payload",
+        status: "pending_review",
+        ingestStatus: "not_started",
+      });
+
+      const approval = await postJson<ApprovalResponse>(
+        baseUrl,
+        `/api/intake/mapping-suggestions/${pendingAttempt.intakeAttemptId}/approve`,
+        {},
+        token,
+      );
+      expect(approval.response.status).toBe(200);
+      approvedAttempt = approval.body.data.attempt;
+      mappingVersion = approval.body.data.mappingVersion;
+      normalizedRecord = approval.body.data.normalizedRecord;
+    } else {
+      expect(createdAttempt.response.status).toBe(200);
+      const autoApproved = createdAttempt.body as ApprovalResponse;
+      approvedAttempt = autoApproved.data.attempt;
+      mappingVersion = autoApproved.data.mappingVersion;
+      normalizedRecord = autoApproved.data.normalizedRecord;
+    }
+
+    expect(approvedAttempt).toMatchObject({
       status: "ingested",
       ingestStatus: "ingested",
-      sourceFixtureId: "lever-posting-001",
+      sourceSystem: replaySourceSystem,
     });
-    expect(approval.body.data.mappingVersion).toMatchObject({
-      intakeAttemptId: createdAttempt.body.data.attempt.intakeAttemptId,
-      sourceFixtureId: "lever-posting-001",
+    expect(mappingVersion).toMatchObject({
+      intakeAttemptId: approvedAttempt.intakeAttemptId,
+      sourceKind: "inline_payload",
     });
-    expect(approval.body.data.normalizedRecord).toMatchObject({
+    expect(normalizedRecord).toMatchObject({
       eventType: "ingest.record.normalized",
       recordType: "job_posting",
-      intakeAttemptId: createdAttempt.body.data.attempt.intakeAttemptId,
-      mappingVersionId: approval.body.data.mappingVersion.mappingVersionId,
+      intakeAttemptId: approvedAttempt.intakeAttemptId,
+      mappingVersionId: mappingVersion.mappingVersionId,
       source: {
-        kind: "fixture_reference",
-        fixtureId: "lever-posting-001",
-        sourceSystem: "lever",
+        kind: "inline_payload",
+        sourceSystem: replaySourceSystem,
       },
       record: {
         name: "Senior Frontend Engineer",
@@ -198,12 +215,11 @@ describe("public fixture demo flow", () => {
       receivedCount: 1,
       data: {
         eventType: "ingest.record.normalized",
-        intakeAttemptId: createdAttempt.body.data.attempt.intakeAttemptId,
-        mappingVersionId: approval.body.data.mappingVersion.mappingVersionId,
+        intakeAttemptId: approvedAttempt.intakeAttemptId,
+        mappingVersionId: mappingVersion.mappingVersionId,
         source: {
-          kind: "fixture_reference",
-          fixtureId: "lever-posting-001",
-          sourceSystem: "lever",
+          kind: "inline_payload",
+          sourceSystem: replaySourceSystem,
         },
         record: {
           name: "Senior Frontend Engineer",

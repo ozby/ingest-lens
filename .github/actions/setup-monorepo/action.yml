@@ -25,6 +25,10 @@ runs:
       with:
         bun-version: latest
 
+    - name: Install global wp
+      run: npm install -g @webpresso/agent-kit@0.18.18
+      shell: bash
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
       shell: bash

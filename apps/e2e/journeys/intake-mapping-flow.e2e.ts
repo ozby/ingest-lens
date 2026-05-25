@@ -100,6 +100,54 @@ type DeleteMessageResponse = {
   deletedMessageId: string;
 };
 
+type FastPathResponse = {
+  fastPath: true;
+};
+
+async function rotateFixtureFastPathState(
+  token: string,
+  queueId: string,
+  sourceSystem: string,
+  payload: Record<string, unknown>,
+): Promise<void> {
+  const response = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord } | FastPathResponse>>(
+    baseUrl,
+    "/api/intake/mapping-suggestions",
+    {
+      sourceSystem,
+      contractId: "job-posting-v1",
+      payload,
+      queueId,
+    },
+    token,
+  );
+
+  if (response.response.status === 200) {
+    expect(response.body.status).toBe("success");
+    return;
+  }
+
+  expect(response.response.status).toBe(201);
+  const attempt = (response.body.data as { attempt: IntakeAttemptRecord }).attempt;
+  const approvedSuggestionIds =
+    attempt.suggestionBatch?.suggestions.map((suggestion) => suggestion.id) ?? [];
+  expect(approvedSuggestionIds.length).toBeGreaterThan(0);
+
+  const approval = await postJson<
+    ApiSuccess<{
+      attempt: IntakeAttemptRecord;
+      mappingVersion: ApprovedMappingRevision;
+      normalizedRecord: NormalizedRecordEnvelope;
+    }>
+  >(
+    baseUrl,
+    `/api/intake/mapping-suggestions/${attempt.intakeAttemptId}/approve`,
+    { approvedSuggestionIds },
+    token,
+  );
+  expect(approval.response.status).toBe(200);
+}
+
 describe("intake mapping flow", () => {
   it("creates a deterministic mapping suggestion, approves it, and delivers a normalized record to the queue", async () => {
     const runId = crypto.randomUUID().slice(0, 8);
@@ -129,6 +177,16 @@ describe("intake mapping flow", () => {
       ownerId: registration.body.data.user.id,
       retentionPeriod: 7,
     });
+    const seedQueue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
+      "/api/queues",
+      {
+        name: `intake-seed-${runId}`,
+        retentionPeriod: 7,
+      },
+      token,
+    );
+    expect(seedQueue.response.status).toBe(201);
 
     const unauthorizedAttempt = await postJson<ApiError>(
       baseUrl,
@@ -195,6 +253,15 @@ describe("intake mapping flow", () => {
     expect(missingFixture.body).toMatchObject({
       status: "error",
       message: "Fixture not found",
+    });
+
+    await rotateFixtureFastPathState(token, seedQueue.body.data.queue.id, "ashby", {
+      title: "Rotation Guard",
+      apply_url: "https://jobs.ashbyhq.com/example-co/rotation",
+      employment_type: "FullTime",
+      department: "Operations",
+      locations: ["Remote"],
+      compensation_band: "100000-150000",
     });
 
     const createdAttempt = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
@@ -349,6 +416,22 @@ describe("intake mapping flow", () => {
       token,
     );
     expect(queue.response.status).toBe(201);
+    const seedQueue = await postJson<ApiSuccess<{ queue: QueueRecord }>>(
+      baseUrl,
+      "/api/queues",
+      { name: `lf-fallback-seed-${runId}`, retentionPeriod: 7 },
+      token,
+    );
+    expect(seedQueue.response.status).toBe(201);
+
+    await rotateFixtureFastPathState(token, seedQueue.body.data.queue.id, "ashby", {
+      title: "Fallback Guard",
+      apply_url: "https://jobs.ashbyhq.com/example-co/fallback",
+      employment_type: "FullTime",
+      department: "Platform",
+      locations: ["Berlin"],
+      hiring_manager: "Jordan",
+    });
 
     const attempt = await postJson<ApiSuccess<{ attempt: IntakeAttemptRecord }>>(
       baseUrl,
@@ -356,7 +439,7 @@ describe("intake mapping flow", () => {
       {
         sourceSystem: "ashby",
         contractId: "job-posting-v1",
-        fixtureId: "ashby-job-001",
+        fixtureId: "ashby-job-003",
         queueId: queue.body.data.queue.id,
       },
       token,

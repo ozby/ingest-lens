@@ -9,7 +9,8 @@ Primary production runtime for IngestLens: the client surface, API worker,
 durable state, delivery rails, and adaptive intake boundary. Treat this as the
 canonical top-level diagram for the shipped system. Detailed flow behavior
 lives in [`architecture.md`](./architecture.md). The separate Consistency Lab
-is documented in [`lab-architecture.md`](./lab-architecture.md).
+is documented in [`lab-architecture.md`](./lab-architecture.md). Reviewer-facing
+claim proof lives in [`./guides/claim-e2e-traceability.md`](./guides/claim-e2e-traceability.md).
 
 ## Primary production runtime
 
@@ -70,14 +71,17 @@ flowchart LR
   intentionally split from UI notifications: `src/services/api-client.ts` owns
   HTTP/envelope behavior, while `src/services/api.ts` is the app-facing wrapper
   that wires toast behavior.
+  Executable proof: [`../apps/e2e/journeys/client-surfaces.spec.ts`](../apps/e2e/journeys/client-surfaces.spec.ts), [`../apps/e2e/journeys/ingestlens-branding.e2e.ts`](../apps/e2e/journeys/ingestlens-branding.e2e.ts).
 - **API worker** (`apps/workers`): Hono on Cloudflare Workers. Owns auth,
   queue/topic CRUD, push delivery consumer, AI intake routes, and WebSocket
   upgrade for `TopicRoom` DOs.
+  Executable proof: [`../apps/e2e/journeys/worker-health.e2e.ts`](../apps/e2e/journeys/worker-health.e2e.ts), [`../apps/e2e/journeys/auth-session.e2e.ts`](../apps/e2e/journeys/auth-session.e2e.ts), [`../apps/e2e/journeys/ownership-hardening.e2e.ts`](../apps/e2e/journeys/ownership-hardening.e2e.ts).
 - **Durable Objects**: `TopicRoom` is the production fan-out + reconnect replay
   primitive. `HealStreamDO` (one per
   `sourceSystem:contractId:contractVersion`) serializes adaptive-heal state,
   exposes the SSE stream, and lets the Worker skip or approve repair paths
   without using Postgres as the hot-path cache.
+  Executable proof: [`../apps/e2e/journeys/topic-publish-flow.e2e.ts`](../apps/e2e/journeys/topic-publish-flow.e2e.ts), [`../apps/e2e/journeys/self-healing-intake.e2e.ts`](../apps/e2e/journeys/self-healing-intake.e2e.ts).
 - **Postgres**: single Neon-backed database. Production tables live in
   `public.*`; the Lab uses `lab.*` only. Hyperdrive is the Worker runtime pool.
 - **AI intake path**: the only model call site is mapping repair suggestion.

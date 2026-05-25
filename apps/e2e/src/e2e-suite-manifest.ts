@@ -45,11 +45,12 @@ const HARDENING_FILES = ["journeys/ownership-hardening.e2e.ts"] as const;
 const INTAKE_FILES = ["journeys/intake-mapping-flow.e2e.ts"] as const;
 const HEALING_FILES = ["journeys/self-healing-intake.e2e.ts"] as const;
 const DEMO_FILES = ["journeys/public-fixture-demo-flow.e2e.ts"] as const;
-const CLIENT_FILES = ["journeys/client-route-code-splitting.e2e.ts"] as const;
+const CLIENT_VITEST_FILES = ["journeys/client-route-code-splitting.e2e.ts"] as const;
+const CLIENT_UI_FILES = ["journeys/client-surfaces.spec.ts"] as const;
 const BRANDING_FILES = ["journeys/ingestlens-branding.e2e.ts"] as const;
 const NEON_BRANCH_PROVIDER_FILES = ["journeys/neon-branch-provider.e2e.ts"] as const;
 const INTAKE_UI_FILES = ["journeys/intake-heal-ui.spec.ts"] as const;
-const FULL_FILES = [
+const FULL_VITEST_FILES = [
   ...FOUNDATION_FILES,
   ...AUTH_FILES,
   ...MESSAGING_FILES,
@@ -57,9 +58,10 @@ const FULL_FILES = [
   ...INTAKE_FILES,
   ...HEALING_FILES,
   ...DEMO_FILES,
-  ...CLIENT_FILES,
+  ...CLIENT_VITEST_FILES,
   ...BRANDING_FILES,
 ] as const;
+const FULL_UI_FILES = [...CLIENT_UI_FILES, ...INTAKE_UI_FILES] as const;
 
 const S1B_LATENCY_FILES = [
   "../../apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts",
@@ -122,9 +124,20 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
   {
     id: "client",
     aliases: ["bundle", "splitting"],
-    fileMatchers: CLIENT_FILES,
+    fileMatchers: [...CLIENT_VITEST_FILES, ...CLIENT_UI_FILES],
     batchKey: "client",
-    steps: [createVitestStep("client", CLIENT_FILES)],
+    steps: [
+      createVitestStep("client", CLIENT_VITEST_FILES),
+      {
+        runner: "playwright",
+        logName: "client-ui",
+        configPath: "playwright.config.ts",
+        fixedFiles: CLIENT_UI_FILES,
+        batchKey: "client",
+        supportsHeaded: true,
+        supportsDebug: true,
+      },
+    ],
   },
   {
     id: "branding",
@@ -196,7 +209,18 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     aliases: ["all", "backend", "blueprints"],
     fileMatchers: [],
     batchKey: "full",
-    steps: [createVitestStep("full", FULL_FILES)],
+    steps: [
+      createVitestStep("full", FULL_VITEST_FILES),
+      {
+        runner: "playwright",
+        logName: "full-ui",
+        configPath: "playwright.config.ts",
+        fixedFiles: FULL_UI_FILES,
+        batchKey: "full",
+        supportsHeaded: true,
+        supportsDebug: true,
+      },
+    ],
   },
 ];
 

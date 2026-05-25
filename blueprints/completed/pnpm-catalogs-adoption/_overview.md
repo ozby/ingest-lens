@@ -67,7 +67,9 @@ each workspace package.json:
 
 #### [research] Task 1.1: Enumerate dependency drift across workspaces
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -81,14 +83,16 @@ each workspace package.json:
 
 **Acceptance:**
 
-- [ ] Drift report lists every dep with ≥2 versions.
-- [ ] Top 10 worst offenders ranked by number of consumers.
+- [x] Drift report lists every dep with ≥2 versions.
+- [x] Top 10 worst offenders ranked by number of consumers.
 
 ### Phase 2: Seed catalog [Complexity: M]
 
 #### [config] Task 2.1: Add baseline `catalog:` to `pnpm-workspace.yaml`
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -96,12 +100,14 @@ each workspace package.json:
 
 **Acceptance:**
 
-- [ ] Top-10 deps from the drift report live in `catalog:`.
-- [ ] `pnpm-workspace.yaml` sets `minimumReleaseAge: 86400` and `cleanupUnusedCatalogs: true`.
+- [x] Top-10 deps from the drift report live in `catalog:`.
+- [x] `pnpm-workspace.yaml` sets `minimumReleaseAge: 86400` and `cleanupUnusedCatalogs: true`.
 
 #### [refactor] Task 2.2: Rewrite workspaces to use `catalog:`
 
-**Status:** pending **Depends:** Task 2.1
+**Status:** done
+
+**Depends:** Task 2.1
 
 **Files:**
 
@@ -109,14 +115,16 @@ each workspace package.json:
 
 **Acceptance:**
 
-- [ ] `pnpm install` succeeds; lockfile hashes update.
-- [ ] No workspace still declares a literal version for a catalog-tracked dep.
+- [x] `pnpm install` succeeds; lockfile hashes update.
+- [x] No workspace still declares a literal version for a catalog-tracked dep.
 
 ### Phase 3: Hardening [Complexity: S]
 
 #### [qa] Task 3.1: Add a catalog-drift check to CI
 
-**Status:** pending **Depends:** Task 2.2
+**Status:** done
+
+**Depends:** Task 2.2
 
 **Files:**
 
@@ -125,8 +133,8 @@ each workspace package.json:
 
 **Acceptance:**
 
-- [ ] Script fails if any workspace declares a literal version for a dep also in `catalog:`.
-- [ ] CI gate named `catalog-drift` blocks merges on violations.
+- [x] Script fails if any workspace declares a literal version for a dep also in `catalog:`.
+- [x] CI gate named `catalog-drift` blocks merges on violations.
 
 ## Verification Gates
 

@@ -139,7 +139,7 @@ CLAUDE.md (update)            →  "FE is HTMX-on-Hono SSR in apps/lab/* only"
 
 #### [ops] Task 5.1: `HeartbeatCron` (F-19, F-06)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** `consistency-lab-shell` complete
 
@@ -181,7 +181,7 @@ without the daily cost hit.
 
 #### [ops] Task 5.2: `CostEstimatorCron` (renamed; F-01, F9T, F-13)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** `consistency-lab-shell` complete
 
@@ -224,7 +224,7 @@ Doppler (F-01).
 
 #### [docs] Task 5.3: Incident runbook
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 5.1, 5.2
 
@@ -262,7 +262,7 @@ Write `docs/runbooks/lab-incident.md` with three scripts:
 
 #### [docs] Task 5.4: `packages/lab-core` README
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Lane A merged
 
@@ -291,7 +291,7 @@ real examples. Target: new contributor is productive in 1 hour.
 
 #### [docs] Task 5.5: HTMX precedent note in CLAUDE.md (F-18)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Lane D merged
 
@@ -321,7 +321,7 @@ from the lab's choice (F-18).
 
 #### [ops] Task 5.6: `KillSwitchAutoReset` daily cron (F-11)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Lane A Task 1.8 (`KillSwitchKV`), `consistency-lab-shell` merged
 
@@ -355,7 +355,7 @@ instead of resetting.
 
 #### [ops] Task 5.7: `AdminBypassToken` module (F-06)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Lane A (contract + test-utils)
 

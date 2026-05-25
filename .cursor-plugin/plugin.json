@@ -1,15 +1,16 @@
 {
-  "_generated": "by agent-kit ak compile — do not edit manually",
+  "_generated": "by agent-kit wp compile — do not edit manually",
   "name": "@webpresso/agent-kit",
   "version": "0.0.0",
   "description": "Agent-kit: blueprint lifecycle, skill compiler, audits for Claude Code",
   "rules": [
+    "rules/gstack-routing.md",
     "rules/cmd-execution.md",
     "rules/extraction-parity.md",
     "rules/repo-restrictions.md",
     "rules/agent-guide.md",
     "rules/rtk-routing.md",
-    "rules/README.md",
+    "rules/supported-agent-clis.md",
     "rules/generated-code-governance.md",
     "rules/changeset-release.md",
     "rules/package-conventions.md",
@@ -21,16 +22,49 @@
   ],
   "skills": [
     {
+      "path": "skills/logging-best-practices/SKILL.md"
+    },
+    {
+      "path": "skills/vercel-react-best-practices/SKILL.md"
+    },
+    {
       "path": "skills/testing-philosophy/SKILL.md"
+    },
+    {
+      "path": "skills/frontend-design/SKILL.md"
+    },
+    {
+      "path": "skills/better-auth-best-practices/SKILL.md"
+    },
+    {
+      "path": "skills/fix/SKILL.md"
     },
     {
       "path": "skills/plan-refine/SKILL.md"
     },
     {
+      "path": "skills/hooks-doctor/SKILL.md"
+    },
+    {
       "path": "skills/deep-research/SKILL.md"
     },
     {
+      "path": "skills/tech-debt/SKILL.md"
+    },
+    {
+      "path": "skills/react-doctor/SKILL.md"
+    },
+    {
       "path": "skills/monorepo-navigation/SKILL.md"
+    },
+    {
+      "path": "skills/web-design-guidelines/SKILL.md"
+    },
+    {
+      "path": "skills/tanstack-query/SKILL.md"
+    },
+    {
+      "path": "skills/lore-protocol/SKILL.md"
     },
     {
       "path": "skills/verify/SKILL.md"

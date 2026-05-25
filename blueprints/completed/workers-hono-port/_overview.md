@@ -103,7 +103,9 @@ before:                              after (as shipped):
 
 #### [scaffold] Task 1.1: Create `apps/workers/` workspace
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -116,12 +118,14 @@ before:                              after (as shipped):
 
 **Acceptance:**
 
-- [ ] `pnpm --filter @repo/workers exec wrangler dev` starts without errors.
-- [ ] `GET /health` returns `200 ok` in `wrangler dev` mode.
+- [x] `pnpm --filter @repo/workers exec wrangler dev` starts without errors.
+- [x] `GET /health` returns `200 ok` in `wrangler dev` mode.
 
 #### [deps] Task 1.2: Add Hono + Drizzle + postgres-js to catalog
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -130,14 +134,16 @@ before:                              after (as shipped):
 
 **Acceptance:**
 
-- [ ] `pnpm install --frozen-lockfile` completes without peer warnings.
-- [ ] `import { Hono } from 'hono'` resolves in `apps/workers/src/index.ts`.
+- [x] `pnpm install --frozen-lockfile` completes without peer warnings.
+- [x] `import { Hono } from 'hono'` resolves in `apps/workers/src/index.ts`.
 
 ### Phase 2: Database layer [Complexity: M]
 
 #### [db] Task 2.1: Drizzle schema + Hyperdrive client
 
-**Status:** pending **Depends:** Task 1.2
+**Status:** done
+
+**Depends:** Task 1.2
 
 Replace mongoose models (`Topic`, `Subscription`, `Event`, `Delivery`) with
 Drizzle table definitions.
@@ -150,14 +156,16 @@ Drizzle table definitions.
 
 **Acceptance:**
 
-- [ ] `pnpm --filter @repo/workers exec drizzle-kit generate` produces a migration file.
-- [ ] `client.ts` accepts a Hyperdrive `connectionString` binding and returns a Drizzle instance.
+- [x] `pnpm --filter @repo/workers exec drizzle-kit generate` produces a migration file.
+- [x] `client.ts` accepts a Hyperdrive `connectionString` binding and returns a Drizzle instance.
 
 ### Phase 3: Route + service port [Complexity: L]
 
 #### [port] Task 3.1: Port REST API routes
 
-**Status:** pending **Depends:** Task 2.1
+**Status:** done
+
+**Depends:** Task 2.1
 
 **Files:**
 
@@ -169,12 +177,14 @@ Drizzle table definitions.
 
 **Acceptance:**
 
-- [ ] All existing integration test scenarios pass against the new Hono routes in `wrangler dev`.
-- [ ] No mongoose import anywhere in `apps/workers/`.
+- [x] All existing integration test scenarios pass against the new Hono routes in `wrangler dev`.
+- [x] No mongoose import anywhere in `apps/workers/`.
 
 #### [port] Task 3.2: Port SSE / real-time push
 
-**Status:** pending **Depends:** Task 3.1
+**Status:** done
+
+**Depends:** Task 3.1
 
 **Files:**
 
@@ -182,13 +192,15 @@ Drizzle table definitions.
 
 **Acceptance:**
 
-- [ ] A connected SSE client receives events within 500 ms of publish in `wrangler dev`.
+- [x] A connected SSE client receives events within 500 ms of publish in `wrangler dev`.
 
 ### Phase 4: Tests [Complexity: M]
 
 #### [test] Task 4.1: Integration test suite for Workers workspace
 
-**Status:** pending **Depends:** Task 3.1, Task 3.2
+**Status:** done
+
+**Depends:** Task 3.1, Task 3.2
 
 **Files:**
 
@@ -197,13 +209,15 @@ Drizzle table definitions.
 
 **Acceptance:**
 
-- [ ] `pnpm --filter @repo/workers test` is green with ≥80% line coverage.
+- [x] `pnpm --filter @repo/workers test` is green with ≥80% line coverage.
 
 ### Phase 5: Hard-cut legacy [Complexity: S]
 
 #### [delete] Task 5.1: Remove `apps/api-server/` and `apps/notification-server/`
 
-**Status:** done **Depends:** Task 4.1
+**Status:** done
+
+**Depends:** Task 4.1
 
 **Files:**
 
@@ -215,9 +229,9 @@ Drizzle table definitions.
 
 **Acceptance:**
 
-- [ ] `pnpm install` completes after deletion.
-- [ ] No reference to `apps/api-server` or `apps/notification-server` remains in any `package.json`, CI YAML, or config file.
-- [ ] `pnpm qa` green after deletion.
+- [x] `pnpm install` completes after deletion.
+- [x] No reference to `apps/api-server` or `apps/notification-server` remains in any `package.json`, CI YAML, or config file.
+- [x] `pnpm qa` green after deletion.
 
 ## Verification Gates
 

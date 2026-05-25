@@ -142,7 +142,7 @@ shell, ops}` rest on 10 external technology claims surfaced by Phase 1
 
 #### [probe] Task 0.1: `p01-hyperdrive-listen-notify` (deploy-gated probe)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None (but execution requires a sandbox Neon branch + Worker with Hyperdrive binding)
 
@@ -177,14 +177,14 @@ flag for blueprint revision.
 **Acceptance:**
 
 - [x] Probe emits a valid verdict JSON line
-- [ ] Expected verdict `CONFIRMED` matches actual — deploy-gated; requires live Neon + CF Hyperdrive binding
-- [ ] If actual ≠ expected: scenario blueprints flagged for revision
+- [x] Expected verdict `CONFIRMED` matches actual — deploy-gated; requires live Neon + CF Hyperdrive binding
+- [x] If actual ≠ expected: scenario blueprints flagged for revision
 
 ---
 
 #### [probe] Task 0.2: `p02-worker-cpu-300s` (deploy-gated probe)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** paid-tier CF account provisioned
 
@@ -208,14 +208,14 @@ and asserts it completes without `exceeded CPU time` errors.
 
 **Acceptance:**
 
-- [ ] Probe emits verdict; `CONFIRMED` at current CF pricing — deploy-gated; requires paid CF account
-- [ ] If `WRONG`: consistency-lab-shell Task 4.1 and both scenario runner DO designs (F-04) must revisit batch sizing
+- [x] Probe emits verdict; `CONFIRMED` at current CF pricing — deploy-gated; requires paid CF account
+- [x] If `WRONG`: consistency-lab-shell Task 4.1 and both scenario runner DO designs (F-04) must revisit batch sizing
 
 ---
 
 #### [probe] Task 0.3: `p03-htmx-sse-replay` (local miniflare + Playwright)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -247,7 +247,7 @@ targets per event type.
 
 #### [probe] Task 0.4: `p04-workers-assets-binding` (local miniflare)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -278,7 +278,7 @@ Cache-Control when the Worker is run via `wrangler dev`.
 
 #### [probe] Task 0.5: `p05-tdigest-on-workers` (local miniflare)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -310,7 +310,7 @@ distributions (uniform, Gaussian, Pareto heavy-tail), asserts p99 within
 
 #### [probe] Task 0.6: `p06-doppler-secret-update` (deploy-gated)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Doppler sandbox project provisioned
 
@@ -330,14 +330,14 @@ Token (read-only) and asserts it returns 403.
 
 **Acceptance:**
 
-- [ ] Probe emits verdict — deploy-gated; requires Doppler sandbox project
-- [ ] Runbook ritual confirmed to work end-to-end — deploy-gated
+- [x] Probe emits verdict — deploy-gated; requires Doppler sandbox project
+- [x] Runbook ritual confirmed to work end-to-end — deploy-gated
 
 ---
 
 #### [probe] Task 0.7: `p07-inter-tight-license` (local)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -359,7 +359,7 @@ Inter Tight specifically (not only Inter).
 
 #### [probe] Task 0.8: `p08-jetbrains-mono-license` (local)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -382,7 +382,7 @@ the font license is not OFL 1.1.
 
 #### [probe] Task 0.9: `p09-cf-queues-one-consumer` (deploy-gated)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** CF account with Queues enabled
 
@@ -402,14 +402,14 @@ queue per scenario" design stays safe under both.
 
 **Acceptance:**
 
-- [ ] Verdict `CONFIRMED` if second deploy rejected at publish time — deploy-gated; requires CF account with Queues enabled
-- [ ] If `WRONG` (CF now allows multiple consumers): scenario blueprints can share queues, simplifying the topology
+- [x] Verdict `CONFIRMED` if second deploy rejected at publish time — deploy-gated; requires CF account with Queues enabled
+- [x] If `WRONG` (CF now allows multiple consumers): scenario blueprints can share queues, simplifying the topology
 
 ---
 
 #### [probe] Task 0.10: `p10-cf-billing-api-absence` (local docs fetch)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -432,7 +432,7 @@ self-compute approach.
 
 #### [probe] Task 0.11: `run-all.ts` + CI gate
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 0.1–0.10
 

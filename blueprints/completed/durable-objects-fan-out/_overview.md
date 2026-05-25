@@ -48,7 +48,7 @@ hibernation.
 
 ## Completion audit (2026-04-22)
 
-**Status:** implemented in repo head and verified.
+**Completion:** implemented in repo head and verified.
 
 **What landed**
 

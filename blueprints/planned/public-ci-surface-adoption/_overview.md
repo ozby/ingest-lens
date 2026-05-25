@@ -7,7 +7,8 @@ created: "2026-05-23"
 last_updated: "2026-05-23"
 progress: "0% (planned; waiting on upstream public ci/secret surfaces)"
 owner: ozby
-depends_on: []
+depends_on:
+  - /Users/ozby/repos/webpresso/agent-kit/blueprints/planned/secret-aware-worker-tail-mcp/_overview.md
 tags:
   - ci
   - secrets
@@ -66,6 +67,30 @@ After
 | Local retained logic    | Workflow/profile preset data only                     | IngestLens-specific workflow policy is still repo-owned and testable.      |
 | Provider behavior       | Public runtime secret gate only                       | Avoid direct `doppler run` / `infisical run` composition in consumer code. |
 | Migration style         | Preserve CLI behavior first, then simplify local code | Existing scripts and docs are already part of contributor workflow.        |
+
+## DRY/SOLID Consumer Contract
+
+IngestLens is the consumer edge of the three-repo refactor. Its elegant end
+state is intentionally boring: package scripts and docs call a public Webpresso
+CI helper, while this repo keeps only workflow/profile preset data.
+
+| Concern                                                             | Owner after migration            | IngestLens rule                                                                                              |
+| ------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Secret-provider resolution                                          | Public Webpresso secret gate     | Do not call `doppler`, `infisical`, or provider CLIs from the CI act path.                                   |
+| Act temp-file rendering, architecture defaults, mounts, and cleanup | Public Webpresso CI act helper   | Delete or collapse duplicated engine logic from `scripts/act-with-doppler.ts`.                               |
+| Workflow/profile policy                                             | IngestLens preset data           | Keep `.github/workflows/*` to profile mappings local and tested.                                             |
+| Contributor command surface                                         | IngestLens `package.json` + docs | Preserve `act:ci`, `act:e2e`, `act:cleanup`, and `act:list` as stable wrappers while their internals change. |
+
+SOLID guardrails:
+
+- **Single responsibility:** `scripts/act-secret-profile.ts` may retain only
+  preset/policy data; it should not load secrets or build `act` process args.
+- **Open/closed:** adding a workflow should add preset data, not edit the shared
+  Webpresso helper engine.
+- **Interface segregation:** docs and package scripts depend on the public
+  helper CLI/API, not on Webpresso internal source paths.
+- **Dependency inversion:** consumer code depends on a published Webpresso
+  interface; the provider implementation remains behind the secret gate.
 
 ## Quick Reference (Execution Waves)
 
@@ -176,11 +201,11 @@ Webpresso CI/secret surface rather than the local wrapper engine.
 
 ## Verification Gates
 
-| Gate                | Command                                                                                                  | Success Criteria |
-| ------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
-| Focused tests       | `bun test scripts/act-with-doppler.test.ts`                                                              | All pass         |
-| Docs/frontmatter    | `AK_SKIP_UPDATE_CHECK=1 bun ./scripts/run-webpresso-cli.ts agent audit docs-frontmatter`                 | Pass             |
-| Blueprint lifecycle | `AK_SKIP_UPDATE_CHECK=1 bun ./scripts/run-webpresso-cli.ts agent audit blueprint-lifecycle --legacy-omx` | Pass             |
+| Gate                | Command                                                            | Success Criteria |
+| ------------------- | ------------------------------------------------------------------ | ---------------- |
+| Focused tests       | `vp run test -- scripts/act-with-doppler.test.ts`                  | All pass         |
+| Docs/frontmatter    | `WP_SKIP_UPDATE_CHECK=1 wp audit docs-frontmatter`                 | Pass             |
+| Blueprint lifecycle | `WP_SKIP_UPDATE_CHECK=1 wp audit blueprint-lifecycle --legacy-omx` | Pass             |
 
 ## Cross-Plan References
 

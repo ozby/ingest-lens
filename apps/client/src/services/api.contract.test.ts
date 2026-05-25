@@ -46,7 +46,6 @@ describe("api service contracts", () => {
     axiosMocks.get.mockReset();
     axiosMocks.post.mockReset();
     axiosMocks.del.mockReset();
-    axiosMocks.responseUse.mockReset();
     toastMocks.error.mockReset();
     localStorage.clear();
   });

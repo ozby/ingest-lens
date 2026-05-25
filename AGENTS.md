@@ -2,27 +2,15 @@
   AGENTS.md template.
 
   `wp setup` renders this file with:
-  - - `@repo/e2e` — `apps/e2e`
-- `@repo/infra` — `infra`
-- `@repo/lab` — `apps/lab`
-- `@repo/lab-core` — `packages/lab-core`
-- `@repo/lab-s1a-correctness` — `apps/lab/scenarios/s1a-correctness`
-- `@repo/lab-s1b-latency` — `apps/lab/scenarios/s1b-latency`
-- `@repo/logger` — `packages/logger`
-- `@repo/test-utils` — `packages/test-utils`
-- `@repo/types` — `packages/types`
-- `@repo/typescript-config` — `packages/config-typescript`
-- `@repo/ui` — `packages/ui`
-- `@repo/workers` — `apps/workers`
-- `client` — `apps/client`: bulleted list of workspace packages inferred from
+  - Repository map: bulleted list of workspace packages inferred from
     pnpm-workspace.yaml / package.json workspaces.
-  - - React: short description generated from package.json + detected
+  - Tech stack: short description generated from package.json + detected
     frameworks (React, Hono, Drizzle, etc.).
-  - {{TODO: populate escalation map — who to ping for which subsystem.}}: user-edited section. Left as a TODO placeholder if
+  - Escalation map: user-edited section. Left as a TODO placeholder if
     not specified.
-  - .agent/planning/: defaults to `.agent/planning/`. Override via
+  - Durable planning root: defaults to `.agent/planning/`. Override via
     .agent-kitrc.json.
-  - blueprints: defaults to `blueprints`. Override via
+  - Blueprints directory: defaults to `blueprints`. Override via
     .agent-kitrc.json#blueprintsDir.
 
   Managed sections in this file are refreshed by agent-kit on `wp sync`.
@@ -31,7 +19,6 @@
 -->
 
 <!-- >>> managed by @webpresso/agent-kit (operating-contract) -->
-
 # Operating Contract
 
 This is the shared working agreement for contributors and coding agents in this
@@ -97,7 +84,6 @@ If a gate fails, fix the root cause or record the blocker with evidence.
 Commit messages, PR descriptions, and decision records should explain why the
 change exists, what tradeoffs were made, and what was verified. Record durable
 architecture decisions in this repo's ADR or planning location if one exists.
-
 <!-- <<< managed by @webpresso/agent-kit (operating-contract) -->
 
 <!-- >>> user-owned (repo-customizations) -->
@@ -110,7 +96,6 @@ this block is preserved verbatim across `ak sync` runs.
 <!-- <<< user-owned (repo-customizations) -->
 
 <!-- >>> managed by @webpresso/agent-kit (planning-and-release) -->
-
 ## Safety boundaries
 
 - Do not commit secrets or credentials.
@@ -146,7 +131,6 @@ All packages in the webpresso public umbrella use **Changesets**. Never push
 `v*` tags or manually bump `package.json#version`.
 
 To ship a change:
-
 1. `vp run changeset` — describe the change and select the bump type.
 2. Commit the generated `.changeset/<name>.md` alongside your code.
 3. Merge to `main`. CI opens a **"Version Packages"** PR automatically.

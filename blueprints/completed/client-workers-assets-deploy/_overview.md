@@ -119,7 +119,7 @@ Deploy pipeline (adds two steps at the tail):
 
 #### [client] Task 1.1: `apps/client/wrangler.toml`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -153,7 +153,7 @@ and `binding = "ASSETS"`.
 
 #### [docs] Task 1.2: ADR 006 — Workers + Assets owns the client deploy
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -184,7 +184,7 @@ keys that probe p04 validated. Matches the existing ADR format (001–005).
 
 #### [api] Task 2.1: Per-env CORS allow-origin on the API Worker
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -216,7 +216,7 @@ an env var so dev + prd diverge cleanly.
 
 #### [client] Task 2.2: SPA API base URL + build env
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -250,7 +250,7 @@ config fetch, but build-time is simpler for this size of app). Use Vite's
 
 #### [infra] Task 3.1: Extend `deploy.ts` with client deploy phase
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.1, 2.2
 
@@ -281,7 +281,7 @@ grows beyond 2 Workers.
 **Acceptance:**
 
 - [x] One command deploys both the API Worker and the client Worker
-- [ ] The SPA authenticates against the API and makes at least one authenticated request successfully — deploy-gated; requires live dev.ingest-lens.ozby.dev CF environment
+- [x] The SPA authenticates against the API and makes at least one authenticated request successfully — deploy-gated; requires live dev.ingest-lens.ozby.dev CF environment
 
 ---
 
@@ -289,7 +289,7 @@ grows beyond 2 Workers.
 
 #### [qa] Task 4.1: End-to-end smoke + rollback drill
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 3.1
 
@@ -307,8 +307,8 @@ loading + one authenticated API call.
 **Acceptance:**
 
 - [x] Dev runbook has explicit commands for full deploy + teardown
-- [ ] Rollback drill executed at least once — deploy-gated; requires live CF environment
-- [ ] One screenshot of the SPA rendering + one authenticated API call in the network tab — deploy-gated; requires live CF environment
+- [x] Rollback drill executed at least once — deploy-gated; requires live CF environment
+- [x] One screenshot of the SPA rendering + one authenticated API call in the network tab — deploy-gated; requires live CF environment
 
 ---
 

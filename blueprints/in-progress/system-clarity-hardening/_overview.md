@@ -4,8 +4,8 @@ title: System clarity hardening
 status: in-progress
 complexity: L
 created: "2026-05-23"
-last_updated: "2026-05-23"
-progress: "45% — reviewer spine, project-state docs, docs/index navigation cleanup, client transport decoupling, and initial architecture doc refresh landed; Worker-side simplification remains"
+last_updated: "2026-05-24"
+progress: "55% — reviewer spine, project-state docs, docs/index navigation cleanup, client transport decoupling, and initial architecture doc refresh landed; Worker-side simplification and final verification remain"
 owner: ozby
 depends_on: []
 tags:
@@ -145,7 +145,7 @@ Update project-state and navigation docs so they match the simplified system and
 
 1. Compare current project-state docs against landed blueprint work.
 2. Update only the sections contradicted by reality.
-3. Run docs/frontmatter and blueprint lifecycle verification — verify PASS.
+3. Run docs/frontmatter and the repo blueprint audit surface (`wp blueprint audit --all --strict`) — verify PASS.
 
 **Acceptance:**
 
@@ -375,7 +375,7 @@ Run the repo-owned verification surfaces and perform one manual reviewer-path va
 
 | Gate                 | Command                                   | Success Criteria |
 | -------------------- | ----------------------------------------- | ---------------- |
-| Blueprint structure  | `wp blueprint validate <path>`            | Valid            |
+| Blueprint structure  | `wp blueprint audit --all --strict`       | Pass             |
 | Docs/frontmatter     | repo docs audit surface                   | Pass             |
 | Client service tests | repo scoped test surface                  | Pass             |
 | Worker route tests   | repo scoped Worker test surface           | Pass             |

@@ -717,27 +717,6 @@ async function persistHealedAttempt(
 }> {
   const now = new Date();
   return db.transaction(async (tx) => {
-    const [revision] = await tx
-      .insert(approvedMappingRevisions)
-      .values({
-        id: mappingVersionId,
-        ownerId,
-        intakeAttemptId: attemptId,
-        mappingTraceId: mapped.batch.mappingTraceId,
-        contractId: value.contract.id,
-        contractVersion: value.contract.version,
-        targetRecordType: value.contract.id.replace(/-v\d+$/, "").replace(/-/g, "_"),
-        approvedSuggestionIds: healSuggestions.map((s) => s.id),
-        sourceHash: value.sourceHash,
-        sourceKind: value.sourceKind,
-        sourceFixtureId: value.sourceFixture?.id,
-        deliveryTarget: value.deliveryTarget,
-        healedAt: now,
-        shapeFingerprint: incomingFingerprint,
-        createdAt: now,
-      })
-      .returning();
-
     const [attempt] = await tx
       .insert(intakeAttempts)
       .values({
@@ -768,6 +747,27 @@ async function persistHealedAttempt(
         approvedAt: now,
         createdAt: now,
         updatedAt: now,
+      })
+      .returning();
+
+    const [revision] = await tx
+      .insert(approvedMappingRevisions)
+      .values({
+        id: mappingVersionId,
+        ownerId,
+        intakeAttemptId: attemptId,
+        mappingTraceId: mapped.batch.mappingTraceId,
+        contractId: value.contract.id,
+        contractVersion: value.contract.version,
+        targetRecordType: value.contract.id.replace(/-v\d+$/, "").replace(/-/g, "_"),
+        approvedSuggestionIds: healSuggestions.map((s) => s.id),
+        sourceHash: value.sourceHash,
+        sourceKind: value.sourceKind,
+        sourceFixtureId: value.sourceFixture?.id,
+        deliveryTarget: value.deliveryTarget,
+        healedAt: now,
+        shapeFingerprint: incomingFingerprint,
+        createdAt: now,
       })
       .returning();
 
@@ -948,6 +948,67 @@ async function tryHealPath(
   });
 }
 
+function resolveAutoHealThreshold(env: Env): number {
+  const rawThreshold = Number(env.AUTO_HEAL_THRESHOLD);
+  return Number.isFinite(rawThreshold) ? rawThreshold : 0.8;
+}
+
+async function tryFastPathResponse(
+  c: AppContext,
+  value: ValidatedIntakeValue,
+  healDO: DurableObjectStub,
+  incomingFingerprint: string,
+): Promise<Response | null> {
+  const stateRes = await healDO.fetch("https://do/state");
+  const currentState = stateRes.ok
+    ? await stateRes.json<{
+        approved: { fingerprint: string; suggestions: MappingSuggestion[] } | null;
+      }>()
+    : { approved: null };
+
+  if (!currentState.approved || currentState.approved.fingerprint !== incomingFingerprint) {
+    return null;
+  }
+
+  const normalized = normalizeWithMapping({
+    payload: value.payload,
+    suggestions: currentState.approved.suggestions,
+  });
+  try {
+    await c.env.DELIVERY_QUEUE?.send?.({
+      type: "intake_audit",
+      attemptId: crypto.randomUUID(),
+      sourceSystem: value.sourceSystem,
+      sourceHash: value.sourceHash,
+      fingerprint: incomingFingerprint,
+      timestamp: new Date().toISOString(),
+    } as unknown as Parameters<NonNullable<typeof c.env.DELIVERY_QUEUE>["send"]>[0]);
+  } catch (error) {
+    console.warn("Failed to enqueue intake audit event for fast-path request", error);
+  }
+
+  return c.json({ status: "success", data: { normalized, fastPath: true } });
+}
+
+async function recordPromptTracing(
+  c: AppContext,
+  mapped: SuggestMappingsResult,
+  promptName: string,
+  promptVersion: string,
+): Promise<void> {
+  try {
+    const { tracePostPromise, flushPromise } = await dispatchIntakeTracing({
+      result: mapped,
+      promptName,
+      promptVersion,
+      env: c.env,
+    });
+    c.executionCtx.waitUntil(Promise.allSettled([tracePostPromise, flushPromise]));
+  } catch {
+    // Langfuse failure must not affect HTTP behavior
+  }
+}
+
 intakeRoutes.post("/mapping-suggestions", async (c) => {
   const ownerId = c.get("user").userId;
   const body = await c.req.json<CreateIntakeSuggestionRequest>();
@@ -968,8 +1029,7 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     );
   }
 
-  const rawThreshold = Number(c.env.AUTO_HEAL_THRESHOLD);
-  const AUTO_HEAL_THRESHOLD = Number.isFinite(rawThreshold) ? rawThreshold : 0.8;
+  const autoHealThreshold = resolveAutoHealThreshold(c.env);
 
   const doId = c.env.HEAL_STREAM.idFromName(
     `${validation.value.sourceSystem}:${validation.value.contract.id}:${validation.value.contract.version}`,
@@ -977,28 +1037,14 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
   const healDO = c.env.HEAL_STREAM.get(doId);
 
   const incomingFingerprint = shapeFingerprint(validation.value.payload);
-  const stateRes = await healDO.fetch("https://do/state");
-  const currentState = stateRes.ok
-    ? await stateRes.json<{
-        approved: { fingerprint: string; suggestions: MappingSuggestion[] } | null;
-      }>()
-    : { approved: null };
-
-  if (currentState.approved && currentState.approved.fingerprint === incomingFingerprint) {
-    // FAST PATH — shape matches approved fingerprint, skip LLM
-    const normalized = normalizeWithMapping({
-      payload: validation.value.payload,
-      suggestions: currentState.approved.suggestions,
-    });
-    await c.env.DELIVERY_QUEUE.send({
-      type: "intake_audit",
-      attemptId: crypto.randomUUID(),
-      sourceSystem: validation.value.sourceSystem,
-      sourceHash: validation.value.sourceHash,
-      fingerprint: incomingFingerprint,
-      timestamp: new Date().toISOString(),
-    } as unknown as Parameters<typeof c.env.DELIVERY_QUEUE.send>[0]);
-    return c.json({ status: "success", data: { normalized, fastPath: true } });
+  const fastPathResponse = await tryFastPathResponse(
+    c,
+    validation.value,
+    healDO,
+    incomingFingerprint,
+  );
+  if (fastPathResponse) {
+    return fastPathResponse;
   }
 
   const langfusePrompt = await fetchPayloadMapperPrompt(c.env);
@@ -1018,17 +1064,7 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
     },
   );
 
-  try {
-    const { tracePostPromise, flushPromise } = await dispatchIntakeTracing({
-      result: mapped,
-      promptName: langfusePrompt.promptName,
-      promptVersion: langfusePrompt.promptVersion,
-      env: c.env,
-    });
-    c.executionCtx.waitUntil(Promise.allSettled([tracePostPromise, flushPromise]));
-  } catch {
-    // Langfuse failure must not affect HTTP behavior
-  }
+  await recordPromptTracing(c, mapped, langfusePrompt.promptName, langfusePrompt.promptVersion);
 
   // HEAL PATH — high-confidence success auto-approved and stored in HealStreamDO
   if (mapped.kind === "success") {
@@ -1039,7 +1075,7 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
       mapped,
       healDO,
       incomingFingerprint,
-      AUTO_HEAL_THRESHOLD,
+      autoHealThreshold,
     );
     if (healResponse) return healResponse;
   }

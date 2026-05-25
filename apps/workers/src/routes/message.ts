@@ -12,6 +12,24 @@ const DEFAULT_MAX_MESSAGES = 10;
 const DEFAULT_VISIBILITY_TIMEOUT = 30;
 
 type LeaseMessageRow = typeof messages.$inferSelect;
+type SnakeLeaseMessageRow = {
+  id: string;
+  seq: LeaseMessageRow["seq"];
+  data: LeaseMessageRow["data"];
+  queue_id: string;
+  idempotency_key: string | null;
+  delivery_mode: LeaseMessageRow["deliveryMode"];
+  enqueue_state: LeaseMessageRow["enqueueState"];
+  push_delivered_at: Date | null;
+  last_enqueue_error: string | null;
+  received: boolean;
+  received_at: Date | null;
+  visibility_expires_at: Date | null;
+  expires_at: Date;
+  received_count: number;
+  created_at: Date;
+  updated_at: Date;
+};
 
 export const messageRoutes = new Hono<{
   Bindings: Env;
@@ -28,14 +46,16 @@ async function claimVisibleMessagesAtomically(
   visibilityExpiresAt: Date,
   maxMessages: number,
 ): Promise<LeaseMessageRow[]> {
+  const nowIso = now.toISOString();
+  const visibilityExpiresAtIso = visibilityExpiresAt.toISOString();
   const claimedRows = await db.execute(sql`
     WITH claimed AS (
       SELECT id
       FROM messages
       WHERE queue_id = ${queueId}
         AND delivery_mode = 'pull'
-        AND expires_at > ${now}
-        AND (received = false OR visibility_expires_at <= ${now})
+        AND expires_at > ${nowIso}
+        AND (received = false OR visibility_expires_at <= ${nowIso})
       ORDER BY seq
       LIMIT ${maxMessages}
       FOR UPDATE SKIP LOCKED
@@ -44,10 +64,10 @@ async function claimVisibleMessagesAtomically(
       UPDATE messages
       SET
         received = true,
-        received_at = ${now},
-        visibility_expires_at = ${visibilityExpiresAt},
+        received_at = ${nowIso},
+        visibility_expires_at = ${visibilityExpiresAtIso},
         received_count = messages.received_count + 1,
-        updated_at = ${now}
+        updated_at = ${nowIso}
       WHERE id IN (SELECT id FROM claimed)
       RETURNING *
     )
@@ -56,7 +76,34 @@ async function claimVisibleMessagesAtomically(
     ORDER BY seq
   `);
 
-  return claimedRows as unknown as LeaseMessageRow[];
+  return (claimedRows as unknown as Array<LeaseMessageRow | SnakeLeaseMessageRow>).map(
+    normalizeLeaseMessageRow,
+  );
+}
+
+function normalizeLeaseMessageRow(row: LeaseMessageRow | SnakeLeaseMessageRow): LeaseMessageRow {
+  if ("queueId" in row) {
+    return row;
+  }
+
+  return {
+    id: row.id,
+    seq: row.seq,
+    data: row.data,
+    queueId: row.queue_id,
+    idempotencyKey: row.idempotency_key,
+    deliveryMode: row.delivery_mode,
+    enqueueState: row.enqueue_state,
+    pushDeliveredAt: row.push_delivered_at,
+    lastEnqueueError: row.last_enqueue_error,
+    received: row.received,
+    receivedAt: row.received_at,
+    visibilityExpiresAt: row.visibility_expires_at,
+    expiresAt: row.expires_at,
+    receivedCount: row.received_count,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
 // POST /api/messages/:queueId — send message

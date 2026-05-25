@@ -6,7 +6,7 @@
     },
     "agent-kit": {
       "type": "local",
-      "command": ["bun", "node_modules/@webpresso/agent-kit/src/mcp/cli.ts"]
+      "command": ["wp", "mcp"]
     }
   },
   "plugin": ["context-mode"],

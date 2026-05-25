@@ -109,7 +109,7 @@ packages/neon/src/
 
 #### [infra] Task 2.1: Add `@webpresso/db-branching` to workspace
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -134,13 +134,13 @@ Run `pnpm install`. Verify `pnpm --filter @repo/neon check-types` passes.
 
 **Acceptance:**
 
-- [ ] `import type { BranchProvider, Branch } from "@webpresso/db-branching"` resolves
+- [x] `import type { BranchProvider, Branch } from "@webpresso/db-branching"` resolves
 
 ---
 
 #### [neon] Task 2.2: Create `NeonBranchProvider`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.1
 
@@ -191,15 +191,15 @@ Write `packages/neon/src/provider.test.ts` with mocked `createEphemeralBranch` /
 
 **Acceptance:**
 
-- [ ] `NeonBranchProvider` implements `BranchProvider` (TypeScript structural check)
-- [ ] `resetBranch` throws with a clear error message
-- [ ] Tests pass
+- [x] `NeonBranchProvider` implements `BranchProvider` (TypeScript structural check)
+- [x] `resetBranch` throws with a clear error message
+- [x] Tests pass
 
 ---
 
 #### [e2e] Task 2.3: Update E2E branch scripts
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.2
 
@@ -217,14 +217,14 @@ Replace `NeonBranch` type with `Branch` from `@webpresso/db-branching`.
 
 **Acceptance:**
 
-- [ ] Scripts still produce same stdout JSON shape as before
-- [ ] No direct `createEphemeralBranch` calls remain in `apps/e2e/`
+- [x] Scripts still produce same stdout JSON shape as before
+- [x] No direct `createEphemeralBranch` calls remain in `apps/e2e/`
 
 ---
 
 #### [cleanup] Task 2.4: Deprecation markers
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.2
 
@@ -240,8 +240,8 @@ Add `/** @deprecated use Branch from @webpresso/db-branching */` to the
 
 **Acceptance:**
 
-- [ ] IDE shows deprecation warnings on old call sites
-- [ ] `check-types` still passes
+- [x] IDE shows deprecation warnings on old call sites
+- [x] `check-types` still passes
 
 ## Verification Gates
 

@@ -149,7 +149,10 @@ describe("e2e-suite-manifest", () => {
       {
         id: "client",
         aliases: ["bundle", "splitting"],
-        fileMatchers: ["journeys/client-route-code-splitting.e2e.ts"],
+        fileMatchers: [
+          "journeys/client-route-code-splitting.e2e.ts",
+          "journeys/client-surfaces.spec.ts",
+        ],
         batchKey: "client",
         env: undefined,
         steps: [
@@ -161,6 +164,18 @@ describe("e2e-suite-manifest", () => {
             fixedArgs: undefined,
             commandArgs: undefined,
             batchKey: "client",
+            env: undefined,
+          },
+          {
+            runner: "playwright",
+            logName: "client-ui",
+            configPath: "playwright.config.ts",
+            fixedFiles: ["journeys/client-surfaces.spec.ts"],
+            fixedArgs: undefined,
+            commandArgs: undefined,
+            batchKey: "client",
+            supportsHeaded: true,
+            supportsDebug: true,
             env: undefined,
           },
         ],
@@ -290,6 +305,18 @@ describe("e2e-suite-manifest", () => {
             batchKey: "full",
             env: undefined,
           },
+          {
+            runner: "playwright",
+            logName: "full-ui",
+            configPath: "playwright.config.ts",
+            fixedFiles: ["journeys/client-surfaces.spec.ts", "journeys/intake-heal-ui.spec.ts"],
+            fixedArgs: undefined,
+            commandArgs: undefined,
+            batchKey: "full",
+            supportsHeaded: true,
+            supportsDebug: true,
+            env: undefined,
+          },
         ],
       },
     ]);
@@ -370,9 +397,17 @@ describe("e2e-suite-manifest", () => {
       normalizedPath: "journeys/client-route-code-splitting.e2e.ts",
       suiteId: "client",
     });
+    expect(resolveE2ESuiteForFile("journeys/client-surfaces.spec.ts")).toEqual({
+      normalizedPath: "journeys/client-surfaces.spec.ts",
+      suiteId: "client",
+    });
     expect(resolveE2ESuiteForFile("journeys/ingestlens-branding.e2e.ts")).toEqual({
       normalizedPath: "journeys/ingestlens-branding.e2e.ts",
       suiteId: "branding",
+    });
+    expect(resolveE2ESuiteForFile("journeys/intake-heal-ui.spec.ts")).toEqual({
+      normalizedPath: "journeys/intake-heal-ui.spec.ts",
+      suiteId: "intake-ui",
     });
     expect(resolveE2ESuiteForFile("journeys/neon-branch-provider.e2e.ts")).toEqual({
       normalizedPath: "journeys/neon-branch-provider.e2e.ts",

@@ -2,9 +2,12 @@
 type: blueprint
 title: "Blueprint: AI OSS Tooling Adapter"
 status: "completed"
+complexity: M
+owner: agent
 priority: "P1"
 owners: ["agent"]
 created: "2026-04-24"
+last_updated: "2026-04-25"
 updated: "2026-04-25"
 depends_on:
   - rebrand-ingestlens
@@ -81,7 +84,9 @@ BAML-style typed prompts.
 
 ## Execution Tasks
 
-### Task 1.1 — `[deps]` Add AI/validation dependencies behind a boundary
+#### [deps] Task 1.1: Add AI/validation dependencies behind a boundary
+
+**Status:** done
 
 **Depends:** None
 
@@ -105,7 +110,9 @@ BAML-style typed prompts.
 - No model SDK or Ajv imports appear in route handlers, repositories, queue consumers, or UI code.
 - Tests fail if future code bypasses the adapter boundary.
 
-### Task 1.2 — `[contracts]` Extend shared intake suggestion contracts
+#### [contracts] Task 1.2: Extend shared intake suggestion contracts
+
+**Status:** done
 
 **Depends:** None
 
@@ -128,7 +135,9 @@ BAML-style typed prompts.
 - DTO tests cover pending, approved, rejected, and replayed suggestion states.
 - Existing consumers compile without backward-compatibility shims that preserve old branding.
 
-### Task 1.3 — `[paths]` Implement restricted source-path handling
+#### [paths] Task 1.3: Implement restricted source-path handling
+
+**Status:** done
 
 **Depends:** None
 
@@ -151,7 +160,9 @@ BAML-style typed prompts.
 - Path errors are explainable enough for the admin review UI.
 - Helper has no dependency on the AI SDK or Ajv.
 
-### Task 2.1 — `[schemas]` Define TypeBox/Ajv schemas and validators
+#### [schemas] Task 2.1: Define TypeBox/Ajv schemas and validators
+
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -176,7 +187,9 @@ BAML-style typed prompts.
 - Ajv is hidden behind validator functions.
 - Invalid model output cannot become an admin-review suggestion.
 
-### Task 3.1 — `[adapter]` Implement the AI SDK mapping adapter
+#### [adapter] Task 3.1: Implement the AI SDK mapping adapter
+
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3, Task 2.1
 
@@ -205,7 +218,9 @@ BAML-style typed prompts.
 - Model output is never trusted until schema validation and source-path validation pass.
 - Observability data is captured without storing raw secrets or unnecessary sensitive payloads.
 
-### Task 3.2 — `[judge]` Add advisory LLM-as-judge assessment
+#### [judge] Task 3.2: Add advisory LLM-as-judge assessment
+
+**Status:** done
 
 **Depends:** Task 2.1, Task 3.1
 

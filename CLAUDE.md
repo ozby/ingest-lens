@@ -227,15 +227,13 @@ Install once per machine to get blueprint hooks, slash commands, and the unified
 
 What this provides:
 
-- **Hooks** — `PreToolUse` runs `webpresso agent hooks pretool-guard`; `PostToolUse` runs `webpresso agent hooks post-tool`; `Stop` runs `webpresso agent hooks stop-qa`; `SessionStart` injects `.agent/routing.md` if present.
+- **Hooks** — repo-managed `wp` hook shims gate PreToolUse / PostToolUse / Stop, and `SessionStart` injects `.agent/routing.md` if present.
 - **Slash commands** — plugin-provided agent skills route through the shared MCP surface.
 - **MCP tools** — the agent-kit-backed MCP tools remain schema-validated and structured; backend auto-detects `just` vs `pnpm -F`.
 
 Pin to release tags (`v<version>`) — `main` of `webpresso/agent-kit` does not have `dist/` checked in; only release tags do.
 
-The pnpm catalog dep `@webpresso/agent-kit` stays because the current unified
-`webpresso agent` / `webpresso blueprint` surfaces still compose through the
-installed Agent Kit package. The root package no longer needs
-`@webpresso/webpresso` as a devDependency, and root scripts should invoke the
-unified CLI through `scripts/run-webpresso-cli.ts` rather than relying on an
-ambient `node_modules/.bin/webpresso` winner.
+This repo uses the globally installed `wp` CLI surface (`.agent-kitrc.json`
+sets `globalInstall: true`). Do not add a repo-local `@webpresso/agent-kit`
+devDependency or reintroduce wrapper scripts such as
+`scripts/run-webpresso-cli.ts`; invoke `wp …` directly.

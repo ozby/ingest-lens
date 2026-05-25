@@ -466,9 +466,9 @@ Capture the exact vendor docs needed for the mapper dataset: custom fields, crea
 
 **Acceptance:**
 
-- [ ] Source manifest includes URLs, fetch date, model scope, and notes
-- [ ] Extracts are structured enough to drive mapping-task generation
-- [ ] The extracted docs support the claims in this blueprint
+- [x] Source manifest includes URLs, fetch date, model scope, and notes
+- [x] Extracts are structured enough to drive mapping-task generation
+- [x] The extracted docs support the claims in this blueprint
 
 #### [research] Task 1.2: Freeze public ATS realism source
 
@@ -492,9 +492,9 @@ Create a small, pinned working subset from `open-apply-jobs` rather than couplin
 
 **Acceptance:**
 
-- [ ] Sample includes all 3 ATS sources
-- [ ] Only required fields are retained
-- [ ] The sample is small enough for repo use and deterministic demos
+- [x] Sample includes all 3 ATS sources
+- [x] Only required fields are retained
+- [x] The sample is small enough for repo use and deterministic demos
 
 #### [research] Task 1.3: Define mapper guardrails and non-goals
 
@@ -517,9 +517,9 @@ Write the explicit guardrails for the LLM mapper so it remains suggestion-only, 
 
 **Acceptance:**
 
-- [ ] Suggestion-only behavior is explicit
-- [ ] Confidence and abstention are scored
-- [ ] Guardrails prevent autonomous mapping claims
+- [x] Suggestion-only behavior is explicit
+- [x] Confidence and abstention are scored
+- [x] Guardrails prevent autonomous mapping claims
 
 ### Phase 2: Exact data-model design [Complexity: S]
 
@@ -554,9 +554,9 @@ This must be machine-readable and strict enough that examples and future code ca
 
 **Acceptance:**
 
-- [ ] Every dataset artifact shape is explicitly specified
-- [ ] The schemas are compatible with the examples in this blueprint
-- [ ] Validation catches unknown or malformed mapping-task fields
+- [x] Every dataset artifact shape is explicitly specified
+- [x] The schemas are compatible with the examples in this blueprint
+- [x] Validation catches unknown or malformed mapping-task fields
 
 #### [data] Task 2.2: Create the first gold mapping-task pack
 
@@ -581,13 +581,13 @@ Create a first gold mapping-task pack with exact expected mappings, missing-fiel
 
 **Acceptance:**
 
-- [ ] At least 20 tasks exist
-- [ ] Eval set includes exact-match, ambiguous, missing-field, and abstention cases
-- [ ] Adversarial set includes unstable-ID and custom-field alias cases
+- [x] At least 20 tasks exist
+- [x] Eval set includes exact-match, ambiguous, missing-field, and abstention cases
+- [x] Adversarial set includes unstable-ID and custom-field alias cases
 
 #### [data] Task 2.3: Create a synthetic HRIS payload subset
 
-**Status:** partial — missing: candidate-events.jsonl
+**Status:** done
 
 **Depends:** Task 1.1, Task 2.1
 
@@ -607,9 +607,9 @@ Because public ATS data is not enough for the employee/custom-field mapping stor
 
 **Acceptance:**
 
-- [ ] Synthetic payloads cover employee, custom-field, and progression examples
-- [ ] Examples stay close to vendor-documented concepts
-- [ ] No unrealistic/random field drift is introduced
+- [x] Synthetic payloads cover employee, custom-field, and progression examples
+- [x] Examples stay close to vendor-documented concepts
+- [x] No unrealistic/random field drift is introduced
 
 ### Phase 3: Evaluation and repo fit [Complexity: M]
 
@@ -642,13 +642,13 @@ This task does not need a full model integration yet; it needs an executable con
 
 **Acceptance:**
 
-- [ ] Eval contract can score exact mappings, ambiguity detection, missing-field detection, and abstention
-- [ ] Future mapper implementations can be plugged into the contract
-- [ ] The scoring favors “do not hallucinate” behavior
+- [x] Eval contract can score exact mappings, ambiguity detection, missing-field detection, and abstention
+- [x] Future mapper implementations can be plugged into the contract
+- [x] The scoring favors “do not hallucinate” behavior
 
 #### [docs] Task 3.2: Integrate the dataset story into the event-delivery platform docs
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 3.1
 
@@ -673,15 +673,15 @@ Document how the mapper dataset fits the platform story:
 
 **Acceptance:**
 
-- [ ] Repo docs explain the mapper feature honestly
-- [ ] Dataset choice is explained as schema/mapping truth + realism + gold tasks
-- [ ] No overclaiming about autonomous mapping or production trust
+- [x] Repo docs explain the mapper feature honestly
+- [x] Dataset choice is explained as schema/mapping truth + realism + gold tasks
+- [x] No overclaiming about autonomous mapping or production trust
 
 ### Phase 4: Final hardening [Complexity: S]
 
 #### [qa] Task 4.1: Verify blueprint readiness and parallel safety
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 3.1, Task 3.2
 
@@ -704,9 +704,9 @@ Run the final refinement audit on the dataset blueprint output itself:
 
 **Acceptance:**
 
-- [ ] Blueprint is self-contained and execution-ready
-- [ ] Exact dataset design is frozen
-- [ ] Mapping task examples are present and consistent with the task schema
+- [x] Blueprint is self-contained and execution-ready
+- [x] Exact dataset design is frozen
+- [x] Mapping task examples are present and consistent with the task schema
 
 ## Verification Gates
 

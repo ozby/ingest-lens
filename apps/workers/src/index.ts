@@ -11,6 +11,7 @@ import { topicRoutes } from "./routes/topic";
 import { dashboardRoutes } from "./routes/dashboard";
 import { intakeRoutes } from "./routes/intake";
 import { healStreamRoutes } from "./routes/healStream";
+import { legacyAuthRoutes } from "./routes/legacyAuth";
 import { rateLimiter, authRateLimiter } from "./middleware/rateLimiter";
 import { handleDeliveryBatch } from "./consumers/deliveryConsumer";
 import { handleScheduled as handleScheduledPurge } from "./cron/purgeExpiredReviewPayloads";
@@ -42,6 +43,7 @@ app.on(["GET", "POST"], "/auth/*", (c) => {
 
 // All API routes: general 100 req/60s
 app.use("/api/*", rateLimiter);
+app.route("/api/auth", legacyAuthRoutes);
 app.route("/api/queues", queueRoutes);
 app.route("/api/messages", messageRoutes);
 app.route("/api/topics", topicRoutes);

@@ -57,7 +57,9 @@ AGENTS.md
 
 #### [docs] Task 1.1: Draft repository-guidance layer
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -65,14 +67,16 @@ AGENTS.md
 
 **Acceptance:**
 
-- [ ] Principal region at the top, OMX markers preserved, total length ≤150 lines.
-- [ ] Links to `blueprints/README.md`, `.agent/skills/*`, and the `docs/` top pages.
+- [x] Principal region at the top, OMX markers preserved, total length ≤150 lines.
+- [x] Links to `blueprints/README.md`, `.agent/skills/*`, and the `docs/` top pages.
 
 ### Phase 2: Alignment [Complexity: S]
 
 #### [docs] Task 2.1: Align `README.md` and `.agent/README.md`
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -81,8 +85,8 @@ AGENTS.md
 
 **Acceptance:**
 
-- [ ] Principal operating contract is referenced from both.
-- [ ] No contradictions across the three surfaces.
+- [x] Principal operating contract is referenced from both.
+- [x] No contradictions across the three surfaces.
 
 ## Verification Gates
 

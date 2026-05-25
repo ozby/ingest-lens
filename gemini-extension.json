@@ -1,5 +1,5 @@
 {
-  "_generated": "by agent-kit ak compile — do not edit manually",
+  "_generated": "by agent-kit wp compile — do not edit manually",
   "name": "webpresso-agent-kit",
   "version": "0.0.0",
   "description": "Agent-kit: blueprint lifecycle, skill compiler, audits for Claude Code",

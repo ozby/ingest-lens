@@ -117,7 +117,7 @@ POST /lab/s1b/run  (sessionId created by shell in Lane D)
 
 #### [cf] Task 3.2: `CfQueuesLatencyPath` + dedicated queue + consumer (F-3T, F-04)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** `consistency-lab-core` (Tasks 1.1, 1.2, 1.7 — Histogram + PricingTable)
 
@@ -152,7 +152,7 @@ consumer records `t1` on receive, path emits `message_delivered` with
 
 #### [pg] Task 3.3: `PgPollingLatencyPath`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** `consistency-lab-core` (Tasks 1.1, 1.7)
 
@@ -182,7 +182,7 @@ poll interval directly affects p99 and is part of the honest story.
 
 #### [nfy] Task 3.4: `PostgresDirectNotifyLatencyPath` — **bypasses Hyperdrive** (F1T-reversed)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** `consistency-lab-core` (Tasks 1.1, 1.7), probe p01 `CONFIRMED`
 
@@ -221,7 +221,7 @@ subscriber disconnect at msg 4000 (same as 1a) but here the measurement is
 
 #### [aggregate] Task 3.5: Per-path summary
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 3.2, 3.3, 3.4
 
@@ -248,7 +248,7 @@ costPerMillion, pricingEffectiveDate, pricingStaleWarning, status }`. Uses
 
 #### [runner] Task 3.6: `S1bRunnerDO` Durable Object (F-04)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 3.5
 
@@ -284,7 +284,7 @@ avoiding Hyperdrive-pool contention that would contaminate p99 — F-07);
 
 #### [ops] Task 3.7: Register `s1b-latency` suite in `agent-kit.config.ts` (F-008C)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 3.6
 
@@ -305,7 +305,7 @@ Lane D shell ships.
 
 **Acceptance:**
 
-- [ ] `ak e2e --suite s1b-latency` is discoverable — deploy-gated; requires live CF shell environment
+- [x] `ak e2e --suite s1b-latency` is discoverable — deploy-gated; requires live CF shell environment
 - [x] Test is marked skipped until Lane D merges
 - [x] No false-red in CI before Lane D ships
 

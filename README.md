@@ -6,9 +6,9 @@ Built solo by [Ozby](https://github.com/ozby) as a portfolio of integration prim
 
 ## Why this repo is worth reviewing
 
-- **Adaptive intake repair** — detects payload drift, proposes mapping fixes with AI, validates them deterministically, and routes low-confidence cases to human review.
-- **Delivery primitives with proof** — models queues, topic fan-out, push retries/DLQ, and replay-aware operator workflows.
-- **Measurement over hand-waving** — ships a consistency lab that compares delivery paths for correctness, latency, and operational cost.
+- **Adaptive intake repair** — detects payload drift, proposes mapping fixes with AI, validates them deterministically, and routes low-confidence cases to human review. ([E2E proof](docs/guides/claim-e2e-traceability.md#shipped-claim-matrix))
+- **Delivery primitives with proof** — models queues, topic fan-out, push retries/DLQ, and replay-aware operator workflows. ([E2E proof](docs/guides/claim-e2e-traceability.md#shipped-claim-matrix))
+- **Measurement over hand-waving** — ships a consistency lab that compares delivery paths for correctness, latency, and operational cost. ([E2E proof](docs/guides/claim-e2e-traceability.md#shipped-claim-matrix))
 
 ## Quick start
 
@@ -49,6 +49,7 @@ Secrets and database connections are managed via `with-secrets` (Doppler + Neon 
 - **AI intake + mapping flow:** [`docs/architecture.md`](docs/architecture.md)
 - **Consistency Lab architecture:** [`docs/lab-architecture.md`](docs/lab-architecture.md)
 - **Delivery semantics:** [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md)
+- **Claim ↔ E2E traceability:** [`docs/guides/claim-e2e-traceability.md`](docs/guides/claim-e2e-traceability.md)
 - **Scale and tradeoffs:** [`docs/scale-considerations.md`](docs/scale-considerations.md)
 - **Vision + project records:** [`docs/research/product/VISION.md`](docs/research/product/VISION.md), [`docs/project/README.md`](docs/project/README.md)
 
@@ -65,9 +66,9 @@ If you are new to the repo and want the fastest technical orientation, use this 
 
 ## Engineering proof points
 
-- **Deterministic safety over AI vibes** — model output is contract-checked, confidence-gated, and reviewable before promotion.
-- **Failure-path honesty** — delivery guarantees, retries, DLQ behavior, and replay semantics are documented as first-class product constraints.
-- **Evidence-backed systems thinking** — the consistency lab compares delivery paths on correctness, latency, and operational cost.
+- **Deterministic safety over AI vibes** — model output is contract-checked, confidence-gated, and reviewable before promotion. ([E2E proof](apps/e2e/journeys/intake-mapping-flow.e2e.ts), [browser proof](apps/e2e/journeys/intake-heal-ui.spec.ts))
+- **Failure-path honesty** — delivery guarantees, retries, DLQ behavior, and replay semantics are documented as first-class product constraints. ([E2E proof](apps/e2e/journeys/queue-message-flow.e2e.ts), [topic proof](apps/e2e/journeys/topic-publish-flow.e2e.ts), [hardening proof](apps/e2e/journeys/ownership-hardening.e2e.ts))
+- **Evidence-backed systems thinking** — the consistency lab compares delivery paths on correctness, latency, and operational cost. ([E2E proof](apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts), [latency proof](apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts))
 
 ## Architecture at a glance
 
@@ -100,7 +101,9 @@ pnpm e2e --suite foundation
 pnpm e2e --suite full
 ```
 
-Suites: `foundation`, `auth`, `messaging`, `hardening`, `intake`, `demo`, `client`, `branding`, `full`.
+Suites: `foundation`, `auth`, `messaging`, `hardening`, `intake`, `healing`, `demo`, `client`, `branding`, `intake-ui`, `full`.
+Browser-backed reviewer proof also lives in `client` and `intake-ui`; see
+[`docs/guides/claim-e2e-traceability.md`](docs/guides/claim-e2e-traceability.md).
 
 ### Verify
 
@@ -136,6 +139,7 @@ bun ./infra/src/deploy/deploy.ts prd
 - [Architecture](docs/architecture.md)
 - [Consistency Lab architecture](docs/lab-architecture.md)
 - [Delivery guarantees](docs/delivery-guarantees.md)
+- [Claim ↔ E2E traceability](docs/guides/claim-e2e-traceability.md)
 - [Scale considerations](docs/scale-considerations.md)
 - [ADR index](docs/adrs/README.md)
 - [Blueprints](blueprints/README.md)

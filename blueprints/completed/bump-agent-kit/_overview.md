@@ -102,7 +102,7 @@ CI pipeline (ci.yml) adds step:
 
 #### [infra] Task 3.1: Update SHA in `package.json`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -129,15 +129,15 @@ Verify `ak --version` reports a different (newer) version and that `ak blueprint
 
 **Acceptance:**
 
-- [ ] `pnpm blueprints:check` passes
-- [ ] `pnpm docs:check` passes
-- [ ] `ak --version` changes from previous
+- [x] `pnpm blueprints:check` passes
+- [x] `pnpm docs:check` passes
+- [x] `ak --version` changes from previous
 
 ---
 
 #### [tooling] Task 3.2: Run `ak symlink sync`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 3.1
 
@@ -155,14 +155,14 @@ changed `.agent/` surface outputs.
 
 **Acceptance:**
 
-- [ ] `ak symlink sync` exits 0
-- [ ] No manually maintained files accidentally removed
+- [x] `ak symlink sync` exits 0
+- [x] No manually maintained files accidentally removed
 
 ---
 
 #### [tooling] Task 3.3: Register tech-debt entries
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 3.1
 
@@ -210,14 +210,14 @@ Adjust the CLI syntax to match whatever `ak tech-debt add` actually accepts
 
 **Acceptance:**
 
-- [ ] `ak tech-debt list` shows all 5 entries
-- [ ] Entries are committed
+- [x] `ak tech-debt list` shows all 5 entries
+- [x] Entries are committed
 
 ---
 
 #### [ci] Task 3.4: Add `ak audit commit-message-lore` to CI
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 3.2, 3.3
 
@@ -238,8 +238,8 @@ the merge commit).
 
 **Acceptance:**
 
-- [ ] CI workflow syntax valid (`act --list` or similar)
-- [ ] `ak audit commit-message-lore --since origin/main` exits 0 on current history
+- [x] CI workflow syntax valid (`act --list` or similar)
+- [x] `ak audit commit-message-lore --since origin/main` exits 0 on current history
 
 ## Verification Gates
 

@@ -42,6 +42,40 @@ describe("client auth proxy worker", () => {
     }
   });
 
+  it("proxies /api/* requests to the configured API origin", async () => {
+    const upstreamResponse = new Response(JSON.stringify({ status: "success" }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+    const fetchMock = vi.fn().mockResolvedValue(upstreamResponse);
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    try {
+      const request = new Request("https://dev.ingest-lens.ozby.dev/api/queues", {
+        headers: { cookie: "session=abc" },
+      });
+
+      const response = await worker.fetch(
+        request,
+        {
+          ASSETS: { fetch: vi.fn() } as AssetFetcher,
+          AUTH_PROXY_BASE_URL: "https://api.dev.ingest-lens.ozby.dev",
+        },
+        executionContext,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe("private, no-store");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const proxiedRequest = fetchMock.mock.calls[0]?.[0] as Request;
+      expect(proxiedRequest.url).toBe("https://api.dev.ingest-lens.ozby.dev/api/queues");
+      expect(proxiedRequest.headers.get("cookie")).toBe("session=abc");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("serves static assets for non-auth requests", async () => {
     const assetsFetch = vi.fn().mockResolvedValue(new Response("asset-ok", { status: 200 }));
 

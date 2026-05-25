@@ -9,6 +9,7 @@ Top-level mermaid view: [`system-architecture.md`](./system-architecture.md).
 Delivery contract: [`delivery-guarantees.md`](./delivery-guarantees.md). The
 Consistency Lab is a separate Worker surface documented in
 [`lab-architecture.md`](./lab-architecture.md).
+Executable claim map: [`guides/claim-e2e-traceability.md`](./guides/claim-e2e-traceability.md).
 
 ## Constraints
 
@@ -65,12 +66,16 @@ Publish enqueues a payload onto `DELIVERY_QUEUE`. Consumer
 idempotent; publishers can dedupe via `Idempotency-Key`. Postgres is the
 durable message/outbox record; Cloudflare Queue is the push trigger.
 
+Executable proof: [`../apps/e2e/journeys/queue-message-flow.e2e.ts`](../apps/e2e/journeys/queue-message-flow.e2e.ts), [`../apps/e2e/journeys/topic-publish-flow.e2e.ts`](../apps/e2e/journeys/topic-publish-flow.e2e.ts).
+
 ### TopicRoom Durable Object
 
 One DO per topic. WebSocket hibernation API. On consumer ack with a `topicId`,
 the DO broadcasts to connected sockets and writes to a short SQLite replay log.
 `GET /api/topics/:id/ws?cursor=<c>` replays missed messages. O(n) fan-out per
 topic — see [scale-considerations.md](scale-considerations.md) for sharding.
+
+Executable proof: [`../apps/e2e/journeys/topic-publish-flow.e2e.ts`](../apps/e2e/journeys/topic-publish-flow.e2e.ts), [`../apps/e2e/journeys/ownership-hardening.e2e.ts`](../apps/e2e/journeys/ownership-hardening.e2e.ts).
 
 ## Adaptive intake
 
@@ -80,6 +85,8 @@ suggested source paths, drift categories, missing / ambiguous fields,
 confidence, notes. Everything after that (schema/source-path validation,
 compatibility, approval, normalization, publish, telemetry, retention, replay)
 is deterministic.
+
+Executable proof: [`../apps/e2e/journeys/intake-mapping-flow.e2e.ts`](../apps/e2e/journeys/intake-mapping-flow.e2e.ts), [`../apps/e2e/journeys/self-healing-intake.e2e.ts`](../apps/e2e/journeys/self-healing-intake.e2e.ts), [`../apps/e2e/journeys/intake-heal-ui.spec.ts`](../apps/e2e/journeys/intake-heal-ui.spec.ts).
 
 Normalization/envelope builders now have one canonical implementation in
 `apps/workers/src/intake/normalize.ts`; legacy module paths remain as

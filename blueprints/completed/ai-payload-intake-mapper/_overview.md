@@ -114,7 +114,7 @@ deterministic:
 
 #### [contracts] Task 1.1: Define intake suggestion and approval contracts
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -148,19 +148,19 @@ job-posting dataset is only the initial demo lens.
 
 **Acceptance:**
 
-- [ ] Shared contracts represent pending review, approved, rejected, failed, abstained, ingesting, ingested, and ingest-failed states.
-- [ ] `apps/workers/package.json` can consume `@repo/types` for the shared intake contract.
-- [ ] Approval target is explicit and rejects both-or-neither `queueId` / `topicId` input.
-- [ ] Contract metadata includes `intakeAttemptId`, `mappingTraceId`, `contractId`, `mappingVersionId`, drift category, model name, prompt version, source hash, raw-payload expiry, and validation errors.
-- [ ] Contracts are lens-agnostic and contain no domain-specific target names.
-- [ ] Tests can inject `clock`, `idGenerator`, and `hashPayload` instead of using ambient time, UUIDs, or runtime crypto directly.
-- [ ] Tests prove nonexistent `sourcePath` values are rejected before publish.
+- [x] Shared contracts represent pending review, approved, rejected, failed, abstained, ingesting, ingested, and ingest-failed states.
+- [x] `apps/workers/package.json` can consume `@repo/types` for the shared intake contract.
+- [x] Approval target is explicit and rejects both-or-neither `queueId` / `topicId` input.
+- [x] Contract metadata includes `intakeAttemptId`, `mappingTraceId`, `contractId`, `mappingVersionId`, drift category, model name, prompt version, source hash, raw-payload expiry, and validation errors.
+- [x] Contracts are lens-agnostic and contain no domain-specific target names.
+- [x] Tests can inject `clock`, `idGenerator`, and `hashPayload` instead of using ambient time, UUIDs, or runtime crypto directly.
+- [x] Tests prove nonexistent `sourcePath` values are rejected before publish.
 
 ---
 
 #### [ai-boundary] Task 1.2: Add a Workers AI adapter with deterministic fallback
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1
 
@@ -194,19 +194,19 @@ Wrap Workers AI behind one adapter (`suggestMapping(input, deps)`) so tests and 
 
 **Acceptance:**
 
-- [ ] Production AI calls happen only in `apps/workers/src/intake/aiMappingAdapter.ts`.
-- [ ] If the Vercel AI SDK is used, no file outside `aiMappingAdapter.ts` imports `ai` or `workers-ai-provider`.
-- [ ] Adapter tests run with a fake runner only; no test reads runtime `env.AI` directly.
-- [ ] Adapter returns a closed union for success, abstention, invalid-output, and runtime-failure states.
-- [ ] Local/test fallback is explicit and visibly labelled, never silent fake AI.
-- [ ] JSON Mode failures become safe API failures or abstentions.
-- [ ] No test depends on live Cloudflare credentials.
+- [x] Production AI calls happen only in `apps/workers/src/intake/aiMappingAdapter.ts`.
+- [x] If the Vercel AI SDK is used, no file outside `aiMappingAdapter.ts` imports `ai` or `workers-ai-provider`.
+- [x] Adapter tests run with a fake runner only; no test reads runtime `env.AI` directly.
+- [x] Adapter returns a closed union for success, abstention, invalid-output, and runtime-failure states.
+- [x] Local/test fallback is explicit and visibly labelled, never silent fake AI.
+- [x] JSON Mode failures become safe API failures or abstentions.
+- [x] No test depends on live Cloudflare credentials.
 
 ---
 
 #### [prompt] Task 1.3: Keep one prompt contract in sync with deterministic fixture checks
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1
 
@@ -235,11 +235,11 @@ LLM-as-judge artifacts in v1. (Fx1, Fx8, Fx9, Fx10)
 
 **Acceptance:**
 
-- [ ] Prompt instructs the model not to map fields that are absent from the payload.
-- [ ] Prompt output shape matches the checked-in eval contract.
-- [ ] Prompt version is carried forward in suggestion records and API responses.
-- [ ] Core prompt tests use generic payload shapes; downstream demo tests cover at least three example-lens vendor payload shapes already present in-repo.
-- [ ] No LLM-as-judge task is required for the v1 quality gate.
+- [x] Prompt instructs the model not to map fields that are absent from the payload.
+- [x] Prompt output shape matches the checked-in eval contract.
+- [x] Prompt version is carried forward in suggestion records and API responses.
+- [x] Core prompt tests use generic payload shapes; downstream demo tests cover at least three example-lens vendor payload shapes already present in-repo.
+- [x] No LLM-as-judge task is required for the v1 quality gate.
 
 ---
 
@@ -247,7 +247,7 @@ LLM-as-judge artifacts in v1. (Fx1, Fx8, Fx9, Fx10)
 
 #### [api] Task 2.1: Add the protected mapping-suggestion endpoint
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3
 
@@ -280,17 +280,17 @@ changes explicit. (Fx1, Fx4, Fx8, Fx9)
 
 **Acceptance:**
 
-- [ ] `/api/intake/mapping-suggestions` is authenticated and rate-limited.
-- [ ] Invalid, oversized, too-deep, or unknown-contract payloads fail before any AI call is attempted.
-- [ ] Suggestion attempts persist owner scope, contract id, approved mapping revision id, drift category, `mappingTraceId`, prompt version, model name, status, confidence, source hash, review payload expiry, redacted summary, and validation errors.
-- [ ] `apps/workers/src/index.ts` is the only route-registration touchpoint for the new endpoint.
-- [ ] Expired pasted payloads cannot be approved; pinned fixtures approve by fixture id/hash without raw DB payload persistence.
+- [x] `/api/intake/mapping-suggestions` is authenticated and rate-limited.
+- [x] Invalid, oversized, too-deep, or unknown-contract payloads fail before any AI call is attempted.
+- [x] Suggestion attempts persist owner scope, contract id, approved mapping revision id, drift category, `mappingTraceId`, prompt version, model name, status, confidence, source hash, review payload expiry, redacted summary, and validation errors.
+- [x] `apps/workers/src/index.ts` is the only route-registration touchpoint for the new endpoint.
+- [x] Expired pasted payloads cannot be approved; pinned fixtures approve by fixture id/hash without raw DB payload persistence.
 
 ---
 
 #### [approval] Task 2.2: Approve or reject a suggestion and ingest once deterministically
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 2.1
 
@@ -323,19 +323,19 @@ Allow admins to approve or reject a suggestion. Approval stores the approved map
 
 **Acceptance:**
 
-- [ ] No normalized event is ingested before admin approval.
-- [ ] Approval and rejection are idempotent and owner-scoped.
-- [ ] Publish uses the existing `DELIVERY_QUEUE.send({ messageId, seq, queueId, pushEndpoint, topicId, attempt })` shape.
-- [ ] Normalized events include generic envelope fields: `eventType: "ingest.record.normalized"`, `recordType`, `schemaVersion: "v1"`, `contractId`, `mappingVersionId`, `intakeAttemptId`, `mappingTraceId`, source provenance, and payload hash.
-- [ ] Core replay code does not import job-posting-specific normalization; example-lens shaping lives in `public-dataset-demo-ingestion`.
-- [ ] Publish failures do not mark suggestions as ingested.
-- [ ] Approve performs deterministic replay+ingest exactly once; any future manual replay path must never call AI.
+- [x] No normalized event is ingested before admin approval.
+- [x] Approval and rejection are idempotent and owner-scoped.
+- [x] Publish uses the existing `DELIVERY_QUEUE.send({ messageId, seq, queueId, pushEndpoint, topicId, attempt })` shape.
+- [x] Normalized events include generic envelope fields: `eventType: "ingest.record.normalized"`, `recordType`, `schemaVersion: "v1"`, `contractId`, `mappingVersionId`, `intakeAttemptId`, `mappingTraceId`, source provenance, and payload hash.
+- [x] Core replay code does not import job-posting-specific normalization; example-lens shaping lives in `public-dataset-demo-ingestion`.
+- [x] Publish failures do not mark suggestions as ingested.
+- [x] Approve performs deterministic replay+ingest exactly once; any future manual replay path must never call AI.
 
 ---
 
 #### [telemetry] Task 2.3: Record intake counters and trace ids without payload text
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 2.2
 
@@ -365,10 +365,10 @@ payload-free. (Fx6, Fx8, Fx9)
 
 **Acceptance:**
 
-- [ ] Telemetry never includes raw candidate, employee, job-description, or pasted payload text.
-- [ ] Dashboard can show suggestion success, abstention, validation-failure, approval, rejection, ingest, publish counts, and trace drilldown by `mappingTraceId`.
-- [ ] Redaction is enforced by tests, not comments alone.
-- [ ] Tests assert the exact permitted telemetry field names for every mapping lifecycle event.
+- [x] Telemetry never includes raw candidate, employee, job-description, or pasted payload text.
+- [x] Dashboard can show suggestion success, abstention, validation-failure, approval, rejection, ingest, publish counts, and trace drilldown by `mappingTraceId`.
+- [x] Redaction is enforced by tests, not comments alone.
+- [x] Tests assert the exact permitted telemetry field names for every mapping lifecycle event.
 
 ---
 
@@ -376,7 +376,7 @@ payload-free. (Fx6, Fx8, Fx9)
 
 #### [client] Task 3.1: Build a minimal intake page and admin review page
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 2.2
 
@@ -408,18 +408,18 @@ nav, and API patterns. Avoid any new client architecture layer. (Fx2, Fx7)
 
 **Acceptance:**
 
-- [ ] Users can paste JSON or load a fixture and receive a validated mapping suggestion.
-- [ ] Payload preview renders escaped/sanitized text and never injects source HTML.
-- [ ] Missing and ambiguous fields are visually distinct from confident mappings.
-- [ ] Admin approval is explicit and shows ingest status; detailed delivery dashboard drilldown is deferred.
-- [ ] Admin can reject with a reason; manual replay is deferred from v1.
-- [ ] The UI change stays inside the listed files; no new client architecture layer is introduced.
+- [x] Users can paste JSON or load a fixture and receive a validated mapping suggestion.
+- [x] Payload preview renders escaped/sanitized text and never injects source HTML.
+- [x] Missing and ambiguous fields are visually distinct from confident mappings.
+- [x] Admin approval is explicit and shows ingest status; detailed delivery dashboard drilldown is deferred.
+- [x] Admin can reject with a reason; manual replay is deferred from v1.
+- [x] The UI change stays inside the listed files; no new client architecture layer is introduced.
 
 ---
 
 #### [eval] Task 3.2: Add deterministic fixture checks for mapping quality
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3
 
@@ -450,12 +450,12 @@ Measure mapping quality with deterministic fixture checks first. Use a testable 
 
 **Acceptance:**
 
-- [ ] `pnpm ai:eval` passes deterministically without Cloudflare credentials.
-- [ ] The eval runner uses no network, no credentials, and no live AI by default.
-- [ ] LLM-as-judge output is not part of the v1 quality gate.
-- [ ] Any judge rubric is advisory and can run with a fake judge runner in tests.
-- [ ] Non-hallucination remains a hard gate in the runner output.
-- [ ] Eval docs explain deterministic vs live modes using the checked-in dataset.
+- [x] `pnpm ai:eval` passes deterministically without Cloudflare credentials.
+- [x] The eval runner uses no network, no credentials, and no live AI by default.
+- [x] LLM-as-judge output is not part of the v1 quality gate.
+- [x] Any judge rubric is advisory and can run with a fake judge runner in tests.
+- [x] Non-hallucination remains a hard gate in the runner output.
+- [x] Eval docs explain deterministic vs live modes using the checked-in dataset.
 
 ---
 
@@ -463,7 +463,7 @@ Measure mapping quality with deterministic fixture checks first. Use a testable 
 
 #### [judge] Optional Task 3.3: Add advisory LLM critique for admin review
 
-**Status:** optional
+**Status:** done
 
 **Depends:** Task 2.1, Task 3.2
 
@@ -493,11 +493,11 @@ rejects, replays, ingests, or blocks deterministic gates.
 
 **Acceptance:**
 
-- [ ] Judge critique is visually labelled advisory in the admin UI.
-- [ ] Judge output cannot change suggestion status, approval state, replay state,
+- [x] Judge critique is visually labelled advisory in the admin UI.
+- [x] Judge output cannot change suggestion status, approval state, replay state,
       ingest state, or deterministic eval score.
-- [ ] Tests use a fake judge runner only; no test depends on live AI.
-- [ ] Invalid judge output fails closed and hides critique rather than blocking
+- [x] Tests use a fake judge runner only; no test depends on live AI.
+- [x] Invalid judge output fails closed and hides critique rather than blocking
       approval.
 
 ## Verification Gates

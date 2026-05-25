@@ -62,7 +62,9 @@ docs/conventions/lore-commit-protocol.md
 
 #### [docs] Task 1.1: ADR directory + template
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -71,11 +73,13 @@ docs/conventions/lore-commit-protocol.md
 
 **Acceptance:**
 
-- [ ] Template includes `Status`, `Context`, `Decision`, `Consequences`, `Alternatives`.
+- [x] Template includes `Status`, `Context`, `Decision`, `Consequences`, `Alternatives`.
 
 #### [docs] Task 1.2: Lore trailer spec
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -83,14 +87,16 @@ docs/conventions/lore-commit-protocol.md
 
 **Acceptance:**
 
-- [ ] Document lists every trailer and when to use it.
-- [ ] Includes one worked example.
+- [x] Document lists every trailer and when to use it.
+- [x] Includes one worked example.
 
 ### Phase 2: Retrospective ADRs [Complexity: S]
 
 #### [docs] Task 2.1: Write ADRs 0001–0003
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -100,13 +106,15 @@ docs/conventions/lore-commit-protocol.md
 
 **Acceptance:**
 
-- [ ] Each ADR follows the template and cites at least one repo file.
+- [x] Each ADR follows the template and cites at least one repo file.
 
 ### Phase 3: Enforcement [Complexity: S]
 
 #### [dx] Task 3.1: commit-msg validator for `[lore]` commits
 
-**Status:** pending **Depends:** Task 1.2 **Blocked:** commit-hooks-guardrails commit-msg hook exists.
+**Status:** done
+
+**Depends:** Task 1.2
 
 **Files:**
 
@@ -115,8 +123,8 @@ docs/conventions/lore-commit-protocol.md
 
 **Acceptance:**
 
-- [ ] A commit whose subject includes `[lore]` must contain a `Confidence:` trailer and at least one of `Constraint:` / `Rejected:` / `Directive:`.
-- [ ] Non-`[lore]` commits are unaffected.
+- [x] A commit whose subject includes `[lore]` must contain a `Confidence:` trailer and at least one of `Constraint:` / `Rejected:` / `Directive:`.
+- [x] Non-`[lore]` commits are unaffected.
 
 ## Verification Gates
 

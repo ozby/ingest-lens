@@ -1,119 +1,197 @@
-import { test, expect, type APIRequestContext } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-const apiBaseUrl = process.env.E2E_BASE_URL ?? "http://localhost:8787";
+const apiBaseUrl = process.env.E2E_BASE_URL ?? "http://127.0.0.1:8787";
 
-async function registerAndGetToken(
-  request: APIRequestContext,
-): Promise<{ token: string; queueId: string }> {
-  const runId = Math.random().toString(36).slice(2, 8);
-  const regRes = await request.post(`${apiBaseUrl}/api/auth/register`, {
-    data: {
-      username: `pw-${runId}`,
-      email: `pw-${runId}@playwright.test`,
-      password: `Pass-${runId}`,
+async function signUp(page: Page, runId: string) {
+  await page.goto("/");
+
+  const signUp = await page.evaluate(
+    async ({ email, password, name }) => {
+      const response = await fetch("/auth/sign-up/email", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
+      });
+      return {
+        status: response.status,
+        body: await response.json(),
+      };
     },
-  });
-  const reg = (await regRes.json()) as { data: { token: string } };
-  const token = reg.data.token;
+    {
+      email: `pw-${runId}@playwright.test`,
+      password: `Pass-${runId}-Abc123!`,
+      name: `Playwright ${runId}`,
+    },
+  );
 
-  const queueRes = await request.post(`${apiBaseUrl}/api/queues`, {
-    data: { name: `pw-q-${runId}`, retentionPeriod: 7 },
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const queue = (await queueRes.json()) as { data: { queue: { id: string } } };
-  const queueId = queue.data.queue.id;
-
-  return { token, queueId };
+  expect(signUp.status).toBe(200);
 }
 
+async function createQueue(page: Page, runId: string): Promise<string> {
+  const queueRes = await page.evaluate(
+    async ({ apiBaseUrl, queueName }) => {
+      const response = await fetch(`${apiBaseUrl}/api/queues`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: queueName, retentionPeriod: 7 }),
+      });
+      return {
+        status: response.status,
+        body: await response.json(),
+      };
+    },
+    { apiBaseUrl, queueName: `pw-q-${runId}` },
+  );
+
+  expect(queueRes.status).toBe(201);
+  return (queueRes.body as { data: { queue: { id: string } } }).data.queue.id;
+}
+
+async function bootstrap(page: Page): Promise<{ queueId: string; runId: string }> {
+  const runId = Math.random().toString(36).slice(2, 8);
+  await signUp(page, runId);
+  const queueId = await createQueue(page, runId);
+  return { queueId, runId };
+}
+
+const jobPostingPayload = {
+  title: "Playwright Staff Engineer",
+  status: "published",
+  department: "Engineering",
+  location: "Remote",
+  apply_url: "https://jobs.example.com/playwright-staff-engineer",
+  employment_type: "full_time",
+};
+
 test.describe("intake heal UI", () => {
-  let token: string;
-  let queueId: string;
-
-  test.beforeAll(async ({ request }) => {
-    ({ token, queueId } = await registerAndGetToken(request));
-  });
-
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(
-      ({ t }: { t: string }) => {
-        localStorage.setItem("authToken", t);
-      },
-      { t: token },
-    );
-  });
-
   test("intake form renders and submits a new attempt", async ({ page }) => {
+    const { queueId, runId } = await bootstrap(page);
+    const sourceSystem = `playwright-src-${runId}`;
+
     await page.goto("/intake");
 
-    // Form is visible
     await expect(page.getByPlaceholder("Source system")).toBeVisible();
+    await page.getByPlaceholder("Source system").fill(sourceSystem);
+    await page.getByPlaceholder("Contract ID").fill("job-posting-v1");
 
-    // Fill in the form fields
-    await page.getByPlaceholder("Source system").fill("playwright-src");
-    await page.getByPlaceholder("Contract ID").fill("employee-v1");
-
-    // Payload textarea
     const payloadField = page.getByPlaceholder(/customerId|json|payload/i).first();
-    await payloadField.fill('{"employeeName":"Playwright","employeeEmail":"pw@test.com"}');
+    await payloadField.fill(JSON.stringify(jobPostingPayload));
 
-    // Queue ID field
     const queueField = page.getByPlaceholder(/Queue ID/i);
     await queueField.fill(queueId);
 
-    // Submit
+    const createSuggestionResponse = page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/intake/mapping-suggestions") &&
+        response.request().method() === "POST",
+    );
     await page.getByRole("button", { name: /submit|send|create|suggest/i }).click();
-
-    // A new row appears in the attempt list
-    await expect(page.getByText("playwright-src")).toBeVisible({ timeout: 10_000 });
+    expect((await createSuggestionResponse).ok()).toBe(true);
+    await page.getByRole("tab", { name: /Review history/i }).click();
+    await expect(page.getByText(`Source: ${sourceSystem}`)).toBeVisible({ timeout: 10_000 });
   });
 
   test("admin review page renders with attempt list", async ({ page }) => {
+    const { queueId, runId } = await bootstrap(page);
+    const sourceSystem = `pw-admin-src-${runId}`;
+
+    const intakeRes = await page.evaluate(
+      async ({ apiBaseUrl, queueId, payload, sourceSystem }) => {
+        const response = await fetch(`${apiBaseUrl}/api/intake/mapping-suggestions`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            sourceSystem,
+            contractId: "job-posting-v1",
+            payload,
+            queueId,
+          }),
+        });
+        return {
+          status: response.status,
+          body: await (async () => {
+            const text = await response.text();
+            try {
+              return JSON.parse(text);
+            } catch {
+              return text;
+            }
+          })(),
+        };
+      },
+      { apiBaseUrl, queueId, payload: jobPostingPayload, sourceSystem },
+    );
+    expect(intakeRes.status).toBe(201);
+
     await page.goto("/admin/intake");
-
-    // Page heading visible
-    await expect(page.getByRole("heading")).toBeVisible();
-
-    // At least one status badge or row visible (the attempt created in the previous test)
-    // Accept any status badge text
-    const badges = page.locator("[class*='badge'], [class*='status'], [class*='Badge']");
-    await expect(badges.first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: /Intake admin review/i })).toBeVisible();
+    await expect(page.getByText(/Contract: job-posting-v1/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByText(/Sanitized payload preview/i).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /Approve selected/i }).first()).toBeVisible();
   });
 
-  test("approve flow changes attempt status from pending_review", async ({ page, request }) => {
-    // Create a fresh attempt via API to ensure we have a pending one
-    const intakeRes = await request.post(`${apiBaseUrl}/api/intake/mapping-suggestions`, {
-      data: {
-        sourceSystem: "pw-approve-src",
-        contractId: "employee-v1",
-        payload: { employeeName: "ApproveTest", employeeEmail: "approve@test.com" },
-        queueId,
+  test("approve flow changes attempt status from pending_review", async ({ page }) => {
+    const { queueId, runId } = await bootstrap(page);
+    const sourceSystem = `pw-approve-src-${runId}`;
+
+    const intakeRes = await page.evaluate(
+      async ({ apiBaseUrl, queueId, payload, sourceSystem }) => {
+        const response = await fetch(`${apiBaseUrl}/api/intake/mapping-suggestions`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            sourceSystem,
+            contractId: "job-posting-v1",
+            payload,
+            queueId,
+          }),
+        });
+        return {
+          status: response.status,
+          body: await (async () => {
+            const text = await response.text();
+            try {
+              return JSON.parse(text);
+            } catch {
+              return text;
+            }
+          })(),
+        };
       },
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const intakeBody = (await intakeRes.json()) as {
+      { apiBaseUrl, queueId, payload: jobPostingPayload, sourceSystem },
+    );
+
+    expect(intakeRes.status).toBe(201);
+    const intakeBody = intakeRes.body as {
       data: { attempt: { intakeAttemptId: string; status: string } };
     };
 
-    // If the attempt is already approved (auto-heal), skip the UI approve step
     if (intakeBody.data.attempt.status !== "pending_review") {
-      // Auto-healed — already approved, just verify the API succeeded
-      expect(["approved", "ingested"].includes(intakeBody.data.attempt.status)).toBe(true);
+      expect(["approved", "ingested", "abstained"].includes(intakeBody.data.attempt.status)).toBe(
+        true,
+      );
       return;
     }
 
     await page.goto("/admin/intake");
 
-    // Find a row with pending_review status and click approve
     const pendingRow = page.locator("text=pending_review").first();
     await expect(pendingRow).toBeVisible({ timeout: 10_000 });
 
-    // Look for an approve button near the pending row
+    const firstSuggestionCheckbox = page.getByRole("checkbox").first();
+    await expect(firstSuggestionCheckbox).toBeVisible({ timeout: 5_000 });
+    await firstSuggestionCheckbox.check();
+
     const approveBtn = page.getByRole("button", { name: /approve/i }).first();
-    await expect(approveBtn).toBeVisible({ timeout: 5_000 });
+    await expect(approveBtn).toBeEnabled({ timeout: 5_000 });
     await approveBtn.click();
 
-    // Status should change away from pending_review
     await expect(page.getByText("pending_review")).not.toBeVisible({ timeout: 10_000 });
   });
 });

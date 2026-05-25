@@ -246,7 +246,7 @@ conflicts are zero.
 
 #### [guardrail] Task 1.1: Wire Agent Kit bundle-budget audit for the client
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -277,20 +277,20 @@ bundle-budget` and `@webpresso/agent-kit/vite`; if not, refresh the local
 
 **Acceptance:**
 
-- [ ] No local `scripts/check-client-bundle-budget.ts` or duplicate analyzer is
+- [x] No local `scripts/check-client-bundle-budget.ts` or duplicate analyzer is
       added to this repo.
-- [ ] `client:bundle:check` uses `ak audit bundle-budget` with explicit
+- [x] `client:bundle:check` uses `ak audit bundle-budget` with explicit
       app-local thresholds.
-- [ ] The command exits non-zero against the current unsplit build.
-- [ ] Checker output lists all JS asset sizes and the HTML-eager JS total.
-- [ ] No route-name, app-path, or generated chunk-prefix assumptions are encoded
+- [x] The command exits non-zero against the current unsplit build.
+- [x] Checker output lists all JS asset sizes and the HTML-eager JS total.
+- [x] No route-name, app-path, or generated chunk-prefix assumptions are encoded
       in this repo's script.
 
 ---
 
 #### [client] Task 1.2: Lazy-load page routes in `App.tsx`
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -324,21 +324,21 @@ solution here. (F2, F3, F5, F6, F9)
 
 **Acceptance:**
 
-- [ ] `apps/client/src/App.tsx` has no static `./pages/*` imports.
-- [ ] Lazy declarations are top-level, outside the `App` component, to avoid
+- [x] `apps/client/src/App.tsx` has no static `./pages/*` imports.
+- [x] Lazy declarations are top-level, outside the `App` component, to avoid
       React lazy-state reset hazards.
-- [ ] `Suspense` wraps `<Routes>` only; global providers and router/auth shell
+- [x] `Suspense` wraps `<Routes>` only; global providers and router/auth shell
       are not inside the fallback boundary.
-- [ ] Existing route paths and `RequireAuth` wrappers are unchanged.
-- [ ] `pnpm --filter client check-types` passes.
-- [ ] `pnpm --filter client lint` passes.
-- [ ] `pnpm --filter client exec vite build` passes without the large-chunk warning.
+- [x] Existing route paths and `RequireAuth` wrappers are unchanged.
+- [x] `pnpm --filter client check-types` passes.
+- [x] `pnpm --filter client lint` passes.
+- [x] `pnpm --filter client exec vite build` passes without the large-chunk warning.
 
 ---
 
 #### [resilience] Task 1.3: Install Agent Kit stale dynamic-import recovery
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -368,19 +368,19 @@ guarding; this repo only documents the production HTML cache requirement. (F7)
 
 **Acceptance:**
 
-- [ ] No local `apps/client/src/lib/chunkLoadRecovery.ts` duplicate is added.
-- [ ] `apps/client/src/main.tsx` imports `installChunkLoadRecovery` from
+- [x] No local `apps/client/src/lib/chunkLoadRecovery.ts` duplicate is added.
+- [x] `apps/client/src/main.tsx` imports `installChunkLoadRecovery` from
       `@webpresso/agent-kit/vite` and calls it before rendering.
-- [ ] `apps/client/src/main.tsx` imports no heavy dependency for recovery.
-- [ ] Deployment note about `Cache-Control: no-cache` for HTML is present in a
+- [x] `apps/client/src/main.tsx` imports no heavy dependency for recovery.
+- [x] Deployment note about `Cache-Control: no-cache` for HTML is present in a
       code comment or adjacent documentation.
-- [ ] `pnpm --filter client check-types` and `pnpm --filter client lint` pass.
+- [x] `pnpm --filter client check-types` and `pnpm --filter client lint` pass.
 
 ---
 
 #### [qa] Task 1.4: Verify production chunk graph and full client gates
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2, Task 1.3
 
@@ -410,13 +410,13 @@ file from the failed task and re-run the gate before marking this task done.
 
 **Acceptance:**
 
-- [ ] `pnpm --filter client check-types` passes.
-- [ ] `pnpm --filter client lint` passes.
-- [ ] `pnpm --filter client test` passes.
-- [ ] `pnpm --filter client exec vite build` passes without the large-chunk warning.
-- [ ] `pnpm client:bundle:check` passes and prints chunk sizes.
-- [ ] Root format/lint/blueprint validation gates pass.
-- [ ] Any gate failure is fixed in the owning task's files before final completion.
+- [x] `pnpm --filter client check-types` passes.
+- [x] `pnpm --filter client lint` passes.
+- [x] `pnpm --filter client test` passes.
+- [x] `pnpm --filter client exec vite build` passes without the large-chunk warning.
+- [x] `pnpm client:bundle:check` passes and prints chunk sizes.
+- [x] Root format/lint/blueprint validation gates pass.
+- [x] Any gate failure is fixed in the owning task's files before final completion.
 
 ---
 

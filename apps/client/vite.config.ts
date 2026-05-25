@@ -5,9 +5,9 @@ import path from "path";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const CLIENT_PORT = env.CLIENT_PORT || "3000";
-  const API_URL = env.API_URL;
-  const VITE_API_BASE_URL = env.VITE_API_BASE_URL ?? env.API_URL;
+  const CLIENT_PORT = process.env.CLIENT_PORT ?? env.CLIENT_PORT ?? "3000";
+  const API_URL = process.env.API_URL ?? env.API_URL;
+  const VITE_API_BASE_URL = process.env.VITE_API_BASE_URL ?? env.VITE_API_BASE_URL ?? API_URL;
   return {
     plugins: [react(), tailwindcss()],
     resolve: {

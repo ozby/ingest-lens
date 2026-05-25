@@ -82,7 +82,7 @@ Optional freshness mode
 
 #### [provenance] Task 1.1: Document public dataset provenance and demo-safe framing
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -110,17 +110,17 @@ Fx: api-reuse)
 
 **Acceptance:**
 
-- [ ] `docs/guides/public-dataset-demo.md` exists and names
+- [x] `docs/guides/public-dataset-demo.md` exists and names
       `data/payload-mapper/payloads/ats/open-apply-sample.jsonl` explicitly.
-- [ ] README links to the guide and makes the public-data boundary clear.
-- [ ] Docs distinguish deterministic pinned fixtures from optional live fetch.
-- [ ] `pnpm docs:check && pnpm format:check` passes.
+- [x] README links to the guide and makes the public-data boundary clear.
+- [x] Docs distinguish deterministic pinned fixtures from optional live fetch.
+- [x] `pnpm docs:check && pnpm format:check` passes.
 
 ---
 
 #### [fixtures] Task 1.2: Bundle and expose demo fixtures on the intake route
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -150,12 +150,12 @@ Fx: upstream-intake-gate)
 
 **Acceptance:**
 
-- [ ] Initial catalog response returns metadata only: fixture id, source system,
+- [x] Initial catalog response returns metadata only: fixture id, source system,
       title/name/text summary, source URL, and target schema hint.
-- [ ] Detail endpoint returns one validated payload by fixture id.
-- [ ] No dynamic network fetch is required for the default demo path.
-- [ ] Fixture endpoints work from bundled Worker data and do not depend on runtime filesystem access.
-- [ ] `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint` passes.
+- [x] Detail endpoint returns one validated payload by fixture id.
+- [x] No dynamic network fetch is required for the default demo path.
+- [x] Fixture endpoints work from bundled Worker data and do not depend on runtime filesystem access.
+- [x] `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint` passes.
 
 ---
 
@@ -163,7 +163,7 @@ Fx: upstream-intake-gate)
 
 #### [coverage] Task 2.1: Extend upstream normalization coverage with public job-posting fixtures
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -190,17 +190,17 @@ through that core. (Fx: api-reuse, Fx: dataset-path-verified)
 
 **Acceptance:**
 
-- [ ] Pinned fixtures from all three source shapes emit the same top-level event shape through the upstream core.
-- [ ] Event metadata preserves fixture id, source URL, payload hash, schema version, and `mappingTraceId`.
-- [ ] Example-lens fixtures map into the generic normalized envelope without job-posting code in the core blueprint.
-- [ ] No normalized event is published before explicit approval.
-- [ ] `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint` passes.
+- [x] Pinned fixtures from all three source shapes emit the same top-level event shape through the upstream core.
+- [x] Event metadata preserves fixture id, source URL, payload hash, schema version, and `mappingTraceId`.
+- [x] Example-lens fixtures map into the generic normalized envelope without job-posting code in the core blueprint.
+- [x] No normalized event is published before explicit approval.
+- [x] `pnpm --filter @repo/workers check-types && pnpm --filter @repo/workers lint` passes.
 
 ---
 
 #### [client-flow] Task 2.2: Preload the intake UI from demo fixtures
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.2
 
@@ -230,16 +230,16 @@ inventing a second UI path. (Fx: upstream-intake-gate, Fx: fixture-catalog-split
 
 **Acceptance:**
 
-- [ ] User can browse pinned fixtures before any live/network path is shown.
-- [ ] The pages reuse the existing mapping suggestion and admin approval UX.
-- [ ] Ingest status, delivery status, mapping confidence, and `mappingTraceId` remain visible after approval.
-- [ ] `pnpm --filter client check-types && pnpm --filter client lint` passes.
+- [x] User can browse pinned fixtures before any live/network path is shown.
+- [x] The pages reuse the existing mapping suggestion and admin approval UX.
+- [x] Ingest status, delivery status, mapping confidence, and `mappingTraceId` remain visible after approval.
+- [x] `pnpm --filter client check-types && pnpm --filter client lint` passes.
 
 ---
 
 #### [freshness] Optional Task 2.3: Add a pre-demo fixture refresh script
 
-**Status:** optional
+**Status:** done
 
 **Depends:** shipped deterministic pinned-fixture demo
 
@@ -257,10 +257,10 @@ fixtures.
 
 **Acceptance:**
 
-- [ ] No `POST /api/intake/public-live-fetch` endpoint is required for showcase readiness.
-- [ ] Refresh script is allowlist-only, timeout-bounded, payload-size-bounded, and never part of required CI gates.
-- [ ] Refresh output is committed/pinned with hashes before the demo.
-- [ ] README/demo docs describe runtime live fetch as future-only, not a shipped or required path.
+- [x] No `POST /api/intake/public-live-fetch` endpoint is required for showcase readiness.
+- [x] Refresh script is allowlist-only, timeout-bounded, payload-size-bounded, and never part of required CI gates.
+- [x] Refresh output is committed/pinned with hashes before the demo.
+- [x] README/demo docs describe runtime live fetch as future-only, not a shipped or required path.
 
 ---
 
@@ -268,7 +268,7 @@ fixtures.
 
 #### [demo] Task 3.1: Add a short deterministic demo guide
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 2.1, Task 2.2
 
@@ -291,11 +291,11 @@ dataset-path-verified)
 
 **Acceptance:**
 
-- [ ] A reviewer can discover the deterministic demo path from the README.
-- [ ] The rehearsal guide covers intake, mapping suggestion, admin approval, ingest,
+- [x] A reviewer can discover the deterministic demo path from the README.
+- [x] The rehearsal guide covers intake, mapping suggestion, admin approval, ingest,
       delivery telemetry, and a fallback branch.
-- [ ] The documented path does not require paid SaaS credentials.
-- [ ] `pnpm docs:check && pnpm format:check` passes.
+- [x] The documented path does not require paid SaaS credentials.
+- [x] `pnpm docs:check && pnpm format:check` passes.
 
 ## Verification Gates
 

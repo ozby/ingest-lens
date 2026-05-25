@@ -757,6 +757,78 @@ describe("auto-heal fast path", () => {
     expect(vi.mocked(suggestMappings)).not.toHaveBeenCalled();
   });
 
+  it("still succeeds when the fast-path intake audit queue binding is absent", async () => {
+    bypassAuth(vi.mocked(authenticate));
+
+    const testPayload = { first_name: "Alice" };
+    const matchingFingerprint = shapeFingerprint(testPayload);
+    const healStream = createMockHealStream({
+      approved: {
+        fingerprint: matchingFingerprint,
+        suggestions: [
+          {
+            id: "suggestion-heal-1",
+            sourcePath: "/first_name",
+            targetField: "first_name",
+            transformKind: "copy",
+            confidence: 1,
+            explanation: "Direct field match.",
+            evidenceSample: "Alice",
+            deterministicValidation: {
+              isValid: true,
+              validatedAt: "2026-01-01T00:00:00.000Z",
+              errors: [],
+            },
+            reviewStatus: "pending",
+            replayStatus: "not_requested",
+          },
+        ],
+        approvedAt: "2026-01-01T00:00:00.000Z",
+      },
+    });
+
+    const state: FakeDbState = {
+      attempts: [],
+      mappingVersions: [],
+      messages: [],
+      queues: [],
+      topics: [],
+    };
+    vi.mocked(createDb).mockReturnValue(createFakeDb(state) as never);
+
+    const env = createMockEnv(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      healStream,
+    ) as ReturnType<typeof createMockEnv> & { DELIVERY_QUEUE?: undefined };
+    (env as { DELIVERY_QUEUE?: undefined }).DELIVERY_QUEUE = undefined;
+
+    const response = await app.fetch(
+      post(
+        "/api/intake/mapping-suggestions",
+        {
+          contractId: "employee-v1",
+          payload: testPayload,
+          queueId: "queue-1",
+          sourceSystem: "test",
+        },
+        AUTH_HEADER,
+      ),
+      env as never,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "success",
+      data: { fastPath: true },
+    });
+    expect(vi.mocked(suggestMappings)).not.toHaveBeenCalled();
+  });
+
   it("passes Langfuse prompt text to suggestMappings when prompt is resolved", async () => {
     bypassAuth(vi.mocked(authenticate));
     vi.mocked(fetchPayloadMapperPrompt).mockResolvedValueOnce({

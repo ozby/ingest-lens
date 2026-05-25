@@ -101,7 +101,7 @@ Wave 2 keeps four lanes busy, and the critical path stays to three waves.
 
 #### [security] Task 1.1: Enforce owned queue/topic access end-to-end
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -134,16 +134,16 @@ Fx2, Fx3)
 
 **Acceptance:**
 
-- [ ] Cross-tenant message send, receive, get, and delete are rejected.
-- [ ] Dashboard queue metrics return only owned queues.
-- [ ] Topic subscribe requires both owned topic and owned queue.
-- [ ] WebSocket upgrade verifies topic ownership before touching the DO stub.
+- [x] Cross-tenant message send, receive, get, and delete are rejected.
+- [x] Dashboard queue metrics return only owned queues.
+- [x] Topic subscribe requires both owned topic and owned queue.
+- [x] WebSocket upgrade verifies topic ownership before touching the DO stub.
 
 ---
 
 #### [contracts] Task 1.2: Make Worker and client contracts single-source
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.1
 
@@ -178,16 +178,16 @@ contract surface is open. (Fx4)
 
 **Acceptance:**
 
-- [ ] No client adapter references a Worker route that does not exist.
-- [ ] Queue metrics use one agreed response key across Worker, client, and shared types.
-- [ ] Message get/receive/delete payloads are contract-tested from both sides.
-- [ ] Public shared types no longer expose `IUser.password` or stale expiry props.
+- [x] No client adapter references a Worker route that does not exist.
+- [x] Queue metrics use one agreed response key across Worker, client, and shared types.
+- [x] Message get/receive/delete payloads are contract-tested from both sides.
+- [x] Public shared types no longer expose `IUser.password` or stale expiry props.
 
 ---
 
 #### [types] Task 1.3: Restore clean workspace typecheck and portable manifests
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -215,15 +215,15 @@ This task owns the `@repo/ui/components` typecheck break and the local-only
 
 **Acceptance:**
 
-- [ ] `pnpm -r check-types` passes from a clean checkout.
-- [ ] No root/client/ui manifest contains `file:/Users/ozby/...` references.
-- [ ] The fix does not require committing generated `dist` artifacts.
+- [x] `pnpm -r check-types` passes from a clean checkout.
+- [x] No root/client/ui manifest contains `file:/Users/ozby/...` references.
+- [x] The fix does not require committing generated `dist` artifacts.
 
 ### Phase 2: Runtime correctness and observability [Complexity: M]
 
 #### [auth] Task 2.1: Replace demo password hashing with PBKDF2
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -249,16 +249,16 @@ KDF while keeping the implementation dependency-free and migration-aware. (Fx6)
 
 **Acceptance:**
 
-- [ ] Static salt and placeholder hash logic are removed from the reachable auth path.
-- [ ] Equal passwords store different hashes because salts differ.
-- [ ] Wrong passwords fail verification with test coverage.
-- [ ] ADR notes the chosen format and legacy-user handling.
+- [x] Static salt and placeholder hash logic are removed from the reachable auth path.
+- [x] Equal passwords store different hashes because salts differ.
+- [x] Wrong passwords fail verification with test coverage.
+- [x] ADR notes the chosen format and legacy-user handling.
 
 ---
 
 #### [delivery] Task 2.2: Make receive visibility semantics honest
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.2
 
@@ -285,15 +285,15 @@ lease implementation, but do not leave mismatched docs or payloads behind.
 
 **Acceptance:**
 
-- [ ] `visibilityTimeout` either works as documented or is removed from the public API.
-- [ ] Concurrent receive behavior is covered by tests.
-- [ ] Delivery guarantees documentation matches code exactly.
+- [x] `visibilityTimeout` either works as documented or is removed from the public API.
+- [x] Concurrent receive behavior is covered by tests.
+- [x] Delivery guarantees documentation matches code exactly.
 
 ---
 
 #### [observability] Task 2.3: Make dashboard metrics measured or visibly synthetic
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.2
 
@@ -323,15 +323,15 @@ facts. (Fx10)
 
 **Acceptance:**
 
-- [ ] Dashboard metrics stay ownership-scoped.
-- [ ] No random client-generated values are presented as production telemetry.
-- [ ] Synthetic/demo metrics, if retained, are visibly labelled in the UI.
+- [x] Dashboard metrics stay ownership-scoped.
+- [x] No random client-generated values are presented as production telemetry.
+- [x] Synthetic/demo metrics, if retained, are visibly labelled in the UI.
 
 ### Phase 3: Test, CI, and dependency gates [Complexity: M]
 
 #### [tests] Task 3.1: Replace empty-suite escape hatches with behavior tests
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.2, Task 1.3
 
@@ -359,15 +359,15 @@ plus script tightening; it does not reopen API contract files. (Fx7)
 
 **Acceptance:**
 
-- [ ] Client and UI test scripts fail if their suites are deleted.
-- [ ] New tests cover user-visible behavior, not implementation details.
-- [ ] Package test scripts no longer use `--passWithNoTests`.
+- [x] Client and UI test scripts fail if their suites are deleted.
+- [x] New tests cover user-visible behavior, not implementation details.
+- [x] Package test scripts no longer use `--passWithNoTests`.
 
 ---
 
 #### [ci] Task 3.2: Make CI match clean-checkout repo gates
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.3
 
@@ -396,15 +396,15 @@ reviewers use locally. (Fx9)
 
 **Acceptance:**
 
-- [ ] CI does not reference missing files or scripts.
-- [ ] CI uses the existing `setup-monorepo` composite action path.
-- [ ] CI gate order matches local pnpm verification commands.
+- [x] CI does not reference missing files or scripts.
+- [x] CI uses the existing `setup-monorepo` composite action path.
+- [x] CI gate order matches local pnpm verification commands.
 
 ---
 
 #### [deps] Task 3.3: Close audit findings and delete stale `.new` artifacts
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 3.2
 
@@ -436,9 +436,9 @@ remove leftover `.new` files only after confirming the canonical files exist.
 
 **Acceptance:**
 
-- [ ] `pnpm audit --audit-level=moderate` passes, or any residual advisory has explicit rationale and expiry.
-- [ ] No tracked `.new` blueprint/docs template artifacts remain.
-- [ ] Lockfile changes stay minimal and root-owned.
+- [x] `pnpm audit --audit-level=moderate` passes, or any residual advisory has explicit rationale and expiry.
+- [x] No tracked `.new` blueprint/docs template artifacts remain.
+- [x] Lockfile changes stay minimal and root-owned.
 
 ## Verification Gates
 

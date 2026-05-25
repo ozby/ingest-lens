@@ -6,7 +6,7 @@ Repo-owned end-to-end surface for IngestLens. Zero manual env vars — secrets a
 
 ```bash
 pnpm e2e --suite full                        # from repo root — auto-provisions Neon branch
-pnpm exec webpresso agent e2e --suite foundation   # against an already-running worker once the unified CLI cutover lands
+wp e2e --suite foundation   # against an already-running worker once the unified CLI cutover lands
 pnpm --filter @repo/e2e run auth:dev-bench   # against deployed dev.ingest-lens.ozby.dev
 ```
 
@@ -28,10 +28,15 @@ Defined in `src/e2e-suite-manifest.ts`:
 - `messaging` — queue send/receive/ack + topic publish fanout
 - `hardening` — ownership and authorization hardening
 - `intake` — AI intake mapping suggestion + review flow
+- `healing` — adaptive intake auto-heal + rollback semantics
 - `demo` — public fixture demo ingestion
-- `client` — client route code-splitting and bundle budgets
+- `client` — client route code-splitting plus browser proof for dashboard, queues, topics, metrics, and detail surfaces
 - `branding` — IngestLens UI branding surfaces
-- `full` — runs all suites
+- `intake-ui` — browser proof for intake submission + admin review
+- `full` — runs all Vitest journeys plus both Playwright browser suites
+
+Reviewer-facing claim mapping lives in
+[`../../docs/guides/claim-e2e-traceability.md`](../../docs/guides/claim-e2e-traceability.md).
 
 ## Deployed dev auth bench
 

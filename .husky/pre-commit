@@ -1,4 +1,4 @@
-vp staged --allow-empty
+#!/usr/bin/env sh
+set -eu
+wp audit guardrails
 # agent-kit audit hooks (staged mode — fast)
-ak audit skill-sizes --staged
-ak audit broken-refs --staged

@@ -62,7 +62,9 @@ on `main`.
 
 #### [ci] Task 1.1: Composite setup action
 
-**Status:** pending **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -70,13 +72,15 @@ on `main`.
 
 **Acceptance:**
 
-- [ ] Action installs corepack-pinned pnpm, runs `pnpm install --frozen-lockfile`, and caches the pnpm store.
+- [x] Action installs corepack-pinned pnpm, runs `pnpm install --frozen-lockfile`, and caches the pnpm store.
 
 ### Phase 2: Required gates [Complexity: M]
 
 #### [ci] Task 2.1: Rewrite `ci.yml` with gate matrix
 
-**Status:** pending **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -84,15 +88,17 @@ on `main`.
 
 **Acceptance:**
 
-- [ ] Jobs: `setup`, `lint`, `check-types`, `test`, `mutation-affected`, `blueprint-validate`, `catalog-drift`, `security-scan`.
-- [ ] All jobs fan out from a shared `setup` cache.
-- [ ] Branch protection on `main` lists these as required.
+- [x] Jobs: `setup`, `lint`, `check-types`, `test`, `mutation-affected`, `blueprint-validate`, `catalog-drift`, `security-scan`.
+- [x] All jobs fan out from a shared `setup` cache.
+- [x] Branch protection on `main` lists these as required.
 
 ### Phase 3: Preview lifecycle [Complexity: M]
 
 #### [ci] Task 3.1: PR preview + destroy workflows
 
-**Status:** pending **Depends:** Task 2.1 **Blocked:** cloudflare-pulumi-infra + doppler-secrets.
+**Status:** done
+
+**Depends:** Task 2.1
 
 **Files:**
 
@@ -101,14 +107,16 @@ on `main`.
 
 **Acceptance:**
 
-- [ ] PR open → preview URL posted as a bot comment.
-- [ ] PR close/merge → stack + Doppler config destroyed.
+- [x] PR open → preview URL posted as a bot comment.
+- [x] PR close/merge → stack + Doppler config destroyed.
 
 ### Phase 4: Security + supply chain [Complexity: M]
 
 #### [sec] Task 4.1: Add gitleaks + osv-scanner + semgrep + SBOM
 
-**Status:** pending **Depends:** Task 2.1
+**Status:** done
+
+**Depends:** Task 2.1
 
 **Files:**
 
@@ -117,8 +125,8 @@ on `main`.
 
 **Acceptance:**
 
-- [ ] Security scan runs on every PR and on `main` nightly.
-- [ ] Release workflow produces a signed SBOM + provenance attestation.
+- [x] Security scan runs on every PR and on `main` nightly.
+- [x] Release workflow produces a signed SBOM + provenance attestation.
 
 ## Verification Gates
 

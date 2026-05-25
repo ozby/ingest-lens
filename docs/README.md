@@ -84,6 +84,7 @@ exact package script here instead of referring to ad hoc commands.
 - [`../AGENTS.md`](../AGENTS.md) — top-level operating contract.
 - [`../README.md`](../README.md) — project README.
 - [`./project/REVIEWER-GUIDE.md`](./project/REVIEWER-GUIDE.md) — fastest repo orientation path.
+- [`./guides/claim-e2e-traceability.md`](./guides/claim-e2e-traceability.md) — shipped reviewer-facing claims mapped to executable E2E proof.
 - [`./project/README.md`](./project/README.md) — project-state and execution records.
 - [`../.agent/guides/agent-guardrails.md`](../.agent/guides/agent-guardrails.md) — agent-operational guardrails.
 - [`../.agent/workflows/README.md`](../.agent/workflows/README.md) — agent workflow index.

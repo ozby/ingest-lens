@@ -1,10 +1,7 @@
-import { SCOPES } from "./scripts/commitlint-scopes";
+import type { UserConfig } from "@commitlint/types";
 
-export default {
+const config: UserConfig = {
   extends: ["@commitlint/config-conventional"],
-  rules: {
-    "scope-enum": [2, "always", SCOPES],
-    "subject-case": [0],
-    "body-max-line-length": [0],
-  },
 };
+
+export default config;

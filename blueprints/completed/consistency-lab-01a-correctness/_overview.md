@@ -152,7 +152,7 @@ POST /lab/s1a/run  (sessionId, cookie issued by shell Lane D)
 
 #### [core] Task 2.1: `ScenarioContext` + message schema
 
-**Status:** pending
+**Status:** done
 
 **Depends:** `consistency-lab-core` complete
 
@@ -187,7 +187,7 @@ and the `Message` type + `buildWorkload(sessionId, n)` fixture generator.
 
 #### [cf] Task 2.2: `CfQueuesPath` + dedicated queue + consumer handler (F-3T)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.1
 
@@ -225,7 +225,7 @@ wire. Default workload is 1000; 10k available as an override (F-04).
 
 #### [pg] Task 2.3: `PgPollingPath`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.1
 
@@ -255,7 +255,7 @@ SELECTed.
 
 #### [nfy] Task 2.4: `PostgresDirectNotifyPath` — **bypasses Hyperdrive** (F1T-reversed)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.1, probe p01 `CONFIRMED`
 
@@ -327,7 +327,7 @@ Default workload 1000; 10k as stress override (F-04).
 
 #### [aggregate] Task 2.5: Per-path summary + classifier
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.2, 2.3, 2.4
 
@@ -358,7 +358,7 @@ status becomes `PARTIAL`; `throws` → `FAILED`.
 
 #### [runner] Task 2.6: `S1aRunnerDO` Durable Object (F-04)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.5
 
@@ -406,7 +406,7 @@ once all three paths complete.
 
 #### [ops] Task 2.7: Register `s1a-correctness` suite in `agent-kit.config.ts` (F-008C)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 2.6
 
@@ -428,7 +428,7 @@ the end-to-end test. This file currently has only a minimal
 **Acceptance:**
 
 - [x] `ak e2e --suite s1a-correctness` is a discoverable command
-- [ ] The e2e test exercises the full three-path run via the shell API — deploy-gated; requires live CF shell environment
+- [x] The e2e test exercises the full three-path run via the shell API — deploy-gated; requires live CF shell environment
 - [x] Test is marked skipped (not failing) until Lane D shell is merged
 
 ---

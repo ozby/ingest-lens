@@ -135,7 +135,7 @@ Hono router                          wrangler.toml bindings:
 
 #### [shell] Task 4.1: `apps/lab` Workers app scaffold (F5T, F12T, F-3T)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Lanes A, B, C merged
 
@@ -182,7 +182,7 @@ Smoke-test boots via `pnpm --filter @repo/lab dev`.
 
 #### [shell] Task 4.2: Kill-switch + session cookie middleware (F-01, F-08)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 4.1
 
@@ -224,7 +224,7 @@ endpoints.
 
 #### [shell] Task 4.3: Scenario page routes (SSR)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 4.1, 4.2
 
@@ -261,7 +261,7 @@ HTMX handles live updates only during a run.
 
 #### [shell] Task 4.4: Run endpoints (POST) — **lock-first, gauge-second** (F-02)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 4.1, 4.2
 
@@ -300,7 +300,7 @@ fixed by F-02:
 
 #### [shell] Task 4.5: SSE stream endpoint — archive replay + keepalive (F-05, F-09)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 4.3, 4.4
 
@@ -344,7 +344,7 @@ archive is the single source of truth.
 
 #### [shell] Task 4.6: Workers Assets — CSS + fonts + htmx (F7T, F12T, F-16)
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 4.1
 
@@ -389,7 +389,7 @@ Assets:
 
 #### [shell] Task 4.7: HTMX SSE wiring + partial swaps
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 4.3, 4.5, 4.6
 

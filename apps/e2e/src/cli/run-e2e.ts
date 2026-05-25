@@ -69,53 +69,81 @@ export function resolveJourneySelection(args: RunE2eArgs): JourneySelection {
   return { suiteId, files };
 }
 
-export function buildJourneyRunCommand(args: RunE2eArgs): JourneyRunCommand {
-  const selection = resolveJourneySelection(args);
-  const suites = listE2ESuites();
-  const suite = suites.find((s) => s.id === selection.suiteId);
-  const firstStep = suite?.steps[0];
-
-  if (firstStep?.runner === "playwright") {
-    const configPath = firstStep.configPath ?? "playwright.config.ts";
+function buildStepCommand(
+  suiteId: string,
+  runner: "vitest" | "playwright" | "command",
+  configPath: string,
+  fixedFiles: string[],
+  args: RunE2eArgs,
+): JourneyRunCommand {
+  if (runner === "playwright") {
     return {
-      command: "pnpm",
-      args: [
-        "exec",
-        "playwright",
-        "test",
-        "--config",
-        configPath,
-        ...selection.files,
-        ...args.passthrough,
-      ],
-      suiteId: selection.suiteId,
+      command: "./node_modules/.bin/playwright",
+      args: ["test", "--config", configPath, ...fixedFiles, ...args.passthrough],
+      suiteId,
     };
   }
 
-  const configPath = firstStep?.configPath ?? "vitest.journeys.config.ts";
-  const commandArgs = ["exec", "vitest", "run", "--config", configPath];
+  const commandArgs = ["run", "--config", configPath];
 
   if (args.workers !== undefined) {
     commandArgs.push("--poolOptions.threads.maxThreads", String(args.workers));
   }
 
-  commandArgs.push(...selection.files, ...args.passthrough);
+  commandArgs.push(...fixedFiles, ...args.passthrough);
 
   return {
-    command: "pnpm",
+    command: "./node_modules/.bin/vitest",
     args: commandArgs,
-    suiteId: selection.suiteId,
+    suiteId,
   };
 }
 
-function runCli(argv: readonly string[]): never {
-  const command = buildJourneyRunCommand(parseRunE2eArgs(argv));
-  const result = spawnSync(command.command, command.args, {
-    stdio: "inherit",
-    env: process.env,
-  });
+export function buildJourneyRunCommands(args: RunE2eArgs): JourneyRunCommand[] {
+  const selection = resolveJourneySelection(args);
+  const suites = listE2ESuites();
+  const suite = suites.find((s) => s.id === selection.suiteId);
+  if (!suite) {
+    throw new Error(`Unknown E2E suite: ${selection.suiteId}`);
+  }
 
-  process.exit(result.status ?? 1);
+  return suite.steps
+    .map((step) => {
+      const configPath =
+        step.configPath ??
+        (step.runner === "playwright" ? "playwright.config.ts" : "vitest.journeys.config.ts");
+      const stepFiles = selection.files.filter((file) => step.fixedFiles?.includes(file) ?? false);
+      if (stepFiles.length === 0) return null;
+      return buildStepCommand(selection.suiteId, step.runner, configPath, stepFiles, args);
+    })
+    .filter((command): command is JourneyRunCommand => command !== null);
+}
+
+export function buildJourneyRunCommand(args: RunE2eArgs): JourneyRunCommand {
+  const [firstCommand] = buildJourneyRunCommands(args);
+  if (!firstCommand) {
+    throw new Error("No E2E journey commands were generated.");
+  }
+  return firstCommand;
+}
+
+function runCli(argv: readonly string[]): never {
+  const commands = buildJourneyRunCommands(parseRunE2eArgs(argv));
+  if (commands.length === 0) {
+    throw new Error("No E2E journey commands were generated.");
+  }
+
+  let exitCode = 0;
+  for (const command of commands) {
+    const result = spawnSync(command.command, command.args, {
+      stdio: "inherit",
+      env: process.env,
+    });
+    exitCode = result.status ?? 1;
+    if (exitCode !== 0) break;
+  }
+
+  process.exit(exitCode);
 }
 
 const entryPath = process.argv[1] ? fileURLToPath(import.meta.url) === process.argv[1] : false;

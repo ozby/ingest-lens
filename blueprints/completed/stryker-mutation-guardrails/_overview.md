@@ -69,7 +69,9 @@ per-package:
 
 #### [qa] Task 1.1: Pilot on one leaf package
 
-**Status:** done **Depends:** None
+**Status:** done
+
+**Depends:** None
 
 **Files:**
 
@@ -85,7 +87,9 @@ per-package:
 
 #### [qa] Task 2.1: Add configs to every workspace with tests
 
-**Status:** done **Depends:** Task 1.1
+**Status:** done
+
+**Depends:** Task 1.1
 
 **Files:**
 
@@ -101,7 +105,9 @@ per-package:
 
 #### [ci] Task 3.1: Add mutation job that blocks below `break` threshold
 
-**Status:** done **Depends:** Task 2.1
+**Status:** done
+
+**Depends:** Task 2.1
 
 **Files:**
 

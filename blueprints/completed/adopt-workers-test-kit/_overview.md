@@ -102,7 +102,7 @@ apps/workers/src/tests/         apps/workers/src/tests/
 
 #### [infra] Task 1.1: Add `@webpresso/agent-workers-test` to workspace
 
-**Status:** pending
+**Status:** done
 
 **Depends:** None
 
@@ -127,14 +127,14 @@ Run `pnpm install`. Verify `pnpm --filter @repo/workers check-types` passes.
 
 **Acceptance:**
 
-- [ ] `pnpm --filter @repo/workers check-types` passes after install
-- [ ] `import { createMockEnv } from "@webpresso/agent-workers-test"` resolves
+- [x] `pnpm --filter @repo/workers check-types` passes after install
+- [x] `import { createMockEnv } from "@webpresso/agent-workers-test"` resolves
 
 ---
 
 #### [workers] Task 1.2: Refactor `apps/workers/src/tests/helpers.ts`
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -166,15 +166,15 @@ Keep:
 
 **Acceptance:**
 
-- [ ] No inline `mockResolvedValue` Hyperdrive chains remain in helpers.ts
-- [ ] `createMockEnv` calls the kit's generic; does not define its own mock factories
-- [ ] All 217 `@repo/workers` tests still pass
+- [x] No inline `mockResolvedValue` Hyperdrive chains remain in helpers.ts
+- [x] `createMockEnv` calls the kit's generic; does not define its own mock factories
+- [x] All 217 `@repo/workers` tests still pass
 
 ---
 
 #### [workers] Task 1.3: Update all workers test files
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.2
 
@@ -188,14 +188,14 @@ import path or signature updates if the kit's API differs slightly.
 
 **Acceptance:**
 
-- [ ] 217/217 `@repo/workers` tests pass
-- [ ] 0 type errors
+- [x] 217/217 `@repo/workers` tests pass
+- [x] 0 type errors
 
 ---
 
 #### [lab] Task 1.4: Refactor `apps/lab` env factories
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.1
 
@@ -215,14 +215,14 @@ Add `@webpresso/agent-workers-test` to `apps/lab/package.json` devDependencies.
 
 **Acceptance:**
 
-- [ ] No `null as unknown as` env casts remain in lab test files
-- [ ] 75/75 `@repo/lab` tests pass
+- [x] No `null as unknown as` env casts remain in lab test files
+- [x] 75/75 `@repo/lab` tests pass
 
 ---
 
 #### [cleanup] Task 1.5: Delete dead code
 
-**Status:** pending
+**Status:** done
 
 **Depends:** 1.3, 1.4
 
@@ -232,8 +232,8 @@ have zero remaining call sites. Run `pnpm --filter @repo/workers lint` and
 
 **Acceptance:**
 
-- [ ] `ak audit catalog-drift` passes
-- [ ] 0 unused exports in `helpers.ts` (verified via oxlint)
+- [x] `ak audit catalog-drift` passes
+- [x] 0 unused exports in `helpers.ts` (verified via oxlint)
 
 ## Verification Gates
 
