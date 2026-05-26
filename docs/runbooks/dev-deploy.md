@@ -12,7 +12,7 @@ Full deploy of the API Worker (`api.dev.ingest-lens.ozby.dev`) and client SPA Wo
 - Doppler CLI installed and authenticated (`doppler login`)
 - Cloudflare API token in Doppler project `ozby-shell / dev` with `Workers Scripts:Edit` + `DNS:Edit` scopes
 - Pulumi CLI installed (`pulumi login` with ozby account)
-- pnpm installed; all deps installed (`pnpm install` from repo root)
+- Vite+ installed; all deps installed (`vp install` from repo root)
 - `NEON_API_KEY`, `NEON_PROJECT_ID`, `NEON_PARENT_BRANCH_ID` in Doppler (for branch provisioning)
 - `NEON_ROLE_PASSWORD`, `NEON_ROLE_NAME`, `NEON_DATABASE_NAME` in Doppler (for connection string construction)
 

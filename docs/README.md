@@ -73,8 +73,8 @@ from the matching template.
 
 Current repo-owned docs checks are:
 
-- **Vite+ formatter** — `pnpm format:check` runs `vp fmt --check` for markdown and code formatting.
-- **frontmatter check** — `pnpm docs:check` enforces rules 1–3 above.
+- **Vite+ formatter** — `vp run format:check` runs `vp fmt --check` for markdown and code formatting.
+- **frontmatter check** — `vp run docs:check` enforces rules 1–3 above.
 
 If markdown or link linting is added back as a scripted repo check, document the
 exact package script here instead of referring to ad hoc commands.

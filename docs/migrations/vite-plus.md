@@ -22,16 +22,16 @@ Cold-run benchmarks were not available pre-migration. Run the following after
 deploying to record the new baseline:
 
 ```bash
-time pnpm build 2>&1 | tail -5
-time pnpm test  2>&1 | tail -5
+time vp run build 2>&1 | tail -5
+time vp run test  2>&1 | tail -5
 ```
 
 ## Rollback recipe
 
 1. `git revert <this-commit-sha>` — restores `turbo.json`, reverts all
    `vp run` → `turbo run` script replacements, and restores `turbo` devDependency.
-2. `pnpm install` — reinstalls turbo.
-3. Verify: `pnpm build && pnpm test`.
+2. `vp install` — reinstalls turbo.
+3. Verify: `vp run build && vp run test`.
 
 No data migrations or database changes; rollback is purely a config revert.
 

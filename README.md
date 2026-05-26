@@ -13,22 +13,27 @@ Built solo by [Ozby](https://github.com/ozby) as a portfolio of integration prim
 ## Quick start
 
 ```bash
-pnpm install
-pnpm dev
+vp install
+with-secrets -- vp run dev
 ```
 
-`pnpm install` runs `postinstall`, which bootstraps the repo with the same flow
-as `webpresso setup --yes --overwrite`. If you need to rerun bootstrap
-manually, use:
+`vp install` runs `postinstall`, which bootstraps the repo with the same flow
+as the repo-owned webpresso setup wrapper. If hooks or bootstrap drift,
+diagnose first:
 
 ```bash
-pnpm exec webpresso setup --yes --overwrite
+wp hooks doctor
 ```
 
-The repo keeps a small internal wrapper for install-time automation so
-`postinstall` resolves the installed unified CLI entrypoint directly instead of
-depending on whichever package currently owns the ambient `webpresso` bin in
-`node_modules/.bin`.
+Then repair with:
+
+```bash
+wp setup
+```
+
+If you are developing against a live webpresso source checkout and the link
+breaks, rerun `vp install` here or `vp run dev:link --consumer <repo>` from the
+webpresso checkout.
 
 Secrets and database connections are managed via `wp config secrets setup` + `with-secrets`. No `.env` files.
 
@@ -97,8 +102,8 @@ behavior, not part of the primary production request path. See
 ### E2E
 
 ```bash
-pnpm e2e --suite foundation
-pnpm e2e --suite full
+vp run e2e --suite foundation
+vp run e2e --suite full
 ```
 
 Suites: `foundation`, `auth`, `messaging`, `hardening`, `intake`, `healing`, `demo`, `client`, `branding`, `intake-ui`, `full`.
@@ -108,20 +113,20 @@ Browser-backed reviewer proof also lives in `client` and `intake-ui`; see
 ### Verify
 
 ```bash
-pnpm check
-pnpm test
-pnpm build
-pnpm docs:check
-pnpm blueprints:check
+vp run check
+vp run test
+vp run build
+vp run docs:check
+vp run blueprints:check
 ```
 
 ### Local GitHub Actions testing (public Webpresso CI surface)
 
 ```bash
-pnpm act:list
-pnpm act:ci
-pnpm act:e2e
-pnpm act:cleanup
+vp run act:list
+vp run act:ci
+vp run act:e2e
+vp run act:cleanup
 ```
 
 ### Deploy

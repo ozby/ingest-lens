@@ -117,7 +117,7 @@ wp config secrets setup
 ### 4d. Start the dev server
 
 ```bash
-pnpm dev
+with-secrets -- vp run dev
 # expands to: with-secrets -- vp run dev
 ```
 
@@ -125,7 +125,7 @@ To skip Doppler injection for local/offline debugging (for example, when the
 required values are already present in your shell environment):
 
 ```bash
-pnpm dev:offline
+vp run dev:offline
 ```
 
 ---
@@ -143,7 +143,7 @@ In CI, inject secrets through the same public contract:
 
 ```yaml
 - name: Inject secrets
-  run: with-secrets -- pnpm test
+  run: with-secrets -- vp run test
   env:
     SECRET_MANAGER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
 ```
@@ -166,19 +166,19 @@ YAML.
 
 ## 6. Quick Reference
 
-| Task                       | Command                    |
-| -------------------------- | -------------------------- |
-| Configure local secrets    | `wp config secrets setup`  |
-| Run dev with secrets       | `pnpm dev`                 |
-| Run dev without secrets    | `pnpm dev:offline`         |
-| Run local CI workflow      | `pnpm act:ci`              |
-| Run local E2E workflow     | `pnpm act:e2e`             |
-| Run local cleanup workflow | `pnpm act:cleanup`         |
-| Show selected config       | `wp config secrets show`   |
-| Check secret-manager auth  | `wp config secrets status` |
+| Task                       | Command                      |
+| -------------------------- | ---------------------------- |
+| Configure local secrets    | `wp config secrets setup`    |
+| Run dev with secrets       | `with-secrets -- vp run dev` |
+| Run dev without secrets    | `vp run dev:offline`         |
+| Run local CI workflow      | `vp run act:ci`              |
+| Run local E2E workflow     | `vp run act:e2e`             |
+| Run local cleanup workflow | `vp run act:cleanup`         |
+| Show selected config       | `wp config secrets show`     |
+| Check secret-manager auth  | `wp config secrets status`   |
 
-The local workflow scripts (`pnpm act:ci`, `pnpm act:e2e`, `pnpm act:cleanup`,
-and `pnpm act:list`) expand through `scripts/act-with-webpresso.ts`, which:
+The local workflow scripts (`vp run act:ci`, `vp run act:e2e`, `vp run act:cleanup`,
+and `vp run act:list`) expand through `scripts/act-with-webpresso.ts`, which:
 
 - infers a least-privilege secret profile from the target workflow/job,
 - only resolves managed secrets when that profile actually needs them,
