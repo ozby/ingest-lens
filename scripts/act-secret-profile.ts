@@ -7,7 +7,6 @@ export interface ActSecretProfile {
   description: string;
   allowedKeys: readonly string[];
   requiredKeys: readonly string[];
-  defaultSources: readonly string[];
 }
 
 export interface ResolveActSecretProfileOptions {
@@ -22,21 +21,18 @@ const ACT_SECRET_PROFILES: Record<ActSecretProfileId, ActSecretProfile> = {
     description: "No secrets are injected into the act container.",
     allowedKeys: [],
     requiredKeys: [],
-    defaultSources: [],
   },
   "github-api": {
     id: "github-api",
     description: "Least-privilege GitHub API token surface for workflow jobs.",
     allowedKeys: ["GITHUB_TOKEN", "GITHUB_PAT"],
     requiredKeys: [],
-    defaultSources: [],
   },
   "neon-control-plane": {
     id: "neon-control-plane",
     description: "Neon control-plane credentials for branch lifecycle automation.",
     allowedKeys: ["NEON_API_KEY", "NEON_PROJECT_ID", "NEON_PARENT_BRANCH_ID"],
     requiredKeys: ["NEON_API_KEY", "NEON_PROJECT_ID", "NEON_PARENT_BRANCH_ID"],
-    defaultSources: ["ozby-shell:dev"],
   },
 };
 

@@ -2,3 +2,4 @@
 set -eu
 wp audit guardrails
 # agent-kit audit hooks (staged mode — fast)
+# webpresso audit hooks (staged mode — fast)

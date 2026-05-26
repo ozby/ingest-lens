@@ -64,7 +64,7 @@ If `Access-Control-Allow-Origin` is absent or wrong, the API Worker has the wron
 Fix (preferred — redeploy the API with the correct var):
 
 1. Confirm `[env.dev.vars] ALLOWED_ORIGIN = "https://dev.ingest-lens.ozby.dev"` in `apps/workers/wrangler.toml`
-2. Redeploy the API: `doppler run --project ozby-shell --config dev -- pnpm --filter @repo/workers exec wrangler deploy --env dev`
+2. Redeploy the API: `with-secrets -- pnpm --filter @repo/workers exec wrangler deploy --env dev`
 
 Rollback (if the above fails):
 

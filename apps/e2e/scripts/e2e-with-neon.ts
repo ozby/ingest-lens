@@ -14,8 +14,8 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
 import process from "node:process";
-import { doppler } from "@webpresso/runtime/process/secret-runner";
-import { getNeonConfig, NeonBranchProvider } from "@webpresso/db-branching-neon";
+import { resolveRuntimeProfile } from "@webpresso/webpresso/runtime/env";
+import { getNeonConfig, NeonBranchProvider } from "@webpresso/webpresso/db/neon";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
 
 const suite = process.argv.includes("--suite")
@@ -55,9 +55,13 @@ const clientPort = requiresClientWorker ? await getAvailablePort() : 3000;
 const clientInspectorPort = requiresClientWorker ? await getAvailablePort() : 9229;
 const clientBaseUrl = `http://127.0.0.1:${clientPort}`;
 
-// ── Load secrets from Doppler ──────────────────────────────────────────
-const dopplerEnv = await doppler({ project: "ozby-shell", config: "dev" }).load();
-const neonConfig = getNeonConfig(dopplerEnv);
+// ── Load secrets from the selected secret manager ──────────────────────
+const runtimeSecrets = await resolveRuntimeProfile("secrets-only");
+const secretEnv = {
+  ...process.env,
+  ...runtimeSecrets,
+} as NodeJS.ProcessEnv;
+const neonConfig = getNeonConfig(secretEnv);
 const provider = new NeonBranchProvider(neonConfig);
 
 let branchId: string | null = null;
@@ -254,7 +258,7 @@ try {
 
   // ── 3. Start wrangler dev ─────────────────────────────────────────
   console.log("🚀 Starting wrangler dev...");
-  const jwtSecret = dopplerEnv.JWT_SECRET ?? "local-dev-jwt-secret";
+  const jwtSecret = secretEnv.JWT_SECRET ?? "local-dev-jwt-secret";
   const workerVars: string[] = [
     "--var",
     `JWT_SECRET:${jwtSecret}`,
@@ -264,12 +268,12 @@ try {
   for (const [name, value] of [
     [
       "AUTO_HEAL_THRESHOLD",
-      REVIEWER_FLOW_SUITES.has(normalizedSuiteId) ? "1.1" : dopplerEnv.AUTO_HEAL_THRESHOLD,
+      REVIEWER_FLOW_SUITES.has(normalizedSuiteId) ? "1.1" : secretEnv.AUTO_HEAL_THRESHOLD,
     ],
-    ["LOW_CONFIDENCE_THRESHOLD", dopplerEnv.LOW_CONFIDENCE_THRESHOLD],
-    ["LANGFUSE_PUBLIC_KEY", dopplerEnv.LANGFUSE_PUBLIC_KEY],
-    ["LANGFUSE_SECRET_KEY", dopplerEnv.LANGFUSE_SECRET_KEY],
-    ["LANGFUSE_BASE_URL", dopplerEnv.LANGFUSE_BASE_URL ?? "https://cloud.langfuse.com"],
+    ["LOW_CONFIDENCE_THRESHOLD", secretEnv.LOW_CONFIDENCE_THRESHOLD],
+    ["LANGFUSE_PUBLIC_KEY", secretEnv.LANGFUSE_PUBLIC_KEY],
+    ["LANGFUSE_SECRET_KEY", secretEnv.LANGFUSE_SECRET_KEY],
+    ["LANGFUSE_BASE_URL", secretEnv.LANGFUSE_BASE_URL ?? "https://cloud.langfuse.com"],
     ...(requiresClientWorker ? ([["ALLOWED_ORIGIN", clientBaseUrl]] as const) : []),
   ] as const) {
     if (!value) continue;
@@ -284,7 +288,7 @@ try {
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
-        ...dopplerEnv,
+        ...secretEnv,
         JWT_SECRET: jwtSecret,
         DATABASE_URL: connectionUri,
         ...(requiresClientWorker ? { ALLOWED_ORIGIN: clientBaseUrl } : {}),
@@ -305,7 +309,7 @@ try {
       ["run", "build"],
       {
         cwd: resolve("apps/client"),
-        env: { ...process.env, ...dopplerEnv, VITE_API_BASE_URL: apiBaseUrl },
+        env: { ...process.env, ...secretEnv, VITE_API_BASE_URL: apiBaseUrl },
       },
       "client build",
     );
@@ -326,7 +330,7 @@ try {
       {
         cwd: resolve("apps/client"),
         stdio: ["ignore", "pipe", "pipe"],
-        env: { ...process.env, ...dopplerEnv },
+        env: { ...process.env, ...secretEnv },
       },
     );
     pipeWorkerLogs("client-worker", clientWorker.stdout, "stdout");
@@ -342,7 +346,7 @@ try {
     stdio: "inherit",
     env: {
       ...process.env,
-      ...dopplerEnv,
+      ...secretEnv,
       E2E_BASE_URL: apiBaseUrl,
       ...(requiresClientWorker ? { E2E_CLIENT_URL: clientBaseUrl, E2E_API_URL: apiBaseUrl } : {}),
     },

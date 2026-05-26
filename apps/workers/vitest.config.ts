@@ -1,5 +1,5 @@
 import { cloudflareTest } from "@cloudflare/vitest-pool-workers";
-import { workersConfig } from "@webpresso/agent-vitest/workers";
+import { workersConfig } from "@webpresso/agent-kit/vitest/workers";
 import { mergeConfig } from "vite-plus/test/config";
 
 export default mergeConfig(workersConfig as never, {

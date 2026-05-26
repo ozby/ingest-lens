@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import { resolveRuntimeProfile } from "@webpresso/webpresso/runtime/env";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -12,27 +13,6 @@ import {
   resolveActSecretProfile,
   type ActSecretProfile,
 } from "./act-secret-profile.ts";
-
-export type DopplerSource = {
-  project: string;
-  config: string;
-};
-
-export function parseSecretSource(spec: string): DopplerSource {
-  const [project, config] = spec.split(":");
-  if (!project || !config) {
-    throw new Error(`Invalid secret source "${spec}". Expected <project>:<config>.`);
-  }
-  return { project, config };
-}
-
-export function parseDopplerSource(spec: string): DopplerSource {
-  const [project, config] = spec.split(":");
-  if (!project || !config) {
-    throw new Error(`Invalid Doppler source "${spec}". Expected <project>:<config>.`);
-  }
-  return { project, config };
-}
 
 export function injectDefaultActArgs(
   args: string[],
@@ -146,7 +126,6 @@ function assertBinary(name: string, installHint: string): void {
 interface ParsedArgState {
   actArgs: string[];
   strictSecrets: boolean;
-  explicitSources: DopplerSource[];
   explicitProfileId: ActSecretProfile["id"] | undefined;
   workflowPath: string | undefined;
   jobName: string | undefined;
@@ -158,12 +137,6 @@ function processCustomFlag(state: ParsedArgState, argv: string[], index: number)
     state.strictSecrets = true;
     return index;
   }
-  if (arg === "--secret-source") {
-    const spec = argv[index + 1];
-    if (!spec) throw new Error("--secret-source requires a value like <project>:<config>.");
-    state.explicitSources.push(parseSecretSource(spec));
-    return index + 1;
-  }
   if (arg === "--secret-profile") {
     const profileId = argv[index + 1];
     if (!profileId || !isActSecretProfileId(profileId)) {
@@ -171,6 +144,11 @@ function processCustomFlag(state: ParsedArgState, argv: string[], index: number)
     }
     state.explicitProfileId = profileId;
     return index + 1;
+  }
+  if (arg === "--secret-source") {
+    throw new Error(
+      "--secret-source is no longer supported. Configure the repo once with `wp config secrets setup`.",
+    );
   }
   if (arg === "--secret-file") {
     throw new Error(
@@ -197,13 +175,11 @@ function processOneArg(state: ParsedArgState, argv: string[], index: number): nu
 function parseCliArgs(argv: string[]): {
   actArgs: string[];
   strictSecrets: boolean;
-  sources: DopplerSource[];
   secretProfile: ActSecretProfile;
 } {
   const state: ParsedArgState = {
     actArgs: [],
     strictSecrets: false,
-    explicitSources: [],
     explicitProfileId: undefined,
     workflowPath: undefined,
     jobName: undefined,
@@ -213,73 +189,42 @@ function parseCliArgs(argv: string[]): {
     index = processOneArg(state, argv, index);
   }
 
-  const secretProfile = resolveActSecretProfile({
-    workflowPath: state.workflowPath,
-    jobName: state.jobName,
-    explicitProfileId: state.explicitProfileId,
-  });
-
   return {
     actArgs: state.actArgs,
     strictSecrets: state.strictSecrets,
-    sources: resolveDopplerSources(secretProfile, state.explicitSources),
-    secretProfile,
+    secretProfile: resolveActSecretProfile({
+      workflowPath: state.workflowPath,
+      jobName: state.jobName,
+      explicitProfileId: state.explicitProfileId,
+    }),
   };
-}
-
-function resolveDopplerSources(
-  secretProfile: ActSecretProfile,
-  explicitSources: readonly DopplerSource[],
-): DopplerSource[] {
-  if (explicitSources.length > 0) {
-    return [...explicitSources];
-  }
-
-  if (secretProfile.allowedKeys.length === 0) {
-    return [];
-  }
-
-  const envSources = process.env.ACT_DOPPLER_SOURCES?.split(",")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .map(parseSecretSource);
-  if ((envSources?.length ?? 0) > 0) {
-    return envSources ?? [];
-  }
-
-  return secretProfile.defaultSources.map(parseSecretSource);
-}
-
-function loadDopplerSecrets(
-  source: DopplerSource,
-  allowedKeys: readonly string[],
-): Record<string, string> | null {
-  try {
-    const output = execFileSync(
-      "doppler",
-      [
-        "secrets",
-        "download",
-        "--project",
-        source.project,
-        "--config",
-        source.config,
-        "--no-file",
-        "--format",
-        "json",
-      ],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
-    );
-    return pickAllowedSecrets(JSON.parse(output) as Record<string, string>, allowedKeys);
-  } catch (error) {
-    const reason = error instanceof Error ? error.message.split("\n")[0] : String(error);
-    console.warn(`⚠️  Skipping Doppler source ${source.project}:${source.config} (${reason})`);
-    return null;
-  }
 }
 
 function loadAmbientSecrets(allowedKeys: readonly string[]): Record<string, string> {
   return pickAllowedSecrets(process.env as Record<string, string>, allowedKeys);
+}
+
+async function loadSelectedSecrets(
+  allowedKeys: readonly string[],
+): Promise<Record<string, string> | null> {
+  if (allowedKeys.length === 0) {
+    return {};
+  }
+
+  try {
+    const resolvedEnv = await resolveRuntimeProfile("secrets-only", { fresh: true });
+    return pickAllowedSecrets(
+      {
+        ...(process.env as Record<string, string>),
+        ...resolvedEnv,
+      },
+      allowedKeys,
+    );
+  } catch (error) {
+    const reason = error instanceof Error ? error.message.split("\n")[0] : String(error);
+    console.warn(`⚠️  Skipping selected secret-manager injection (${reason})`);
+    return null;
+  }
 }
 
 function loadManifestObjects(): Array<Record<string, unknown>> {
@@ -305,25 +250,17 @@ function loadManifestObjects(): Array<Record<string, unknown>> {
   return manifests;
 }
 
-export function main(): void {
-  const { actArgs, strictSecrets, sources, secretProfile } = parseCliArgs(process.argv.slice(2));
+export async function main(): Promise<void> {
+  const { actArgs, strictSecrets, secretProfile } = parseCliArgs(process.argv.slice(2));
   assertBinary("act", "Install via: brew install act");
-  if (sources.length > 0) {
-    assertBinary("doppler", "Install via: brew install dopplerhq/cli/doppler");
-  }
 
-  const dopplerResults = sources.map((source) =>
-    loadDopplerSecrets(source, secretProfile.allowedKeys),
-  );
-  if (strictSecrets && dopplerResults.some((result) => result === null)) {
+  const selectedSecrets = await loadSelectedSecrets(secretProfile.allowedKeys);
+  if (strictSecrets && selectedSecrets === null) {
     process.exit(1);
   }
 
   const secretMap = normalizeActSecretsWithOptions(
-    [
-      ...dopplerResults.filter((result): result is Record<string, string> => result !== null),
-      loadAmbientSecrets(secretProfile.allowedKeys),
-    ],
+    [...(selectedSecrets ? [selectedSecrets] : []), loadAmbientSecrets(secretProfile.allowedKeys)],
     {
       mapGithubPatToToken:
         secretProfile.id === "github-api" && process.env.ACT_MAP_GITHUB_PAT === "1",
@@ -348,8 +285,11 @@ export function main(): void {
       "--secret-file",
       secretFile,
     ];
+    const injectedSecretKeys = Object.keys(secretMap)
+      .filter((key) => key !== "DOPPLER_SERVICE_TOKEN" && key !== "DOPPLER_TOKEN")
+      .sort();
     console.error(
-      `▶ act ${finalArgs.join(" ")}\n  secret profile: ${secretProfile.id}\n  injected secrets: ${Object.keys(secretMap).sort().join(", ") || "(none)"}`,
+      `▶ act ${finalArgs.join(" ")}\n  secret profile: ${secretProfile.id}\n  injected secrets: ${injectedSecretKeys.join(", ") || "(none)"}`,
     );
 
     const result = spawnSync("act", finalArgs, {
@@ -364,5 +304,5 @@ export function main(): void {
 }
 
 if (import.meta.main) {
-  main();
+  await main();
 }

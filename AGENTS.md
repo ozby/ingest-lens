@@ -9,16 +9,16 @@
   - Escalation map: user-edited section. Left as a TODO placeholder if
     not specified.
   - Durable planning root: defaults to `.agent/planning/`. Override via
-    .agent-kitrc.json.
+    .webpressorc.json.
   - Blueprints directory: defaults to `blueprints`. Override via
-    .agent-kitrc.json#blueprintsDir.
+    .webpressorc.json#blueprintsDir.
 
   Managed sections in this file are refreshed by agent-kit on `wp sync`.
   Repo-specific edits belong only inside `user-owned` blocks; agent-kit
   preserves those blocks verbatim when it rewrites managed content.
 -->
 
-<!-- >>> managed by @webpresso/agent-kit (operating-contract) -->
+<!-- >>> managed by webpresso (operating-contract) -->
 # Operating Contract
 
 This is the shared working agreement for contributors and coding agents in this
@@ -33,8 +33,8 @@ No agent surfaces are tracked in git — everything is regenerated. After clonin
 vp install && vp run setup:agent  # setup:agent runs wp setup, which scaffolds .agent/, AGENTS.md, hooks, and runs wp sync
 ```
 
-Agent-kit is the single source of truth. To customize skills, commands, or
-workflows, edit them in `@webpresso/agent-kit`'s catalog and publish — not in
+webpresso is the single source of truth. To customize skills, commands, or
+workflows, edit them in webpresso's catalog and publish — not in
 individual repos. The default `omx` preset chains `omx setup --yes --scope user`
 and installs missing OMX through `vp install -g oh-my-codex`. The default `omc`
 preset ensures OMC through Claude Code's plugin marketplace in user scope when
@@ -84,7 +84,7 @@ If a gate fails, fix the root cause or record the blocker with evidence.
 Commit messages, PR descriptions, and decision records should explain why the
 change exists, what tradeoffs were made, and what was verified. Record durable
 architecture decisions in this repo's ADR or planning location if one exists.
-<!-- <<< managed by @webpresso/agent-kit (operating-contract) -->
+<!-- <<< managed by webpresso (operating-contract) -->
 
 <!-- >>> user-owned (repo-customizations) -->
 
@@ -105,7 +105,7 @@ this block is preserved verbatim across `ak sync` runs.
 
 <!-- <<< user-owned (repo-customizations) -->
 
-<!-- >>> managed by @webpresso/agent-kit (planning-and-release) -->
+<!-- >>> managed by webpresso (planning-and-release) -->
 ## Safety boundaries
 
 - Do not commit secrets or credentials.
@@ -181,7 +181,7 @@ Full details: `.agent/rules/package-conventions.md`
 ## Tech stack
 
 - React
-<!-- <<< managed by @webpresso/agent-kit (planning-and-release) -->
+<!-- <<< managed by webpresso (planning-and-release) -->
 
 <!-- >>> user-owned (escalation-map) -->
 

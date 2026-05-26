@@ -1,14 +1,17 @@
 ---
 type: blueprint
-title: Adopt public Webpresso CI secret surfaces
+title: Adopt the finalized public Webpresso CI secret surfaces
 status: planned
 complexity: M
 created: "2026-05-23"
-last_updated: "2026-05-23"
-progress: "0% (planned; waiting on upstream public ci/secret surfaces)"
+last_updated: "2026-05-26"
+progress: "0/3 tasks done (0%) - refreshed to match the current act-with-webpresso baseline on 2026-05-26"
 owner: ozby
-depends_on:
-  - /Users/ozby/repos/webpresso/agent-kit/blueprints/planned/secret-aware-worker-tail-mcp/_overview.md
+depends_on: []
+cross_repo_depends_on:
+  - repo: webpresso/agent-kit
+    slug: secret-aware-worker-tail-mcp
+    require_status: planned
 tags:
   - ci
   - secrets
@@ -17,228 +20,155 @@ tags:
   - act
 ---
 
-# Adopt public Webpresso CI secret surfaces
-
-**Goal:** Replace the local CI secret-wrapper engine with public Webpresso CI and
-secret surfaces once the upstream contract lands, while preserving current
-workflow/profile behavior and keeping repo-local code limited to preset data.
-
-## Planning Summary
-
-- Goal input: align IngestLens with a public Webpresso CI/secret surface
-  instead of mirroring internal app-script paths.
-- Complexity: M because this touches local CI scripts, preset contracts,
-  package scripts, and docs, but the behavioral surface is already covered by
-  focused tests.
-- Upstream dependency: the agent-kit blueprint
-  `secret-aware-worker-tail-mcp` must first land with corrected public
-  secret-gate assumptions and public `webpresso/ci-*`-style exports (or
-  equivalent public helper surfaces).
-- Current local baseline: `scripts/act-with-doppler.ts` and
-  `scripts/act-secret-profile.ts` already model the behavior we want to carry
-  forward as preset data rather than engine code.
+# Adopt the finalized public Webpresso CI secret surfaces
 
 ## Product wedge anchor
 
-IngestLens needs reliable local CI and maintenance workflow reproduction without
-teaching every consumer repo to vendor secret-wrapper engines. This blueprint
-keeps the current workflows working while reducing coupling to Webpresso
-internals.
+Ingest-lens already moved its active local secret surface onto `with-secrets`
+and `act-with-webpresso`, but the planned blueprint still describes the older
+Doppler wrapper shape. This blueprint now tracks the real remaining consumer
+work: converge on the finalized public helper/export contract and keep repo
+policy limited to preset data and docs.
 
-## Architecture Overview
+## Planning Summary
 
-```text
-Before
-  package scripts -> scripts/act-with-doppler.ts -> Doppler/act wrapper engine
-  local preset rules and local execution engine live in the same repo
-  adaptation requires mirroring internal Webpresso implementation details
+Verified on 2026-05-26:
 
-After
-  package scripts -> public webpresso/ci-* surface
-  repo keeps only workflow/profile preset data and docs
-  provider logic stays behind public Webpresso runtime/secret contracts
-```
+- `package.json` routes `act:ci`, `act:e2e`, `act:cleanup`, and `act:list`
+  through `scripts/act-with-webpresso.ts`.
+- the local test file is `scripts/act-with-webpresso.test.ts`.
+- the repo already uses `with-secrets -- vp run dev`.
+- `scripts/audit-secret-provider-quarantine.ts` already guards against raw
+  provider-specific secret usage in active surfaces.
 
-## Key Decisions
-
-| Decision                | Choice                                                | Rationale                                                                  |
-| ----------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
-| Secret engine ownership | Upstream public Webpresso surface                     | Consumers should not vendor CI secret-wrapper engines.                     |
-| Local retained logic    | Workflow/profile preset data only                     | IngestLens-specific workflow policy is still repo-owned and testable.      |
-| Provider behavior       | Public runtime secret gate only                       | Avoid direct `doppler run` / `infisical run` composition in consumer code. |
-| Migration style         | Preserve CLI behavior first, then simplify local code | Existing scripts and docs are already part of contributor workflow.        |
-
-## DRY/SOLID Consumer Contract
-
-IngestLens is the consumer edge of the three-repo refactor. Its elegant end
-state is intentionally boring: package scripts and docs call a public Webpresso
-CI helper, while this repo keeps only workflow/profile preset data.
-
-| Concern                                                             | Owner after migration            | IngestLens rule                                                                                              |
-| ------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Secret-provider resolution                                          | Public Webpresso secret gate     | Do not call `doppler`, `infisical`, or provider CLIs from the CI act path.                                   |
-| Act temp-file rendering, architecture defaults, mounts, and cleanup | Public Webpresso CI act helper   | Delete or collapse duplicated engine logic from `scripts/act-with-doppler.ts`.                               |
-| Workflow/profile policy                                             | IngestLens preset data           | Keep `.github/workflows/*` to profile mappings local and tested.                                             |
-| Contributor command surface                                         | IngestLens `package.json` + docs | Preserve `act:ci`, `act:e2e`, `act:cleanup`, and `act:list` as stable wrappers while their internals change. |
-
-SOLID guardrails:
-
-- **Single responsibility:** `scripts/act-secret-profile.ts` may retain only
-  preset/policy data; it should not load secrets or build `act` process args.
-- **Open/closed:** adding a workflow should add preset data, not edit the shared
-  Webpresso helper engine.
-- **Interface segregation:** docs and package scripts depend on the public
-  helper CLI/API, not on Webpresso internal source paths.
-- **Dependency inversion:** consumer code depends on a published Webpresso
-  interface; the provider implementation remains behind the secret gate.
+The remaining work is not “replace a local Doppler engine from scratch”; it is
+to finish consumer adoption onto the finalized public helper/export contract and
+align contributor guidance with the real `wp_*` and secret setup surface.
 
 ## Quick Reference (Execution Waves)
 
-| Wave              | Tasks           | Dependencies      | Parallelizable | Effort (T-shirt) |
-| ----------------- | --------------- | ----------------- | -------------- | ---------------- |
-| **Wave 0**        | 1.1             | Upstream delivery | 1 agent        | S                |
-| **Wave 1**        | 1.2, 1.3        | 1.1               | 2 agents       | S                |
-| **Critical path** | 1.1 → 1.2 → 1.3 | —                 | 2 waves        | M                |
+| Wave              | Tasks     | Dependencies              | Parallelizable | Effort (T-shirt) |
+| ----------------- | --------- | ------------------------- | -------------- | ---------------- |
+| **Wave 0**        | 1.1, 1.2  | Agent-kit child delivered | 2 agents       | XS-S             |
+| **Wave 1**        | 1.3       | 1.1, 1.2                  | 1 agent        | S                |
+| **Critical path** | 1.1 → 1.3 | —                         | 2 waves        | M                |
 
-## Phase 1: Upstream-aligned consumer adoption [Complexity: M]
-
-#### [backend] Task 1.1: Replace the local CI wrapper engine with public `webpresso/ci-*`
+#### Task 1.1: [backend] Collapse the local act wrapper to finalized preset-only ownership
 
 **Status:** blocked
 
 **Depends:** None
 
-**Blocked:** Wait for the upstream public Webpresso package to ship
-`webpresso/ci-act` and `webpresso/ci-preset` (or equivalent public helper
-surfaces) with no dependency on consumer-local `apps/scripts/src/...` paths.
+**Blocked:** Wait for the upstream public helper/export contract to settle in
+`agent-kit`.
 
-Swap the current local execution engine over to the upstream public helper
-surface. Keep any remaining local code limited to preset data or a thin adapter
-that passes repo-specific workflow/profile definitions into the public API.
+Keep workflow/profile policy local, but remove any remaining duplicated act
+mechanics once the finalized public helper/export surface is ready.
 
 **Files:**
 
-- Modify: `scripts/act-with-doppler.ts`
+- Modify: `scripts/act-with-webpresso.ts`
+- Modify: `scripts/act-with-webpresso.test.ts`
 - Modify: `scripts/act-secret-profile.ts`
-- Modify: `package.json`
 
 **Steps (TDD):**
 
-1. Re-run the current focused script tests to lock behavior.
-2. Introduce the public `webpresso/ci-*` surface behind the existing local
-   command entrypoint — verify current behavior still passes.
-3. Remove or collapse local engine logic until only preset wiring remains.
-4. Run scoped verification — verify PASS.
+1. Re-run the current focused tests to lock the `act-with-webpresso` baseline.
+2. Add failing expectations for the finalized public helper/export contract.
+3. Update the wrapper so local code owns only preset/profile policy.
+4. Re-run: `vp run test -- scripts/act-with-webpresso.test.ts` — verify PASS.
+5. Run: `vp run typecheck`.
 
 **Acceptance:**
 
-- [ ] Consumer code no longer depends on a local CI secret-wrapper engine
-- [ ] No consumer code mirrors `apps/scripts/src/...` internal Webpresso paths
-- [ ] Package scripts still expose `act:ci`, `act:e2e`, `act:cleanup`, and `act:list`
+- [ ] Local CI code owns preset/profile policy, not duplicated helper mechanics
+- [ ] `scripts/act-with-webpresso.test.ts` stays green
+- [ ] `vp run typecheck` passes
 
-#### [qa] Task 1.2: Preserve workflow/profile parity during the migration
+#### Task 1.2: [qa] Preserve workflow/profile parity while the helper contract changes
 
-**Status:** todo
+**Status:** blocked
 
 **Depends:** Task 1.1
 
-Carry forward the current workflow/profile behavior as explicit preset data and
-keep it under focused regression coverage.
+**Blocked:** Wait for Task 1.1.
 
-Current required parity:
-
-- `.github/workflows/ci.yml` → profile `none`
-- `.github/workflows/testing-e2e-act.yml` → profile `none`
-- `.github/workflows/cleanup-stale-neon-e2e-branches.yml` → profile
-  `neon-control-plane`
-- job `cleanup` → profile `neon-control-plane`
+Carry forward the current workflow/profile behavior as explicit preset-contract
+tests while the underlying public helper/export contract changes.
 
 **Files:**
 
 - Modify: `scripts/act-secret-profile.ts`
-- Modify: `scripts/act-with-doppler.test.ts`
+- Modify: `scripts/act-with-webpresso.test.ts`
 
 **Steps (TDD):**
 
-1. Keep the current regression suite red/green during the migration.
-2. Convert engine-coupled expectations into preset-contract expectations where
-   appropriate.
-3. Run the focused script tests — verify PASS.
+1. Add focused failing assertions for `none`, `github-api`, and
+   `neon-control-plane` profile parity under the finalized helper contract.
+2. Run: `vp run test -- scripts/act-with-webpresso.test.ts` — verify FAIL.
+3. Update the preset contract or wrapper wiring as needed.
+4. Re-run the focused tests — verify PASS.
+5. Run: `vp run lint`.
 
 **Acceptance:**
 
-- [ ] Existing workflow/profile mappings still pass under the new public surface
-- [ ] Allowed keys, required keys, and default sources remain explicit and tested
-- [ ] The focused script test suite remains green
+- [ ] Existing workflow/job mappings remain explicit and tested
+- [ ] Least-privilege secret expectations remain intact
+- [ ] Focused tests and lint pass
 
-#### [docs] Task 1.3: Update scripts and docs to the public Webpresso surface
+#### Task 1.3: [docs] Align contributor guidance with `wp_*`, `wp config secrets setup`, and `with-secrets`
 
-**Status:** todo
+**Status:** blocked
 
 **Depends:** Task 1.1, Task 1.2
 
-Update contributor-facing scripts and documentation so they describe the public
-Webpresso CI/secret surface rather than the local wrapper engine.
+**Blocked:** Wait for Tasks 1.1 and 1.2.
+
+Refresh repo guidance so contributors see the real current contract: `wp_*`
+tool names, `wp config secrets setup`, `with-secrets -- <cmd>`, and
+`act-with-webpresso` rather than stale `ak_*` or Doppler-first wording.
 
 **Files:**
 
 - Modify: `README.md`
 - Modify: `docs/secrets/doppler.md`
-- Modify: `apps/e2e/README.md`
-- Modify: `package.json`
+- Modify: `CLAUDE.md`
 
 **Steps (TDD):**
 
-1. Update command examples and explanations to the new public path.
-2. Remove or demote docs that present the local engine as the primary contract.
-3. Run docs/frontmatter verification — verify PASS.
+1. Add or update checks that fail on stale `act-with-doppler` or `ak_*`
+   guidance in active docs.
+2. Run the focused docs checks — verify FAIL.
+3. Update docs and tool-routing guidance to the finalized public surface.
+4. Re-run the focused docs checks — verify PASS.
+5. Run: `WP_SKIP_UPDATE_CHECK=1 wp audit docs-frontmatter` and
+   `WP_SKIP_UPDATE_CHECK=1 wp audit blueprint-lifecycle --legacy-omx`.
 
 **Acceptance:**
 
-- [ ] Contributor docs describe the public Webpresso CI/secret surface
-- [ ] Docs no longer imply that local CI behavior depends on a bespoke local engine
-- [ ] Docs/frontmatter verification passes
+- [ ] Active repo guidance uses `wp_*` rather than stale `ak_*` names
+- [ ] Secret setup guidance points at `wp config secrets setup`
+- [ ] Docs and blueprint audits pass
 
 ## Verification Gates
 
 | Gate                | Command                                                            | Success Criteria |
 | ------------------- | ------------------------------------------------------------------ | ---------------- |
-| Focused tests       | `vp run test -- scripts/act-with-doppler.test.ts`                  | All pass         |
+| Focused tests       | `vp run test -- scripts/act-with-webpresso.test.ts`                | All pass         |
 | Docs/frontmatter    | `WP_SKIP_UPDATE_CHECK=1 wp audit docs-frontmatter`                 | Pass             |
 | Blueprint lifecycle | `WP_SKIP_UPDATE_CHECK=1 wp audit blueprint-lifecycle --legacy-omx` | Pass             |
 
 ## Cross-Plan References
 
-| Type       | Blueprint                                                                                            | Relationship                                                                                |
-| ---------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Upstream   | `/Users/ozby/repos/webpresso/agent-kit/blueprints/planned/secret-aware-worker-tail-mcp/_overview.md` | Must land first with corrected public secret-gate assumptions and public CI helper surfaces |
-| Downstream | None                                                                                                 |                                                                                             |
+| Type                | Blueprint                                                                                                                                                                                      | Relationship                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Upstream            | [`webpresso/agent-kit: secret-aware-worker-tail-mcp`](https://github.com/webpresso/agent-kit/blob/main/blueprints/planned/secret-aware-worker-tail-mcp/_overview.md)                           | Stabilizes the public helper/export surface this repo consumes.           |
+| Documentary roadmap | [`webpresso/agent-kit: mcp-first-secret-surface-hard-cut-roadmap`](https://github.com/webpresso/agent-kit/blob/main/blueprints/planned/mcp-first-secret-surface-hard-cut-roadmap/_overview.md) | Tracks this repo as a downstream adoption lane.                           |
+| Sibling             | [`webpresso/monorepo: secret-aware-ci-act-helper-adoption`](https://github.com/webpresso/monorepo/blob/main/webpresso/blueprints/planned/secret-aware-ci-act-helper-adoption/_overview.md)     | First-party adopter converging on the same public helper/export contract. |
 
-## Edge Cases and Error Handling
+## Risks and edge cases
 
-| Edge Case                                           | Risk                                            | Solution                                                                                            | Task |
-| --------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---- |
-| Upstream ships a different public subpath name      | Migration stalls on naming drift                | Keep this blueprint pinned to behavior, not hardcoded package names, until upstream naming is final | 1.1  |
-| Local CI workflows intentionally inject no secrets  | Migration accidentally broadens secret exposure | Preserve the current `none` profile mapping and tests                                               | 1.2  |
-| Control-plane workflow loses required secret checks | Cleanup automation breaks late                  | Keep `requiredKeys` parity tests in place                                                           | 1.2  |
-
-## Non-goals
-
-- Replacing the current workflow files themselves
-- Redesigning the repo's CI workflows
-- Introducing provider-specific shell wrappers in consumer code
-
-## Risks
-
-| Risk                                                                | Impact | Mitigation                                                 |
-| ------------------------------------------------------------------- | ------ | ---------------------------------------------------------- |
-| Upstream public surface lands with extra consumer-local assumptions | Medium | Validate the contract before starting Task 1.1             |
-| Docs drift during migration                                         | Low    | Keep docs changes in the same wave as the script migration |
-
-## Technology Choices
-
-| Component            | Technology                                       | Version                   | Why                                                   |
-| -------------------- | ------------------------------------------------ | ------------------------- | ----------------------------------------------------- |
-| Secret gate          | `@webpresso/runtime` public surface              | current workspace version | Provider-agnostic execution should stay upstream      |
-| CI helper surface    | `webpresso/ci-*` public subpaths (or equivalent) | upstream-delivered        | Matches existing Webpresso public export patterns     |
-| Local policy surface | Repo-owned preset data                           | current repo code         | Keeps IngestLens-specific workflow semantics explicit |
+| Edge case                                                            | Risk   | Mitigation                                                                      |
+| -------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------- |
+| Upstream helper/export cleanup changes wrapper assumptions.          | HIGH   | Keep focused `act-with-webpresso` regression tests green through the migration. |
+| Repo guidance keeps advertising stale `ak_*` or Doppler-first flows. | MEDIUM | Treat docs/tool-routing cleanup as a dedicated final task with audits.          |

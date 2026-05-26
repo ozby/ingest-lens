@@ -30,7 +30,7 @@ The repo keeps a small internal wrapper for install-time automation so
 depending on whichever package currently owns the ambient `webpresso` bin in
 `node_modules/.bin`.
 
-Secrets and database connections are managed via `with-secrets` (Doppler + Neon providers). No `.env` files.
+Secrets and database connections are managed via `wp config secrets setup` + `with-secrets`. No `.env` files.
 
 ## Repo map
 

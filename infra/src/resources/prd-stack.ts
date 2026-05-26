@@ -15,8 +15,7 @@
  *
  * IMPORTANT: Run the following manually with CF credentials to provision:
  *
- *   doppler run --project ozby-shell --config production -- \
- *     pulumi up --yes --stack prd
+ *   with-secrets -- pulumi up --yes --stack prd
  *
  * Prerequisites before first deploy:
  *   1. Provision a Neon prd database and obtain the connection string.
@@ -24,8 +23,7 @@
  *        pulumi config set --secret cloudflareAccountId <id> --stack prd
  *        pulumi config set --secret cloudflareZoneId <id> --stack prd
  *        pulumi config set --secret neonConnectionString <url> --stack prd
- *   3. Ensure Doppler project "ozby-shell" has a "production" config with
- *      CLOUDFLARE_API_TOKEN, PULUMI_ACCESS_TOKEN, and the Neon connection string.
+ *   3. Ensure the repo secret manager is configured for the production deploy credentials.
  *   4. Run `bun ./src/deploy/deploy.ts prd` from infra/ to orchestrate:
  *        pulumi up → sync-wrangler-ids → wrangler deploy --env prd
  */

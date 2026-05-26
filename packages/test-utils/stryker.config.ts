@@ -1,4 +1,4 @@
-import { baseConfig } from "@webpresso/agent-stryker";
+import { baseConfig } from "@webpresso/agent-kit/stryker";
 
 export default {
   ...baseConfig,

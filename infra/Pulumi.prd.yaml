@@ -6,6 +6,6 @@ config:
   # ingest-lens:neonConnectionString: <postgresql://... prd connection string>
   #
   # After setting secrets, run from infra/:
-  #   doppler run --project ozby-shell --config production -- pulumi up --yes --stack prd
+  #   with-secrets -- pulumi up --yes --stack prd
   # Then sync IDs into wrangler.toml:
-  #   doppler run --project ozby-shell --config production -- bun ./src/deploy/sync-wrangler-ids.ts prd
+  #   with-secrets -- bun ./src/deploy/sync-wrangler-ids.ts prd

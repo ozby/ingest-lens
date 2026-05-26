@@ -52,11 +52,11 @@ and protected-route redirect back to the auth landing page.
 
 ## Neon branch helpers
 
-All require Doppler-injected secrets:
+All require the repo-selected secret manager:
 
 ```bash
-with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:create
-with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:list
-with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:delete
-with-secrets --doppler ozby-shell:dev -- pnpm --dir apps/e2e db:branch:cleanup
+with-secrets -- pnpm --dir apps/e2e db:branch:create
+with-secrets -- pnpm --dir apps/e2e db:branch:list
+with-secrets -- pnpm --dir apps/e2e db:branch:delete
+with-secrets -- pnpm --dir apps/e2e db:branch:cleanup
 ```

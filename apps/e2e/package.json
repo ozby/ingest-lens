@@ -16,14 +16,13 @@
     "db:branch:cleanup": "bun scripts/db-branch-cleanup.ts"
   },
   "dependencies": {
-    "@webpresso/db-branching-neon": "catalog:"
+    "@webpresso/webpresso": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-tsconfig": "catalog:",
-    "@webpresso/agent-vitest": "catalog:",
+    "@webpresso/agent-kit": "catalog:",
     "oxlint": "catalog:tooling",
     "vitest": "catalog:tooling"
   }

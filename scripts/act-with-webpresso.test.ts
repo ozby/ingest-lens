@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, mock } from "bun:test";
 
 import {
   getActSecretProfile,
@@ -6,40 +6,18 @@ import {
   pickAllowedSecrets,
   resolveActSecretProfile,
 } from "./act-secret-profile.ts";
-import {
+mock.module("@webpresso/webpresso/runtime/env", () => ({
+  resolveRuntimeProfile: async () => ({}),
+}));
+
+const {
   extractAbsoluteFileDependencyDirectories,
   injectContainerMountArgs,
   injectDefaultActArgs,
   normalizeActSecrets,
   normalizeActSecretsWithOptions,
-  parseDopplerSource,
-  parseSecretSource,
   renderSecretsFile,
-} from "./act-with-webpresso.ts";
-
-describe("parseDopplerSource", () => {
-  it("parses project and config", () => {
-    expect(parseDopplerSource("ozby-shell:dev")).toEqual({
-      project: "ozby-shell",
-      config: "dev",
-    });
-  });
-
-  it("rejects malformed specs", () => {
-    expect(() => parseDopplerSource("ozby-shell")).toThrow(
-      'Invalid Doppler source "ozby-shell". Expected <project>:<config>.',
-    );
-  });
-});
-
-describe("parseSecretSource", () => {
-  it("parses project and config", () => {
-    expect(parseSecretSource("ozby-shell:dev")).toEqual({
-      project: "ozby-shell",
-      config: "dev",
-    });
-  });
-});
+} = await import("./act-with-webpresso.ts");
 
 describe("act secret profiles", () => {
   it("defaults local CI and local E2E workflows to zero injected secrets", () => {

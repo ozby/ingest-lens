@@ -18,8 +18,7 @@
     "@cloudflare/workers-types": "catalog:workers",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-tsconfig": "catalog:",
-    "@webpresso/agent-vitest": "catalog:",
+    "@webpresso/agent-kit": "catalog:",
     "drizzle-kit": "catalog:workers",
     "oxlint": "catalog:tooling",
     "vitest": "catalog:tooling"

@@ -1,5 +1,6 @@
 {
   "referenceConsumerBaselines": {
-    "@webpresso/db-branching": "0.2.1"
+    "@webpresso/webpresso": "0.3.6",
+    "@webpresso/agent-kit": "0.18.19"
   }
 }

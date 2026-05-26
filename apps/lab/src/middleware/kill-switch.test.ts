@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import {
   createMockHyperdrive,
   createMockDurableObjectNamespace,
-} from "@webpresso/agent-workers-test";
+} from "@webpresso/agent-kit/workers-test";
 import { killSwitchMiddleware } from "./kill-switch";
 import type { Env } from "../env";
 

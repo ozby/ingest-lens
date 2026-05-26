@@ -6,11 +6,30 @@ on:
   workflow_dispatch:
 
 jobs:
+  token-gate:
+    name: Detect package token
+    runs-on: ubuntu-latest
+    outputs:
+      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Detect GH_PACKAGES_TOKEN package access
+        id: detect
+        uses: ./.github/actions/detect-webpresso-package-token
+        with:
+          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+
   cleanup:
+    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    needs: token-gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
       HAS_DIRECT_NEON_SECRETS: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' && secrets.NEON_PARENT_BRANCH_ID != '' && '1' || '' }}
 
@@ -20,6 +39,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: "@webpresso"
 
       - name: Enable Corepack pnpm
         run: |
@@ -55,3 +76,10 @@ jobs:
           NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
         if: env.HAS_DOPPLER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS == '1'
         run: pnpm --filter @repo/e2e run db:branch:cleanup
+
+  cleanup-skipped:
+    if: ${{ needs.token-gate.outputs.has_packages_token != 'true' }}
+    needs: token-gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Skipping stale Neon cleanup because GH_PACKAGES_TOKEN cannot download required @webpresso packages."

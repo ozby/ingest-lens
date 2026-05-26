@@ -70,16 +70,16 @@ To create the `preview` root config and its children in the Doppler dashboard:
 | `NEON_PROJECT_ID`       | Neon project id for E2E / cleanup workflow    | Neon project id for E2E / cleanup workflow    |
 | `NEON_PARENT_BRANCH_ID` | Neon parent branch for E2E / cleanup workflow | Neon parent branch for E2E / cleanup workflow |
 
-The `infra/` workspace scripts always inject from `ozby-shell`:
+The `infra/` workspace scripts resolve secrets through the repo-selected secret manager:
 
 ```bash
 # Local preview
 pnpm --filter @repo/infra preview
-# expands to: doppler run --project ozby-shell --config dev -- pulumi preview
+# expands to: with-secrets -- pulumi preview
 
 # Deploy to production
 pnpm --filter @repo/infra up:prd
-# expands to: doppler run --project ozby-shell --config production -- pulumi up --yes
+# expands to: with-secrets -- pulumi up --yes
 ```
 
 **Rules:**
@@ -106,32 +106,19 @@ doppler --version
 doppler login
 ```
 
-### 4c. Link the local directory to the project
+### 4c. Configure the repo secret manager
 
-Run once from the repo root (saves `.doppler` config to the directory):
-
-```bash
-doppler setup
-# Select workspace → ingest-lens → dev
-```
-
-This writes a `.doppler` directory entry (already in `.gitignore`). You can also pass flags for non-interactive setup:
+Run once from the repo root:
 
 ```bash
-doppler setup --project ingest-lens --config dev
+wp config secrets setup
 ```
 
 ### 4d. Start the dev server
 
 ```bash
 pnpm dev
-# expands to: doppler run --project ozby-shell --config dev -- vp run dev
-```
-
-To run a command against a non-linked project, pass `--project` explicitly:
-
-```bash
-doppler run --project ozby-shell --config dev -- corepack pnpm --filter @repo/infra preview
+# expands to: with-secrets -- vp run dev
 ```
 
 To skip Doppler injection for local/offline debugging (for example, when the
@@ -152,13 +139,13 @@ pnpm dev:offline
 3. Copy the token (shown once).
 4. Add it as a secret in your CI provider (GitHub Actions: `Settings → Secrets → DOPPLER_SERVICE_TOKEN`).
 
-In CI, inject secrets via the Doppler CLI:
+In CI, inject secrets through the same public contract:
 
 ```yaml
 - name: Inject secrets
-  run: doppler run --token "$DOPPLER_SERVICE_TOKEN" --config preview_main -- pnpm test
+  run: with-secrets -- pnpm test
   env:
-    DOPPLER_SERVICE_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
+    SECRET_MANAGER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
 ```
 
 Or use the official Doppler secrets fetch action to hydrate subsequent steps:
@@ -171,32 +158,30 @@ Or use the official Doppler secrets fetch action to hydrate subsequent steps:
 ```
 
 The scheduled Neon cleanup workflow prefers this path. When
-`DOPPLER_SERVICE_TOKEN` is present (or legacy `DOPPLER_TOKEN` as fallback), it
-hydrates Neon control-plane secrets from Doppler and keeps the credential
-source out of the workflow YAML. Direct `NEON_*` GitHub Secrets remain as a
-fallback for bootstrap or migration periods.
+`SECRET_MANAGER_TOKEN` is present, it hydrates Neon control-plane secrets from
+the selected manager without hardcoding provider commands into the workflow
+YAML.
 
 ---
 
 ## 6. Quick Reference
 
-| Task                       | Command                                           |
-| -------------------------- | ------------------------------------------------- |
-| Link local directory       | `doppler setup`                                   |
-| Run dev with secrets       | `pnpm dev`                                        |
-| Run dev without Doppler    | `pnpm dev:offline`                                |
-| Run local CI workflow      | `pnpm act:ci`                                     |
-| Run local E2E workflow     | `pnpm act:e2e`                                    |
-| Run local cleanup workflow | `pnpm act:cleanup`                                |
-| Print all secrets (dev)    | `doppler secrets --config dev`                    |
-| Set a secret               | `doppler secrets set KEY=value --config dev`      |
-| Download secrets as `.env` | `doppler secrets download --no-file --format env` |
+| Task                       | Command                    |
+| -------------------------- | -------------------------- |
+| Configure local secrets    | `wp config secrets setup`  |
+| Run dev with secrets       | `pnpm dev`                 |
+| Run dev without secrets    | `pnpm dev:offline`         |
+| Run local CI workflow      | `pnpm act:ci`              |
+| Run local E2E workflow     | `pnpm act:e2e`             |
+| Run local cleanup workflow | `pnpm act:cleanup`         |
+| Show selected config       | `wp config secrets show`   |
+| Check secret-manager auth  | `wp config secrets status` |
 
 The local workflow scripts (`pnpm act:ci`, `pnpm act:e2e`, `pnpm act:cleanup`,
 and `pnpm act:list`) expand through `scripts/act-with-webpresso.ts`, which:
 
 - infers a least-privilege secret profile from the target workflow/job,
-- only contacts Doppler when that profile actually needs managed secrets,
+- only resolves managed secrets when that profile actually needs them,
 - filters injected values to the profile allowlist,
 - never forwards `DOPPLER_SERVICE_TOKEN` or `DOPPLER_TOKEN` into the `act` container,
 - can opt into `GITHUB_PAT` → `GITHUB_TOKEN` mapping with `ACT_MAP_GITHUB_PAT=1`

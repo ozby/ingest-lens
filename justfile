@@ -30,4 +30,4 @@ deploy stack:
 
 # Pulumi preview (dry run) for a stack.
 pulumi-preview stack:
-    with-secrets --doppler ozby-shell:{{if stack == "prd" { "production" } else { stack }}} -- pulumi preview --stack {{stack}}
+    with-secrets -- pulumi preview --stack {{stack}}

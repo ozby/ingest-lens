@@ -1,5 +1,5 @@
 {
-  "extends": "@webpresso/agent-tsconfig/react-router.json",
+  "extends": "@webpresso/agent-kit/tsconfig/react-router.json",
   "compilerOptions": {
     "types": ["vite/client", "node"],
     "noUnusedLocals": true,
