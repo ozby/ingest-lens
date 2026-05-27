@@ -8,6 +8,15 @@ last_updated: "2026-05-23"
 This runbook covers the complete setup for the `ingest-lens` Doppler project.
 All commands require the [Doppler CLI](https://docs.doppler.com/docs/install-cli) and a Doppler account with access to both projects.
 
+> **Current repo contract (authoritative):**
+>
+> - configure manager/workspace through `wp config secrets ...`
+> - execute secret-scoped commands through `with-secrets -- <cmd>`
+> - never persist `.env*` / `.dev.vars*` files
+>
+> Historical completed blueprints may still mention older provider-run examples;
+> treat this runbook + repo scripts as the current source of truth.
+
 > **Two Doppler projects are used:**
 >
 > - `ingest-lens` — application secrets (MongoDB URI, JWT, ports, etc.)

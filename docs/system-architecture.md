@@ -98,7 +98,7 @@ flowchart LR
 | Replay          | `TopicRoom` DO + Postgres `messages.seq`                                         |
 | Delivery policy | `docs/delivery-guarantees.md` + `apps/workers/src/consumers/deliveryConsumer.ts` |
 | AI safety       | `docs/architecture.md` + ADR 0004; deterministic validation after AI output      |
-| Secrets         | `bun ./scripts/with-doppler.ts` wrapper (no `.env`)                              |
+| Secrets         | `with-secrets -- <cmd>` + `wp config secrets` contract (no `.env`)               |
 
 ## Separate subsystem: Consistency Lab
 

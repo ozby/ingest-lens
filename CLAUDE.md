@@ -8,7 +8,7 @@
 - **Type checker:** `tsgo --noEmit` (from `@typescript/native-preview`) — never use `tsc`
 - **Package manager:** pnpm workspaces
 - **Scripts:** `.ts` files executed via `bun` — never `.mjs`, never `ts-node`
-- **Secrets:** Doppler only — no `dotenv`, no `.env` files
+- **Secrets:** selected secret manager via `wp config secrets` + `with-secrets` (Doppler is the current project default); no `dotenv`, no `.env` files
 
 ## Common Commands
 
