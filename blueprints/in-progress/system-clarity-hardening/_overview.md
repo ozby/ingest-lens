@@ -26,23 +26,31 @@ tags:
 - Durable execution source: this blueprint owns the simplification program and should stay current as waves land.
 - Current implementation focus: keep the reviewer/docs path coherent while preparing the next Worker-side simplification seam.
 
+## Architecture governance
+
+Architecture docs:
+
+- [`docs/architecture.md`](../../../docs/architecture.md)
+- [`docs/architecture.contract.json`](../../../docs/architecture.contract.json)
+
 ## Product wedge anchor
 
 IngestLens is a Worker-first integration system for payload intake, delivery, replay, and measurement. This blueprint does not expand the product wedge; it makes the current wedge easier to understand, trust, and review.
 
-## Architecture Overview
+## Architecture before
 
-```text
-Before
+````text
   reviewer path is spread across README + architecture docs + research records
   high-signal runtime seams mix transport, orchestration, and incidental utilities
   client transport owns UI toast side effects
 
-After
-  README points to one reviewer guide and a small proof path
-  runtime seams read as clear owners with fewer mixed concerns
-  client transport is UI-agnostic and wrapped by caller-owned notification policy
-```
+## Architecture after
+
+```text
+README points to one reviewer guide and a small proof path
+runtime seams read as clear owners with fewer mixed concerns
+client transport is UI-agnostic and wrapped by caller-owned notification policy
+````
 
 ## Key Decisions
 

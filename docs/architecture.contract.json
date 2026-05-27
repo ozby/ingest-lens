@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "architectureDocs": ["docs/architecture.md"],
+  "requiredFiles": [
+    "blueprints/in-progress/system-clarity-hardening/_overview.md",
+    "blueprints/in-progress/surface-test-traceability-hardening/_overview.md",
+    "blueprints/planned/public-ci-surface-adoption/_overview.md"
+  ],
+  "rules": [
+    {
+      "id": "reviewer-path-mentions-architecture-contract",
+      "paths": ["README.md", "docs/architecture.md", "CLAUDE.md"],
+      "mustContain": ["docs/architecture.contract.json"]
+    }
+  ],
+  "blueprintPolicy": {
+    "enabled": true,
+    "blueprintGlobs": ["blueprints/in-progress/**/*.md", "blueprints/planned/**/*.md"],
+    "architectureDocGlobs": ["docs/architecture.md"],
+    "requireArchitectureLinks": true,
+    "requireBeforeAfterWhenArchitectureChanging": true,
+    "architectureChangeMarkers": [
+      "## Architecture Overview",
+      "runtime seams",
+      "Modify: `docs/architecture.md`"
+    ],
+    "beforeHeading": "Architecture before",
+    "afterHeading": "Architecture after",
+    "exemptStatuses": ["completed", "archived"]
+  }
+}

@@ -52,6 +52,7 @@ Secrets and database connections are managed via `wp config secrets setup` + `wi
 - **Reviewer guide (start here):** [`docs/project/REVIEWER-GUIDE.md`](docs/project/REVIEWER-GUIDE.md)
 - **Architecture overview:** [`docs/system-architecture.md`](docs/system-architecture.md)
 - **AI intake + mapping flow:** [`docs/architecture.md`](docs/architecture.md)
+- **Architecture contract:** [`docs/architecture.contract.json`](docs/architecture.contract.json)
 - **Consistency Lab architecture:** [`docs/lab-architecture.md`](docs/lab-architecture.md)
 - **Delivery semantics:** [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md)
 - **Claim ↔ E2E traceability:** [`docs/guides/claim-e2e-traceability.md`](docs/guides/claim-e2e-traceability.md)

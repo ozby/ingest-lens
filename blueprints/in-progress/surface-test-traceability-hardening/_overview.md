@@ -14,6 +14,13 @@ last_updated: 2026-05-24T00:00:00.000Z
 - **Consuming surface:** Root `README.md`, `docs/project/REVIEWER-GUIDE.md`, supporting architecture docs, and the executable journeys in `apps/e2e/journeys/*`.
 - **New user-visible capability:** A reviewer can move from every shipped product claim to at least one executable E2E proof point without guessing where evidence lives.
 
+## Architecture governance
+
+Architecture docs:
+
+- [`docs/architecture.md`](../../../docs/architecture.md)
+- [`docs/architecture.contract.json`](../../../docs/architecture.contract.json)
+
 ## Summary
 
 Spawn a coordinated team to audit the repo’s externally visible product surfaces, tighten unit/integration/E2E coverage where proof is thin, and add durable docs traceability so every shipped claim points to at least one E2E test file.

@@ -51,6 +51,26 @@ If context-mode / `ctx_*` tools are available in the host, prefer them for:
 Do not default to `pnpm test`, `pnpm check-types`, `pnpm lint`, `vitest`, or
 other raw verification commands when an `ak_*` lane can prove the same claim.
 
+## Architecture governance
+
+Architecture source of truth order:
+
+1. `docs/architecture.md`
+2. `docs/architecture.contract.json`
+3. active blueprints under `blueprints/`
+
+For architecture, blueprint, deployment, or runtime-boundary changes run:
+
+```bash
+python3 scripts/check_architecture_drift.py
+```
+
+When the shared agent-kit audit is released, prefer:
+
+```bash
+wp audit architecture-drift --root .
+```
+
 ## Dev Conventions
 
 - **Hard cuts:** delete legacy in the same PR as the replacement — no compat shims, no feature flags

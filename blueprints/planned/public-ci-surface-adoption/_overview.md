@@ -30,6 +30,13 @@ Doppler wrapper shape. This blueprint now tracks the real remaining consumer
 work: converge on the finalized public helper/export contract and keep repo
 policy limited to preset data and docs.
 
+## Architecture governance
+
+Architecture docs:
+
+- [`docs/architecture.md`](../../../docs/architecture.md)
+- [`docs/architecture.contract.json`](../../../docs/architecture.contract.json)
+
 ## Planning Summary
 
 Verified on 2026-05-26:

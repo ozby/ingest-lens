@@ -11,6 +11,24 @@ Consistency Lab is a separate Worker surface documented in
 [`lab-architecture.md`](./lab-architecture.md).
 Executable claim map: [`guides/claim-e2e-traceability.md`](./guides/claim-e2e-traceability.md).
 
+## Governance
+
+This file is the human-readable architecture source of truth.
+`docs/architecture.contract.json` is the machine-checkable contract for active
+blueprints and reviewer-facing guidance.
+
+Current local drift check:
+
+```bash
+python3 scripts/check_architecture_drift.py
+```
+
+Target shared surface once released from agent-kit:
+
+```bash
+wp audit architecture-drift --root .
+```
+
 ## Constraints
 
 - Workers run in V8 isolates; no in-process retries, no long-lived DB

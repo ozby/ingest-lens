@@ -1,0 +1,14 @@
+name: architecture-contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  architecture-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check architecture drift contract
+        run: python3 scripts/check_architecture_drift.py

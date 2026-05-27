@@ -103,6 +103,15 @@ this block is preserved verbatim across `ak sync` runs.
 - Doppler
 - Webpresso/Agent Kit (`wp`, blueprints, audits)
 
+### Architecture governance
+
+- Architecture source of truth: `docs/architecture.md`
+- Machine-checkable contract: `docs/architecture.contract.json`
+- Active blueprints must link both files
+- Architecture-changing blueprints must include `## Architecture before` and `## Architecture after`
+- Local drift check: `python3 scripts/check_architecture_drift.py`
+- Shared target surface once released from agent-kit: `wp audit architecture-drift --root .`
+
 <!-- <<< user-owned (repo-customizations) -->
 
 <!-- >>> managed by webpresso (planning-and-release) -->
