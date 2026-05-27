@@ -11,12 +11,14 @@ mock.module("@webpresso/webpresso/runtime/env", () => ({
 }));
 
 const {
+  applyGithubCliFallback,
   extractAbsoluteFileDependencyDirectories,
   injectContainerMountArgs,
   injectDefaultActArgs,
   normalizeActSecrets,
   normalizeActSecretsWithOptions,
   renderSecretsFile,
+  stripPassthroughSentinel,
 } = await import("./act-with-webpresso.ts");
 
 describe("act secret profiles", () => {
@@ -41,6 +43,15 @@ describe("act secret profiles", () => {
         jobName: "cleanup",
       }).id,
     ).toBe("neon-control-plane");
+  });
+
+  it("routes auth preflight jobs to the GitHub auth profile", () => {
+    expect(
+      resolveActSecretProfile({
+        workflowPath: ".github/workflows/ci.yml",
+        jobName: "auth-preflight",
+      }).id,
+    ).toBe("github-auth-preflight");
   });
 
   it("filters injected secrets down to the allowlist", () => {
@@ -81,6 +92,47 @@ describe("injectDefaultActArgs", () => {
     expect(
       injectDefaultActArgs(["--container-architecture", "linux/arm64", "-l"], "darwin", "arm64"),
     ).toEqual(["--container-architecture", "linux/arm64", "-l"]);
+  });
+});
+
+describe("stripPassthroughSentinel", () => {
+  it("drops a leading package-manager passthrough marker", () => {
+    expect(stripPassthroughSentinel(["--", "-j", "auth-preflight"])).toEqual([
+      "-j",
+      "auth-preflight",
+    ]);
+  });
+
+  it("preserves ordinary act args", () => {
+    expect(stripPassthroughSentinel(["push", "-W", ".github/workflows/ci.yml"])).toEqual([
+      "push",
+      "-W",
+      ".github/workflows/ci.yml",
+    ]);
+  });
+});
+
+describe("applyGithubCliFallback", () => {
+  it("hydrates auth-preflight secrets from the GitHub CLI token when missing", () => {
+    expect(
+      applyGithubCliFallback({}, getActSecretProfile("github-auth-preflight"), "gho_example"),
+    ).toEqual({
+      GH_PACKAGES_TOKEN: "gho_example",
+      GITHUB_TOKEN: "gho_example",
+    });
+  });
+
+  it("does not override explicit auth-preflight secrets", () => {
+    expect(
+      applyGithubCliFallback(
+        { GITHUB_TOKEN: "explicit-gh", GH_PACKAGES_TOKEN: "explicit-packages" },
+        getActSecretProfile("github-auth-preflight"),
+        "gho_example",
+      ),
+    ).toEqual({
+      GH_PACKAGES_TOKEN: "explicit-packages",
+      GITHUB_TOKEN: "explicit-gh",
+    });
   });
 });
 

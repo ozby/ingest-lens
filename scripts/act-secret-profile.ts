@@ -1,6 +1,10 @@
 import { basename } from "node:path";
 
-export type ActSecretProfileId = "none" | "github-api" | "neon-control-plane";
+export type ActSecretProfileId =
+  | "none"
+  | "github-api"
+  | "github-auth-preflight"
+  | "neon-control-plane";
 
 export interface ActSecretProfile {
   id: ActSecretProfileId;
@@ -26,6 +30,12 @@ const ACT_SECRET_PROFILES: Record<ActSecretProfileId, ActSecretProfile> = {
     id: "github-api",
     description: "Least-privilege GitHub API token surface for workflow jobs.",
     allowedKeys: ["GITHUB_TOKEN", "GITHUB_PAT"],
+    requiredKeys: [],
+  },
+  "github-auth-preflight": {
+    id: "github-auth-preflight",
+    description: "GitHub repo/action probes plus package-read auth for CI preflight rehearsal.",
+    allowedKeys: ["GITHUB_TOKEN", "GITHUB_PAT", "GH_PACKAGES_TOKEN"],
     requiredKeys: [],
   },
   "neon-control-plane": {
@@ -96,6 +106,10 @@ function resolveJobSecretProfile(jobName?: string): ActSecretProfileId | undefin
 
   if (jobName === "cleanup") {
     return "neon-control-plane";
+  }
+
+  if (jobName === "auth-preflight") {
+    return "github-auth-preflight";
   }
 
   return undefined;

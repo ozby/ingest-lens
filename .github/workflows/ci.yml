@@ -8,33 +8,99 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-  NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+  GH_PACKAGES_TOKEN: ${{ github.token }}
+  NODE_AUTH_TOKEN: ${{ github.token }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  token-gate:
-    name: Detect package token
+  auth-preflight:
+    name: Auth preflight
     runs-on: ubuntu-latest
     outputs:
-      has_packages_token: ${{ steps.detect.outputs.has_packages_token }}
+      repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}
+      action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}
+      packages_token_ok: ${{ steps.packages.outputs.packages_token_ok }}
     steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - name: Detect GH_PACKAGES_TOKEN package access
-        id: detect
-        uses: ./.github/actions/detect-webpresso-package-token
-        with:
-          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
+      - name: Probe repository access
+        id: repo
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git ls-remote "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD >/dev/null 2>&1; then
+            echo "repo_access_ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "repo_access_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Probe public action downloads
+        id: actions
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          urls=(
+            "https://api.github.com/repos/actions/checkout/tarball/refs/tags/v6"
+            "https://api.github.com/repos/actions/setup-node/tarball/refs/tags/v6"
+            "https://api.github.com/repos/oven-sh/setup-bun/tarball/refs/tags/v2"
+          )
+          for url in "${urls[@]}"; do
+            if ! curl -fsSIL -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "$url" >/dev/null; then
+              echo "action_downloads_ok=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
+      - name: Probe GitHub Packages token
+        id: packages
+        shell: bash
+        env:
+          GH_PACKAGES_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_PACKAGES_TOKEN:-}" ]; then
+            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          tmp_npmrc="$(mktemp)"
+          trap 'rm -f "$tmp_npmrc"' EXIT
+          printf '%s\n' \
+            '@webpresso:registry=https://npm.pkg.github.com' \
+            "//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}" \
+            >"$tmp_npmrc"
+          if ! NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm view @webpresso/agent-kit@latest dist.tarball --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm pack @webpresso/agent-kit@latest --registry=https://npm.pkg.github.com --ignore-scripts --pack-destination "${RUNNER_TEMP:-/tmp}" >/dev/null 2>&1; then
+            echo "packages_token_ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Summarize auth preflight
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          {
+            echo "## Auth preflight"
+            echo ""
+            echo "- repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}"
+            echo "- action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}"
+            echo "- packages_token_ok: ${{ steps.packages.outputs.packages_token_ok }}"
+            echo ""
+            echo "Remediation:"
+            echo "- repo/action probe failed → fix GitHub repository/account access before rerunning CI."
+            echo "- package probe failed → grant GitHub Actions access to the required package(s) or restore package↔repo linkage for github.token."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   setup:
     name: Install
-    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
-    needs: token-gate
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
+    needs: auth-preflight
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -44,9 +110,9 @@ jobs:
 
   check:
     name: Check (lint + types)
-    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
     runs-on: ubuntu-latest
-    needs: [token-gate, setup]
+    needs: [auth-preflight, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -56,9 +122,9 @@ jobs:
 
   test:
     name: Test
-    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
     runs-on: ubuntu-latest
-    needs: [token-gate, setup]
+    needs: [auth-preflight, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -68,9 +134,9 @@ jobs:
 
   guardrails:
     name: Guardrails
-    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
     runs-on: ubuntu-latest
-    needs: [token-gate, setup]
+    needs: [auth-preflight, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -84,9 +150,9 @@ jobs:
 
   catalog-drift:
     name: Catalog drift
-    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
     runs-on: ubuntu-latest
-    needs: [token-gate, setup]
+    needs: [auth-preflight, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -96,9 +162,9 @@ jobs:
 
   blueprint-validate:
     name: Blueprint validation
-    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
     runs-on: ubuntu-latest
-    needs: [token-gate, setup]
+    needs: [auth-preflight, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -108,9 +174,9 @@ jobs:
 
   lore-commits:
     name: Validate Lore trailers
-    if: ${{ needs.token-gate.outputs.has_packages_token == 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
     runs-on: ubuntu-latest
-    needs: [token-gate, setup]
+    needs: [auth-preflight, setup]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -134,9 +200,9 @@ jobs:
 
   mutation:
     name: Mutation (affected)
-    if: ${{ github.event_name == 'pull_request' && needs.token-gate.outputs.has_packages_token == 'true' }}
+    if: ${{ github.event_name == 'pull_request' && needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
     runs-on: ubuntu-latest
-    needs: [token-gate, test]
+    needs: [auth-preflight, test]
     steps:
       - uses: actions/checkout@v6
         with:

@@ -14,6 +14,13 @@ import {
   type ActSecretProfile,
 } from "./act-secret-profile.ts";
 
+export function stripPassthroughSentinel(args: string[]): string[] {
+  if (args[0] === "--") {
+    return args.slice(1);
+  }
+  return args;
+}
+
 export function injectDefaultActArgs(
   args: string[],
   platform = process.platform,
@@ -133,6 +140,9 @@ interface ParsedArgState {
 
 function processCustomFlag(state: ParsedArgState, argv: string[], index: number): number | null {
   const arg = argv[index];
+  if (arg === "--") {
+    return index;
+  }
   if (arg === "--strict-secrets") {
     state.strictSecrets = true;
     return index;
@@ -140,7 +150,9 @@ function processCustomFlag(state: ParsedArgState, argv: string[], index: number)
   if (arg === "--secret-profile") {
     const profileId = argv[index + 1];
     if (!profileId || !isActSecretProfileId(profileId)) {
-      throw new Error("--secret-profile requires one of: none, github-api, neon-control-plane.");
+      throw new Error(
+        "--secret-profile requires one of: none, github-api, github-auth-preflight, neon-control-plane.",
+      );
     }
     state.explicitProfileId = profileId;
     return index + 1;
@@ -204,6 +216,34 @@ function loadAmbientSecrets(allowedKeys: readonly string[]): Record<string, stri
   return pickAllowedSecrets(process.env as Record<string, string>, allowedKeys);
 }
 
+function tryGetGithubCliToken(): string | null {
+  try {
+    const token = execFileSync("gh", ["auth", "token"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    return token.length > 0 ? token : null;
+  } catch {
+    return null;
+  }
+}
+
+export function applyGithubCliFallback(
+  secretMap: Record<string, string>,
+  secretProfile: ActSecretProfile,
+  fallbackToken: string | null,
+): Record<string, string> {
+  if (secretProfile.id !== "github-auth-preflight" || !fallbackToken) {
+    return secretMap;
+  }
+
+  return {
+    ...secretMap,
+    ...(secretMap.GITHUB_TOKEN ? {} : { GITHUB_TOKEN: fallbackToken }),
+    ...(secretMap.GH_PACKAGES_TOKEN ? {} : { GH_PACKAGES_TOKEN: fallbackToken }),
+  };
+}
+
 async function loadSelectedSecrets(
   allowedKeys: readonly string[],
 ): Promise<Record<string, string> | null> {
@@ -251,7 +291,9 @@ function loadManifestObjects(): Array<Record<string, unknown>> {
 }
 
 export async function main(): Promise<void> {
-  const { actArgs, strictSecrets, secretProfile } = parseCliArgs(process.argv.slice(2));
+  const { actArgs, strictSecrets, secretProfile } = parseCliArgs(
+    stripPassthroughSentinel(process.argv.slice(2)),
+  );
   assertBinary("act", "Install via: brew install act");
 
   const selectedSecrets = await loadSelectedSecrets(secretProfile.allowedKeys);
@@ -259,12 +301,19 @@ export async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const secretMap = normalizeActSecretsWithOptions(
-    [...(selectedSecrets ? [selectedSecrets] : []), loadAmbientSecrets(secretProfile.allowedKeys)],
-    {
-      mapGithubPatToToken:
-        secretProfile.id === "github-api" && process.env.ACT_MAP_GITHUB_PAT === "1",
-    },
+  const secretMap = applyGithubCliFallback(
+    normalizeActSecretsWithOptions(
+      [
+        ...(selectedSecrets ? [selectedSecrets] : []),
+        loadAmbientSecrets(secretProfile.allowedKeys),
+      ],
+      {
+        mapGithubPatToToken:
+          secretProfile.id === "github-api" && process.env.ACT_MAP_GITHUB_PAT === "1",
+      },
+    ),
+    secretProfile,
+    tryGetGithubCliToken(),
   );
   const missingRequiredKeys = listMissingRequiredSecrets(secretMap, secretProfile.requiredKeys);
   if (strictSecrets && missingRequiredKeys.length > 0) {

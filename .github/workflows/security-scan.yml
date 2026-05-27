@@ -7,13 +7,83 @@ on:
   workflow_dispatch:
 
 jobs:
+  auth-preflight:
+    name: Auth preflight
+    runs-on: ubuntu-latest
+    outputs:
+      repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}
+      action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}
+      packages_token_ok: ${{ steps.packages.outputs.packages_token_ok }}
+    steps:
+      - name: Probe repository access
+        id: repo
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git ls-remote "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD >/dev/null 2>&1; then
+            echo "repo_access_ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "repo_access_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Probe public action downloads
+        id: actions
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          urls=(
+            "https://api.github.com/repos/actions/checkout/tarball/refs/tags/v6"
+            "https://api.github.com/repos/gitleaks/gitleaks-action/tarball/refs/tags/v2"
+            "https://api.github.com/repos/google/osv-scanner-action/tarball/refs/tags/v2.3.8"
+            "https://api.github.com/repos/actions/setup-node/tarball/refs/tags/v6"
+            "https://api.github.com/repos/oven-sh/setup-bun/tarball/refs/tags/v2"
+          )
+          for url in "${urls[@]}"; do
+            if ! curl -fsSIL -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "$url" >/dev/null; then
+              echo "action_downloads_ok=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
+      - name: Probe GitHub Packages token
+        id: packages
+        shell: bash
+        env:
+          GH_PACKAGES_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_PACKAGES_TOKEN:-}" ]; then
+            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          tmp_npmrc="$(mktemp)"
+          trap 'rm -f "$tmp_npmrc"' EXIT
+          printf '%s\n' \
+            '@webpresso:registry=https://npm.pkg.github.com' \
+            "//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}" \
+            >"$tmp_npmrc"
+          if ! NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm view @webpresso/agent-kit@latest dist.tarball --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm pack @webpresso/agent-kit@latest --registry=https://npm.pkg.github.com --ignore-scripts --pack-destination "${RUNNER_TEMP:-/tmp}" >/dev/null 2>&1; then
+            echo "packages_token_ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
   scan:
     name: Secret + dependency scan
+    needs: auth-preflight
     runs-on: ubuntu-latest
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-      NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      GH_PACKAGES_TOKEN: ${{ github.token }}
+      NODE_AUTH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -32,23 +102,17 @@ jobs:
             --recursive
             ./
 
-      - name: Detect GH_PACKAGES_TOKEN package access
-        id: detect
-        uses: ./.github/actions/detect-webpresso-package-token
-        with:
-          gh-packages-token: ${{ secrets.GH_PACKAGES_TOKEN }}
-
       - name: Setup monorepo dependencies
-        if: ${{ steps.detect.outputs.has_packages_token == 'true' }}
+        if: ${{ needs.auth-preflight.outputs.packages_token_ok == 'true' }}
         uses: ./.github/actions/setup-monorepo
 
       - name: Secretlint
-        if: ${{ steps.detect.outputs.has_packages_token == 'true' }}
+        if: ${{ needs.auth-preflight.outputs.packages_token_ok == 'true' }}
         run: |
           pnpm exec secretlint "**/*"
         continue-on-error: false
 
       - name: Secretlint skipped (token missing or no package access)
-        if: ${{ steps.detect.outputs.has_packages_token != 'true' }}
+        if: ${{ needs.auth-preflight.outputs.packages_token_ok != 'true' }}
         run: |
-          echo "GH_PACKAGES_TOKEN is missing or cannot download @webpresso packages; skipping dependency-backed secretlint step."
+          echo "github.token cannot download @webpresso packages for this repo; skipping dependency-backed secretlint step."
