@@ -1,6 +1,8 @@
 {
   "name": "ingest-lens",
+  "version": "0.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "act:ci": "bun ./scripts/act-with-webpresso.ts push -W .github/workflows/ci.yml",

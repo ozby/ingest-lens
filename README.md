@@ -35,6 +35,12 @@ If you are developing against a live webpresso source checkout and the link
 breaks, rerun `vp install` here or `vp run dev:link --consumer <repo>` from the
 webpresso checkout.
 
+The shared Webpresso/Agent Kit source is
+[`webpresso/agent-kit`](https://github.com/webpresso/agent-kit). IngestLens uses
+it to keep Claude/Codex instructions, generated hooks, blueprint audits,
+secret-safe command wrappers, and local/CI quality gates on one maintained
+surface instead of copying agent setup across tools.
+
 Secrets and database connections are managed via `wp config secrets setup` + `with-secrets`. No `.env` files.
 
 ## Repo map

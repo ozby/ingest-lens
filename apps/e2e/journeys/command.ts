@@ -3,10 +3,20 @@ import {
   type SpawnSyncOptionsWithStringEncoding,
   type SpawnSyncReturns,
 } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const repoRoot = fileURLToPath(new URL("../../..", import.meta.url));
+export const repoRoot = findRepoRoot(fileURLToPath(import.meta.url));
+
+function findRepoRoot(startFile: string): string {
+  let dir = path.dirname(startFile);
+  while (path.dirname(dir) !== dir) {
+    if (existsSync(path.join(dir, "pnpm-workspace.yaml"))) return dir;
+    dir = path.dirname(dir);
+  }
+  throw new Error(`Could not locate repo root from ${startFile}`);
+}
 
 export interface CommandResult extends SpawnSyncReturns<string> {
   combinedOutput: string;

@@ -11,16 +11,26 @@
  * registration tasks (2.7 / 3.7) are ghosts.
  */
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emit } from "./lib/verdict";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = join(__dirname, "..", "..", "..");
+const REPO_ROOT = findRepoRoot(__dirname);
 
 const PROBE = "p15-repo-webpresso-wp-e2e-cli";
 const CLAIM = "`wp e2e --help` succeeds in this repo and the command accepts a `--suite` argument";
+
+function findRepoRoot(startDir: string): string {
+  let dir = startDir;
+  while (dirname(dir) !== dir) {
+    if (existsSync(join(dir, "pnpm-workspace.yaml"))) return dir;
+    dir = dirname(dir);
+  }
+  throw new Error(`Could not locate repo root from ${startDir}`);
+}
 
 function runCmd(
   cmd: string,
