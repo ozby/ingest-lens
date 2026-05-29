@@ -7,6 +7,7 @@
     "dev": "bun ./scripts/run-workers-dev.ts",
     "build": "wrangler deploy --dry-run",
     "test": "vitest run",
+    "mutation": "stryker run",
     "check-types": "tsgo --noEmit",
     "lint": "oxlint src"
   },
@@ -26,6 +27,9 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:workers",
     "@cloudflare/workers-types": "catalog:workers",
+    "@stryker-mutator/core": "catalog:",
+    "@stryker-mutator/typescript-checker": "catalog:",
+    "@stryker-mutator/vitest-runner": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-kit": "catalog:",
     "drizzle-kit": "catalog:workers",

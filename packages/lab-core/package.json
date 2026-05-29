@@ -9,6 +9,7 @@
   "scripts": {
     "lint": "oxlint src/",
     "check-types": "tsgo --noEmit",
+    "mutation": "stryker run",
     "test": "vitest run"
   },
   "dependencies": {
@@ -16,6 +17,9 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:workers",
+    "@stryker-mutator/core": "catalog:",
+    "@stryker-mutator/typescript-checker": "catalog:",
+    "@stryker-mutator/vitest-runner": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-kit": "catalog:",
