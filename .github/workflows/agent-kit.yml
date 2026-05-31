@@ -59,11 +59,12 @@ jobs:
             '@webpresso:registry=https://npm.pkg.github.com' \
             "//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}" \
             >"$tmp_npmrc"
-          if ! NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm view @webpresso/agent-kit@latest dist.tarball --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+          WP_VERSION=$(grep '"@webpresso/agent-kit":' pnpm-workspace.yaml | head -1 | sed 's/.*: *//')
+          if ! NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm view "@webpresso/agent-kit@${WP_VERSION}" dist.tarball --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
             echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm pack @webpresso/agent-kit@latest --registry=https://npm.pkg.github.com --ignore-scripts --pack-destination "${RUNNER_TEMP:-/tmp}" >/dev/null 2>&1; then
+          if NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm pack "@webpresso/agent-kit@${WP_VERSION}" --registry=https://npm.pkg.github.com --ignore-scripts --pack-destination "${RUNNER_TEMP:-/tmp}" >/dev/null 2>&1; then
             echo "packages_token_ok=true" >> "$GITHUB_OUTPUT"
           else
             echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
