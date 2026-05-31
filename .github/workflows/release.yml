@@ -18,6 +18,7 @@ jobs:
       action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}
       packages_token_ok: ${{ steps.packages.outputs.packages_token_ok }}
     steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: Probe repository access
         id: repo
         shell: bash
@@ -53,30 +54,9 @@ jobs:
           echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
       - name: Probe GitHub Packages token
         id: packages
-        shell: bash
-        env:
-          GH_PACKAGES_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          if [ -z "${GH_PACKAGES_TOKEN:-}" ]; then
-            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          tmp_npmrc="$(mktemp)"
-          trap 'rm -f "$tmp_npmrc"' EXIT
-          printf '%s\n' \
-            '@webpresso:registry=https://npm.pkg.github.com' \
-            "//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}" \
-            >"$tmp_npmrc"
-          if ! NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm view @webpresso/agent-kit@latest dist.tarball --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
-            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm pack @webpresso/agent-kit@latest --registry=https://npm.pkg.github.com --ignore-scripts --pack-destination "${RUNNER_TEMP:-/tmp}" >/dev/null 2>&1; then
-            echo "packages_token_ok=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "packages_token_ok=false" >> "$GITHUB_OUTPUT"
-          fi
+        uses: ./.github/actions/probe-packages-token
+        with:
+          token: ${{ github.token }}
 
   release:
     name: Create release
