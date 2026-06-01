@@ -2,7 +2,28 @@
   "name": "ingest-lens",
   "version": "0.0.0",
   "private": true,
-  "license": "UNLICENSED",
+  "description": "Cloudflare Workers integration-observability app for validating, repairing, delivering, and replaying third-party payloads.",
+  "keywords": [
+    "cloudflare-workers",
+    "event-delivery",
+    "integration-observability",
+    "queues",
+    "react",
+    "typescript",
+    "vite-plus",
+    "webhooks",
+    "webpresso",
+    "workers-ai"
+  ],
+  "homepage": "https://github.com/ozby/ingest-lens#readme",
+  "bugs": {
+    "url": "https://github.com/ozby/ingest-lens/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ozby/ingest-lens.git"
+  },
   "type": "module",
   "scripts": {
     "act:ci": "bun ./scripts/act-with-webpresso.ts push -W .github/workflows/ci.yml",
@@ -10,29 +31,35 @@
     "act:e2e": "bun ./scripts/act-with-webpresso.ts workflow_dispatch -W .github/workflows/testing-e2e-act.yml -j full-suite-local",
     "act:list": "bun ./scripts/act-with-webpresso.ts -l",
     "build": "vp run build",
-    "catalog:check": "WP_SKIP_UPDATE_CHECK=1 wp audit catalog-drift",
+    "catalog:check": "wp audit catalog-drift",
     "audit:secret-provider-quarantine": "bun ./scripts/audit-secret-provider-quarantine.ts",
     "check": "vp check",
     "clean": "vp run clean",
-    "client:bundle:check": "WP_SKIP_UPDATE_CHECK=1 wp audit bundle-budget apps/client/dist --max-js-asset-bytes 512000 --max-html-eager-js-asset-bytes 262144 --max-html-eager-js-total-bytes 393216",
+    "client:bundle:check": "wp audit bundle-budget apps/client/dist --max-js-asset-bytes 512000 --max-html-eager-js-asset-bytes 262144 --max-html-eager-js-total-bytes 393216",
     "dev": "with-secrets -- vp run dev",
     "dev:offline": "vp run dev",
     "format": "vp fmt",
     "format:check": "vp fmt --check",
     "lint": "vp run lint",
-    "lint:repo": "oxlint .",
+    "lint:repo": "wp lint",
     "test": "vp run test",
     "check-types": "vp run check-types",
     "commitlint": "commitlint",
     "secretlint": "secretlint",
     "setup:agent": "wp setup",
-    "postinstall": "WP_SKIP_GSTACK=1 WP_SKIP_UPDATE_CHECK=1 wp setup --yes --overwrite",
+    "postinstall": "wp setup",
     "prepare": "husky",
-    "docs:check": "WP_SKIP_UPDATE_CHECK=1 wp audit docs-frontmatter",
-    "blueprints:check": "WP_SKIP_UPDATE_CHECK=1 wp audit blueprint-lifecycle --legacy-omx",
+    "docs:check": "wp audit docs-frontmatter",
+    "blueprints:check": "wp audit blueprint-lifecycle --legacy-omx",
     "e2e": "bun ./apps/e2e/scripts/e2e-with-neon.ts",
     "ai:eval": "bun ./scripts/run-mapping-eval.ts",
-    "probes:lab": "bun scripts/probes/consistency-lab/run-all.ts"
+    "probes:lab": "bun scripts/probes/consistency-lab/run-all.ts",
+    "verify:paths": "WP_SKIP_UPDATE_CHECK=1 wp audit guardrails",
+    "verify:secrets": "bun scripts/check-no-dev-vars.ts",
+    "typecheck": "wp typecheck",
+    "mutation": "wp test --mutation",
+    "test:mutation": "stryker run stryker.config.ts",
+    "qa": "wp lint src e2e *.config.ts && wp typecheck && wp test --file vitest.config.ts && wp test --mutation && wp e2e --config playwright.config.ts"
   },
   "dependencies": {
     "rulesync": "8.15.1"
@@ -40,7 +67,11 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
+    "@playwright/test": "latest",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
+    "@stryker-mutator/core": "latest",
+    "@stryker-mutator/vitest-runner": "latest",
+    "@types/node": "latest",
     "@types/react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
     "@webpresso/webpresso": "catalog:",
@@ -50,7 +81,10 @@
     "oxlint": "catalog:tooling",
     "react": "catalog:",
     "secretlint": "^9.3.0",
-    "vite-plus": "catalog:"
+    "typescript": "latest",
+    "vite-plus": "catalog:",
+    "vitest": "latest",
+    "webpresso": "latest"
   },
   "engines": {
     "node": ">=24"

@@ -1,7 +1,7 @@
 {
   "version": "1",
   "installed": {
-    "tier3Skills": []
+    "tier3Skills": ["base-kit"]
   },
   "hosts": {
     "selected": ["codex", "claude", "opencode"],

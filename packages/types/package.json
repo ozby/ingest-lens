@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "check-types": "tsgo --noEmit",
-    "test": "vitest run"
+    "test": "wp test --file vitest.config.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

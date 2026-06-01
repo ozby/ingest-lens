@@ -26,7 +26,7 @@
     "dev": "bunchee --watch",
     "lint": "oxlint src/",
     "check-types": "tsgo --noEmit",
-    "test": "vitest run",
+    "test": "wp test --file vitest.config.ts",
     "mutation": "stryker run"
   },
   "devDependencies": {

@@ -12,9 +12,9 @@
     "deploy:prd": "pnpm build:prd && wrangler deploy --env prd",
     "check-types": "tsgo --noEmit",
     "lint": "oxlint src/",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "wp test --file vitest.config.ts",
+    "test:watch": "wp test --watch --file vitest.config.ts",
+    "test:coverage": "wp test --coverage --file vitest.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -6,6 +6,12 @@ export default defineConfig({
   fmt: {
     ignorePatterns: ["**/*.compact-qa.*"],
   },
+  lint: {
+    ignorePatterns: ["apps/lab/assets/*.js", "**/*.compact-qa.*"],
+    rules: {
+      complexity: ["error", { max: 10 }],
+    },
+  },
   staged: {
     "*.{ts,tsx,js,mjs,cjs}": (files: readonly string[]) => {
       const filtered = files.filter((file) => !compactQaFixture.test(file));

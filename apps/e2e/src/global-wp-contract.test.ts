@@ -10,17 +10,15 @@ function readJson<T>(relativePath: string): T {
 }
 
 describe("global wp contract", () => {
-  it("uses global wp setup scripts instead of a repo-local agent-kit package", () => {
+  it("uses global wp scripts while keeping agent-kit as a shared config dependency", () => {
     const packageJson = readJson<{
       scripts?: Record<string, string>;
       devDependencies?: Record<string, string>;
     }>("package.json");
 
-    expect(packageJson.devDependencies?.["@webpresso/agent-kit"]).toBeUndefined();
+    expect(packageJson.devDependencies?.["@webpresso/agent-kit"]).toBe("catalog:");
     expect(packageJson.scripts?.["setup:agent"]).toBe("wp setup");
-    expect(packageJson.scripts?.postinstall).toBe(
-      "WP_SKIP_GSTACK=1 WP_SKIP_UPDATE_CHECK=1 wp setup --yes --overwrite",
-    );
+    expect(packageJson.scripts?.postinstall).toBe("wp setup");
     expect(JSON.stringify(packageJson.scripts ?? {})).not.toContain("run-webpresso-cli");
     expect(JSON.stringify(packageJson.scripts ?? {})).not.toContain("AK_SKIP_GSTACK");
   });

@@ -4,7 +4,7 @@
   "requiredFiles": [
     "blueprints/in-progress/system-clarity-hardening/_overview.md",
     "blueprints/in-progress/surface-test-traceability-hardening/_overview.md",
-    "blueprints/planned/public-ci-surface-adoption/_overview.md"
+    "blueprints/completed/public-ci-surface-adoption/_overview.md"
   ],
   "rules": [
     {

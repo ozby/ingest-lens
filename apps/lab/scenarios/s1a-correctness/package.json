@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "oxlint src/",
     "check-types": "tsgo --noEmit",
-    "test": "vitest run"
+    "test": "wp test --file vitest.config.ts"
   },
   "dependencies": {
     "@repo/lab-core": "workspace:*",
