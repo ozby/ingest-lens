@@ -1,88 +1,55 @@
 # IngestLens
 
-**AI-assisted integration observability for payload intake, mapping, delivery, and replay-aware debugging.**
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/ozby/ingest-lens/ci.yml?branch=main&label=CI)](https://github.com/ozby/ingest-lens/actions/workflows/ci.yml)
 
-Built solo by [Ozby](https://github.com/ozby) as a portfolio of integration primitives: deterministic intake validation, AI-assisted mapping repair, delivery rails, replay, and measurement harnesses for delivery correctness.
+## What it is
 
-## Why this repo is worth reviewing
+IngestLens is an integration-observability application that validates incoming third-party payloads, AI-repairs broken field mappings, delivers events through queues with retries/DLQ, and lets operators replay and debug delivery — running on Cloudflare Workers.
 
-- **Adaptive intake repair** — detects payload drift, proposes mapping fixes with AI, validates them deterministically, and routes low-confidence cases to human review. ([E2E proof](docs/guides/claim-e2e-traceability.md#shipped-claim-matrix))
-- **Delivery primitives with proof** — models queues, topic fan-out, push retries/DLQ, and replay-aware operator workflows. ([E2E proof](docs/guides/claim-e2e-traceability.md#shipped-claim-matrix))
-- **Measurement over hand-waving** — ships a consistency lab that compares delivery paths for correctness, latency, and operational cost. ([E2E proof](docs/guides/claim-e2e-traceability.md#shipped-claim-matrix))
+## Why use it
+
+- **Deterministic safety over AI vibes** — AI mapping proposals are contract-checked, confidence-gated, and routed to human review before promotion.
+- **Failure-path honesty** — delivery guarantees, retries, DLQ, and replay semantics are modeled as first-class product constraints, each backed by an E2E proof.
+- **Measurement over hand-waving** — a Consistency Lab compares delivery paths on correctness, latency, and operational cost rather than asserting them.
 
 ## Quick start
 
+This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (Doppler-wrapped) for secret injection. There are **no `.env` files**.
+
 ```bash
 vp install
-with-secrets -- vp run dev
 ```
 
-`vp install` runs `postinstall`, which bootstraps the repo with the same flow
-as the repo-owned webpresso setup wrapper. If hooks or bootstrap drift,
-diagnose first:
+Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error.
 
 ```bash
-wp hooks doctor
+with-secrets -- vp run dev   # or: pnpm dev
 ```
 
-Then repair with:
+Success signal: secrets are injected and the vite-plus dev server / Cloudflare Worker dev process starts and stays running.
+
+Run the dev server without secret injection:
 
 ```bash
-wp setup
+vp run dev                   # or: pnpm dev:offline
 ```
 
-If you are developing against a live webpresso source checkout and the link
-breaks, rerun `vp install` here or `vp run dev:link --consumer <repo>` from the
-webpresso checkout.
+Success signal: the dev server starts without secret injection.
 
-The shared Webpresso/Agent Kit source is
-[`webpresso/agent-kit`](https://github.com/webpresso/agent-kit). IngestLens uses
-it to keep Claude/Codex instructions, generated hooks, blueprint audits,
-secret-safe command wrappers, and local/CI quality gates on one maintained
-surface instead of copying agent setup across tools.
+## Features
 
-Secrets and database connections are managed via `wp config secrets setup` + `with-secrets`. No `.env` files.
+| Feature                                                                                                                                   | Proof                                                                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Adaptive intake repair — detect payload drift, AI-propose mapping fixes, validate deterministically, route low-confidence to human review | [`apps/e2e/journeys/intake-mapping-flow.e2e.ts`](apps/e2e/journeys/intake-mapping-flow.e2e.ts), [`apps/e2e/journeys/intake-heal-ui.spec.ts`](apps/e2e/journeys/intake-heal-ui.spec.ts)                                                                 |
+| Delivery primitives — queues, topic fan-out, push retries/DLQ, replay-aware operator workflows                                            | [`apps/e2e/journeys/queue-message-flow.e2e.ts`](apps/e2e/journeys/queue-message-flow.e2e.ts), [`apps/e2e/journeys/topic-publish-flow.e2e.ts`](apps/e2e/journeys/topic-publish-flow.e2e.ts)                                                             |
+| Ownership/security hardening on delivery paths                                                                                            | [`apps/e2e/journeys/ownership-hardening.e2e.ts`](apps/e2e/journeys/ownership-hardening.e2e.ts)                                                                                                                                                         |
+| Consistency Lab — compares delivery paths for correctness, latency, operational cost                                                      | [`apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts), [`apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts) |
+| Cloudflare Worker API + React Router/React SPA, Postgres via Hyperdrive, DELIVERY_QUEUE, Realtime Durable Objects, Workers AI mapping     | [`apps/workers`](apps/workers), [`apps/client`](apps/client), [`docs/system-architecture.md`](docs/system-architecture.md)                                                                                                                             |
+| CI/E2E automation incl. local GitHub Actions via `act` and Neon E2E branch lifecycle                                                      | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`.github/workflows/testing-e2e.yml`](.github/workflows/testing-e2e.yml), [`.github/workflows/cleanup-stale-neon-e2e-branches.yml`](.github/workflows/cleanup-stale-neon-e2e-branches.yml)     |
+| Agent-kit governance — bundle-budget, catalog-drift, docs-frontmatter, blueprint-lifecycle, architecture-contract audits                  | [`.github/workflows/architecture-contract.yml`](.github/workflows/architecture-contract.yml), [`package.json`](package.json) scripts                                                                                                                   |
 
-## Repo map
-
-- `apps/workers` — Cloudflare Worker API, intake pipeline, auth, delivery, replay
-- `apps/client` — React SPA for queues, topics, metrics, and intake review flows
-- `apps/lab` — consistency lab UI and workloads for delivery-path comparison
-- `packages/*` — shared types, UI, logging, test helpers, lab core
-- `infra` — Pulumi-managed Cloudflare infrastructure
-- `docs` — architecture, guarantees, ADRs, vision, and project records
-
-## Showcase entrypoints
-
-- **Active cleanup wave:** [`blueprints/in-progress/system-clarity-hardening/_overview.md`](blueprints/in-progress/system-clarity-hardening/_overview.md)
-- **Reviewer guide (start here):** [`docs/project/REVIEWER-GUIDE.md`](docs/project/REVIEWER-GUIDE.md)
-- **Architecture overview:** [`docs/system-architecture.md`](docs/system-architecture.md)
-- **AI intake + mapping flow:** [`docs/architecture.md`](docs/architecture.md)
-- **Architecture contract:** [`docs/architecture.contract.json`](docs/architecture.contract.json)
-- **Consistency Lab architecture:** [`docs/lab-architecture.md`](docs/lab-architecture.md)
-- **Delivery semantics:** [`docs/delivery-guarantees.md`](docs/delivery-guarantees.md)
-- **Claim ↔ E2E traceability:** [`docs/guides/claim-e2e-traceability.md`](docs/guides/claim-e2e-traceability.md)
-- **Scale and tradeoffs:** [`docs/scale-considerations.md`](docs/scale-considerations.md)
-- **Vision + project records:** [`docs/research/product/VISION.md`](docs/research/product/VISION.md), [`docs/project/README.md`](docs/project/README.md)
-
-## Reviewer path
-
-If you are new to the repo and want the fastest technical orientation, use this path:
-
-1. Read the [reviewer guide](docs/project/REVIEWER-GUIDE.md) for the 15-minute walkthrough.
-2. Scan the [system architecture](docs/system-architecture.md) for boundaries and request/data flow.
-3. Read the [AI intake architecture](docs/architecture.md) and [delivery guarantees](docs/delivery-guarantees.md) to see where the design is intentionally strict.
-4. Use the [execution roadmap](docs/project/ROADMAP.md) and the active
-   [`system-clarity-hardening` blueprint](blueprints/in-progress/system-clarity-hardening/_overview.md)
-   to understand what is stable versus what is being simplified now.
-
-## Engineering proof points
-
-- **Deterministic safety over AI vibes** — model output is contract-checked, confidence-gated, and reviewable before promotion. ([E2E proof](apps/e2e/journeys/intake-mapping-flow.e2e.ts), [browser proof](apps/e2e/journeys/intake-heal-ui.spec.ts))
-- **Failure-path honesty** — delivery guarantees, retries, DLQ behavior, and replay semantics are documented as first-class product constraints. ([E2E proof](apps/e2e/journeys/queue-message-flow.e2e.ts), [topic proof](apps/e2e/journeys/topic-publish-flow.e2e.ts), [hardening proof](apps/e2e/journeys/ownership-hardening.e2e.ts))
-- **Evidence-backed systems thinking** — the consistency lab compares delivery paths on correctness, latency, and operational cost. ([E2E proof](apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts), [latency proof](apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts))
-
-## Architecture at a glance
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -97,62 +64,43 @@ flowchart LR
     API --> AI[Workers AI mapping suggestions]
 ```
 
-The Consistency Lab is a separate Worker used to measure delivery-path
-behavior, not part of the primary production request path. See
-[`docs/lab-architecture.md`](docs/lab-architecture.md).
+The Consistency Lab is a separate Worker used to measure delivery-path behavior; it is not part of the primary production request path. See [`docs/system-architecture.md`](docs/system-architecture.md).
 
-<details>
-<summary>Contributor workflows</summary>
+## Verify
 
-## Verification and demo flows
-
-### E2E
+Fast contributor check (no secrets required):
 
 ```bash
-vp run e2e --suite foundation
-vp run e2e --suite full
+vp run lint          # oxlint + per-package lint
+vp run check-types   # tsc, no type errors
+vp run test          # vitest suites
 ```
 
-Suites: `foundation`, `auth`, `messaging`, `hardening`, `intake`, `healing`, `demo`, `client`, `branding`, `intake-ui`, `full`.
-Browser-backed reviewer proof also lives in `client` and `intake-ui`; see
-[`docs/guides/claim-e2e-traceability.md`](docs/guides/claim-e2e-traceability.md).
-
-### Verify
+Full maintainer check (mirrors CI; some steps need secrets / a Neon E2E branch — **maintainer-only**):
 
 ```bash
-vp run check
-vp run test
-vp run build
-vp run docs:check
-vp run blueprints:check
+vp check                          # aggregate lint + types + format
+vp run build                      # all packages build; client/worker bundles emitted
+wp audit docs-frontmatter         # docs frontmatter audit (pnpm docs:check)
+wp audit blueprint-lifecycle --legacy-omx   # blueprint lifecycle audit (pnpm blueprints:check)
+vp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
 ```
 
-### Local GitHub Actions testing (public Webpresso CI surface)
+## Contribute / Security / License
 
-```bash
-vp run act:list
-vp run act:ci
-vp run act:e2e
-vp run act:cleanup
-```
-
-### Deploy
-
-```bash
-bun ./infra/src/deploy/deploy.ts dev
-bun ./infra/src/deploy/deploy.ts prd
-```
-
-</details>
+- Contributing guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+- Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- License: [MIT](LICENSE)
+- Vision: [VISION.md](VISION.md)
 
 ## Docs
 
 - [System architecture](docs/system-architecture.md)
 - [Architecture](docs/architecture.md)
-- [Consistency Lab architecture](docs/lab-architecture.md)
 - [Delivery guarantees](docs/delivery-guarantees.md)
 - [Claim ↔ E2E traceability](docs/guides/claim-e2e-traceability.md)
-- [Scale considerations](docs/scale-considerations.md)
+- [Reviewer guide](docs/project/REVIEWER-GUIDE.md)
 - [ADR index](docs/adrs/README.md)
 - [Blueprints](blueprints/README.md)
 - [Project records](docs/project/README.md)
