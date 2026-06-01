@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: planned
+status: completed
 complexity: M
 created: "2026-05-30"
-last_updated: "2026-05-31"
-progress: "35% (root/package script migration is in flight; metadata normalized to current upstream state)"
+last_updated: "2026-06-01"
+progress: "100% (repo-wide `wp`-first thin-consumer migration verified and lane closed on 2026-06-01)"
 depends_on: []
 cross_repo_depends_on:
   - repo: webpresso/agent-kit
@@ -28,6 +28,20 @@ Architecture docs:
 
 - [`docs/architecture.md`](../../docs/architecture.md)
 - [`docs/architecture.contract.json`](../../docs/architecture.contract.json)
+
+## Architecture before
+
+IngestLens had repo-level `wp` setup and audit entrypoints, but package-local
+test scripts still invoked Vitest directly and the active blueprint metadata
+described stale planned upstream dependencies. The root architecture contract
+still referenced the lane as planned work.
+
+## Architecture after
+
+IngestLens is a thin consumer of the shared Webpresso quality surface: package
+test scripts route through `wp test`, `@webpresso/agent-kit` stays a shared
+config dependency at the root, and the architecture contract points at the
+completed blueprint record as the durable evidence for this boundary.
 
 **Goal:** finish the repo's move to the shipped base-`wp` contract without
 absorbing framework-specific behavior and without treating stale absolute

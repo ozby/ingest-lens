@@ -7,7 +7,7 @@
     "up:dev": "just deploy dev",
     "up:prd": "just deploy prd",
     "destroy": "just run dev pulumi destroy --yes",
-    "test": "vitest run --passWithNoTests",
+    "test": "wp test --file vitest.config.ts",
     "check-types": "tsgo --noEmit"
   },
   "dependencies": {

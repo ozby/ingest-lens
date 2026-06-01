@@ -54,7 +54,7 @@
     "e2e": "bun ./apps/e2e/scripts/e2e-with-neon.ts",
     "ai:eval": "bun ./scripts/run-mapping-eval.ts",
     "probes:lab": "bun scripts/probes/consistency-lab/run-all.ts",
-    "verify:paths": "WP_SKIP_UPDATE_CHECK=1 wp audit absolute-path-policy --root .",
+    "verify:paths": "WP_SKIP_UPDATE_CHECK=1 wp audit guardrails",
     "verify:secrets": "bun scripts/check-no-dev-vars.ts",
     "typecheck": "wp typecheck",
     "mutation": "wp test --mutation",

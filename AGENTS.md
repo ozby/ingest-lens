@@ -189,7 +189,10 @@ Full details: `.agent/rules/package-conventions.md`
 
 ## Tech stack
 
+- Playwright
 - React
+- TypeScript
+- Vitest
 <!-- <<< managed by webpresso (planning-and-release) -->
 
 <!-- >>> user-owned (escalation-map) -->

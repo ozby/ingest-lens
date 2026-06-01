@@ -10,7 +10,7 @@
     "lint": "oxlint src/",
     "check-types": "tsgo --noEmit",
     "mutation": "stryker run",
-    "test": "vitest run"
+    "test": "wp test --file vitest.config.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:workers"

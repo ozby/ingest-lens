@@ -80,6 +80,11 @@ allowBuilds:
   sharp: true
   tldjs: true
   workerd: true
+  "@webpresso/agent-vitest": true
+  "@webpresso/agent-workers-test": true
+  "@webpresso/db-branching": true
+  "@webpresso/db-branching-neon": true
+  "@webpresso/runtime": true
 
 overrides:
   "@commitlint/config-validator>ajv": "8.18.0"

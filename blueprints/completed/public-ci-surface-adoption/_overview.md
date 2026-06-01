@@ -1,11 +1,11 @@
 ---
 type: blueprint
 title: Adopt the finalized public Webpresso CI secret surfaces
-status: planned
+status: completed
 complexity: M
 created: "2026-05-23"
-last_updated: "2026-05-31"
-progress: "20% (local helper shape already matches act-with-webpresso/with-secrets; upstream dependency normalized)"
+last_updated: "2026-06-01"
+progress: "100% (public CI helper adoption verified and lane closed on 2026-06-01)"
 owner: ozby
 depends_on: []
 cross_repo_depends_on:
@@ -28,6 +28,20 @@ Architecture docs:
 
 - [`docs/architecture.md`](../../../docs/architecture.md)
 - [`docs/architecture.contract.json`](../../../docs/architecture.contract.json)
+
+## Architecture before
+
+The repo had local CI helper scripts, but this blueprint still framed the work
+as waiting on future public Webpresso secret surfaces. The architecture
+contract therefore treated public CI adoption as active planned work rather
+than completed downstream adoption.
+
+## Architecture after
+
+The public CI helper boundary is closed: repo workflows continue to own local
+profiles and orchestration, while secret-aware execution remains delegated to
+the shared Webpresso surfaces (`wp`, `with-secrets`, and the act wrapper
+contract). The architecture contract now links the completed blueprint record.
 
 **Goal:** finish the IngestLens-side adoption onto the finalized public helper
 contract now that the local repo already uses `act-with-webpresso` and

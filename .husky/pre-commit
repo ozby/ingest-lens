@@ -3,3 +3,5 @@ set -eu
 wp audit guardrails
 # agent-kit audit hooks (staged mode — fast)
 # webpresso audit hooks (staged mode — fast)
+bun scripts/check-no-dev-vars.ts
+bun scripts/audit-secret-provider-quarantine.ts

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "build": "wrangler deploy --dry-run",
-    "test": "vitest run",
+    "test": "wp test --file vitest.config.ts",
     "check-types": "tsgo --noEmit",
     "lint": "oxlint src/"
   },
