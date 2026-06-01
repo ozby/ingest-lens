@@ -1,0 +1,6 @@
+{
+  "releaseKind": "version_pr",
+  "durableObjectMigration": "none",
+  "rolloutMode": "direct",
+  "requiredChecks": ["production-smoke", "production-journey"]
+}
