@@ -37,9 +37,9 @@ jobs:
         with:
           bun-version: latest
       - run: pnpm install --frozen-lockfile
-      - run: wp lint
-      - run: wp typecheck
-      - run: wp test
+      - run: vp run lint
+      - run: vp run check-types
+      - run: vp run test
       - name: Deploy production
         env:
           RELEASE_VERSION_INPUT: ${{ inputs.release_version }}
@@ -49,4 +49,4 @@ jobs:
             echo "Invalid semantic release version: ${RELEASE_VERSION_INPUT}" >&2
             exit 1
           fi
-          with-secrets -- vp run deploy:production -- --release-version "${RELEASE_VERSION_INPUT}"
+          vp run deploy:production -- --release-version "${RELEASE_VERSION_INPUT}"
