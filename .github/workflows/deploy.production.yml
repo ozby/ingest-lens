@@ -1,0 +1,52 @@
+name: Deploy production
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Semantic version from the merged Changesets Version Packages release"
+        required: true
+        type: string
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  GH_PACKAGES_TOKEN: ${{ github.token }}
+  NODE_AUTH_TOKEN: ${{ github.token }}
+
+jobs:
+  deploy:
+    name: Deploy production release
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: "@webpresso"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: pnpm install --frozen-lockfile
+      - run: wp lint
+      - run: wp typecheck
+      - run: wp test
+      - name: Deploy production
+        env:
+          RELEASE_VERSION_INPUT: ${{ inputs.release_version }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${RELEASE_VERSION_INPUT}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semantic release version: ${RELEASE_VERSION_INPUT}" >&2
+            exit 1
+          fi
+          with-secrets -- vp run deploy:production -- --release-version "${RELEASE_VERSION_INPUT}"

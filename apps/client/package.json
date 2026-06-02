@@ -9,7 +9,7 @@
     "build:prd": "vite build --mode prd",
     "dev": "vite --host 0.0.0.0 --clearScreen false",
     "deploy:dev": "pnpm build:dev && wrangler deploy --env dev",
-    "deploy:prd": "pnpm build:prd && wrangler deploy --env prd",
+    "deploy:prd": "echo \"Use root deploy:production with release metadata\" && exit 1",
     "check-types": "tsgo --noEmit",
     "lint": "oxlint src/",
     "test": "wp test --file vitest.config.ts",

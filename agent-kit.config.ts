@@ -1,3 +1,5 @@
+import { DEPLOY_DOMAIN, PREVIEW_API_SECRET_NAMES } from "./infra/src/deploy/lanes.ts";
+
 export const agentKitConfig = {
   e2e: {
     hostAdapterModule: "./apps/e2e/src/agent-kit-host-adapter.ts",
@@ -22,20 +24,29 @@ export const agentKitConfig = {
           type: "single_worker",
           topLevelWorkerName: "ingest-lens",
           previewTransport: "custom_domain_env",
-          routeSpec: { pattern: "api.preview-main.ingest-lens.ozby.dev" },
+          routeSpec: { pattern: `api.preview-main.${DEPLOY_DOMAIN}` },
           durableObjectBindings: [
             { name: "TOPIC_ROOMS", className: "TopicRoom" },
             { name: "HEAL_STREAM", className: "HealStreamDO" },
           ],
           vars: {
-            ALLOWED_ORIGIN: "https://preview-main.ingest-lens.ozby.dev",
+            ALLOWED_ORIGIN: `https://preview-main.${DEPLOY_DOMAIN}`,
           },
-          requiredSecrets: [
-            "BETTER_AUTH_SECRET",
-            "JWT_SECRET",
-            "LANGFUSE_PUBLIC_KEY",
-            "LANGFUSE_SECRET_KEY",
-          ],
+          requiredSecrets: [...PREVIEW_API_SECRET_NAMES],
+          storageMode: "isolated",
+          destroyMode: "wrangler_delete_env",
+          productionStrategyDefault: "direct",
+        },
+        {
+          id: "ingest-lens-client",
+          type: "single_worker",
+          topLevelWorkerName: "ingest-lens-client",
+          previewTransport: "custom_domain_env",
+          routeSpec: { pattern: `preview-main.${DEPLOY_DOMAIN}` },
+          vars: {
+            AUTH_PROXY_BASE_URL: `https://api.preview-main.${DEPLOY_DOMAIN}`,
+          },
+          requiredSecrets: [],
           storageMode: "isolated",
           destroyMode: "wrangler_delete_env",
           productionStrategyDefault: "direct",
