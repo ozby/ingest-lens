@@ -22,13 +22,14 @@ routes = [{ pattern = "dev.ingest-lens.ozby.dev", custom_domain = true }]
 [env.dev.vars]
 AUTH_PROXY_BASE_URL = "https://api.dev.ingest-lens.ozby.dev"
 
-# ─── prd environment ──────────────────────────────────────────────────────
-# Deployed Worker name: ingest-lens-client-prd
+# ─── production environment ─────────────────────────────────────────────
+# Deployed Worker name: ingest-lens-client
 # Custom domain: ingest-lens.ozby.dev
 
-[env.prd]
+[env.production]
+name = "ingest-lens-client"
 workers_dev = false
 routes = [{ pattern = "ingest-lens.ozby.dev", custom_domain = true }]
 
-[env.prd.vars]
+[env.production.vars]
 AUTH_PROXY_BASE_URL = "https://api.ingest-lens.ozby.dev"

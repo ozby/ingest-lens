@@ -3,6 +3,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/ozby/ingest-lens/ci.yml?branch=main&label=CI)](https://github.com/ozby/ingest-lens/actions/workflows/ci.yml)
 
+## Deployment lanes
+
+- `main` deploys the shared preview lane: `https://preview-main.ingest-lens.ozby.dev` (API: `https://api.preview-main.ingest-lens.ozby.dev`).
+- PRs deploy ephemeral `preview-pr-<n>` lanes and clean up on PR close.
+- Production (`https://ingest-lens.ozby.dev`) is release-gated: use the production deploy workflow with matching `version_pr` metadata and a semantic `releaseVersion`; ordinary `main` pushes do not deploy production.
+- Architecture source: [`docs/architecture.md`](docs/architecture.md) and machine contract [`docs/architecture.contract.json`](docs/architecture.contract.json).
+
 ## What it is
 
 IngestLens is an integration-observability application that validates incoming third-party payloads, AI-repairs broken field mappings, delivers events through queues with retries/DLQ, and lets operators replay and debug delivery — running on Cloudflare Workers.

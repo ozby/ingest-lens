@@ -59,7 +59,9 @@
     "typecheck": "wp typecheck",
     "mutation": "wp test --mutation",
     "test:mutation": "stryker run stryker.config.ts",
-    "qa": "wp lint src e2e *.config.ts && wp typecheck && wp test --file vitest.config.ts && wp test --mutation && wp e2e --config playwright.config.ts"
+    "qa": "wp lint src e2e *.config.ts && wp typecheck && wp test --file vitest.config.ts && wp test --mutation && wp e2e --config playwright.config.ts",
+    "deploy:preview": "bun ./infra/src/deploy/deploy-preview.ts",
+    "deploy:production": "bun ./infra/src/deploy/deploy-production.ts"
   },
   "dependencies": {
     "rulesync": "8.15.1"

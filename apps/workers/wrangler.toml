@@ -101,61 +101,62 @@ dataset = "delivery_events_dev"
 # Hourly TTL purge of expired intake review payloads.
 crons = ["0 * * * *"]
 
-# ─── prd environment ──────────────────────────────────────────────────────
-# Deployed Worker name: ingest-lens-prd
+# ─── production environment ─────────────────────────────────────────────
+# Deployed Worker name: ingest-lens
 # Custom domain: api.ingest-lens.ozby.dev
 
-[env.prd]
+[env.production]
+name = "ingest-lens"
 workers_dev = false
 routes = [{ pattern = "api.ingest-lens.ozby.dev", custom_domain = true }]
 
-[env.prd.vars]
+[env.production.vars]
 NODE_ENV = "production"
 ALLOWED_ORIGIN = "https://ingest-lens.ozby.dev"
 LANGFUSE_BASE_URL = "https://cloud.langfuse.com"
 
-[[env.prd.rate_limiting]]
+[[env.production.rate_limiting]]
 binding = "RATE_LIMITER"
 namespace_id = "c9f3e5b7-2d4e-5f6a-9b8c-0d1e2f3a4b5c"
 simple = { limit = 100, period = 60 }
 
-[[env.prd.rate_limiting]]
+[[env.production.rate_limiting]]
 binding = "AUTH_RATE_LIMITER"
 namespace_id = "e1b5a7d9-4f6a-7b8c-1d0e-2f3a4b5c6d7e"
 simple = { limit = 5, period = 60 }
 
-[env.prd.ai]
+[env.production.ai]
 binding = "AI"
 
-[[env.prd.hyperdrive]]
+[[env.production.hyperdrive]]
 binding = "HYPERDRIVE"
 id = "placeholder-prd-hyperdrive-id"
 
-[[env.prd.kv_namespaces]]
+[[env.production.kv_namespaces]]
 binding = "KV"
 id = "placeholder-prd-kv-id"
 
-[[env.prd.r2_buckets]]
+[[env.production.r2_buckets]]
 binding = "ASSETS"
 bucket_name = "placeholder-prd-r2-bucket"
 
-[[env.prd.durable_objects.bindings]]
+[[env.production.durable_objects.bindings]]
 name = "TOPIC_ROOMS"
 class_name = "TopicRoom"
 
-[[env.prd.durable_objects.bindings]]
+[[env.production.durable_objects.bindings]]
 name = "HEAL_STREAM"
 class_name = "HealStreamDO"
 
-[[env.prd.migrations]]
+[[env.production.migrations]]
 tag = "v1"
 new_sqlite_classes = ["TopicRoom", "HealStreamDO"]
 
-[[env.prd.queues.producers]]
+[[env.production.queues.producers]]
 binding = "DELIVERY_QUEUE"
 queue = "delivery-queue-prd"
 
-[[env.prd.queues.consumers]]
+[[env.production.queues.consumers]]
 queue = "delivery-queue-prd"
 max_batch_size = 10
 max_batch_timeout = 5
@@ -163,10 +164,10 @@ max_concurrency = 8
 max_retries = 5
 dead_letter_queue = "delivery-dlq-prd"
 
-[[env.prd.analytics_engine_datasets]]
+[[env.production.analytics_engine_datasets]]
 binding = "ANALYTICS"
 dataset = "delivery_events_prd"
 
-[env.prd.triggers]
+[env.production.triggers]
 # Hourly TTL purge of expired intake review payloads.
 crons = ["0 * * * *"]

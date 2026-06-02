@@ -4,7 +4,8 @@
   "requiredFiles": [
     "blueprints/in-progress/system-clarity-hardening/_overview.md",
     "blueprints/in-progress/surface-test-traceability-hardening/_overview.md",
-    "blueprints/completed/public-ci-surface-adoption/_overview.md"
+    "blueprints/completed/public-ci-surface-adoption/_overview.md",
+    "blueprints/in-progress/2026-06-02-ingest-lens-preview-production-lanes.md"
   ],
   "rules": [
     {
@@ -27,5 +28,34 @@
     "beforeHeading": "Architecture before",
     "afterHeading": "Architecture after",
     "exemptStatuses": ["completed", "archived"]
+  },
+  "deployment": {
+    "canonicalProductionTarget": "ingest-lens.ozby.dev",
+    "workers": ["ingest-lens-api", "ingest-lens-client"],
+    "lanes": {
+      "dev": {
+        "kind": "persistent",
+        "clientUrl": "https://dev.ingest-lens.ozby.dev",
+        "apiUrl": "https://api.dev.ingest-lens.ozby.dev"
+      },
+      "preview_main": {
+        "kind": "main-preview",
+        "clientUrl": "https://preview-main.ingest-lens.ozby.dev",
+        "apiUrl": "https://api.preview-main.ingest-lens.ozby.dev",
+        "trigger": "push main"
+      },
+      "preview_pr": {
+        "kind": "ephemeral-pr",
+        "clientUrlPattern": "https://preview-pr-<n>.ingest-lens.ozby.dev",
+        "apiUrlPattern": "https://api.preview-pr-<n>.ingest-lens.ozby.dev",
+        "cleanup": "wrangler delete + pulumi destroy on PR close"
+      },
+      "prd": {
+        "kind": "release-gated-production",
+        "clientUrl": "https://ingest-lens.ozby.dev",
+        "apiUrl": "https://api.ingest-lens.ozby.dev",
+        "releaseGate": "version_pr metadata + matching semantic releaseVersion"
+      }
+    }
   }
 }

@@ -7,8 +7,10 @@
  *        (must be run from `infra/` — matches deploy.ts cwd convention)
  */
 import { syncWranglerBindings } from "@ozby/wrangler-sync";
-import { resolve } from "node:path";
+import { join } from "node:path";
 import process from "node:process";
+
+import { findRepoRoot } from "./repo-root";
 
 const stack = process.argv[2];
 if (!stack) {
@@ -16,13 +18,20 @@ if (!stack) {
   process.exit(1);
 }
 
+const repoRoot = findRepoRoot();
+const wranglerEnv = stack === "prd" ? "production" : stack;
+
 const result = syncWranglerBindings({
   stackName: stack,
-  wranglerTomlPath: resolve("../apps/workers/wrangler.toml"),
+  wranglerTomlPath: join(repoRoot, "apps", "workers", "wrangler.toml"),
   mappings: [
-    { pulumiOutput: "hyperdriveId", header: `[[env.${stack}.hyperdrive]]`, key: "id" },
-    { pulumiOutput: "kvNamespaceId", header: `[[env.${stack}.kv_namespaces]]`, key: "id" },
-    { pulumiOutput: "r2BucketName", header: `[[env.${stack}.r2_buckets]]`, key: "bucket_name" },
+    { pulumiOutput: "hyperdriveId", header: `[[env.${wranglerEnv}.hyperdrive]]`, key: "id" },
+    { pulumiOutput: "kvNamespaceId", header: `[[env.${wranglerEnv}.kv_namespaces]]`, key: "id" },
+    {
+      pulumiOutput: "r2BucketName",
+      header: `[[env.${wranglerEnv}.r2_buckets]]`,
+      key: "bucket_name",
+    },
   ],
   verify: [
     { pulumiOutput: "deliveryQueueName", pattern: `queue = "{value}"` },
@@ -31,8 +40,8 @@ const result = syncWranglerBindings({
 });
 
 if (result.changed) {
-  console.log(`wrangler.toml [env.${stack}] bindings updated in place.`);
+  console.log(`wrangler.toml [env.${wranglerEnv}] bindings updated in place.`);
 } else {
-  console.log(`wrangler.toml [env.${stack}] bindings already current; no-op.`);
+  console.log(`wrangler.toml [env.${wranglerEnv}] bindings already current; no-op.`);
 }
 console.log(`Queue names verified.`);

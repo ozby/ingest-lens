@@ -37,6 +37,31 @@ wp audit architecture-drift --root .
 - One Postgres region. Production tables under `public.*`, lab tables under
   `lab.*` (CI-enforced).
 
+## Deployment lanes
+
+IngestLens deploys two Cloudflare Workers as one product surface: the API
+Worker (`apps/workers`) and the SPA/assets Worker (`apps/client`). The canonical
+production target remains `ingest-lens.ozby.dev` plus
+`api.ingest-lens.ozby.dev`; ordinary `main` commits do **not** deploy to that
+production surface.
+
+| Lane             | Trigger                                                                                                | Worker/API URL                                    | Client URL                                    | Lifecycle                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `dev`            | local/operator deploy                                                                                  | `https://api.dev.ingest-lens.ozby.dev`            | `https://dev.ingest-lens.ozby.dev`            | persistent development lane                                                            |
+| `preview-main`   | push to `main`                                                                                         | `https://api.preview-main.ingest-lens.ozby.dev`   | `https://preview-main.ingest-lens.ozby.dev`   | refreshed from `main`; answers “what is deployed from main without a release version?” |
+| `preview-pr-<n>` | PR open/synchronize/reopen                                                                             | `https://api.preview-pr-<n>.ingest-lens.ozby.dev` | `https://preview-pr-<n>.ingest-lens.ozby.dev` | ephemeral; PR close runs Worker delete and Pulumi destroy for the preview stack        |
+| `prd`            | explicit production workflow with `version_pr` release metadata and matching semantic `releaseVersion` | `https://api.ingest-lens.ozby.dev`                | `https://ingest-lens.ozby.dev`                | stable production; no ordinary `main` push deploy                                      |
+
+Preview deploys create an isolated Neon/Pulumi stack named after the lane, render
+temporary Wrangler configs for the API and client Workers, deploy both Workers to
+custom-domain preview hosts, and remove the temporary config before exit. Preview
+cleanup attempts every Worker, Pulumi, and Neon cleanup step and reports partial
+drift as warnings so a missing resource does not prevent later cleanup steps.
+Production deploys normally enter through `infra/src/deploy/deploy-production.ts`,
+and the hard gate lives in `infra/src/deploy/deploy.ts`: every `prd` deploy must
+validate `infra/release-metadata.production.json` plus the requested semantic
+release version before Wrangler deploys the `production` environment.
+
 ## Production runtime
 
 ### API worker (`apps/workers`, Hono)
