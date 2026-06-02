@@ -1,41 +1,7 @@
-import { readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { collectForbiddenSecretFiles } from "../src/secret-file-policy.js";
 
 const root = process.cwd();
-const forbidden: string[] = [];
-
-const isSkippedDirectory = (name: string): boolean => name === ".git" || name === "node_modules";
-
-const isForbiddenSecretFile = (name: string): boolean => {
-  const isEnvFile = (name === ".env" || /^\.env(?:\..+)?$/.test(name)) && name !== ".env.example";
-  return name === ".dev.vars" || /^\.dev\.vars(?:\..+)?$/.test(name) || isEnvFile;
-};
-
-function walk(dir: string): void {
-  let entries: ReturnType<typeof readdirSync>;
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
-
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      if (!isSkippedDirectory(entry.name)) {
-        walk(join(dir, entry.name));
-      }
-      continue;
-    }
-
-    if (!entry.isFile() || !isForbiddenSecretFile(entry.name)) {
-      continue;
-    }
-
-    forbidden.push(relative(root, join(dir, entry.name)));
-  }
-}
-
-walk(root);
+const forbidden = collectForbiddenSecretFiles(root);
 
 if (forbidden.length > 0) {
   console.error(
