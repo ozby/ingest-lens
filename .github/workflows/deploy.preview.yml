@@ -39,9 +39,9 @@ jobs:
         with:
           bun-version: latest
       - run: pnpm install --frozen-lockfile
-      - run: vp run lint
-      - run: vp run check-types
-      - run: vp run test
+      - run: pnpm run lint
+      - run: pnpm run check-types
+      - run: pnpm run test
       - name: Resolve lane
         id: lane
         shell: bash
@@ -64,7 +64,7 @@ jobs:
           fi
           printf 'lane=%s\n' "${lane}" >> "$GITHUB_OUTPUT"
       - name: Deploy preview
-        run: vp run deploy:preview -- --lane "${{ steps.lane.outputs.lane }}"
+        run: pnpm run deploy:preview -- --lane "${{ steps.lane.outputs.lane }}"
 
   destroy:
     name: Destroy PR preview lane
@@ -96,4 +96,4 @@ jobs:
             echo "Invalid PR number: ${PR_NUMBER}" >&2
             exit 1
           fi
-          vp run deploy:preview -- --lane "preview-pr-${PR_NUMBER}" --destroy
+          pnpm run deploy:preview -- --lane "preview-pr-${PR_NUMBER}" --destroy
