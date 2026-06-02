@@ -135,6 +135,18 @@ describe("Cloudflare deploy lane contract", () => {
     expect(deployScript).toContain('const wranglerEnv = isProd ? "production" : stack');
   });
 
+  it("creates and configures the production Pulumi stack from direct deploy secrets", () => {
+    const deployScript = readRepoFile("infra/src/deploy/deploy.ts");
+    const neonBranches = readRepoFile("infra/src/deploy/neon-branches.ts");
+
+    expect(deployScript).toContain('"stack", "select", "--create", stack');
+    expect(deployScript).toContain("getDefaultConnectionUri");
+    expect(deployScript).toContain('"ingest-lens:cloudflareAccountId"');
+    expect(deployScript).toContain('"ingest-lens:cloudflareZoneId"');
+    expect(deployScript).toContain('"ingest-lens:neonConnectionString"');
+    expect(neonBranches).toContain("export async function getDefaultConnectionUri");
+  });
+
   it("uses repo-local deploy helpers that can be imported at runtime", async () => {
     const lanes = await import("../infra/src/deploy/lanes");
     const neonBranches = await import("../infra/src/deploy/neon-branches");

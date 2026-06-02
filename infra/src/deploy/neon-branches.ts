@@ -139,17 +139,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getConnectionUri(
-  config: NeonConfig,
-  branchId: string,
-  endpointId: string,
-): Promise<string> {
-  const params = new URLSearchParams({
-    branch_id: branchId,
-    endpoint_id: endpointId,
-    database_name: config.databaseName,
-    role_name: config.roleName,
-  });
+async function requestConnectionUri(config: NeonConfig, params: URLSearchParams): Promise<string> {
   const url = `https://console.neon.tech/api/v2/projects/${config.projectId}/connection_uri?${params.toString()}`;
   let body: { uri?: string } | undefined;
   for (let attempt = 0; attempt < 6; attempt += 1) {
@@ -167,6 +157,32 @@ async function getConnectionUri(
     throw new Error("Neon API did not return a connection URI");
   }
   return body.uri;
+}
+
+async function getConnectionUri(
+  config: NeonConfig,
+  branchId: string,
+  endpointId: string,
+): Promise<string> {
+  return requestConnectionUri(
+    config,
+    new URLSearchParams({
+      branch_id: branchId,
+      endpoint_id: endpointId,
+      database_name: config.databaseName,
+      role_name: config.roleName,
+    }),
+  );
+}
+
+export async function getDefaultConnectionUri(config: NeonConfig): Promise<string> {
+  return requestConnectionUri(
+    config,
+    new URLSearchParams({
+      database_name: config.databaseName,
+      role_name: config.roleName,
+    }),
+  );
 }
 
 export async function ensureNamedBranch(

@@ -3,7 +3,7 @@
  * Orchestrates: neon branch → pulumi up → sync wrangler.toml IDs → wrangler deploy
  * Usage: bun ./src/deploy/deploy.ts <stack>  (run from infra/)
  */
-import { ensureNamedBranch, getNeonConfig } from "./neon-branches";
+import { ensureNamedBranch, getDefaultConnectionUri, getNeonConfig } from "./neon-branches";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import process from "node:process";
@@ -80,6 +80,18 @@ if (isProd) {
 const wranglerEnv = isProd ? "production" : stack;
 const clientBuildMode = isProd ? "prd" : stack;
 
+run("pulumi", "stack", "select", "--create", stack);
+run("pulumi", "config", "set", "domain", "ingest-lens.ozby.dev", "--stack", stack);
+run(
+  "pulumi",
+  "config",
+  "set",
+  "neonDatabaseName",
+  runtimeEnv.INGEST_LENS_NEON_DATABASE_NAME ?? "neondb",
+  "--stack",
+  stack,
+);
+
 // ── Neon branch provisioning (non-prd only) ──────────────────────────
 if (!isProd) {
   console.log(`\n📦 Provisioning Neon branch for stack: ${stack}`);
@@ -98,6 +110,39 @@ if (!isProd) {
     stack,
   );
   console.log(`  Neon connection string set in Pulumi config.`);
+} else {
+  const neonConfig = getNeonConfig(runtimeEnv);
+  runWithInput(
+    "pulumi",
+    runtimeEnv.CLOUDFLARE_ACCOUNT_ID ?? "",
+    "config",
+    "set",
+    "--secret",
+    "ingest-lens:cloudflareAccountId",
+    "--stack",
+    stack,
+  );
+  runWithInput(
+    "pulumi",
+    runtimeEnv.CLOUDFLARE_ZONE_ID ?? "",
+    "config",
+    "set",
+    "--secret",
+    "ingest-lens:cloudflareZoneId",
+    "--stack",
+    stack,
+  );
+  runWithInput(
+    "pulumi",
+    await getDefaultConnectionUri(neonConfig),
+    "config",
+    "set",
+    "--secret",
+    "ingest-lens:neonConnectionString",
+    "--stack",
+    stack,
+  );
+  console.log(`  Production Pulumi secrets set.`);
 }
 
 // ── Pulumi up ───────────────────────────────────────────────────────
