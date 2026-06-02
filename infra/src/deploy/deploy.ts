@@ -4,13 +4,13 @@
  * Usage: bun ./src/deploy/deploy.ts <stack>  (run from infra/)
  */
 import { ensureNamedBranch, getNeonConfig } from "./neon-branches";
-import { resolveRuntimeProfile } from "@webpresso/webpresso/runtime/env";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import process from "node:process";
 
 import { findRepoRoot } from "./repo-root";
 import { readProductionReleaseMetadata, validateProductionReleaseMetadata } from "./release-gate";
+import { resolveDeployRuntimeEnv } from "./runtime-env";
 
 function readArg(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -26,11 +26,14 @@ if (!stack) {
 const repoRoot = findRepoRoot();
 const infraRoot = join(repoRoot, "infra");
 
-const resolvedEnv = await resolveRuntimeProfile("secrets-only");
-const runtimeEnv = {
-  ...process.env,
-  ...resolvedEnv,
-} as NodeJS.ProcessEnv;
+const runtimeEnv = await resolveDeployRuntimeEnv("secrets-only", [
+  "CLOUDFLARE_ACCOUNT_ID",
+  "CLOUDFLARE_API_TOKEN",
+  "CLOUDFLARE_ZONE_ID",
+  "NEON_API_KEY",
+  "NEON_PROJECT_ID",
+  "PULUMI_ACCESS_TOKEN",
+]);
 
 function run(command: string, ...args: string[]) {
   const result = spawnSync(command, args, {

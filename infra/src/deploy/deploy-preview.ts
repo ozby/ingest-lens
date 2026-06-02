@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
 import { ensureNamedBranch, getNeonConfig } from "./neon-branches";
-import { resolveRuntimeProfile } from "@webpresso/webpresso/runtime/env";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
@@ -14,6 +13,7 @@ import {
   resolvePreviewLane,
 } from "./lanes";
 import { findRepoRoot } from "./repo-root";
+import { resolveDeployRuntimeEnv } from "./runtime-env";
 
 type PulumiOutputs = {
   hyperdriveId: string;
@@ -357,10 +357,15 @@ async function deployPreview(): Promise<void> {
   const repoRoot = findRepoRoot();
   const workersRoot = join(repoRoot, "apps", "workers");
   const clientRoot = join(repoRoot, "apps", "client");
-  const runtimeEnv = {
-    ...process.env,
-    ...(await resolveRuntimeProfile("secrets-only")),
-  } as NodeJS.ProcessEnv;
+  const runtimeEnv = await resolveDeployRuntimeEnv("secrets-only", [
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_API_TOKEN",
+    "CLOUDFLARE_ZONE_ID",
+    "NEON_API_KEY",
+    "NEON_PROJECT_ID",
+    "PULUMI_ACCESS_TOKEN",
+    ...PREVIEW_API_SECRET_NAMES,
+  ]);
 
   if (destroy) {
     const cleanupErrors = [

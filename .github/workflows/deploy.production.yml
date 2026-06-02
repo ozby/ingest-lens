@@ -10,6 +10,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
   GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
   NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
@@ -40,6 +41,12 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run check-types
       - run: pnpm run test
+      - name: Inject production deploy credentials from Doppler
+        if: env.HAS_DOPPLER_TOKEN == '1'
+        uses: dopplerhq/secrets-fetch-action@451892f16195f9ac360e1a5bcbf0b5fd0e957534 # v2.0.0
+        with:
+          doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
+          inject-env-vars: true
       - name: Deploy production
         env:
           RELEASE_VERSION_INPUT: ${{ inputs.release_version }}
