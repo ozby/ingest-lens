@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "bun ./scripts/run-workers-dev.ts",
-    "build": "wrangler deploy --dry-run",
+    "build": "wp exec wrangler deploy --dry-run",
     "test": "wp test --file vitest.config.ts",
-    "mutation": "stryker run",
-    "check-types": "tsgo --noEmit",
-    "lint": "oxlint src"
+    "mutation": "wp test --mutation",
+    "check-types": "wp typecheck",
+    "lint": "wp lint"
   },
   "dependencies": {
     "@langfuse/client": "^5.3.0",
@@ -27,14 +27,8 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:workers",
     "@cloudflare/workers-types": "catalog:workers",
-    "@stryker-mutator/core": "catalog:",
-    "@stryker-mutator/typescript-checker": "catalog:",
-    "@stryker-mutator/vitest-runner": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-kit": "catalog:",
-    "drizzle-kit": "catalog:workers",
-    "oxlint": "catalog:tooling",
-    "vitest": "catalog:tooling",
-    "wrangler": "catalog:workers"
+    "drizzle-kit": "catalog:workers"
   }
 }

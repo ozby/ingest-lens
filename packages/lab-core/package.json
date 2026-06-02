@@ -7,9 +7,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "oxlint src/",
-    "check-types": "tsgo --noEmit",
-    "mutation": "stryker run",
+    "lint": "wp lint",
+    "check-types": "wp typecheck",
+    "mutation": "wp test --mutation",
     "test": "wp test --file vitest.config.ts"
   },
   "dependencies": {
@@ -17,14 +17,9 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:workers",
-    "@stryker-mutator/core": "catalog:",
-    "@stryker-mutator/typescript-checker": "catalog:",
-    "@stryker-mutator/vitest-runner": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-kit": "catalog:",
-    "drizzle-kit": "catalog:workers",
-    "oxlint": "catalog:tooling",
-    "vitest": "catalog:tooling"
+    "drizzle-kit": "catalog:workers"
   }
 }

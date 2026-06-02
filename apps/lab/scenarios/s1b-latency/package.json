@@ -7,8 +7,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "oxlint src/",
-    "check-types": "tsgo --noEmit",
+    "lint": "wp lint",
+    "check-types": "wp typecheck",
     "test": "wp test --file vitest.config.ts"
   },
   "dependencies": {
@@ -18,8 +18,6 @@
     "@cloudflare/workers-types": "catalog:workers",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:",
-    "oxlint": "catalog:tooling",
-    "vitest": "catalog:tooling"
+    "@webpresso/agent-kit": "catalog:"
   }
 }

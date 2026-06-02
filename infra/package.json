@@ -8,7 +8,7 @@
     "up:prd": "just deploy prd",
     "destroy": "just run dev pulumi destroy --yes",
     "test": "wp test --file vitest.config.ts",
-    "check-types": "tsgo --noEmit"
+    "check-types": "wp typecheck"
   },
   "dependencies": {
     "@ozby/wrangler-sync": "^0.1.0",
@@ -20,8 +20,6 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:",
-    "tsx": "^4.21.0",
-    "vitest": "catalog:tooling"
+    "@webpresso/agent-kit": "catalog:"
   }
 }
