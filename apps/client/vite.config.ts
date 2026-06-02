@@ -1,9 +1,24 @@
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { dirname, parse, resolve } from "node:path";
 import { defineConfig, loadEnv } from "vite";
 
 const clientRoot = import.meta.dirname;
+
+function findRepoRoot(startDir: string): string {
+  let current = startDir;
+  while (true) {
+    if (existsSync(resolve(current, "pnpm-workspace.yaml"))) return current;
+    const parent = dirname(current);
+    if (parent === current || current === parse(current).root) {
+      throw new Error(`Unable to find repo root from ${startDir}`);
+    }
+    current = parent;
+  }
+}
+
+const repoRoot = findRepoRoot(clientRoot);
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -15,6 +30,15 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": resolve(clientRoot, "src"),
+        "@repo/ui/components": resolve(
+          repoRoot,
+          "packages",
+          "ui",
+          "src",
+          "components",
+          "index.tsx",
+        ),
+        "@repo/ui/lib": resolve(repoRoot, "packages", "ui", "src", "lib", "index.tsx"),
       },
     },
     server: {

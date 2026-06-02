@@ -153,6 +153,17 @@ describe("Cloudflare deploy lane contract", () => {
     expect(previewScript).not.toContain("DEPLOY_DEPLOY_DOMAIN");
   });
 
+  it("aliases shared UI package source for Vite without requiring prebuilt dist artifacts", () => {
+    const viteConfig = readRepoFile("apps/client/vite.config.ts");
+
+    expect(viteConfig).toContain("function findRepoRoot");
+    expect(viteConfig).toContain('"@repo/ui/components"');
+    expect(viteConfig).toContain('"@repo/ui/lib"');
+    expect(viteConfig).toContain('"packages"');
+    expect(viteConfig).toContain('"ui"');
+    expect(viteConfig).toContain('"src"');
+  });
+
   it("creates Neon preview branches with a read-write endpoint before reading connection URIs", () => {
     const neonBranches = readRepoFile("infra/src/deploy/neon-branches.ts");
 
