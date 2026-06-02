@@ -94,7 +94,6 @@ if (!isProd) {
     "set",
     "--secret",
     "ingest-lens:neonConnectionString",
-    "--stdin",
     "--stack",
     stack,
   );

@@ -233,7 +233,7 @@ async function provisionPreviewResources(
   );
   runWithInput(
     "pulumi",
-    ["config", "set", "--secret", "cloudflareAccountId", "--stdin", "--stack", lane.lane],
+    ["config", "set", "--secret", "cloudflareAccountId", "--stack", lane.lane],
     `${required.CLOUDFLARE_ACCOUNT_ID}
 `,
     infraRoot,
@@ -241,7 +241,7 @@ async function provisionPreviewResources(
   );
   runWithInput(
     "pulumi",
-    ["config", "set", "--secret", "cloudflareZoneId", "--stdin", "--stack", lane.lane],
+    ["config", "set", "--secret", "cloudflareZoneId", "--stack", lane.lane],
     `${required.CLOUDFLARE_ZONE_ID}
 `,
     infraRoot,
@@ -252,7 +252,7 @@ async function provisionPreviewResources(
   const branch = await ensureNamedBranch(neonConfig, lane.lane);
   runWithInput(
     "pulumi",
-    ["config", "set", "--secret", "neonConnectionString", "--stdin", "--stack", lane.lane],
+    ["config", "set", "--secret", "neonConnectionString", "--stack", lane.lane],
     `${branch.appDatabaseUrl}
 `,
     infraRoot,

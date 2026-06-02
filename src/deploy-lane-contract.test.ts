@@ -43,7 +43,7 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain(
       "contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)",
     );
-    expect(workflow).toContain("printf 'lane=%s\n'");
+    expect(workflow).toContain("printf 'lane=%s\\n'");
     expect(workflow).toContain("packages: read");
     expect(workflow).toContain("--destroy");
     expect(workflow).not.toContain("deploy:production");
@@ -161,10 +161,12 @@ describe("Cloudflare deploy lane contract", () => {
     expect(deployScript).not.toContain('[command, ...args].join(" ")');
     expect(previewScript).not.toContain('[command, ...args].join(" ")');
     expect(productionScript).not.toContain('[command, ...args].join(" ")');
-    expect(deployScript).toContain('"--stdin"');
-    expect(previewScript).toContain('"--stdin"');
+    expect(deployScript).not.toContain('"--stdin"');
+    expect(previewScript).not.toContain('"--stdin"');
     expect(deployScript).toContain('runWithInput(\n    "pulumi",\n    branch.appDatabaseUrl');
     expect(previewScript).not.toContain('"neonConnectionString", branch.appDatabaseUrl');
+    expect(previewScript).not.toContain('"cloudflareAccountId", required.CLOUDFLARE_ACCOUNT_ID');
+    expect(previewScript).not.toContain('"cloudflareZoneId", required.CLOUDFLARE_ZONE_ID');
   });
 
   it("keeps README linked to the architecture contract", () => {
@@ -182,15 +184,15 @@ describe("Cloudflare deploy lane contract", () => {
     expect(lanes).toContain("preview-main.${DEPLOY_DOMAIN}");
     expect(lanes).toContain("api.preview-pr-${prNumber}.${DEPLOY_DOMAIN}");
     expect(lanes).toContain("preview-pr-${prNumber}.${DEPLOY_DOMAIN}");
-    expect(script).toContain('"wrangler", "delete"');
-    expect(script).toContain('"pulumi", ["destroy"');
+    expect(script).toContain('"wrangler",\n          "delete"');
+    expect(script).toContain('"pulumi",\n        ["destroy"');
     expect(script).toContain("resolvePreviewLane");
     expect(script).toContain("PREVIEW_API_SECRET_NAMES");
     expect(script).toContain("deleteNeonBranch");
     expect(script).toContain("Neon branch cleanup threw");
     expect(script).toContain("isMissingCleanupTarget");
     expect(script).toContain("Preview cleanup failed");
-    expect(script).toContain('"wrangler", "secret", "put"');
+    expect(script).toContain('"wrangler",\n        "secret",\n        "put"');
     expect(lanes).toContain("BETTER_AUTH_SECRET");
   });
 });
