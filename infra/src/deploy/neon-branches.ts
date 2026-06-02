@@ -13,6 +13,19 @@ type NeonBranchCreateResponse = {
   branch?: NeonBranch;
 };
 
+type NeonEndpoint = {
+  id: string;
+  type?: string;
+};
+
+type NeonEndpointListResponse = {
+  endpoints?: NeonEndpoint[];
+};
+
+type NeonEndpointCreateResponse = {
+  endpoint?: NeonEndpoint;
+};
+
 export type NeonBranchResult = {
   id: string;
   reused: boolean;
@@ -67,8 +80,11 @@ async function findBranch(config: NeonConfig, branchName: string): Promise<NeonB
 
 async function createBranch(config: NeonConfig, branchName: string): Promise<NeonBranch> {
   const branchBody = config.parentBranchId
-    ? { branch: { name: branchName, parent_id: config.parentBranchId } }
-    : { branch: { name: branchName } };
+    ? {
+        branch: { name: branchName, parent_id: config.parentBranchId },
+        endpoints: [{ type: "read_write" }],
+      }
+    : { branch: { name: branchName }, endpoints: [{ type: "read_write" }] };
   const body = await requestJson<NeonBranchCreateResponse>(
     `https://console.neon.tech/api/v2/projects/${config.projectId}/branches`,
     {
@@ -83,16 +99,70 @@ async function createBranch(config: NeonConfig, branchName: string): Promise<Neo
   return body.branch;
 }
 
-async function getConnectionUri(config: NeonConfig, branchId: string): Promise<string> {
+async function listBranchEndpoints(config: NeonConfig, branchId: string): Promise<NeonEndpoint[]> {
+  const body = await requestJson<NeonEndpointListResponse>(
+    `https://console.neon.tech/api/v2/projects/${config.projectId}/branches/${branchId}/endpoints`,
+    { headers: neonHeaders(config) },
+  );
+  return body.endpoints ?? [];
+}
+
+async function createReadWriteEndpoint(
+  config: NeonConfig,
+  branchId: string,
+): Promise<NeonEndpoint> {
+  const body = await requestJson<NeonEndpointCreateResponse>(
+    `https://console.neon.tech/api/v2/projects/${config.projectId}/endpoints`,
+    {
+      method: "POST",
+      headers: neonHeaders(config),
+      body: JSON.stringify({ endpoint: { branch_id: branchId, type: "read_write" } }),
+    },
+  );
+  if (!body.endpoint) {
+    throw new Error("Neon API did not return a created endpoint");
+  }
+  return body.endpoint;
+}
+
+async function ensureReadWriteEndpoint(
+  config: NeonConfig,
+  branchId: string,
+): Promise<NeonEndpoint> {
+  const existing = (await listBranchEndpoints(config, branchId)).find(
+    (endpoint) => endpoint.type === "read_write",
+  );
+  return existing ?? (await createReadWriteEndpoint(config, branchId));
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function getConnectionUri(
+  config: NeonConfig,
+  branchId: string,
+  endpointId: string,
+): Promise<string> {
   const params = new URLSearchParams({
     branch_id: branchId,
+    endpoint_id: endpointId,
     database_name: config.databaseName,
     role_name: config.roleName,
   });
-  const body = await requestJson<{ uri?: string }>(
-    `https://console.neon.tech/api/v2/projects/${config.projectId}/connection_uri?${params.toString()}`,
-    { headers: neonHeaders(config) },
-  );
+  const url = `https://console.neon.tech/api/v2/projects/${config.projectId}/connection_uri?${params.toString()}`;
+  let body: { uri?: string } | undefined;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const response = await fetch(url, { headers: neonHeaders(config) });
+    if (response.ok) {
+      body = (await response.json()) as { uri?: string };
+      break;
+    }
+    if (response.status !== 404 || attempt === 5) {
+      throw new Error(`Neon API request failed with status ${response.status}`);
+    }
+    await sleep(2000);
+  }
   if (!body.uri) {
     throw new Error("Neon API did not return a connection URI");
   }
@@ -105,9 +175,10 @@ export async function ensureNamedBranch(
 ): Promise<NeonBranchResult> {
   const existing = await findBranch(config, branchName);
   const branch = existing ?? (await createBranch(config, branchName));
+  const endpoint = await ensureReadWriteEndpoint(config, branch.id);
   return {
     id: branch.id,
     reused: existing !== null,
-    appDatabaseUrl: await getConnectionUri(config, branch.id),
+    appDatabaseUrl: await getConnectionUri(config, branch.id, endpoint.id),
   };
 }

@@ -153,6 +153,15 @@ describe("Cloudflare deploy lane contract", () => {
     expect(previewScript).not.toContain("DEPLOY_DEPLOY_DOMAIN");
   });
 
+  it("creates Neon preview branches with a read-write endpoint before reading connection URIs", () => {
+    const neonBranches = readRepoFile("infra/src/deploy/neon-branches.ts");
+
+    expect(neonBranches).toContain('endpoints: [{ type: "read_write" }]');
+    expect(neonBranches).toContain("ensureReadWriteEndpoint");
+    expect(neonBranches).toContain("createReadWriteEndpoint");
+    expect(neonBranches).toContain("endpoint_id: endpointId");
+  });
+
   it("keeps secret values out of deploy runner error messages and argv", () => {
     const deployScript = readRepoFile("infra/src/deploy/deploy.ts");
     const previewScript = readRepoFile("infra/src/deploy/deploy-preview.ts");
