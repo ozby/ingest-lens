@@ -25,5 +25,10 @@
     "overrides": []
   },
   "scripts": {},
-  "durablePlanningRoot": ".agent/planning/"
+  "durablePlanningRoot": ".agent/planning/",
+  "audit": {
+    "toolchainIsolation": {
+      "allowDependencies": ["tsx"]
+    }
+  }
 }
