@@ -127,6 +127,11 @@ jobs:
           WP="$(pwd)/node_modules/.bin/wp"
           [ -x "$WP" ] || WP=wp
           "$WP" audit guardrails
+      - name: Run wp audit no-first-party-mjs
+        run: |
+          WP="$(pwd)/node_modules/.bin/wp"
+          [ -x "$WP" ] || WP=wp
+          "$WP" audit no-first-party-mjs --root .
 
   catalog-drift:
     name: Catalog drift

@@ -32,6 +32,7 @@
     "act:list": "bun ./scripts/act-with-webpresso.ts -l",
     "build": "vp run build",
     "catalog:check": "wp audit catalog-drift",
+    "audit:no-first-party-mjs": "wp audit no-first-party-mjs --root .",
     "audit:secret-provider-quarantine": "bun ./scripts/audit-secret-provider-quarantine.ts",
     "check": "vp check",
     "clean": "vp run clean",
