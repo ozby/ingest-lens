@@ -75,21 +75,21 @@ ingest-lens
 
 ## Key Decisions
 
-| Decision | Choice | Rationale |
-| -------- | ------ | --------- |
-| Infra ownership | Pulumi/Neon/Hyperdrive/KV/R2/queues/DO stay consumer-owned, unchanged. | These are app-specific infra deps, not generic toolchain; `extraction-parity.md` §5. |
-| Deploy flow | Wrap existing flow behind `deploy.adapterModule`; don't redefine lanes. | The preview-production-lanes blueprint already owns lane semantics. |
-| Toolchain | Use agent-kit-owned wrangler/tsx/test tooling via `wp`. | Toolchain-isolation model from the upstream blueprint. |
-| Release metadata | Stays at `infra/release-metadata.production.json`; prd gate preserved. | Required by `extraction-parity.md` §5 deploy-contract parity. |
-| Strict-dep nuance | Pulumi/Neon SDKs remain allowed direct infra deps. | "Strict" forbids generic toolchain/deploy-*tool* deps, not product/runtime/infra deps. |
+| Decision          | Choice                                                                  | Rationale                                                                              |
+| ----------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Infra ownership   | Pulumi/Neon/Hyperdrive/KV/R2/queues/DO stay consumer-owned, unchanged.  | These are app-specific infra deps, not generic toolchain; `extraction-parity.md` §5.   |
+| Deploy flow       | Wrap existing flow behind `deploy.adapterModule`; don't redefine lanes. | The preview-production-lanes blueprint already owns lane semantics.                    |
+| Toolchain         | Use agent-kit-owned wrangler/tsx/test tooling via `wp`.                 | Toolchain-isolation model from the upstream blueprint.                                 |
+| Release metadata  | Stays at `infra/release-metadata.production.json`; prd gate preserved.  | Required by `extraction-parity.md` §5 deploy-contract parity.                          |
+| Strict-dep nuance | Pulumi/Neon SDKs remain allowed direct infra deps.                      | "Strict" forbids generic toolchain/deploy-_tool_ deps, not product/runtime/infra deps. |
 
 ## Quick Reference (Execution Waves)
 
-| Wave | Tasks | Dependencies | Parallelizable |
-| ---- | ----- | ------------ | -------------- |
-| **Wave 0** | 1.1 | adapter wiring already landed in the repo | 1 agent |
-| **Wave 1** | 2.1, 2.2 | 1.1 | 2 agents |
-| **Critical path** | 1.1 → 2.2 | — | closeout proof + cleanup remain |
+| Wave              | Tasks     | Dependencies                              | Parallelizable                  |
+| ----------------- | --------- | ----------------------------------------- | ------------------------------- |
+| **Wave 0**        | 1.1       | adapter wiring already landed in the repo | 1 agent                         |
+| **Wave 1**        | 2.1, 2.2  | 1.1                                       | 2 agents                        |
+| **Critical path** | 1.1 → 2.2 | —                                         | closeout proof + cleanup remain |
 
 ### Phase 1: Adapter wrapping [Complexity: M]
 
@@ -101,7 +101,7 @@ ingest-lens
 
 **Acceptance:**
 
-- [ ] Adapter exposes preview_main / preview_pr_<n> / prd steps
+- [ ] Adapter exposes preview*main / preview_pr*<n> / prd steps
 - [ ] Pulumi/Neon/infra logic unchanged, lives in the adapter
 - [ ] `wp deploy --lane prd --dry-run` plans without secrets
 - [ ] prd gate still validates `infra/release-metadata.production.json`
@@ -133,14 +133,14 @@ The upstream audit surface exists. Run it after the repo-local tool-ownership in
 
 ## Verification Gates
 
-| Gate | Command | Success Criteria |
-| ---- | ------- | ---------------- |
-| Type safety | `wp typecheck` | Zero errors |
-| Lint | `wp lint` | Zero violations |
-| Tests | `wp test` | All pass |
-| E2E | `wp e2e` | Neon-branch E2E pass |
-| Deploy plan | `wp deploy --lane prd --dry-run` | Plans without secrets |
-| Isolation | `wp audit toolchain-isolation` | Passes (infra deps allowed) |
+| Gate        | Command                          | Success Criteria            |
+| ----------- | -------------------------------- | --------------------------- |
+| Type safety | `wp typecheck`                   | Zero errors                 |
+| Lint        | `wp lint`                        | Zero violations             |
+| Tests       | `wp test`                        | All pass                    |
+| E2E         | `wp e2e`                         | Neon-branch E2E pass        |
+| Deploy plan | `wp deploy --lane prd --dry-run` | Plans without secrets       |
+| Isolation   | `wp audit toolchain-isolation`   | Passes (infra deps allowed) |
 
 ## Assumptions
 

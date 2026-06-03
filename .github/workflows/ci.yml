@@ -127,12 +127,6 @@ jobs:
           WP="$(pwd)/node_modules/.bin/wp"
           [ -x "$WP" ] || WP=wp
           "$WP" audit guardrails
-      - name: Run wp audit no-first-party-mjs
-        run: |
-          WP="$(pwd)/node_modules/.bin/wp"
-          [ -x "$WP" ] || WP=wp
-          "$WP" audit no-first-party-mjs --root .
-
   catalog-drift:
     name: Catalog drift
     if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}

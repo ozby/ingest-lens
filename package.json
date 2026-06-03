@@ -32,7 +32,6 @@
     "act:list": "bun ./scripts/act-with-webpresso.ts -l",
     "build": "vp run build",
     "catalog:check": "wp audit catalog-drift",
-    "audit:no-first-party-mjs": "wp audit no-first-party-mjs --root .",
     "audit:secret-provider-quarantine": "bun ./scripts/audit-secret-provider-quarantine.ts",
     "check": "vp check",
     "clean": "vp run clean",
@@ -43,7 +42,7 @@
     "format:check": "vp fmt --check",
     "lint": "wp lint",
     "lint:repo": "wp lint",
-    "test": "wp test --file vitest.config.ts",
+    "test": "WP_SKIP_UPDATE_CHECK=1 vp exec -- vitest run --config vitest.config.ts",
     "check-types": "wp typecheck",
     "commitlint": "commitlint",
     "secretlint": "secretlint",
@@ -60,7 +59,7 @@
     "typecheck": "wp typecheck",
     "mutation": "wp test --mutation",
     "test:mutation": "wp test --mutation",
-    "qa": "wp lint && wp typecheck && wp test --file vitest.config.ts && wp test --mutation && wp e2e",
+    "qa": "wp lint && wp typecheck && vp run test && wp test --mutation && wp e2e",
     "deploy:preview": "wp deploy --lane preview_main",
     "deploy:production": "wp deploy --lane prd",
     "deploy:dry-run": "wp deploy --lane prd --dry-run"
@@ -81,7 +80,9 @@
     "node-addon-api": "^8.5.0",
     "react": "catalog:",
     "secretlint": "^9.3.0",
+    "typescript": "catalog:tooling",
     "vite-plus": "catalog:",
+    "vitest": "catalog:tooling",
     "webpresso": "latest"
   },
   "engines": {

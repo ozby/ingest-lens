@@ -5,7 +5,7 @@ status: in-progress
 complexity: L
 owner: ozby
 created: 2026-05-23T00:00:00.000Z
-last_updated: '2026-06-03'
+last_updated: "2026-06-03"
 progress: "75% (claim inventory, E2E proof-gap closure, and docs traceability links landed; widened verification matrix still in progress)"
 ---
 
@@ -27,8 +27,9 @@ Architecture docs:
 Spawn a coordinated team to audit the repo’s externally visible product surfaces, tighten unit/integration/E2E coverage where proof is thin, and add durable docs traceability so every shipped claim points to at least one E2E test file.
 
 Zero-`.mjs` baseline note: as of 2026-06-03 the repo has no tracked first-party
-`.mjs` files, so adoption here is enforcement-only through the shared
-`wp audit no-first-party-mjs --root .` surface.
+`.mjs` files. The baseline is documented here now; CI enforcement should switch
+to the shared `wp audit no-first-party-mjs --root .` surface only after that
+audit ships in the published `@webpresso/agent-kit` line this repo consumes.
 
 ## Tasks
 

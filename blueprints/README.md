@@ -27,12 +27,11 @@ Each subdirectory represents a lifecycle state:
 
 Move files with `git mv` so history follows the spec through its lifecycle.
 
-
 ## Active work (2026-06-03)
 
-| Blueprint | Path | Purpose |
-| --------- | ---- | ------- |
-| Preview + production lanes | [`in-progress/2026-06-02-ingest-lens-preview-production-lanes.md`](./in-progress/2026-06-02-ingest-lens-preview-production-lanes.md) | Stable `preview-main`, ephemeral `preview-pr-<n>`, and release-gated `prd` lane contract. |
+| Blueprint                                 | Path                                                                                                                                                           | Purpose                                                                                                                                           |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Preview + production lanes                | [`in-progress/2026-06-02-ingest-lens-preview-production-lanes.md`](./in-progress/2026-06-02-ingest-lens-preview-production-lanes.md)                           | Stable `preview-main`, ephemeral `preview-pr-<n>`, and release-gated `prd` lane contract.                                                         |
 | `wp` deploy adapter + toolchain isolation | [`in-progress/2026-06-02-ingest-lens-wp-deploy-adapter-toolchain-isolation.md`](./in-progress/2026-06-02-ingest-lens-wp-deploy-adapter-toolchain-isolation.md) | Adapter is wired and root deploy verbs already call `wp deploy`; remaining work is dry-run/audit evidence plus final toolchain-ownership cleanup. |
-| Surface test traceability hardening | [`in-progress/surface-test-traceability-hardening/_overview.md`](./in-progress/surface-test-traceability-hardening/_overview.md) | Reviewer-facing claims now map to executable proof; remaining work is the widened verification pass. |
-| System clarity hardening | [`in-progress/system-clarity-hardening/_overview.md`](./in-progress/system-clarity-hardening/_overview.md) | Documentation/runtime simplification lane; reviewer spine landed, Worker-side simplification and final verification remain. |
+| Surface test traceability hardening       | [`in-progress/surface-test-traceability-hardening/_overview.md`](./in-progress/surface-test-traceability-hardening/_overview.md)                               | Reviewer-facing claims now map to executable proof; remaining work is the widened verification pass.                                              |
+| System clarity hardening                  | [`in-progress/system-clarity-hardening/_overview.md`](./in-progress/system-clarity-hardening/_overview.md)                                                     | Documentation/runtime simplification lane; reviewer spine landed, Worker-side simplification and final verification remain.                       |
