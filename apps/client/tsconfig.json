@@ -1,6 +1,8 @@
 {
-  "extends": "@webpresso/agent-kit/tsconfig/react-router.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
     "types": ["vite/client", "node"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
