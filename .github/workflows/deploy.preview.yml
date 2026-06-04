@@ -15,6 +15,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
+  HAS_CLOUDFLARE_DEPLOY_SECRETS: ${{ (secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.CLOUDFLARE_ZONE_ID != '' && secrets.CLOUDFLARE_API_TOKEN != '') && '1' || '' }}
   GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
   NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
@@ -59,11 +60,11 @@ jobs:
           doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
           inject-env-vars: true
       - name: Skip preview deploy when deploy secrets are unavailable
-        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && secrets.CLOUDFLARE_ACCOUNT_ID == '' }}
+        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && env.HAS_CLOUDFLARE_DEPLOY_SECRETS != '1' }}
         run: |
           echo "Preview deploy skipped: no Doppler token or direct Cloudflare deploy secrets available."
       - name: Deploy preview
-        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || env.HAS_CLOUDFLARE_DEPLOY_SECRETS == '1' }}
         env:
           DEPLOY_LANE: ${{ steps.lane.outputs.lane }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -106,11 +107,11 @@ jobs:
           doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
           inject-env-vars: true
       - name: Skip preview cleanup when deploy secrets are unavailable
-        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && secrets.CLOUDFLARE_ACCOUNT_ID == '' }}
+        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && env.HAS_CLOUDFLARE_DEPLOY_SECRETS != '1' }}
         run: |
           echo "Preview cleanup skipped: no Doppler token or direct Cloudflare deploy secrets available."
       - name: Destroy preview
-        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || env.HAS_CLOUDFLARE_DEPLOY_SECRETS == '1' }}
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
