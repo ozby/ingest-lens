@@ -87,7 +87,7 @@ jobs:
           else
             preview_lane="${lane/preview_pr_/preview-pr-}"
           fi
-          vp exec --filter @repo/infra tsx src/deploy/deploy-preview.ts --lane "${preview_lane}"
+          ./node_modules/.bin/vp exec --filter @repo/infra tsx src/deploy/deploy-preview.ts --lane "${preview_lane}"
 
   destroy:
     name: Destroy PR preview lane
@@ -130,4 +130,4 @@ jobs:
             echo "Invalid PR number: ${PR_NUMBER}" >&2
             exit 1
           fi
-          vp exec --filter @repo/infra tsx src/deploy/deploy-preview.ts --lane "preview-pr-${PR_NUMBER}" --destroy
+          ./node_modules/.bin/vp exec --filter @repo/infra tsx src/deploy/deploy-preview.ts --lane "preview-pr-${PR_NUMBER}" --destroy
