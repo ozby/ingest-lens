@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { signIn, signUp, signOut, useSession } from "@webpresso/webpresso/auth/react";
+import { signIn, signUp, signOut, useSession } from "./auth-client";
 
 export type AuthUser = {
   id: string;
