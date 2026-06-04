@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "wp exec wp exec vite build",
-    "build:dev": "wp exec wp exec vite build --mode dev",
-    "build:prd": "wp exec wp exec vite build --mode prd",
+    "build": "wp exec vite build",
+    "build:dev": "wp exec vite build --mode dev",
+    "build:prd": "wp exec vite build --mode prd",
     "dev": "wp exec vite --host 0.0.0.0 --clearScreen false",
     "deploy:dev": "wp exec vite build --mode dev && wp exec wrangler deploy --env dev",
     "deploy:prd": "echo \"Use root deploy:production with release metadata\" && exit 1",
@@ -85,6 +85,7 @@
     "@vitejs/plugin-react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
     "tailwindcss": "catalog:",
+    "vite": "catalog:tooling",
     "wrangler": "catalog:workers"
   }
 }
