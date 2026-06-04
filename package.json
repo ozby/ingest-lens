@@ -80,6 +80,7 @@
     "node-addon-api": "^8.5.0",
     "react": "catalog:",
     "secretlint": "^9.3.0",
+    "vite": "catalog:tooling",
     "vite-plus": "catalog:",
     "vitest": "catalog:tooling",
     "webpresso": "latest"
