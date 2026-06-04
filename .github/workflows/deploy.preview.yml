@@ -58,7 +58,12 @@ jobs:
         with:
           doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
           inject-env-vars: true
+      - name: Skip preview deploy when deploy secrets are unavailable
+        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && secrets.CLOUDFLARE_ACCOUNT_ID == '' }}
+        run: |
+          echo "Preview deploy skipped: no Doppler token or direct Cloudflare deploy secrets available."
       - name: Deploy preview
+        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
         env:
           DEPLOY_LANE: ${{ steps.lane.outputs.lane }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -100,7 +105,12 @@ jobs:
         with:
           doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
           inject-env-vars: true
+      - name: Skip preview cleanup when deploy secrets are unavailable
+        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && secrets.CLOUDFLARE_ACCOUNT_ID == '' }}
+        run: |
+          echo "Preview cleanup skipped: no Doppler token or direct Cloudflare deploy secrets available."
       - name: Destroy preview
+        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
