@@ -38,13 +38,18 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REF_NAME: ${{ github.ref }}
           MANUAL_LANE: ${{ inputs.lane }}
         run: |
           set -euo pipefail
           if [[ "${EVENT_NAME}" == "push" ]]; then
             lane="preview_main"
           elif [[ "${EVENT_NAME}" == "pull_request" ]]; then
-            lane="preview_pr_${PR_NUMBER}"
+            pr_number="${PR_NUMBER}"
+            if [[ -z "${pr_number}" && "${GITHUB_REF_NAME}" =~ ^refs/pull/([0-9]+)/ ]]; then
+              pr_number="${BASH_REMATCH[1]}"
+            fi
+            lane="preview_pr_${pr_number}"
           else
             lane="${MANUAL_LANE}"
           fi
