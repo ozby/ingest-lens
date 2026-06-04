@@ -12,7 +12,7 @@ import {
   type PreviewLane,
   resolvePreviewLane,
 } from "./lanes";
-import { findRepoRoot } from "./repo-root";
+import { findRepoRoot, resolveVpCommand } from "./repo-root";
 import { resolveDeployRuntimeEnv } from "./runtime-env";
 
 type PulumiOutputs = {
@@ -142,6 +142,7 @@ function runWithInput(
 function putWorkerSecrets(
   workerName: string,
   secretNames: string[],
+  vpCommand: string,
   repoRoot: string,
   env: NodeJS.ProcessEnv,
 ): void {
@@ -151,7 +152,7 @@ function putWorkerSecrets(
       throw new Error(`Preview deploy is missing required Worker secret: ${secretName}`);
     }
     runWithInput(
-      "vp",
+      vpCommand,
       [
         "exec",
         "--filter",
@@ -355,6 +356,7 @@ async function deployPreview(): Promise<void> {
   const { lane: rawLane, destroy } = parseArgs();
   const lane = resolvePreviewLane(rawLane);
   const repoRoot = findRepoRoot();
+  const vpCommand = resolveVpCommand(repoRoot);
   const workersRoot = join(repoRoot, "apps", "workers");
   const clientRoot = join(repoRoot, "apps", "client");
   const runtimeEnv = await resolveDeployRuntimeEnv("secrets-only", [
@@ -370,7 +372,7 @@ async function deployPreview(): Promise<void> {
   if (destroy) {
     const cleanupErrors = [
       runCleanupStep(
-        "vp",
+        vpCommand,
         [
           "exec",
           "--filter",
@@ -385,7 +387,7 @@ async function deployPreview(): Promise<void> {
         runtimeEnv,
       ),
       runCleanupStep(
-        "vp",
+        vpCommand,
         [
           "exec",
           "--filter",
@@ -420,10 +422,16 @@ async function deployPreview(): Promise<void> {
     const clientConfigPath = join(tempDir, `${basename(lane.clientWorkerName)}.wrangler.toml`);
     writeFileSync(apiConfigPath, apiWranglerToml(repoRoot, lane, outputs));
     writeFileSync(clientConfigPath, clientWranglerToml(repoRoot, lane));
-    putWorkerSecrets(lane.apiWorkerName, [...PREVIEW_API_SECRET_NAMES], repoRoot, runtimeEnv);
+    putWorkerSecrets(
+      lane.apiWorkerName,
+      [...PREVIEW_API_SECRET_NAMES],
+      vpCommand,
+      repoRoot,
+      runtimeEnv,
+    );
 
     runInherit(
-      "vp",
+      vpCommand,
       ["exec", "--filter", "client", "vite", "build", "--mode", "preview"],
       repoRoot,
       {
@@ -432,13 +440,13 @@ async function deployPreview(): Promise<void> {
       },
     );
     runInherit(
-      "vp",
+      vpCommand,
       ["exec", "--filter", "@repo/workers", "wrangler", "deploy", "--config", apiConfigPath],
       workersRoot,
       runtimeEnv,
     );
     runInherit(
-      "vp",
+      vpCommand,
       ["exec", "--filter", "client", "wrangler", "deploy", "--config", clientConfigPath],
       clientRoot,
       runtimeEnv,
