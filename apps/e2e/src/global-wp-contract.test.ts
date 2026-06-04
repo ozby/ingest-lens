@@ -24,12 +24,12 @@ describe("global wp contract", () => {
   });
 
   it("marks the repo as global-install mode and routes OpenCode through wp mcp", () => {
-    const agentKitRc = readJson<{ globalInstall?: boolean }>(".agent-kitrc.json");
+    const config = readJson<{ globalInstall?: boolean }>(".webpressorc.json");
     const opencode = readJson<{
       mcp?: Record<string, { command?: string[] }>;
     }>("opencode.json");
 
-    expect(agentKitRc.globalInstall).toBe(true);
+    expect(config.globalInstall).toBe(true);
     expect(opencode.mcp?.["agent-kit"]?.command).toEqual(["wp", "mcp"]);
   });
 

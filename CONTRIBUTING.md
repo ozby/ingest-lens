@@ -10,6 +10,19 @@ files** — never add one.
 - Node `>=24`
 - pnpm `11.1.1` (via the repo's `packageManager` field)
 - Bun (used by the repo's scripts)
+- Global `wp` (`@webpresso/agent-kit`) recommended on `PATH`
+
+Bootstrap `wp` once per machine:
+
+```bash
+npm install -g @webpresso/agent-kit
+```
+
+One-shot fallback when you do not want a global install:
+
+```bash
+npm exec --yes --package @webpresso/agent-kit@latest -- wp setup
+```
 
 ## Setup
 

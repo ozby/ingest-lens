@@ -21,12 +21,16 @@ tags:
 
 # IngestLens: wp deploy adapter + toolchain isolation
 
-**Goal:** Bring IngestLens onto the agent-kit-owned toolchain and the `wp deploy`
-orchestrator while keeping its consumer-owned infra (Pulumi, Neon, Hyperdrive,
-KV, R2, queues, Durable Objects) exactly where it is. IngestLens wraps its
-existing deploy flow behind a consumer **deploy adapter**; agent-kit only
-orchestrates and resolves managed tool binaries. Production release metadata
-stays anchored at `infra/release-metadata.production.json`.
+**Goal:** Bring IngestLens onto the agent-kit-owned generic toolchain runtime
+and the `wp deploy` orchestrator while keeping its consumer-owned infra
+(Pulumi, Neon, Hyperdrive, KV, R2, queues, Durable Objects) exactly where it
+is. This is the **global `wp` + required `wp setup`** contract, not a
+zero-install contract: IngestLens still keeps root package dependencies such as
+`@webpresso/agent-kit` and `@webpresso/webpresso` where the repo imports their
+shared config/runtime surfaces. IngestLens wraps its existing deploy flow
+behind a consumer **deploy adapter**; agent-kit only orchestrates and resolves
+managed tool binaries. Production release metadata stays anchored at
+`infra/release-metadata.production.json`.
 
 Upstream: `webpresso/agent-kit/blueprints/in-progress/2026-06-02-agent-kit-wp-deploy-orchestrator-toolchain-isolation.md`.
 Builds on the in-progress `2026-06-02-ingest-lens-preview-production-lanes.md`
@@ -44,8 +48,9 @@ redefining the lanes.
   (`preview_main`/`preview_pr_<n>`/release-gated `prd`), re-driven through
   `wp deploy`.
 - **New user-visible capability:** IngestLens deploys through agent-kit-owned
-  tooling with generic toolchain tools as transitive-only deps, while its
-  Pulumi/Neon/Hyperdrive infra and Neon E2E branch flow keep working unchanged.
+  tooling with global `wp` surfaces and consumer-owned shared package imports,
+  while its Pulumi/Neon/Hyperdrive infra and Neon E2E branch flow keep working
+  unchanged.
 
 ## Provenance
 
@@ -75,13 +80,13 @@ ingest-lens
 
 ## Key Decisions
 
-| Decision          | Choice                                                                  | Rationale                                                                              |
-| ----------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Infra ownership   | Pulumi/Neon/Hyperdrive/KV/R2/queues/DO stay consumer-owned, unchanged.  | These are app-specific infra deps, not generic toolchain; `extraction-parity.md` §5.   |
-| Deploy flow       | Wrap existing flow behind `deploy.adapterModule`; don't redefine lanes. | The preview-production-lanes blueprint already owns lane semantics.                    |
-| Toolchain         | Use agent-kit-owned wrangler/tsx/test tooling via `wp`.                 | Toolchain-isolation model from the upstream blueprint.                                 |
-| Release metadata  | Stays at `infra/release-metadata.production.json`; prd gate preserved.  | Required by `extraction-parity.md` §5 deploy-contract parity.                          |
-| Strict-dep nuance | Pulumi/Neon SDKs remain allowed direct infra deps.                      | "Strict" forbids generic toolchain/deploy-_tool_ deps, not product/runtime/infra deps. |
+| Decision          | Choice                                                                                                                            | Rationale                                                                                                                               |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Infra ownership   | Pulumi/Neon/Hyperdrive/KV/R2/queues/DO stay consumer-owned, unchanged.                                                            | These are app-specific infra deps, not generic toolchain; `extraction-parity.md` §5.                                                    |
+| Deploy flow       | Wrap existing flow behind `deploy.adapterModule`; don't redefine lanes.                                                           | The preview-production-lanes blueprint already owns lane semantics.                                                                     |
+| Toolchain         | Use agent-kit-owned wrangler/tsx/test tooling via `wp`.                                                                           | Toolchain-isolation model from the upstream blueprint.                                                                                  |
+| Release metadata  | Stays at `infra/release-metadata.production.json`; prd gate preserved.                                                            | Required by `extraction-parity.md` §5 deploy-contract parity.                                                                           |
+| Strict-dep nuance | Pulumi/Neon SDKs remain allowed direct infra deps, and root `@webpresso/agent-kit` stays allowed where its subpaths are imported. | "Strict" forbids consumer-owned generic toolchain/deploy-_tool_ deps, not product/runtime/infra deps or shared config/runtime packages. |
 
 ## Quick Reference (Execution Waves)
 
@@ -145,6 +150,6 @@ The upstream audit surface exists. Run it after the repo-local tool-ownership in
 ## Assumptions
 
 - IngestLens keeps consumer-owned Pulumi/Neon/Hyperdrive/KV/R2/queues/DO infra.
-- "Strict" forbids generic toolchain/deploy-tool deps, not product/runtime/infra deps.
+- "Strict" forbids consumer-owned generic toolchain/deploy-tool deps, not product/runtime/infra deps or shared config/runtime package imports.
 - Production release metadata stays at `infra/release-metadata.production.json`.
 - Framework-facade consumption (the two-axis role) is out of scope for this lane.

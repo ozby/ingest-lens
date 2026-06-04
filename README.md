@@ -24,6 +24,13 @@ IngestLens is an integration-observability application that validates incoming t
 
 This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (Doppler-wrapped) for secret injection. There are **no `.env` files**.
 
+Install the global `wp` CLI once per machine, or use the one-shot fallback when you need to bootstrap without a global install:
+
+```bash
+npm install -g @webpresso/agent-kit
+# fallback: npm exec --yes --package @webpresso/agent-kit@latest -- wp setup
+```
+
 ```bash
 vp install
 ```

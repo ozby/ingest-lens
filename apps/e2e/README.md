@@ -6,7 +6,7 @@ Repo-owned end-to-end surface for IngestLens. Zero manual env vars — secrets a
 
 ```bash
 pnpm e2e --suite full                        # from repo root — auto-provisions Neon branch
-wp e2e --suite foundation   # against an already-running worker once the unified CLI cutover lands
+wp e2e --suite foundation                    # host-adapter path against an already-running worker
 pnpm --filter @repo/e2e run auth:dev-bench   # against deployed dev.ingest-lens.ozby.dev
 ```
 
