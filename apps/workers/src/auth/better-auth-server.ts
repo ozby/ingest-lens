@@ -1,10 +1,12 @@
 import { betterAuth, type BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createWebpressoAuthHost } from "@webpresso/webpresso/auth/server";
-import { createWebpressoAuthDrizzleMap } from "@webpresso/webpresso/auth/schema";
 import { hashPasswordAsync, verifyPassword } from "./crypto";
 import { createDb, type Env } from "../db/client";
 import * as schema from "../db/schema";
+import {
+  createLocalWebpressoAuthDrizzleMap,
+  createLocalWebpressoAuthHost,
+} from "./webpresso-auth-bridge";
 
 export interface BetterAuthHandler {
   handler: (req: Request) => Promise<Response>;
@@ -46,7 +48,7 @@ export function createBetterAuth(env: Env): BetterAuthHandler {
 
   // Framework host kit: plugin bundle (bearer, organization, deviceAuthorization, jwt),
   // basePath, crossSubDomainCookies, and trustedOrigins from manifest + env.
-  const hostConfig = createWebpressoAuthHost(
+  const hostConfig = createLocalWebpressoAuthHost(
     {
       auth: {
         ...(localOrigin ? {} : { cookieDomain: ".ingest-lens.ozby.dev" }),
@@ -63,7 +65,7 @@ export function createBetterAuth(env: Env): BetterAuthHandler {
     // App-local: Drizzle adapter with ingest-lens schema table mapping
     database: drizzleAdapter(db, {
       provider: "pg",
-      schema: createWebpressoAuthDrizzleMap({
+      schema: createLocalWebpressoAuthDrizzleMap({
         user: schema.authUsers,
         session: schema.authSessions,
         account: schema.authAccounts,
