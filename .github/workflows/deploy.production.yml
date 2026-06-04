@@ -60,4 +60,4 @@ jobs:
             echo "Invalid semantic release version: ${RELEASE_VERSION_INPUT}" >&2
             exit 1
           fi
-          bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION_INPUT}"
+          vp exec --filter @repo/infra tsx infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION_INPUT}"
