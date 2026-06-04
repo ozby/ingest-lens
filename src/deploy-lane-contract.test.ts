@@ -61,7 +61,9 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("ref: main");
     expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
     expect(workflow).toContain("packages: read");
-    expect(workflow).toContain("deploy:production");
+    expect(workflow).toContain(
+      'vp exec --filter @repo/infra tsx infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION_INPUT}"',
+    );
     expect(metadata).toContain('"releaseKind": "version_pr"');
     expect(metadata).toContain('"requiredChecks"');
     expect(metadata).toMatch(/"releaseVersion"\s*:\s*"\d+\.\d+\.\d+"/);

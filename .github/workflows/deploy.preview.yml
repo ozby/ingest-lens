@@ -74,6 +74,8 @@ jobs:
         run: |
           set -euo pipefail
           lane="${DEPLOY_LANE}"
+          # Execute the repo-owned infra deployer through tsx so CI uses the
+          # same workspace package resolution surface as local dry-runs.
           if [[ "${lane}" == "preview_main" ]]; then
             preview_lane="preview-main"
           else
