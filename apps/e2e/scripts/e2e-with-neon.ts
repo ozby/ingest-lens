@@ -17,6 +17,7 @@ import process from "node:process";
 import { resolveRuntimeProfile } from "@webpresso/webpresso/runtime/env";
 import { getNeonConfig, NeonBranchProvider } from "@webpresso/webpresso/db/neon";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
+import { findE2eRepoRoot, resolveFromRepoRoot, resolveVpCommand } from "../src/repo-root";
 
 const suite = process.argv.includes("--suite")
   ? process.argv[process.argv.indexOf("--suite") + 1]
@@ -26,34 +27,46 @@ const selectedSuite = listE2ESuites().find((candidate) => candidate.id === norma
 const requiresClientWorker =
   selectedSuite?.steps.some((step) => step.runner === "playwright") ?? false;
 const REVIEWER_FLOW_SUITES = new Set(["intake", "demo", "intake-ui", "full"]);
-const CLIENT_ASSET_LOCK_PARENT_DIR = resolve(".tmp");
-const CLIENT_ASSET_LOCK_DIR = resolve(".tmp/e2e-client-assets.lock");
+const repoRoot = findE2eRepoRoot(import.meta.url);
+const CLIENT_ASSET_LOCK_PARENT_DIR = resolveFromRepoRoot(repoRoot, ".tmp");
+const CLIENT_ASSET_LOCK_DIR = resolveFromRepoRoot(repoRoot, ".tmp", "e2e-client-assets.lock");
+const vpCommand = resolveVpCommand(repoRoot);
 
 async function getAvailablePort(): Promise<number> {
-  return await new Promise((resolvePort, reject) => {
-    const server = createServer();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      if (!address || typeof address === "string") {
-        server.close(() => reject(new Error("Failed to resolve an open local port")));
-        return;
-      }
-      const { port } = address;
-      server.close((error) => {
-        if (error) reject(error);
-        else resolvePort(port);
+  for (const host of ["::1", "127.0.0.1"] as const) {
+    try {
+      return await new Promise((resolvePort, reject) => {
+        const server = createServer();
+        server.on("error", reject);
+        server.listen(0, host, () => {
+          const address = server.address();
+          if (!address || typeof address === "string") {
+            server.close(() =>
+              reject(new Error(`Failed to resolve an open local port for ${host}`)),
+            );
+            return;
+          }
+          const { port } = address;
+          server.close((error) => {
+            if (error) reject(error);
+            else resolvePort(port);
+          });
+        });
       });
-    });
-  });
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error("Failed to resolve an open local port");
 }
 
 const apiPort = await getAvailablePort();
 const apiInspectorPort = await getAvailablePort();
-const apiBaseUrl = `http://127.0.0.1:${apiPort}`;
+const apiBaseUrl = `http://localhost:${apiPort}`;
 const clientPort = requiresClientWorker ? await getAvailablePort() : 3000;
 const clientInspectorPort = requiresClientWorker ? await getAvailablePort() : 9229;
-const clientBaseUrl = `http://127.0.0.1:${clientPort}`;
+const clientBaseUrl = `http://localhost:${clientPort}`;
 
 // ── Load secrets from the selected secret manager ──────────────────────
 const runtimeSecrets = await resolveRuntimeProfile("secrets-only");
@@ -184,11 +197,11 @@ process.on("SIGTERM", () => {
 });
 
 async function runMigrations(connectionUri: string) {
-  const dir = resolve("apps/workers/src/db/migrations");
+  const dir = resolveFromRepoRoot(repoRoot, "apps", "workers", "src", "db", "migrations");
   const files = readdirSync(dir)
     .filter((f) => f.endsWith(".sql"))
     .sort()
-    .map((f) => resolve(dir, f));
+    .map((f) => resolveFromRepoRoot(repoRoot, "apps", "workers", "src", "db", "migrations", f));
   for (const f of files) {
     console.log(`  Running ${f}...`);
     const r = spawnSync("psql", ["-d", connectionUri, "-v", "ON_ERROR_STOP=1", "-f", f], {
@@ -281,10 +294,22 @@ try {
   }
   workerLogLines.delete("api-worker");
   apiWorker = spawn(
-    "./node_modules/.bin/wrangler",
-    ["dev", "--port", String(apiPort), "--inspector-port", String(apiInspectorPort), ...workerVars],
+    vpCommand,
+    [
+      "exec",
+      "--filter",
+      "@repo/workers",
+      "--",
+      "wrangler",
+      "dev",
+      "--port",
+      String(apiPort),
+      "--inspector-port",
+      String(apiInspectorPort),
+      ...workerVars,
+    ],
     {
-      cwd: resolve("apps/workers"),
+      cwd: repoRoot,
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
@@ -308,7 +333,7 @@ try {
       "bun",
       ["run", "build"],
       {
-        cwd: resolve("apps/client"),
+        cwd: resolveFromRepoRoot(repoRoot, "apps", "client"),
         env: { ...process.env, ...secretEnv, VITE_API_BASE_URL: apiBaseUrl },
       },
       "client build",
@@ -317,8 +342,13 @@ try {
     console.log("🌐 Starting client worker...");
     workerLogLines.delete("client-worker");
     clientWorker = spawn(
-      "./node_modules/.bin/wrangler",
+      vpCommand,
       [
+        "exec",
+        "--filter",
+        "client",
+        "--",
+        "wrangler",
         "dev",
         "--port",
         String(clientPort),
@@ -328,7 +358,7 @@ try {
         `AUTH_PROXY_BASE_URL:${apiBaseUrl}`,
       ],
       {
-        cwd: resolve("apps/client"),
+        cwd: repoRoot,
         stdio: ["ignore", "pipe", "pipe"],
         env: { ...process.env, ...secretEnv },
       },
@@ -342,7 +372,7 @@ try {
   // ── 4. Run e2e tests ──────────────────────────────────────────────
   console.log(`🧪 Running e2e suite: ${suite}`);
   const testResult = spawnSync("bun", ["./src/cli/run-e2e.ts", "--suite", suite], {
-    cwd: resolve("apps/e2e"),
+    cwd: resolveFromRepoRoot(repoRoot, "apps", "e2e"),
     stdio: "inherit",
     env: {
       ...process.env,

@@ -67,6 +67,23 @@ describe("Cloudflare deploy lane contract", () => {
     expect(metadata).toMatch(/"releaseVersion"\s*:\s*"\d+\.\d+\.\d+"/);
   });
 
+  it("uses a no-secret deploy dry-run plan while keeping production metadata validation in-repo", async () => {
+    const { default: adapter } = await import("../infra/src/deploy/agent-kit-deploy-adapter");
+    const plan = adapter.createPlan({
+      lane: "prd",
+      dryRun: true,
+    });
+
+    expect(plan.requiredCredentials).toEqual([]);
+    expect(plan.steps).toMatchObject([
+      {
+        id: "deploy-plan-dry-run",
+        command: "bun",
+      },
+    ]);
+    expect(plan.steps[0]?.args?.join(" ")).toContain("plan-dry-run.ts");
+  });
+
   it("rejects production metadata without matching semantic release version", async () => {
     const { validateProductionReleaseMetadata } = await import("../infra/src/deploy/release-gate");
 

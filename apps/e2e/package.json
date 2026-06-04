@@ -19,8 +19,10 @@
     "@webpresso/webpresso": "catalog:"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:"
+    "@webpresso/agent-kit": "catalog:",
+    "vitest": "catalog:tooling"
   }
 }

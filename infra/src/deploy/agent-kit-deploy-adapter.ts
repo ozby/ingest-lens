@@ -48,21 +48,15 @@ export const webpressoDeployAdapter: DeployAdapter = {
         schemaVersion: 1,
         lane: request.lane,
         provider: "pulumi-cloudflare-neon",
-        requiredCredentials: [
-          "PULUMI_ACCESS_TOKEN",
-          "CLOUDFLARE_ACCOUNT_ID",
-          "CLOUDFLARE_API_TOKEN",
-          "NEON_API_KEY",
-          "NEON_PROJECT_ID",
-        ],
+        requiredCredentials: [],
         steps: [
           {
             kind: "command",
-            id: "pulumi-preview",
-            label: `Preview ingest-lens infrastructure stack ${stack}`,
-            command: "pulumi",
-            args: ["preview", "--stack", stack],
-            cwd: infraRoot,
+            id: "deploy-plan-dry-run",
+            label: `Plan ingest-lens ${stack} deploy without secrets`,
+            command: "bun",
+            args: [join(deployDir, "plan-dry-run.ts"), request.lane],
+            cwd: repoRoot,
           },
         ],
       };

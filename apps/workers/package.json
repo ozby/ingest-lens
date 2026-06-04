@@ -29,6 +29,7 @@
     "@cloudflare/workers-types": "catalog:workers",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-kit": "catalog:",
-    "drizzle-kit": "catalog:workers"
+    "drizzle-kit": "catalog:workers",
+    "wrangler": "catalog:workers"
   }
 }

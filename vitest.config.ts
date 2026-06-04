@@ -1,10 +1,8 @@
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
+export default {
   test: {
     globals: true,
     environment: "node",
     include: ["src/**/*.test.ts"],
     exclude: ["e2e/**", "node_modules/**", ".stryker-tmp/**"],
   },
-});
+};

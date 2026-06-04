@@ -96,7 +96,7 @@ Full maintainer check (mirrors CI; some steps need secrets / a Neon E2E branch â
 vp check                          # aggregate lint + types + format
 vp run build                      # all packages build; client/worker bundles emitted
 wp audit docs-frontmatter         # docs frontmatter audit (pnpm docs:check)
-wp audit blueprint-lifecycle --legacy-omx   # blueprint lifecycle audit (pnpm blueprints:check)
+wp audit blueprint-lifecycle --omx-plans    # blueprint lifecycle audit (pnpm blueprints:check)
 vp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
 ```
 

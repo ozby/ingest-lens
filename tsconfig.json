@@ -1,5 +1,5 @@
 {
-  "extends": "@webpresso/agent-kit/tsconfig/webpresso.json",
+  "extends": "@webpresso/agent-kit/tsconfig/base.json",
   "files": [],
   "references": [
     {

@@ -1,6 +1,4 @@
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
+export default {
   test: {
     environment: "node",
     include: ["journeys/**/*.e2e.ts"],
@@ -9,4 +7,4 @@ export default defineConfig({
     maxWorkers: 1,
     isolate: true,
   },
-});
+};

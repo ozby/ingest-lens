@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 set -eu
-wp audit guardrails
-# agent-kit audit hooks (staged mode — fast)
-# webpresso audit hooks (staged mode — fast)
+wp audit docs-frontmatter
 bun scripts/check-no-dev-vars.ts
 bun scripts/audit-secret-provider-quarantine.ts
+wp audit absolute-path-policy --root .

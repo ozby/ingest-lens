@@ -30,14 +30,6 @@ type E2eSuiteDefinition = {
   steps: readonly E2eSuiteStep[];
 };
 
-type E2eHostAdapter = {
-  listSuites: () => readonly E2eSuiteDefinition[];
-  resolveSuiteId: (name: string) => string | null;
-  normalizeFilePath: (filePath: string) => string;
-  resolveSuiteForFile: (filePath: string) => { normalizedPath: string; suiteId: string } | null;
-  buildExecutionPlan: (request: E2eExecutionRequest) => E2eExecutionBatch[];
-};
-
 function normalizeRootPath(filePath: string): string {
   const normalized = filePath.replace(/\\/gu, "/");
 
@@ -102,18 +94,14 @@ function resolveRequestedSuite(request: E2eExecutionRequest): string {
   return getDefaultSuiteId();
 }
 
-export const agentKitE2eHostAdapter: E2eHostAdapter = {
+export const agentKitE2eHostAdapter = {
   listSuites: () => rootifySuites(),
-  resolveSuiteId: (name) => resolveE2ESuiteId(name),
-  normalizeFilePath: (filePath) => normalizeRootPath(filePath),
-  resolveSuiteForFile: (filePath) => resolveSuiteForRootFile(filePath),
-  buildExecutionPlan: (request) => {
+  resolveSuiteId: (name: string) => resolveE2ESuiteId(name),
+  normalizeFilePath: (filePath: string) => normalizeRootPath(filePath),
+  resolveSuiteForFile: (filePath: string) => resolveSuiteForRootFile(filePath),
+  buildExecutionPlan: (request: E2eExecutionRequest): E2eExecutionBatch[] => {
     const suiteId = resolveRequestedSuite(request);
-    const args = ["run", "e2e", "--suite", suiteId];
-
-    for (const file of request.file ?? []) {
-      args.push("--file", normalizeRootPath(file));
-    }
+    const args = ["apps/e2e/scripts/e2e-with-neon.ts", "--suite", suiteId];
 
     return [
       {

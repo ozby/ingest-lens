@@ -84,4 +84,4 @@ workflow_dispatch deploy.production.yml release_version=1.2.3
 - `wp lint` / `wp typecheck` / `wp test` through the final quality gate
 - `python3 scripts/check_architecture_drift.py`
 - `wp audit architecture-drift --root .`
-- `wp audit blueprint-lifecycle --legacy-omx`
+- `wp audit blueprint-lifecycle --omx-plans`

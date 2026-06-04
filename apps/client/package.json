@@ -84,6 +84,7 @@
     "@typescript/native-preview": "catalog:tooling",
     "@vitejs/plugin-react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
-    "tailwindcss": "catalog:"
+    "tailwindcss": "catalog:",
+    "wrangler": "catalog:workers"
   }
 }
