@@ -15,7 +15,8 @@
     "@pulumi/cloudflare": "^6.14.0",
     "@pulumi/pulumi": "^3.232.0",
     "@pulumiverse/doppler": "^0.9.0",
-    "@webpresso/webpresso": "catalog:"
+    "@webpresso/runtime-env": "link:../../../webpresso/framework/packages/runtime-env",
+    "@repo/runtime-env-local": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

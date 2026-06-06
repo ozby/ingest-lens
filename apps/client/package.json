@@ -49,7 +49,6 @@
     "@repo/types": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.99.2",
-    "@webpresso/webpresso": "catalog:",
     "axios": "catalog:",
     "better-auth": "^1.6.9",
     "class-variance-authority": "catalog:",

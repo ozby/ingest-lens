@@ -1,0 +1,19 @@
+{
+  "name": "@repo/runtime-env-local",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "wp test --file vitest.config.ts",
+    "check-types": "wp typecheck"
+  },
+  "dependencies": {
+    "@webpresso/runtime-env": "link:../../../../webpresso/framework/packages/runtime-env",
+    "ts-pattern": "^5.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@webpresso/agent-kit": "catalog:",
+    "vitest": "catalog:tooling"
+  }
+}

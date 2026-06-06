@@ -1,4 +1,4 @@
-import { getNeonConfig, NeonBranchProvider } from "@webpresso/webpresso/db/neon";
+import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 
 const branchId = process.argv[2];
 if (!branchId) {

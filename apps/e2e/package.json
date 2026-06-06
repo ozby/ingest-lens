@@ -16,7 +16,9 @@
     "db:branch:cleanup": "bun scripts/db-branch-cleanup.ts"
   },
   "dependencies": {
-    "@webpresso/webpresso": "catalog:"
+    "@neondatabase/api-client": "catalog:",
+    "@webpresso/runtime-env": "link:../../../../webpresso/framework/packages/runtime-env",
+    "@repo/runtime-env-local": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
