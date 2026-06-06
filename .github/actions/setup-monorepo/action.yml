@@ -26,8 +26,12 @@ runs:
         bun-version: latest
 
     - name: Install global wp from npmjs
-      run: npm install -g @webpresso/agent-kit@0.28.0 --registry=https://registry.npmjs.org
       shell: bash
+      run: |
+        set -euo pipefail
+        tmp_npmrc="$(mktemp)"
+        trap 'rm -f "$tmp_npmrc"' EXIT
+        NPM_CONFIG_USERCONFIG="$tmp_npmrc" npm install -g @webpresso/agent-kit@0.28.0 --registry=https://registry.npmjs.org
 
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
