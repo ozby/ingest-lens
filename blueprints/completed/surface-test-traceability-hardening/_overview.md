@@ -1,11 +1,12 @@
 ---
 type: blueprint
 title: Surface test traceability hardening
-status: in-progress
+status: completed
 complexity: L
 owner: ozby
 created: 2026-05-23T00:00:00.000Z
-last_updated: 2026-05-24T00:00:00.000Z
+last_updated: "2026-06-05"
+progress: "100% (completed on 2026-06-05 after the widened verification matrix passed: targeted deploy-lane proof, client E2E suite, lint, typecheck, root tests, architecture drift, docs frontmatter, and blueprint lifecycle.)"
 ---
 
 ## Product wedge anchor
@@ -24,6 +25,11 @@ Architecture docs:
 ## Summary
 
 Spawn a coordinated team to audit the repo’s externally visible product surfaces, tighten unit/integration/E2E coverage where proof is thin, and add durable docs traceability so every shipped claim points to at least one E2E test file.
+
+Zero-`.mjs` baseline note: as of 2026-06-03 the repo has no tracked first-party
+`.mjs` files. The baseline is documented here now; CI enforcement should switch
+to the shared `wp audit no-first-party-mjs --root .` surface only after that
+audit ships in the published `@webpresso/agent-kit` line this repo consumes.
 
 ## Tasks
 
@@ -90,7 +96,7 @@ Spawn a coordinated team to audit the repo’s externally visible product surfac
 
 #### Task 1.4: [verify] Prove the tightened matrix still passes
 
-**Status:** in_progress
+**Status:** done
 **Wave:** 2
 **Lane:** verify
 **Files:**
@@ -103,8 +109,8 @@ Spawn a coordinated team to audit the repo’s externally visible product surfac
 
 **Acceptance:**
 
-- [ ] Targeted unit/integration suites pass for touched surfaces.
-- [ ] Relevant E2E suites pass for every linked claim surface.
-- [ ] Docs validation, lint, and typecheck pass for touched areas.
+- [x] Targeted unit/integration suites pass for touched surfaces.
+- [x] Relevant E2E suites pass for every linked claim surface.
+- [x] Docs validation, lint, and typecheck pass for touched areas.
 
-**Progress note:** `vp run e2e -- --suite client` passes as of 2026-05-24, including healthy local Worker + client startup and the `journeys/client-surfaces.spec.ts` Playwright proof. Remaining targeted lint/typecheck/docs verification for the widened traceability surface is still pending.
+**Progress note:** Completed on 2026-06-05 with fresh proof: `wp e2e --suite client`, targeted/root `wp test`, `wp lint`, `wp typecheck`, `python3 scripts/check_architecture_drift.py`, `wp audit architecture-drift --root .`, `wp audit docs-frontmatter`, and `wp audit blueprint-lifecycle` all passed.

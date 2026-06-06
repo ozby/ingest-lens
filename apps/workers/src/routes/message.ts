@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { and, eq, sql } from "drizzle-orm";
-import { createDb, type Env } from "../db/client";
+import type { Env } from "../db/client";
 import { messages, queueMetrics } from "../db/schema";
 import { serializeMessage, serializeMessages } from "./message-response";
-import { requireOwnedQueue } from "./ownership";
+import { withOwnedQueue } from "./ownership";
 import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 import { createAndDispatchQueueMessage } from "../messages/lifecycle";
@@ -116,38 +116,36 @@ messageRoutes.post("/:queueId", async (c) => {
     return c.json({ status: "error", message: "Message data must be an object" }, 400);
   }
 
-  const db = createDb(c.env);
+  return withOwnedQueue(c, queueId, async (queue, db) => {
+    const idempotencyKey = c.req.header("Idempotency-Key") ?? null;
 
-  const queue = await requireOwnedQueue(c, queueId, {}, db);
-  if (queue instanceof Response) {
-    return queue;
-  }
+    const created = await createAndDispatchQueueMessage(c.env, db, queue, data, null, {
+      idempotencyKey,
+    });
+    if (!created) {
+      return c.json({ status: "error", message: "Failed to create message" }, 500);
+    }
 
-  const idempotencyKey = c.req.header("Idempotency-Key") ?? null;
+    if (created.duplicate) {
+      return c.json(
+        { status: "success", data: { message: serializeMessage(created.message) } },
+        200,
+      );
+    }
 
-  const created = await createAndDispatchQueueMessage(c.env, db, queue, data, null, {
-    idempotencyKey,
+    if (created.enqueueError) {
+      return c.json(
+        {
+          status: "error",
+          message: created.enqueueError,
+          data: { message: serializeMessage(created.message) },
+        },
+        502,
+      );
+    }
+
+    return c.json({ status: "success", data: { message: serializeMessage(created.message) } }, 201);
   });
-  if (!created) {
-    return c.json({ status: "error", message: "Failed to create message" }, 500);
-  }
-
-  if (created.duplicate) {
-    return c.json({ status: "success", data: { message: serializeMessage(created.message) } }, 200);
-  }
-
-  if (created.enqueueError) {
-    return c.json(
-      {
-        status: "error",
-        message: created.enqueueError,
-        data: { message: serializeMessage(created.message) },
-      },
-      502,
-    );
-  }
-
-  return c.json({ status: "success", data: { message: serializeMessage(created.message) } }, 201);
 });
 
 // GET /api/messages/:queueId — receive messages
@@ -163,46 +161,41 @@ messageRoutes.get("/:queueId", async (c) => {
       ? visibilityTimeout
       : DEFAULT_VISIBILITY_TIMEOUT;
 
-  const db = createDb(c.env);
+  return withOwnedQueue(c, queueId, async (_queue, db) => {
+    const now = new Date();
+    const visibilityExpiresAt = new Date(now.getTime() + clampedVisibilityTimeout * 1000);
+    const result = await claimVisibleMessagesAtomically(
+      db,
+      queueId,
+      now,
+      visibilityExpiresAt,
+      Math.min(maxMessages, 10),
+    );
 
-  const queue = await requireOwnedQueue(c, queueId, {}, db);
-  if (queue instanceof Response) {
-    return queue;
-  }
+    if (result.length === 0) {
+      return c.json({
+        status: "success",
+        results: 0,
+        data: { messages: [], visibilityTimeout: clampedVisibilityTimeout },
+      });
+    }
 
-  const now = new Date();
-  const visibilityExpiresAt = new Date(now.getTime() + clampedVisibilityTimeout * 1000);
-  const result = await claimVisibleMessagesAtomically(
-    db,
-    queueId,
-    now,
-    visibilityExpiresAt,
-    Math.min(maxMessages, 10),
-  );
+    // Update queue metrics
+    await db
+      .update(queueMetrics)
+      .set({
+        messagesReceived: sql`${queueMetrics.messagesReceived} + ${result.length}`,
+      })
+      .where(eq(queueMetrics.queueId, queueId));
 
-  if (result.length === 0) {
     return c.json({
       status: "success",
-      results: 0,
-      data: { messages: [], visibilityTimeout: clampedVisibilityTimeout },
+      results: result.length,
+      data: {
+        messages: serializeMessages(result),
+        visibilityTimeout: clampedVisibilityTimeout,
+      },
     });
-  }
-
-  // Update queue metrics
-  await db
-    .update(queueMetrics)
-    .set({
-      messagesReceived: sql`${queueMetrics.messagesReceived} + ${result.length}`,
-    })
-    .where(eq(queueMetrics.queueId, queueId));
-
-  return c.json({
-    status: "success",
-    results: result.length,
-    data: {
-      messages: serializeMessages(result),
-      visibilityTimeout: clampedVisibilityTimeout,
-    },
   });
 });
 
@@ -210,58 +203,48 @@ messageRoutes.get("/:queueId", async (c) => {
 messageRoutes.get("/:queueId/:messageId", async (c) => {
   const queueId = c.req.param("queueId");
   const messageId = c.req.param("messageId");
-  const db = createDb(c.env);
+  return withOwnedQueue(c, queueId, async (_queue, db) => {
+    const [message] = await db
+      .select()
+      .from(messages)
+      .where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)))
+      .limit(1);
 
-  const queue = await requireOwnedQueue(c, queueId, {}, db);
-  if (queue instanceof Response) {
-    return queue;
-  }
+    if (!message) {
+      return c.json({ status: "error", message: "Message not found" }, 404);
+    }
 
-  const [message] = await db
-    .select()
-    .from(messages)
-    .where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)))
-    .limit(1);
-
-  if (!message) {
-    return c.json({ status: "error", message: "Message not found" }, 404);
-  }
-
-  return c.json({ status: "success", data: { message: serializeMessage(message) } });
+    return c.json({ status: "success", data: { message: serializeMessage(message) } });
+  });
 });
 
 // DELETE /api/messages/:queueId/:messageId — delete (ack) message
 messageRoutes.delete("/:queueId/:messageId", async (c) => {
   const queueId = c.req.param("queueId");
   const messageId = c.req.param("messageId");
-  const db = createDb(c.env);
+  return withOwnedQueue(c, queueId, async (_queue, db) => {
+    const [message] = await db
+      .select()
+      .from(messages)
+      .where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)))
+      .limit(1);
 
-  const queue = await requireOwnedQueue(c, queueId, {}, db);
-  if (queue instanceof Response) {
-    return queue;
-  }
+    if (!message) {
+      return c.json({ status: "error", message: "Message not found" }, 404);
+    }
 
-  const [message] = await db
-    .select()
-    .from(messages)
-    .where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)))
-    .limit(1);
+    if (message.deliveryMode !== "pull") {
+      return c.json(
+        {
+          status: "error",
+          message: "Push-delivered messages are not acknowledged via the pull API",
+        },
+        409,
+      );
+    }
 
-  if (!message) {
-    return c.json({ status: "error", message: "Message not found" }, 404);
-  }
+    await db.delete(messages).where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)));
 
-  if (message.deliveryMode !== "pull") {
-    return c.json(
-      {
-        status: "error",
-        message: "Push-delivered messages are not acknowledged via the pull API",
-      },
-      409,
-    );
-  }
-
-  await db.delete(messages).where(and(eq(messages.id, messageId), eq(messages.queueId, queueId)));
-
-  return c.json({ status: "success", data: { deletedMessageId: messageId } }, 200);
+    return c.json({ status: "success", data: { deletedMessageId: messageId } }, 200);
+  });
 });

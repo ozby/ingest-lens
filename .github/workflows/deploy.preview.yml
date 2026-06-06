@@ -8,13 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       lane:
-        description: "Preview lane to deploy, for example preview-main or preview-pr-123"
+        description: "Preview lane to deploy, for example preview_main or preview_pr_123"
         required: true
         type: string
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
+  HAS_CLOUDFLARE_DEPLOY_SECRETS: ${{ (secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.CLOUDFLARE_ZONE_ID != '' && secrets.CLOUDFLARE_API_TOKEN != '') && '1' || '' }}
   GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
   NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
@@ -29,37 +30,30 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24"
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@webpresso"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-monorepo
       - run: pnpm run lint
-      - run: pnpm run check-types
-      - run: pnpm run test
       - name: Resolve lane
         id: lane
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REF_NAME: ${{ github.ref }}
           MANUAL_LANE: ${{ inputs.lane }}
         run: |
           set -euo pipefail
           if [[ "${EVENT_NAME}" == "push" ]]; then
-            lane="preview-main"
+            lane="preview_main"
           elif [[ "${EVENT_NAME}" == "pull_request" ]]; then
-            lane="preview-pr-${PR_NUMBER}"
+            pr_number="${PR_NUMBER}"
+            if [[ -z "${pr_number}" && "${GITHUB_REF_NAME}" =~ ^refs/pull/([0-9]+)/ ]]; then
+              pr_number="${BASH_REMATCH[1]}"
+            fi
+            lane="preview_pr_${pr_number}"
           else
             lane="${MANUAL_LANE}"
           fi
-          if [[ ! "${lane}" =~ ^preview-main$|^preview-pr-[0-9]+$ ]]; then
+          if [[ ! "${lane}" =~ ^preview_main$|^preview_pr_[0-9]+$ ]]; then
             echo "Invalid preview lane: ${lane}" >&2
             exit 1
           fi
@@ -70,8 +64,14 @@ jobs:
         with:
           doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
           inject-env-vars: true
+      - name: Skip preview deploy when deploy secrets are unavailable
+        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && env.HAS_CLOUDFLARE_DEPLOY_SECRETS != '1' }}
+        run: |
+          echo "Preview deploy skipped: no Doppler token or direct Cloudflare deploy secrets available."
       - name: Deploy preview
+        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || env.HAS_CLOUDFLARE_DEPLOY_SECRETS == '1' }}
         env:
+          DEPLOY_LANE: ${{ steps.lane.outputs.lane }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
@@ -82,7 +82,17 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
-        run: pnpm run deploy:preview -- --lane "${{ steps.lane.outputs.lane }}"
+        run: |
+          set -euo pipefail
+          lane="${DEPLOY_LANE}"
+          # Execute the repo-owned infra deployer through tsx so CI uses the
+          # same workspace package resolution surface as local dry-runs.
+          if [[ "${lane}" == "preview_main" ]]; then
+            preview_lane="preview-main"
+          else
+            preview_lane="${lane/preview_pr_/preview-pr-}"
+          fi
+          bun infra/src/deploy/deploy-preview.ts --lane "${preview_lane}"
 
   destroy:
     name: Destroy PR preview lane
@@ -94,24 +104,19 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24"
-          cache: pnpm
-          registry-url: https://npm.pkg.github.com
-          scope: "@webpresso"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-monorepo
       - name: Inject preview cleanup credentials from Doppler
         if: env.HAS_DOPPLER_TOKEN == '1'
         uses: dopplerhq/secrets-fetch-action@451892f16195f9ac360e1a5bcbf0b5fd0e957534 # v2.0.0
         with:
           doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
           inject-env-vars: true
+      - name: Skip preview cleanup when deploy secrets are unavailable
+        if: ${{ env.HAS_DOPPLER_TOKEN != '1' && env.HAS_CLOUDFLARE_DEPLOY_SECRETS != '1' }}
+        run: |
+          echo "Preview cleanup skipped: no Doppler token or direct Cloudflare deploy secrets available."
       - name: Destroy preview
+        if: ${{ env.HAS_DOPPLER_TOKEN == '1' || env.HAS_CLOUDFLARE_DEPLOY_SECRETS == '1' }}
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -130,4 +135,4 @@ jobs:
             echo "Invalid PR number: ${PR_NUMBER}" >&2
             exit 1
           fi
-          pnpm run deploy:preview -- --lane "preview-pr-${PR_NUMBER}" --destroy
+          bun infra/src/deploy/deploy-preview.ts --lane "preview-pr-${PR_NUMBER}" --destroy

@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "build": "wrangler deploy --dry-run",
+    "dev": "wp exec wrangler dev",
+    "build": "wp exec wrangler deploy --dry-run",
     "test": "wp test --file vitest.config.ts",
-    "check-types": "tsgo --noEmit",
-    "lint": "oxlint src/"
+    "check-types": "wp typecheck",
+    "lint": "wp lint"
   },
   "dependencies": {
     "@repo/lab-core": "workspace:*",
@@ -19,9 +19,6 @@
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:workers",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:",
-    "oxlint": "catalog:tooling",
-    "vitest": "catalog:tooling",
-    "wrangler": "catalog:workers"
+    "@webpresso/agent-kit": "catalog:"
   }
 }

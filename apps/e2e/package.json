@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "oxlint journeys/ src/ scripts/",
-    "check-types": "tsgo --noEmit",
+    "lint": "wp lint",
+    "check-types": "wp typecheck",
     "test": "wp test --file vitest.config.ts",
-    "test:journeys": "wp test --file vitest.journeys.config.ts",
-    "auth:dev-bench": "playwright test journeys/webpresso-auth-dev.spec.ts",
+    "test:journeys": "wp e2e",
+    "auth:dev-bench": "wp exec playwright test journeys/webpresso-auth-dev.spec.ts",
     "e2e:run": "bun src/cli/run-e2e.ts",
     "db:branch:create": "bun scripts/db-branch-create.ts",
     "db:branch:delete": "bun scripts/db-branch-delete.ts",
@@ -19,11 +19,10 @@
     "@webpresso/webpresso": "catalog:"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.55.0",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-kit": "catalog:",
-    "oxlint": "catalog:tooling",
     "vitest": "catalog:tooling"
   }
 }

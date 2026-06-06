@@ -69,7 +69,7 @@ contract now that the local repo already uses `act-with-webpresso` and
 | --------------------- | -------------------------------------------- | ---------------- |
 | Helper contract proof | focused `scripts/act-with-webpresso.test.ts` | pass             |
 | Docs/frontmatter      | `wp audit docs-frontmatter`                  | pass             |
-| Blueprint lifecycle   | `wp audit blueprint-lifecycle --legacy-omx`  | pass             |
+| Blueprint lifecycle   | `wp audit blueprint-lifecycle`               | pass             |
 
 ## Acceptance
 

@@ -46,13 +46,16 @@ function parseSpan(spy: ReturnType<typeof vi.fn>): {
 
 describe("exportOtlpTrace", () => {
   let fetchSpy: ReturnType<typeof vi.fn>;
+  let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     fetchSpy = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
     vi.stubGlobal("fetch", fetchSpy);
+    consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    consoleWarnSpy.mockRestore();
     vi.unstubAllGlobals();
   });
 
@@ -146,6 +149,10 @@ describe("exportOtlpTrace", () => {
     fetchSpy.mockRejectedValue(new Error("network error"));
 
     await expect(exportOtlpTrace(BASE_INPUT)).resolves.toBeUndefined();
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      "langfuse.otlp.export_failed",
+      expect.objectContaining({ reason: "network error" }),
+    );
   });
 
   it("does not throw when fetch returns non-2xx", async () => {

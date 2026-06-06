@@ -4,17 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "build:dev": "vite build --mode dev",
-    "build:prd": "vite build --mode prd",
-    "dev": "vite --host 0.0.0.0 --clearScreen false",
-    "deploy:dev": "pnpm build:dev && wrangler deploy --env dev",
+    "build": "wp exec vite build",
+    "build:dev": "wp exec vite build --mode dev",
+    "build:prd": "wp exec vite build --mode prd",
+    "dev": "wp exec vite --host 0.0.0.0 --clearScreen false",
+    "deploy:dev": "wp exec vite build --mode dev && wp exec wrangler deploy --env dev",
     "deploy:prd": "echo \"Use root deploy:production with release metadata\" && exit 1",
-    "check-types": "tsgo --noEmit",
-    "lint": "oxlint src/",
+    "check-types": "wp typecheck",
+    "lint": "wp lint",
     "test": "wp test --file vitest.config.ts",
-    "test:watch": "wp test --watch --file vitest.config.ts",
-    "test:coverage": "wp test --coverage --file vitest.config.ts"
+    "test:watch": "wp test --file vitest.config.ts",
+    "test:coverage": "wp test --file vitest.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -51,6 +51,7 @@
     "@tanstack/react-query": "^5.99.2",
     "@webpresso/webpresso": "catalog:",
     "axios": "catalog:",
+    "better-auth": "^1.6.9",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "^1.1.1",
@@ -84,10 +85,8 @@
     "@typescript/native-preview": "catalog:tooling",
     "@vitejs/plugin-react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
-    "oxlint": "catalog:tooling",
     "tailwindcss": "catalog:",
-    "vite": "^8.0.10",
-    "vitest": "catalog:tooling",
+    "vite": "catalog:tooling",
     "wrangler": "catalog:workers"
   }
 }

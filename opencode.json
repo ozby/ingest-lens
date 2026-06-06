@@ -7,6 +7,10 @@
     "agent-kit": {
       "type": "local",
       "command": ["wp", "mcp"]
+    },
+    "webpresso": {
+      "type": "local",
+      "command": ["wp", "mcp"]
     }
   },
   "plugin": ["context-mode"],

@@ -81,7 +81,7 @@ developer/CI
 | Gate                | Command / proof                                                          | Success criteria     |
 | ------------------- | ------------------------------------------------------------------------ | -------------------- |
 | `wp` contract proof | focused contract tests such as `apps/e2e/src/global-wp-contract.test.ts` | pass                 |
-| Blueprint lifecycle | `wp audit blueprint-lifecycle --legacy-omx`                              | passes               |
+| Blueprint lifecycle | `wp audit blueprint-lifecycle`                                           | passes               |
 | Architecture drift  | repo architecture-drift check                                            | no touched-doc drift |
 
 ## Acceptance

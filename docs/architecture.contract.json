@@ -2,10 +2,10 @@
   "version": 1,
   "architectureDocs": ["docs/architecture.md"],
   "requiredFiles": [
-    "blueprints/in-progress/system-clarity-hardening/_overview.md",
-    "blueprints/in-progress/surface-test-traceability-hardening/_overview.md",
+    "blueprints/completed/system-clarity-hardening/_overview.md",
+    "blueprints/completed/surface-test-traceability-hardening/_overview.md",
     "blueprints/completed/public-ci-surface-adoption/_overview.md",
-    "blueprints/in-progress/2026-06-02-ingest-lens-preview-production-lanes.md"
+    "blueprints/completed/2026-06-02-ingest-lens-preview-production-lanes.md"
   ],
   "rules": [
     {

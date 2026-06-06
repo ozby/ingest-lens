@@ -37,19 +37,16 @@ const authMocks = vi.hoisted(() => ({
   signIn: vi.fn(),
   signUp: vi.fn(),
   signOut: vi.fn(),
-  createAuthClient: vi.fn(),
-  organizationClient: vi.fn(),
 }));
 
 vi.mock("@/services/api", () => ({ default: apiMocks }));
 vi.mock("./services/api", () => ({ default: apiMocks }));
-vi.mock("@webpresso/webpresso/auth/react", () => ({
+vi.mock("./context/auth-client", () => ({
   useSession: authMocks.useSession,
   signIn: authMocks.signIn,
   signUp: authMocks.signUp,
   signOut: authMocks.signOut,
-  createAuthClient: authMocks.createAuthClient,
-  organizationClient: authMocks.organizationClient,
+  AuthProvider: ({ children }: { children: unknown }) => children,
 }));
 
 // Eager page references: the same route tree the production App renders, but

@@ -26,7 +26,7 @@ rebrand), and Wave 3 (integration-platform AI demo) have all
 
 The repo currently has one active simplification program:
 
-- **[`system-clarity-hardening`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)** — an in-progress broad cleanup
+- **[`system-clarity-hardening`](../../blueprints/completed/system-clarity-hardening/_overview.md)** — completed broad cleanup
   wave focused on reviewer-first docs, architecture distillation,
   contract normalization, and reducing high-signal incidental complexity.
 
@@ -89,7 +89,7 @@ blueprints, but are load-bearing for the current state:
 ## What's next
 
 The current priority is to finish
-[`system-clarity-hardening`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)
+[`system-clarity-hardening`](../../blueprints/completed/system-clarity-hardening/_overview.md)
 before adding new surface-area breadth. After that wave closes, the natural
 follow-on candidates are:
 

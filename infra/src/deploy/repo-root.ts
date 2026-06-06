@@ -19,3 +19,11 @@ export function findRepoRoot(start = dirname(fileURLToPath(import.meta.url))): s
     current = dirname(current);
   }
 }
+
+export function resolveWorkspaceBinary(repoRoot: string, binaryName: string): string {
+  return join(repoRoot, "node_modules", ".bin", binaryName);
+}
+
+export function resolveVpCommand(repoRoot: string): string {
+  return resolveWorkspaceBinary(repoRoot, "vp");
+}

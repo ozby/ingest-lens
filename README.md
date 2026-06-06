@@ -24,6 +24,13 @@ IngestLens is an integration-observability application that validates incoming t
 
 This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (Doppler-wrapped) for secret injection. There are **no `.env` files**.
 
+Install the global `wp` CLI once per machine, or use the one-shot fallback when you need to bootstrap without a global install:
+
+```bash
+npm install -g @webpresso/agent-kit
+# fallback: npm exec --yes --package @webpresso/agent-kit@latest -- wp setup
+```
+
 ```bash
 vp install
 ```
@@ -89,7 +96,7 @@ Full maintainer check (mirrors CI; some steps need secrets / a Neon E2E branch â
 vp check                          # aggregate lint + types + format
 vp run build                      # all packages build; client/worker bundles emitted
 wp audit docs-frontmatter         # docs frontmatter audit (pnpm docs:check)
-wp audit blueprint-lifecycle --legacy-omx   # blueprint lifecycle audit (pnpm blueprints:check)
+wp audit blueprint-lifecycle    # blueprint lifecycle audit (pnpm blueprints:check)
 vp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
 ```
 

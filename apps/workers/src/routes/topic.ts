@@ -3,7 +3,7 @@ import { eq, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { topicSubscriptions, topics, queues } from "../db/schema";
 import { serializeMessage } from "./message-response";
-import { hydrateTopicsWithSubscriptions, requireOwnedQueue, requireOwnedTopic } from "./ownership";
+import { hydrateTopicsWithSubscriptions, requireOwnedTopic, withOwnedQueue } from "./ownership";
 import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 import { createAndDispatchTopicMessages } from "../messages/lifecycle";
@@ -132,26 +132,32 @@ topicRoutes.post("/:topicId/subscribe", async (c) => {
     return topic;
   }
 
-  const queue = await requireOwnedQueue(c, queueId, {}, db);
-  if (queue instanceof Response) {
-    return queue;
-  }
+  return withOwnedQueue(
+    c,
+    queueId,
+    async () => {
+      if (topic.subscribedQueues.includes(queueId)) {
+        return c.json(
+          { status: "error", message: "Queue is already subscribed to this topic" },
+          409,
+        );
+      }
 
-  if (topic.subscribedQueues.includes(queueId)) {
-    return c.json({ status: "error", message: "Queue is already subscribed to this topic" }, 409);
-  }
+      await db.insert(topicSubscriptions).values({ topicId, queueId });
 
-  await db.insert(topicSubscriptions).values({ topicId, queueId });
-
-  return c.json({
-    status: "success",
-    data: {
-      topic: {
-        ...topic,
-        subscribedQueues: [...topic.subscribedQueues, queueId],
-      },
+      return c.json({
+        status: "success",
+        data: {
+          topic: {
+            ...topic,
+            subscribedQueues: [...topic.subscribedQueues, queueId],
+          },
+        },
+      });
     },
-  });
+    {},
+    db,
+  );
 });
 
 // POST /api/topics/:topicId/publish — publish message to all subscribed queues

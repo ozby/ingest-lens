@@ -10,6 +10,19 @@ files** — never add one.
 - Node `>=24`
 - pnpm `11.1.1` (via the repo's `packageManager` field)
 - Bun (used by the repo's scripts)
+- Global `wp` (`@webpresso/agent-kit`) recommended on `PATH`
+
+Bootstrap `wp` once per machine:
+
+```bash
+npm install -g @webpresso/agent-kit
+```
+
+One-shot fallback when you do not want a global install:
+
+```bash
+npm exec --yes --package @webpresso/agent-kit@latest -- wp setup
+```
 
 ## Setup
 
@@ -45,14 +58,14 @@ branch and are **maintainer-only**:
 vp check                                      # aggregate lint + types + format
 vp run build                                  # all packages build
 wp audit docs-frontmatter                     # docs:check
-wp audit blueprint-lifecycle --legacy-omx     # blueprints:check
+wp audit blueprint-lifecycle      # blueprints:check
 vp run e2e --suite foundation                 # maintainer-only; needs a Neon E2E branch (or --suite full)
 ```
 
 ## Planned work goes through blueprints
 
 Non-trivial work is tracked as blueprints under `blueprints/`. The blueprint
-lifecycle is gated by `wp audit blueprint-lifecycle --legacy-omx`. Do not
+lifecycle is gated by `wp audit blueprint-lifecycle`. Do not
 hand-edit generated agent surfaces (`.agent/`, `.claude/`, `.cursor/`,
 `.gemini/`, `.windsurf/`, `catalog/`, `agent-rules/`, `agent-skills/`,
 `blueprints/` runtime files) — those are kept in sync by the agent-kit

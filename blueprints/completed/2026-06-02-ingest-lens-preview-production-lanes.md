@@ -1,10 +1,10 @@
 ---
 type: blueprint
-status: in-progress
+status: completed
 complexity: S
 created: "2026-06-02"
-last_updated: "2026-06-02"
-progress: "Implemented preview-main, preview-pr, cleanup, and release-gated prd lane contract; awaiting final review gate."
+last_updated: "2026-06-05"
+progress: "100% (completed on 2026-06-05 after repo-local deploy-lane verification, full client-suite proof, lint/typecheck/test, architecture drift, docs frontmatter, and blueprint lifecycle all passed.)"
 depends_on: []
 tags:
   - cloudflare
@@ -84,4 +84,4 @@ workflow_dispatch deploy.production.yml release_version=1.2.3
 - `wp lint` / `wp typecheck` / `wp test` through the final quality gate
 - `python3 scripts/check_architecture_drift.py`
 - `wp audit architecture-drift --root .`
-- `wp audit blueprint-lifecycle --legacy-omx`
+- `wp audit blueprint-lifecycle`

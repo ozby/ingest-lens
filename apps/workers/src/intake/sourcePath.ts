@@ -32,6 +32,15 @@ function createError(
   return { ok: false, code, message, path, segment };
 }
 
+function createMissingSegmentError(path: string, segment: string): SourcePathError {
+  return createError(
+    "missing_value",
+    path,
+    `Segment '${segment}' is outside the current payload.`,
+    segment,
+  );
+}
+
 function decodeSegment(segment: string): string {
   return segment.replaceAll("~1", "/").replaceAll("~0", "~");
 }
@@ -117,21 +126,11 @@ export function resolveSourcePath(payload: unknown, path: string): SourcePathRes
     }
 
     if (!isObjectRecord(current)) {
-      return createError(
-        "missing_value",
-        path,
-        `Segment '${segment}' is outside the current payload.`,
-        segment,
-      );
+      return createMissingSegmentError(path, segment);
     }
 
     if (!Object.hasOwn(current, segment)) {
-      return createError(
-        "missing_value",
-        path,
-        `Segment '${segment}' is outside the current payload.`,
-        segment,
-      );
+      return createMissingSegmentError(path, segment);
     }
 
     current = current[segment];

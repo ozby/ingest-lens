@@ -496,6 +496,7 @@ describe("intake routes", () => {
     };
     expect(firstPayload.data.attempt.status).toBe("ingested");
     expect(firstPayload.data.normalizedRecord.eventType).toBe("ingest.record.normalized");
+    expect(vi.mocked(createDb)).toHaveBeenCalledTimes(1);
     expect(deliveryQueue.send).toHaveBeenCalledTimes(1);
     expect(deliveryQueue.send).toHaveBeenCalledWith(
       expect.objectContaining({ queueId: "queue-1", topicId: null, attempt: 0 }),
@@ -1007,6 +1008,7 @@ describe("auto-heal fast path", () => {
 
   it("returns 201 even when dispatchIntakeTracing rejects", async () => {
     bypassAuth(vi.mocked(authenticate));
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.mocked(dispatchIntakeTracing).mockRejectedValueOnce(new Error("Langfuse exploded"));
     vi.mocked(suggestMappings).mockResolvedValueOnce({
       kind: "success",
@@ -1053,5 +1055,10 @@ describe("auto-heal fast path", () => {
     );
 
     expect(response.status).toBe(201);
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      "langfuse.intake_tracing.dispatch_failed",
+      expect.objectContaining({ reason: "Langfuse exploded" }),
+    );
+    consoleWarnSpy.mockRestore();
   });
 });

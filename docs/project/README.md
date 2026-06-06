@@ -11,7 +11,7 @@ Canonical agent guidance lives in `.agent/`. Tool-specific mirrors exist for con
 
 Current active work is tracked in:
 
-- [`blueprints/in-progress/system-clarity-hardening/_overview.md`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)
+- [`blueprints/completed/system-clarity-hardening/_overview.md`](../../blueprints/completed/system-clarity-hardening/_overview.md)
 - [Blueprint index](../../blueprints/README.md)
 - [Reviewer guide](./REVIEWER-GUIDE.md)
 - [Execution roadmap](./ROADMAP.md)

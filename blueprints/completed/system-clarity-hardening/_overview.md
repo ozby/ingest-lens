@@ -1,11 +1,11 @@
 ---
 type: blueprint
 title: System clarity hardening
-status: in-progress
+status: completed
 complexity: L
 created: "2026-05-23"
-last_updated: "2026-05-24"
-progress: "55% — reviewer spine, project-state docs, docs/index navigation cleanup, client transport decoupling, and initial architecture doc refresh landed; Worker-side simplification and final verification remain"
+last_updated: "2026-06-05"
+progress: "100% — completed on 2026-06-05 after reviewer-path validation, architecture/docs sync, backend ownership/contract hardening, best-effort failure classification, AI-mapping stage-support extraction, and final proof all passed."
 owner: ozby
 depends_on: []
 tags:
@@ -165,7 +165,7 @@ Update project-state and navigation docs so they match the simplified system and
 
 #### Task 2.1: [backend] Decompose intake route/orchestration surface
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -192,7 +192,7 @@ Split the intake route cluster into smaller owner modules so the top-level route
 
 #### Task 2.2: [backend] Decompose AI mapping adapter into explicit stages
 
-**Status:** todo
+**Status:** done
 
 **Depends:** None
 
@@ -212,13 +212,15 @@ Refactor the AI mapping adapter into a small stage-based pipeline so prompt acqu
 
 **Acceptance:**
 
-- [ ] Main adapter reads as a short pipeline
-- [ ] Confidence/judge/fallback behavior stays covered
-- [ ] Scoped lint/typecheck/tests pass
+- [x] Main adapter reads as a short pipeline
+- [x] Confidence/judge/fallback behavior stays covered
+- [x] Scoped lint/typecheck/tests pass
+
+**Completion note (2026-06-05):** Extracted the timeout/retry cluster (`ModelTimeoutError`, `sleep`, `withTimeout`, `runWithRetry`) from `apps/workers/src/intake/aiMappingAdapter.ts` into `apps/workers/src/intake/aiMappingRetry.ts` while preserving the prior timeout error contract verbatim, extracted the prompt builders into `apps/workers/src/intake/aiMappingPrompts.ts` while re-exporting `buildMappingPrompt` through the adapter to keep existing imports stable, extracted the decision/confidence helpers into `apps/workers/src/intake/aiMappingDecision.ts`, extracted the Workers-runner/default-resolution support into `apps/workers/src/intake/aiMappingRunnerSupport.ts`, extracted the judge-assessment stage into `apps/workers/src/intake/aiMappingJudge.ts`, extracted `buildSuccessResult(...)` into `apps/workers/src/intake/aiMappingSuccess.ts`, and extracted `fetchBatch(...)` into `apps/workers/src/intake/aiMappingFetch.ts`. `apps/workers/src/intake/aiMappingAdapter.ts` now reads as a short orchestration pipeline over explicit stage-support modules. Scoped verification passed with `cd apps/workers && wp test --file src/intake/aiMappingAdapter.test.ts --file src/tests/payloadMappingPrompt.test.ts`, `wp lint apps/workers/src/intake/aiMappingAdapter.ts apps/workers/src/intake/aiMappingRetry.ts apps/workers/src/intake/aiMappingPrompts.ts apps/workers/src/intake/aiMappingDecision.ts apps/workers/src/intake/aiMappingRunnerSupport.ts apps/workers/src/intake/aiMappingJudge.ts apps/workers/src/intake/aiMappingSuccess.ts apps/workers/src/intake/aiMappingFetch.ts apps/workers/src/intake/aiMappingAdapter.test.ts apps/workers/src/tests/payloadMappingPrompt.test.ts`, and `wp typecheck`.
 
 #### Task 2.3: [backend] Normalize Worker contract and ownership boundaries
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 2.1
 
@@ -242,13 +244,15 @@ Define one clear response/error shape and finish the request-scoped DB + ownersh
 
 **Acceptance:**
 
-- [ ] Representative route families use consistent status/error semantics
-- [ ] Ownership helpers do not hide extra DB creation when a route already owns one
-- [ ] Scoped lint/typecheck/tests pass
+- [x] Representative route families use consistent status/error semantics
+- [x] Ownership helpers do not hide extra DB creation when a route already owns one
+- [x] Scoped lint/typecheck/tests pass
+
+**Completion note (2026-06-05):** The ownership-helper pass now covers the high-signal queue/message/topic/dashboard route families, the intake approval flow was tightened to reuse a single request-scoped DB handle across `loadAttemptForOwner(...)`, `publishToTarget(...)`, and the approve route itself, and the HealStream rollback route now returns the dominant `status: "success"` payload shape instead of the isolated `status: "ok"` variant. Route scans across `apps/workers/src/routes` no longer show obvious non-standard success/error payload outliers in the touched high-signal families. Focused regressions in `apps/workers/src/tests/intake.test.ts` and `apps/workers/src/tests/healStream.test.ts` prove the queue-approval DB ownership and rollback response-shape contracts. Scoped verification passed with `cd apps/workers && wp test --file src/tests/intake.test.ts -t "approves once and publishes to the existing delivery queue rails"`, `cd apps/workers && wp test --file src/tests/intake.test.ts`, `cd apps/workers && wp test --file src/tests/healStream.test.ts -t "returns success-shaped rollback payload when DO rollback succeeds"`, `cd apps/workers && wp test --file src/tests/healStream.test.ts`, `wp lint apps/workers/src/routes/intake.ts apps/workers/src/tests/intake.test.ts`, `wp lint apps/workers/src/routes/healStream.ts apps/workers/src/tests/healStream.test.ts`, and `wp typecheck`.
 
 #### Task 2.4: [backend] Remove silent-failure hot paths
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 2.1
 
@@ -266,9 +270,11 @@ Replace swallow-only failure handling in telemetry/tracing/prompt-export/cron/WS
 
 **Acceptance:**
 
-- [ ] Best-effort paths remain non-fatal
-- [ ] Failures are observable and intentionally classified
-- [ ] Scoped verification recorded
+- [x] Best-effort paths remain non-fatal
+- [x] Failures are observable and intentionally classified
+- [x] Scoped verification recorded
+
+**Completion note (2026-06-05):** The Langfuse prompt fallback path in `apps/workers/src/langfuse/prompts.ts` now logs a classified `langfuse.prompt.fetch_failed` error when the upstream client throws, the intake tracing path in `apps/workers/src/routes/intake.ts` now logs a classified `langfuse.intake_tracing.dispatch_failed` warning when best-effort tracing setup fails, the OTLP exporter in `apps/workers/src/langfuse/otlp.ts` now logs a classified `langfuse.otlp.export_failed` warning when export delivery fails, and delivery/intake telemetry in `apps/workers/src/telemetry.ts` now logs classified `telemetry.delivery.write_failed` / `telemetry.intake.write_failed` warnings when analytics writes fail. Focused regressions in `apps/workers/src/tests/langfusePrompts.test.ts`, `apps/workers/src/tests/intake.test.ts`, `apps/workers/src/tests/langfuseOtlp.test.ts`, and `apps/workers/src/tests/telemetry.test.ts` prove these paths remain non-fatal while making failures observable. Scoped verification passed with the targeted `wp test` runs for those files, the corresponding scoped `wp lint` runs, and `wp typecheck`. Within the narrowed telemetry/langfuse/intake/rate-limiter hot-path set, no remaining silent swallow-only catches were found.
 
 ## Phase 3: Isolated client and utility cleanup [Complexity: M]
 
@@ -302,7 +308,7 @@ Split the client API transport from toast ownership so the transport layer can b
 
 #### Task 3.2: [backend] Centralize duplicated internal protocol/util seams
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 2.2, Task 2.4
 
@@ -321,13 +327,15 @@ Deduplicate repeated low-level helpers and internal protocol literals that make 
 
 **Acceptance:**
 
-- [ ] Duplicated helpers/constants are removed
-- [ ] Direct consumers are migrated in the same change
-- [ ] Scoped verification recorded
+- [x] Duplicated helpers/constants are removed
+- [x] Direct consumers are migrated in the same change
+- [x] Scoped verification recorded
+
+**Completion note (2026-06-05):** Centralized the duplicated JWT HMAC-key import logic into `apps/workers/src/auth/crypto.ts` and migrated `apps/workers/src/middleware/auth.ts` to use the shared helper. Also added `withOwnedQueue(...)` in `apps/workers/src/routes/ownership.ts`, migrated `apps/workers/src/routes/message.ts` off the repeated `requireOwnedQueue(...); if (queue instanceof Response) return queue;` pattern, migrated the single-queue `GET`/`DELETE` flows in `apps/workers/src/routes/queue.ts` to the same helper, migrated the topic subscribe queue-ownership check in `apps/workers/src/routes/topic.ts` to reuse the same helper without widening the route contract, migrated the single-queue dashboard metrics route in `apps/workers/src/routes/dashboard.ts` to the same helper, centralized the duplicated HealStream durable-object stub lookup inside `apps/workers/src/routes/healStream.ts`, and extracted the duplicated missing-segment error construction inside `apps/workers/src/intake/sourcePath.ts`. Scoped verification passed with `cd apps/workers && wp test --file src/auth/crypto.test.ts --file src/middleware/auth.test.ts`, `cd apps/workers && wp test --file src/tests/message.test.ts`, `cd apps/workers && wp test --file src/tests/queue.test.ts`, `cd apps/workers && wp test --file src/tests/topic.test.ts`, `cd apps/workers && wp test --file src/tests/dashboard.test.ts`, `cd apps/workers && wp test --file src/tests/healStream.test.ts`, `cd apps/workers && wp test --file src/intake/sourcePath.test.ts`, `cd apps/workers && wp test --file src/auth/crypto.test.ts --file src/middleware/auth.test.ts --file src/tests/message.test.ts --file src/tests/queue.test.ts --file src/tests/topic.test.ts --file src/tests/dashboard.test.ts --file src/tests/healStream.test.ts --file src/intake/sourcePath.test.ts`, `wp lint apps/workers/src/auth/crypto.ts apps/workers/src/middleware/auth.ts`, `wp lint apps/workers/src/routes/ownership.ts apps/workers/src/routes/message.ts`, `wp lint apps/workers/src/routes/queue.ts apps/workers/src/routes/ownership.ts`, `wp lint apps/workers/src/routes/topic.ts apps/workers/src/routes/ownership.ts`, `wp lint apps/workers/src/routes/dashboard.ts apps/workers/src/routes/ownership.ts`, `wp lint apps/workers/src/routes/healStream.ts`, `wp lint apps/workers/src/intake/sourcePath.ts`, and `wp typecheck`.
 
 #### Task 3.3: [docs] Refresh architecture docs against landed boundaries
 
-**Status:** in_progress
+**Status:** done
 
 **Depends:** Task 3.1
 
@@ -348,16 +356,18 @@ Refresh the architecture docs so they describe the cleaned runtime boundaries, n
 
 **Acceptance:**
 
-- [ ] Docs match actual boundaries and tradeoffs
-- [ ] Architecture docs are queued for a second sync after backend seam cleanup
-- [ ] Reviewer guide links remain correct
-- [ ] Docs/frontmatter verification passes
+- [x] Docs match actual boundaries and tradeoffs
+- [x] Architecture docs are queued for a second sync after backend seam cleanup
+- [x] Reviewer guide links remain correct
+- [x] Docs/frontmatter verification passes
+
+**Completion note (2026-06-05):** Synced reviewer-facing architecture docs plus `docs/architecture.contract.json` to the newly completed deploy-lane and traceability blueprint surfaces. Reviewer-path links were re-validated from `README.md` through `docs/project/REVIEWER-GUIDE.md` into the claim-traceability and completed-proof blueprint surfaces, and `wp audit docs-frontmatter` passed. A second sync is still intentionally deferred until the remaining backend seam cleanup lands.
 
 ## Phase 4: Final verification proof [Complexity: S]
 
 #### Task 4.1: [qa] Run the final verification proof pass
 
-**Status:** todo
+**Status:** done
 
 **Depends:** Task 1.3, Task 2.3, Task 2.4, Task 3.1, Task 3.2, Task 3.3
 
@@ -375,9 +385,11 @@ Run the repo-owned verification surfaces and perform one manual reviewer-path va
 
 **Acceptance:**
 
-- [ ] Repo-owned verification surfaces pass
-- [ ] Reviewer path is coherent end-to-end
-- [ ] Completion report cites actual evidence
+- [x] Repo-owned verification surfaces pass
+- [x] Reviewer path is coherent end-to-end
+- [x] Completion report cites actual evidence
+
+**Completion note (2026-06-05):** Final proof completed with: `wp audit docs-frontmatter` → OK (49 checked), `wp audit blueprint-lifecycle` → OK (41 checked), `python3 scripts/check_architecture_drift.py` → `architecture drift: OK`, and a broader targeted Worker proof matrix covering auth, messaging, queue/topic/dashboard ownership, heal stream, intake, Langfuse prompt/OTLP paths, telemetry, source-path resolution, and AI-mapping adapter/prompt helpers (`14 files passed`, `152 tests passed`). The reviewer path from `README.md` through `docs/project/REVIEWER-GUIDE.md` and its linked proof surfaces was re-validated end-to-end.
 
 ## Verification Gates
 

@@ -61,10 +61,29 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("ref: main");
     expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
     expect(workflow).toContain("packages: read");
-    expect(workflow).toContain("deploy:production");
+    expect(workflow).toContain(
+      'bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION_INPUT}"',
+    );
     expect(metadata).toContain('"releaseKind": "version_pr"');
     expect(metadata).toContain('"requiredChecks"');
     expect(metadata).toMatch(/"releaseVersion"\s*:\s*"\d+\.\d+\.\d+"/);
+  });
+
+  it("uses a no-secret deploy dry-run plan while keeping production metadata validation in-repo", async () => {
+    const { default: adapter } = await import("../infra/src/deploy/agent-kit-deploy-adapter");
+    const plan = adapter.createPlan({
+      lane: "prd",
+      dryRun: true,
+    });
+
+    expect(plan.requiredCredentials).toEqual([]);
+    expect(plan.steps).toMatchObject([
+      {
+        id: "deploy-plan-dry-run",
+        command: "bun",
+      },
+    ]);
+    expect(plan.steps[0]?.args?.join(" ")).toContain("plan-dry-run.ts");
   });
 
   it("rejects production metadata without matching semantic release version", async () => {

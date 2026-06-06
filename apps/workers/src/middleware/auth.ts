@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { createBetterAuth } from "../auth/better-auth-server";
-import { base64UrlDecode } from "../auth/crypto";
+import { base64UrlDecode, importJwtHmacKey } from "../auth/crypto";
 import type { Env } from "../db/client";
 
 async function isJtiRevoked(
@@ -67,14 +67,7 @@ async function verifyJwtSignature(
   }
 
   const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["verify"],
-  );
+  const cryptoKey = await importJwtHmacKey(secret, ["verify"]);
 
   const signingInput = `${headerB64}.${payloadB64}`;
   const signatureBytes = base64UrlDecode(signatureB64);

@@ -87,6 +87,20 @@ export const healStreamRoutes = new Hono<{
 
 healStreamRoutes.use("*", authenticate);
 
+function getHealStreamStub(
+  c: Context<{
+    Bindings: Env;
+    Variables: AuthVariables;
+  }>,
+  sourceSystem: string,
+  contractId: string,
+  contractVersion: string,
+) {
+  const doName = `${sourceSystem}:${contractId}:${contractVersion}`;
+  const doId = c.env.HEAL_STREAM.idFromName(doName);
+  return c.env.HEAL_STREAM.get(doId);
+}
+
 /**
  * GET /api/heal/stream/:sourceSystem/:contractId/:contractVersion
  *
@@ -95,10 +109,7 @@ healStreamRoutes.use("*", authenticate);
  */
 healStreamRoutes.get("/stream/:sourceSystem/:contractId/:contractVersion", async (c) => {
   const { sourceSystem, contractId, contractVersion } = c.req.param();
-  const doName = `${sourceSystem}:${contractId}:${contractVersion}`;
-
-  const doId = c.env.HEAL_STREAM.idFromName(doName);
-  const stub = c.env.HEAL_STREAM.get(doId);
+  const stub = getHealStreamStub(c, sourceSystem, contractId, contractVersion);
 
   const response = await stub.fetch(
     new Request("https://do-internal/subscribe", { method: "GET" }),
@@ -114,7 +125,7 @@ healStreamRoutes.get("/stream/:sourceSystem/:contractId/:contractVersion", async
  * approvedMappingRevision for this source combo from Neon, then calls
  * HealStreamDO /rollback.
  *
- * Returns 200 { status: "ok", rolledBackTo: previousRevision.id }
+ * Returns 200 { status: "success", rolledBackTo: previousRevision.id }
  */
 healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollback", async (c) => {
   const { sourceSystem, contractId, contractVersion } = c.req.param();
@@ -125,9 +136,7 @@ healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollb
   }
   const { current, previous, suggestions } = rollbackContext;
 
-  const doName = `${sourceSystem}:${contractId}:${contractVersion}`;
-  const doId = c.env.HEAL_STREAM.idFromName(doName);
-  const stub = c.env.HEAL_STREAM.get(doId);
+  const stub = getHealStreamStub(c, sourceSystem, contractId, contractVersion);
 
   const rollbackRes = await stub.fetch(
     new Request("https://do-internal/rollback", {
@@ -159,5 +168,5 @@ healStreamRoutes.patch("/stream/:sourceSystem/:contractId/:contractVersion/rollb
     return c.json({ status: "error", message: "Rollback failed in DO." }, 500);
   }
 
-  return c.json({ status: "ok", rolledBackTo: previous.id });
+  return c.json({ status: "success", rolledBackTo: previous.id });
 });

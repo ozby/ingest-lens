@@ -26,3 +26,11 @@ Each subdirectory represents a lifecycle state:
 - Any state → `archived`: when the work is dropped or replaced.
 
 Move files with `git mv` so history follows the spec through its lifecycle.
+
+## Active work (2026-06-04)
+
+| Blueprint                           | Path                                                                                                                                 | Purpose                                                                                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Preview + production lanes          | [`in-progress/2026-06-02-ingest-lens-preview-production-lanes.md`](./in-progress/2026-06-02-ingest-lens-preview-production-lanes.md) | Stable `preview-main`, ephemeral `preview-pr-<n>`, and release-gated `prd` lane contract.                                            |
+| Surface test traceability hardening | [`in-progress/surface-test-traceability-hardening/_overview.md`](./in-progress/surface-test-traceability-hardening/_overview.md)     | Reviewer-facing claims now map to executable proof; remaining work is the widened verification pass.                                 |
+| System clarity hardening            | [`completed/system-clarity-hardening/_overview.md`](./completed/system-clarity-hardening/_overview.md)                               | Completed documentation/runtime simplification lane covering reviewer spine, runtime-boundary cleanup, and final verification proof. |

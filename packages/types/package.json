@@ -5,13 +5,12 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "check-types": "tsgo --noEmit",
+    "check-types": "wp typecheck",
     "test": "wp test --file vitest.config.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:",
-    "vitest": "catalog:tooling"
+    "@webpresso/agent-kit": "catalog:"
   }
 }

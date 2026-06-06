@@ -33,8 +33,8 @@
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee --watch",
-    "check-types": "tsgo --noEmit",
-    "lint": "oxlint src/",
+    "check-types": "wp typecheck",
+    "lint": "wp lint",
     "test": "wp test --file vitest.config.ts"
   },
   "dependencies": {
@@ -64,10 +64,8 @@
     "@vitejs/plugin-react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
     "bunchee": "catalog:",
-    "oxlint": "catalog:tooling",
     "react": "catalog:",
-    "react-dom": "catalog:",
-    "vitest": "catalog:tooling"
+    "react-dom": "catalog:"
   },
   "peerDependencies": {
     "@types/react": ">=19",

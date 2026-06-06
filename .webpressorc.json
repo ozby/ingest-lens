@@ -1,7 +1,13 @@
 {
   "version": "1",
   "installed": {
-    "tier3Skills": ["base-kit"]
+    "tier3Skills": [
+      "base-kit",
+      "better-auth-best-practices",
+      "react-doctor",
+      "tanstack-query",
+      "web-design-guidelines"
+    ]
   },
   "hosts": {
     "selected": ["codex", "claude", "opencode"],
@@ -21,9 +27,15 @@
       }
     }
   },
+  "audit": {
+    "toolchainIsolation": {
+      "allowDependencies": ["tsx", "vitest", "@playwright/test", "wrangler"]
+    }
+  },
   "rules": {
     "overrides": []
   },
   "scripts": {},
-  "durablePlanningRoot": ".agent/planning/"
+  "durablePlanningRoot": ".agent/planning/",
+  "globalInstall": true
 }

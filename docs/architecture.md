@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-05-22"
+last_updated: "2026-06-05"
 ---
 
 # Architecture
@@ -10,6 +10,7 @@ Delivery contract: [`delivery-guarantees.md`](./delivery-guarantees.md). The
 Consistency Lab is a separate Worker surface documented in
 [`lab-architecture.md`](./lab-architecture.md).
 Executable claim map: [`guides/claim-e2e-traceability.md`](./guides/claim-e2e-traceability.md).
+Recently landed proof surfaces that now back this document: [`../blueprints/completed/surface-test-traceability-hardening/_overview.md`](../blueprints/completed/surface-test-traceability-hardening/_overview.md) and [`../blueprints/completed/2026-06-02-ingest-lens-preview-production-lanes.md`](../blueprints/completed/2026-06-02-ingest-lens-preview-production-lanes.md).
 
 ## Governance
 

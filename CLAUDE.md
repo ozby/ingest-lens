@@ -253,7 +253,8 @@ What this provides:
 
 Pin to release tags (`v<version>`) — `main` of `webpresso/agent-kit` does not have `dist/` checked in; only release tags do.
 
-This repo uses the globally installed `wp` CLI surface (`.agent-kitrc.json`
-sets `globalInstall: true`). Do not add a repo-local `@webpresso/agent-kit`
-devDependency or reintroduce wrapper scripts such as
-`scripts/run-webpresso-cli.ts`; invoke `wp …` directly.
+This repo uses the global-install `wp` runtime contract
+(`.webpressorc.json#globalInstall = true`). Keep invoking `wp …` directly and
+do not reintroduce wrapper scripts such as `scripts/run-webpresso-cli.ts`.
+The root `@webpresso/agent-kit` devDependency remains intentional because this
+repo still imports shared config/runtime subpaths from that package.

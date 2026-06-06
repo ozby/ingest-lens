@@ -25,8 +25,13 @@ export function recordDelivery(env: Env, opts: RecordDeliveryOptions): void {
       doubles: [opts.latencyMs, opts.attempt],
       indexes: [opts.queueId],
     });
-  } catch {
-    // best-effort: telemetry failure must never break delivery
+  } catch (error) {
+    console.warn("telemetry.delivery.write_failed", {
+      queueId: opts.queueId,
+      messageId: opts.messageId,
+      status: opts.status,
+      reason: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -117,7 +122,11 @@ export function recordIntakeLifecycle(env: Env, event: IntakeTelemetryEvent): vo
       doubles: [Number(fields.overall_confidence), Number(fields.validation_error_count)],
       indexes: [event.mappingTraceId],
     });
-  } catch {
-    // best-effort: telemetry failure must never break intake
+  } catch (error) {
+    console.warn("telemetry.intake.write_failed", {
+      mappingTraceId: event.mappingTraceId,
+      event: event.event,
+      reason: error instanceof Error ? error.message : String(error),
+    });
   }
 }

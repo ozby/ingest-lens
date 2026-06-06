@@ -24,20 +24,15 @@
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee --watch",
-    "lint": "oxlint src/",
-    "check-types": "tsgo --noEmit",
+    "lint": "wp lint",
+    "check-types": "wp typecheck",
     "test": "wp test --file vitest.config.ts",
-    "mutation": "stryker run"
+    "mutation": "wp test --mutation"
   },
   "devDependencies": {
-    "@stryker-mutator/core": "catalog:",
-    "@stryker-mutator/typescript-checker": "catalog:",
-    "@stryker-mutator/vitest-runner": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-kit": "catalog:",
-    "bunchee": "catalog:",
-    "oxlint": "catalog:tooling",
-    "vitest": "catalog:tooling"
+    "bunchee": "catalog:"
   }
 }

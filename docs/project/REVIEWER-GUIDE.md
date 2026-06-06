@@ -1,6 +1,6 @@
 ---
 type: guide
-last_updated: "2026-05-23"
+last_updated: "2026-06-05"
 ---
 
 # Reviewer guide
@@ -51,7 +51,9 @@ Use these proof surfaces:
 - [Execution roadmap](./ROADMAP.md) — how major waves landed and what is active now
 - [Claim ↔ E2E traceability](../guides/claim-e2e-traceability.md) — reviewer-facing claim map to executable proof
 - [Project records](./README.md) — links to roadmap and historical housekeeping
-- [`blueprints/in-progress/system-clarity-hardening/_overview.md`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)
+- [`blueprints/completed/system-clarity-hardening/_overview.md`](../../blueprints/completed/system-clarity-hardening/_overview.md) — completed simplification program
+- [`blueprints/completed/surface-test-traceability-hardening/_overview.md`](../../blueprints/completed/surface-test-traceability-hardening/_overview.md) — shipped claim/proof hardening for reviewer-facing surfaces
+- [`blueprints/completed/2026-06-02-ingest-lens-preview-production-lanes.md`](../../blueprints/completed/2026-06-02-ingest-lens-preview-production-lanes.md) — shipped deploy-lane contract and production gating proof
 - [`apps/workers/src/tests/`](../../apps/workers/src/tests/) — route and runtime behavior coverage
 - [`apps/client/src/services/`](../../apps/client/src/services/) — client/Worker transport seam and contract tests
 - [`apps/lab/`](../../apps/lab/) + [Lab architecture](../lab-architecture.md) — measurement and comparison harnesses
@@ -65,7 +67,7 @@ If you want one quick code path, inspect:
 
 The active simplification wave is making those boundaries thinner and more explicit:
 
-- [`blueprints/in-progress/system-clarity-hardening/_overview.md`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)
+- [`blueprints/completed/system-clarity-hardening/_overview.md`](../../blueprints/completed/system-clarity-hardening/_overview.md)
 
 ## What this project is trying to show
 

@@ -15,6 +15,7 @@ const CREDENTIALS = {
 };
 
 let mockPromptGet: ReturnType<typeof vi.fn>;
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
 vi.mock("@langfuse/client", () => ({
   LangfuseClient: vi.fn(),
@@ -37,9 +38,11 @@ describe("fetchPayloadMapperPrompt", () => {
       this._constructorParams = params;
       this.prompt = { get: mockPromptGet };
     } as never);
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    consoleErrorSpy.mockRestore();
     vi.clearAllMocks();
   });
 
@@ -101,6 +104,13 @@ describe("fetchPayloadMapperPrompt", () => {
     expect(result.promptName).toBe(PROMPT_NAME);
     expect(result.promptVersion).toBe(FALLBACK_PROMPT_VERSION);
     expect(result.usedFallback).toBe(true);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "langfuse.prompt.fetch_failed",
+      expect.objectContaining({
+        promptName: PROMPT_NAME,
+        reason: "network error",
+      }),
+    );
   });
 
   it("returns fallback metadata when SDK returns isFallback: true", async () => {

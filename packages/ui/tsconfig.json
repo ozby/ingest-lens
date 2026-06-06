@@ -1,10 +1,21 @@
 {
-  "extends": "@webpresso/agent-kit/tsconfig/react-library.json",
   "compilerOptions": {
-    "lib": ["DOM", "ES2015"],
-    "sourceMap": true,
-    "types": ["vitest/globals", "node"],
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "strict": true,
+    "noImplicitAny": true,
     "noUncheckedIndexedAccess": false,
-    "verbatimModuleSyntax": false
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "jsx": "react-jsx",
+    "sourceMap": true,
+    "types": ["vitest/globals", "node", "react", "react-dom"]
   }
 }
