@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { recordDelivery } from "../telemetry";
+import { recordDelivery, recordIntakeLifecycle } from "../telemetry";
 import { createMockEnv } from "./helpers";
 
 describe("recordDelivery", () => {
@@ -65,6 +65,7 @@ describe("recordDelivery", () => {
   });
 
   it("does not throw when writeDataPoint throws (best-effort)", () => {
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const writeDataPoint = vi.fn().mockImplementation(() => {
       throw new Error("analytics unavailable");
     });
@@ -80,5 +81,53 @@ describe("recordDelivery", () => {
         attempt: 0,
       }),
     ).not.toThrow();
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      "telemetry.delivery.write_failed",
+      expect.objectContaining({
+        queueId: "queue-1",
+        messageId: "msg-1",
+        reason: "analytics unavailable",
+      }),
+    );
+    consoleWarnSpy.mockRestore();
+  });
+});
+
+describe("recordIntakeLifecycle", () => {
+  it("does not throw when writeDataPoint throws (best-effort)", () => {
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const writeDataPoint = vi.fn().mockImplementation(() => {
+      throw new Error("analytics unavailable");
+    });
+    const env = createMockEnv(undefined, undefined, { writeDataPoint });
+
+    expect(() =>
+      recordIntakeLifecycle(env, {
+        contractId: "job-posting-v1",
+        deliveryTargetId: "queue-1",
+        deliveryTargetKind: "queue",
+        driftCategory: "exact",
+        event: "suggestion.created",
+        ingestStatus: "pending",
+        mappingTraceId: "trace-1",
+        modelName: "test-model",
+        overallConfidence: 0.96,
+        promptVersion: "payload-mapper-v1",
+        sourceKind: "inline_payload",
+        sourceSystem: "manual",
+        status: "pending_review",
+        validationErrorCount: 0,
+      }),
+    ).not.toThrow();
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      "telemetry.intake.write_failed",
+      expect.objectContaining({
+        mappingTraceId: "trace-1",
+        event: "suggestion.created",
+        reason: "analytics unavailable",
+      }),
+    );
+    consoleWarnSpy.mockRestore();
   });
 });

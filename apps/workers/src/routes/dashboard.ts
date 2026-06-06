@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { and, count, eq, gt, inArray } from "drizzle-orm";
 import { createDb, type Env } from "../db/client";
 import { intakeAttempts, queues, messages, serverMetrics, queueMetrics } from "../db/schema";
-import { requireOwnedQueue } from "./ownership";
+import { withOwnedQueue } from "./ownership";
 import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
 
@@ -167,74 +167,72 @@ dashboardRoutes.get("/queues/:queueId", async (c) => {
   const db = createDb(c.env);
   const now = new Date();
 
-  const queue = await requireOwnedQueue(
+  return withOwnedQueue(
     c,
     queueId,
+    async () => {
+      let [metrics] = await db
+        .select()
+        .from(queueMetrics)
+        .where(eq(queueMetrics.queueId, queueId))
+        .limit(1);
+
+      if (!metrics) {
+        [metrics] = await db
+          .insert(queueMetrics)
+          .values({
+            queueId,
+            messageCount: 0,
+            messagesSent: 0,
+            messagesReceived: 0,
+            avgWaitTime: 0,
+          })
+          .returning();
+      }
+
+      const [totalMessagesRow] = await db
+        .select({ totalMessages: count() })
+        .from(messages)
+        .where(eq(messages.queueId, queueId));
+
+      const [activeMessagesRow] = await db
+        .select({ activeMessages: count() })
+        .from(messages)
+        .where(
+          and(
+            eq(messages.queueId, queueId),
+            eq(messages.received, true),
+            gt(messages.visibilityExpiresAt, now),
+          ),
+        );
+
+      const totalMessages = totalMessagesRow?.totalMessages ?? 0;
+      const activeMessages = activeMessagesRow?.activeMessages ?? 0;
+
+      const [oldestMessage] = await db
+        .select({ createdAt: messages.createdAt })
+        .from(messages)
+        .where(eq(messages.queueId, queueId))
+        .orderBy(messages.createdAt)
+        .limit(1);
+
+      return c.json({
+        status: "success",
+        data: {
+          queueMetrics: metrics,
+          stats: {
+            totalMessages,
+            activeMessages,
+            oldestMessageAge: oldestMessage ? Date.now() - oldestMessage.createdAt.getTime() : 0,
+          },
+        },
+      });
+    },
     {
       unauthorized: "Not authorized to view metrics for this queue",
     },
     db,
   );
-  if (queue instanceof Response) {
-    return queue;
-  }
-
-  let [metrics] = await db
-    .select()
-    .from(queueMetrics)
-    .where(eq(queueMetrics.queueId, queueId))
-    .limit(1);
-
-  if (!metrics) {
-    [metrics] = await db
-      .insert(queueMetrics)
-      .values({
-        queueId,
-        messageCount: 0,
-        messagesSent: 0,
-        messagesReceived: 0,
-        avgWaitTime: 0,
-      })
-      .returning();
-  }
-
-  const [totalMessagesRow] = await db
-    .select({ totalMessages: count() })
-    .from(messages)
-    .where(eq(messages.queueId, queueId));
-
-  const [activeMessagesRow] = await db
-    .select({ activeMessages: count() })
-    .from(messages)
-    .where(
-      and(
-        eq(messages.queueId, queueId),
-        eq(messages.received, true),
-        gt(messages.visibilityExpiresAt, now),
-      ),
-    );
-
-  const totalMessages = totalMessagesRow?.totalMessages ?? 0;
-  const activeMessages = activeMessagesRow?.activeMessages ?? 0;
-
-  const [oldestMessage] = await db
-    .select({ createdAt: messages.createdAt })
-    .from(messages)
-    .where(eq(messages.queueId, queueId))
-    .orderBy(messages.createdAt)
-    .limit(1);
-
-  return c.json({
-    status: "success",
-    data: {
-      queueMetrics: metrics,
-      stats: {
-        totalMessages,
-        activeMessages,
-        oldestMessageAge: oldestMessage ? Date.now() - oldestMessage.createdAt.getTime() : 0,
-      },
-    },
-  });
 });
 
 // GET /api/dashboard/intake — intake lifecycle counts and attempt list

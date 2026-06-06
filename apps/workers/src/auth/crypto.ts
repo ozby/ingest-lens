@@ -18,6 +18,20 @@ export function base64UrlDecode(str: string): Uint8Array {
   return bytes;
 }
 
+export async function importJwtHmacKey(
+  secret: string,
+  usages: readonly KeyUsage[],
+): Promise<CryptoKey> {
+  const encoder = new TextEncoder();
+  return crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    [...usages],
+  );
+}
+
 export async function hashPasswordAsync(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(PBKDF2_SALT_BYTES));
   const hashBytes = await derivePbkdf2Hash(password, salt, PBKDF2_ITERATIONS);
@@ -71,14 +85,7 @@ export function generateToken(
     );
 
     const signingInput = `${header}.${payload}`;
-    const keyData = encoder.encode(secret);
-    const cryptoKey = await crypto.subtle.importKey(
-      "raw",
-      keyData,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"],
-    );
+    const cryptoKey = await importJwtHmacKey(secret, ["sign"]);
 
     const signatureBuffer = await crypto.subtle.sign(
       "HMAC",

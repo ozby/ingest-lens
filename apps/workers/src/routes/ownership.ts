@@ -9,7 +9,7 @@ type AppContext = Context<{
   Variables: AuthVariables;
 }>;
 
-type DbLike = Pick<ReturnType<typeof createDb>, "select">;
+type DbLike = ReturnType<typeof createDb>;
 
 type TopicWithSubscriptions = typeof topics.$inferSelect & {
   subscribedQueues: string[];
@@ -88,6 +88,21 @@ export async function requireOwnedQueue(
   }
 
   return queue;
+}
+
+export async function withOwnedQueue<T>(
+  c: AppContext,
+  queueId: string,
+  run: (queue: typeof queues.$inferSelect, db: DbLike) => Promise<T>,
+  messages: Partial<OwnershipMessages> = {},
+  db: DbLike = createDb(c.env),
+): Promise<T | Response> {
+  const queue = await requireOwnedQueue(c, queueId, messages, db);
+  if (queue instanceof Response) {
+    return queue;
+  }
+
+  return run(queue, db);
 }
 
 export async function requireOwnedTopic(

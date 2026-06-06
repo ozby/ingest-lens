@@ -1,6 +1,6 @@
 ---
 type: system
-last_updated: "2026-05-22"
+last_updated: "2026-06-05"
 ---
 
 # System Architecture
@@ -11,6 +11,7 @@ canonical top-level diagram for the shipped system. Detailed flow behavior
 lives in [`architecture.md`](./architecture.md). The separate Consistency Lab
 is documented in [`lab-architecture.md`](./lab-architecture.md). Reviewer-facing
 claim proof lives in [`./guides/claim-e2e-traceability.md`](./guides/claim-e2e-traceability.md).
+The deploy-lane contract and reviewer-proof hardening that shape this runtime view are now captured in [`../blueprints/completed/2026-06-02-ingest-lens-preview-production-lanes.md`](../blueprints/completed/2026-06-02-ingest-lens-preview-production-lanes.md) and [`../blueprints/completed/surface-test-traceability-hardening/_overview.md`](../blueprints/completed/surface-test-traceability-hardening/_overview.md).
 
 ## Primary production runtime
 

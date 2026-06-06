@@ -23,6 +23,15 @@ export type LangfusePromptResult = {
   usedFallback: boolean;
 };
 
+function fallbackPromptResult(): LangfusePromptResult {
+  return {
+    promptText: FALLBACK_PROMPT_TEXT,
+    promptName: PROMPT_NAME,
+    promptVersion: FALLBACK_PROMPT_VERSION,
+    usedFallback: true,
+  };
+}
+
 /**
  * Fetches the `payload-mapper` prompt from Langfuse using the `production` label.
  * Uses SDK-level caching (`cacheTtlSeconds`). Falls back to `FALLBACK_PROMPT_TEXT`
@@ -34,12 +43,7 @@ export async function fetchPayloadMapperPrompt(
   const { LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_BASE_URL } = env;
 
   if (!LANGFUSE_PUBLIC_KEY || !LANGFUSE_SECRET_KEY) {
-    return {
-      promptText: FALLBACK_PROMPT_TEXT,
-      promptName: PROMPT_NAME,
-      promptVersion: FALLBACK_PROMPT_VERSION,
-      usedFallback: true,
-    };
+    return fallbackPromptResult();
   }
 
   const client = new LangfuseClient({
@@ -61,12 +65,11 @@ export async function fetchPayloadMapperPrompt(
       promptVersion: String(result.version),
       usedFallback: result.isFallback,
     };
-  } catch {
-    return {
-      promptText: FALLBACK_PROMPT_TEXT,
+  } catch (error) {
+    console.error("langfuse.prompt.fetch_failed", {
       promptName: PROMPT_NAME,
-      promptVersion: FALLBACK_PROMPT_VERSION,
-      usedFallback: true,
-    };
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    return fallbackPromptResult();
   }
 }

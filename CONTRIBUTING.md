@@ -58,14 +58,14 @@ branch and are **maintainer-only**:
 vp check                                      # aggregate lint + types + format
 vp run build                                  # all packages build
 wp audit docs-frontmatter                     # docs:check
-wp audit blueprint-lifecycle --omx-plans      # blueprints:check
+wp audit blueprint-lifecycle      # blueprints:check
 vp run e2e --suite foundation                 # maintainer-only; needs a Neon E2E branch (or --suite full)
 ```
 
 ## Planned work goes through blueprints
 
 Non-trivial work is tracked as blueprints under `blueprints/`. The blueprint
-lifecycle is gated by `wp audit blueprint-lifecycle --omx-plans`. Do not
+lifecycle is gated by `wp audit blueprint-lifecycle`. Do not
 hand-edit generated agent surfaces (`.agent/`, `.claude/`, `.cursor/`,
 `.gemini/`, `.windsurf/`, `catalog/`, `agent-rules/`, `agent-skills/`,
 `blueprints/` runtime files) — those are kept in sync by the agent-kit

@@ -315,6 +315,7 @@ async function handleNewApprove(
   try {
     await publishToTarget(
       c,
+      db,
       normalizedRecord as unknown as Record<string, unknown>,
       approvedAttempt.deliveryTarget,
       deriveIngestIdempotencyKey(approvedAttempt.mappingTraceId, mappingVersion.mappingVersionId),
@@ -350,6 +351,7 @@ async function publishAndIngestForApprove(
   try {
     await publishToTarget(
       c,
+      db,
       normalizedRecord as unknown as Record<string, unknown>,
       existingAttempt.deliveryTarget,
       deriveIngestIdempotencyKey(existingAttempt.mappingTraceId, existingAttempt.mappingVersionId!),
@@ -488,8 +490,8 @@ async function markAttemptIngested(
 async function loadAttemptForOwner(
   c: AppContext,
   attemptId: string,
+  db: ReturnType<typeof createDb> = createDb(c.env),
 ): Promise<AttemptRow | Response> {
-  const db = createDb(c.env);
   const ownerId = c.get("user").userId;
 
   const [row] = await db
@@ -581,12 +583,11 @@ async function publishTopicTarget(
 
 async function publishToTarget(
   c: AppContext,
+  db: ReturnType<typeof createDb>,
   envelope: Record<string, unknown>,
   deliveryTarget: DeliveryTarget,
   idempotencyKey: string | null,
 ): Promise<void> {
-  const db = createDb(c.env);
-
   if (deliveryTarget.queueId) {
     await publishQueueTarget(c, db, deliveryTarget.queueId, envelope, idempotencyKey);
     return;
@@ -925,6 +926,7 @@ async function tryHealPath(
   try {
     await publishToTarget(
       c,
+      db,
       normalizedRecord as unknown as Record<string, unknown>,
       approvedAttempt.deliveryTarget,
       deriveIngestIdempotencyKey(approvedAttempt.mappingTraceId, mappingVersion.mappingVersionId),
@@ -1004,8 +1006,12 @@ async function recordPromptTracing(
       env: c.env,
     });
     c.executionCtx.waitUntil(Promise.allSettled([tracePostPromise, flushPromise]));
-  } catch {
-    // Langfuse failure must not affect HTTP behavior
+  } catch (error) {
+    console.warn("langfuse.intake_tracing.dispatch_failed", {
+      promptName,
+      promptVersion,
+      reason: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 
@@ -1096,13 +1102,13 @@ intakeRoutes.post("/mapping-suggestions", async (c) => {
 intakeRoutes.post("/mapping-suggestions/:id/reject", async (c) => {
   const attemptId = c.req.param("id");
   const body = await c.req.json<RejectIntakeSuggestionRequest>();
+  const db = createDb(c.env);
 
-  const existingOrResponse = await loadAttemptForOwner(c, attemptId);
+  const existingOrResponse = await loadAttemptForOwner(c, attemptId, db);
   if (existingOrResponse instanceof Response) {
     return existingOrResponse;
   }
   const existing = existingOrResponse;
-  const db = createDb(c.env);
 
   if (existing.status === "rejected") {
     return c.json({
@@ -1135,13 +1141,13 @@ intakeRoutes.post("/mapping-suggestions/:id/reject", async (c) => {
 intakeRoutes.post("/mapping-suggestions/:id/approve", async (c) => {
   const attemptId = c.req.param("id");
   const body = await c.req.json<{ approvedSuggestionIds?: string[] }>();
+  const db = createDb(c.env);
 
-  const attemptRowOrResponse = await loadAttemptForOwner(c, attemptId);
+  const attemptRowOrResponse = await loadAttemptForOwner(c, attemptId, db);
   if (attemptRowOrResponse instanceof Response) {
     return attemptRowOrResponse;
   }
   const attemptRow = attemptRowOrResponse;
-  const db = createDb(c.env);
 
   const alreadyApproved =
     attemptRow.status === "approved" ||

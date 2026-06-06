@@ -9,7 +9,7 @@ This file is kept as an archive for completed or historical housekeeping notes t
 
 Active work is tracked in blueprints, not here. The current in-flight cleanup wave is:
 
-- [`blueprints/in-progress/system-clarity-hardening/_overview.md`](../../blueprints/in-progress/system-clarity-hardening/_overview.md)
+- [`blueprints/completed/system-clarity-hardening/_overview.md`](../../blueprints/completed/system-clarity-hardening/_overview.md)
 
 ## Self-Healing Stream (adaptive intake)
 

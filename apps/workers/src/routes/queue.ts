@@ -4,7 +4,7 @@ import { createDb, type Env } from "../db/client";
 import { queues, queueMetrics } from "../db/schema";
 import { authenticate, type AuthVariables } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiter";
-import { requireOwnedQueue } from "./ownership";
+import { withOwnedQueue } from "./ownership";
 import { validatePushEndpoint } from "../lib/validate-push-endpoint";
 
 export const queueRoutes = new Hono<{
@@ -93,15 +93,10 @@ queueRoutes.get("/", async (c) => {
 queueRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");
 
-  const queue = await requireOwnedQueue(c, id, {
+  return withOwnedQueue(c, id, async (queue) => c.json({ status: "success", data: { queue } }), {
     notFound: `Queue not found with ID: ${id}`,
     unauthorized: "You do not have permission to access this queue",
   });
-  if (queue instanceof Response) {
-    return queue;
-  }
-
-  return c.json({ status: "success", data: { queue } });
 });
 
 // DELETE /api/queues/:id — delete queue
@@ -109,20 +104,18 @@ queueRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
   const db = createDb(c.env);
 
-  const queue = await requireOwnedQueue(
+  return withOwnedQueue(
     c,
     id,
+    async (_queue, ownedDb) => {
+      await ownedDb.delete(queues).where(eq(queues.id, id));
+
+      return c.json({ status: "success", data: null }, 200);
+    },
     {
       notFound: `Queue not found with ID: ${id}`,
       unauthorized: "You do not have permission to delete this queue",
     },
     db,
   );
-  if (queue instanceof Response) {
-    return queue;
-  }
-
-  await db.delete(queues).where(eq(queues.id, id));
-
-  return c.json({ status: "success", data: null }, 200);
 });

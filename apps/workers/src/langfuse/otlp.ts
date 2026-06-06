@@ -138,7 +138,10 @@ export async function exportOtlpTrace(input: OtlpExportInput): Promise<void> {
       },
       body: JSON.stringify(payload),
     });
-  } catch {
-    // best-effort — never throw on export failure
+  } catch (error) {
+    console.warn("langfuse.otlp.export_failed", {
+      endpoint,
+      reason: error instanceof Error ? error.message : String(error),
+    });
   }
 }

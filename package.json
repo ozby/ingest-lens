@@ -50,7 +50,7 @@
     "postinstall": "wp setup",
     "prepare": "husky",
     "docs:check": "wp audit docs-frontmatter",
-    "blueprints:check": "wp audit blueprint-lifecycle --omx-plans",
+    "blueprints:check": "wp audit blueprint-lifecycle",
     "e2e": "wp e2e",
     "ai:eval": "bun ./scripts/run-mapping-eval.ts",
     "probes:lab": "bun scripts/probes/consistency-lab/run-all.ts",

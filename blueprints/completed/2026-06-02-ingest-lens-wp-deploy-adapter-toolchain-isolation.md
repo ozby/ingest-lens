@@ -151,7 +151,7 @@ The upstream audit surface is locally proven fixed in `webpresso/agent-kit` (it 
 
 - PASS — `cd apps/e2e && wp test --file vitest.config.ts src/global-wp-contract.test.ts`
 - PASS — `wp audit docs-frontmatter`
-- PASS — `wp audit blueprint-lifecycle --legacy-omx`
+- PASS — `wp audit blueprint-lifecycle`
 - PASS — `wp typecheck`
 - PASS — `wp lint`
 - PASS — `wp test`
