@@ -47,7 +47,7 @@
     "commitlint": "commitlint",
     "secretlint": "secretlint",
     "setup:agent": "wp setup",
-    "postinstall": "wp setup",
+    "postinstall": "test -n \"$CI\" || wp setup",
     "prepare": "husky",
     "docs:check": "wp audit docs-frontmatter",
     "blueprints:check": "wp audit blueprint-lifecycle",
