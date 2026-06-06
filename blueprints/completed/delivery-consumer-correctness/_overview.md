@@ -1,5 +1,7 @@
 ---
 type: blueprint
+owner: ozby
+title: "Delivery consumer correctness"
 status: completed
 complexity: M
 created: "2026-04-26"

@@ -28,7 +28,7 @@
   "scripts": {
     "act:ci": "bun ./scripts/act-with-webpresso.ts push -W .github/workflows/ci.yml",
     "act:cleanup": "bun ./scripts/act-with-webpresso.ts workflow_dispatch -W .github/workflows/cleanup-stale-neon-e2e-branches.yml -j cleanup",
-    "act:e2e": "bun ./scripts/act-with-webpresso.ts workflow_dispatch -W .github/workflows/testing-e2e-act.yml -j full-suite-local",
+    "act:e2e": "bun ./scripts/act-with-webpresso.ts workflow_dispatch -W .github/workflows/e2e-act.yml -j e2e-local",
     "act:list": "bun ./scripts/act-with-webpresso.ts -l",
     "build": "vp run build",
     "catalog:check": "wp audit catalog-drift",
@@ -70,7 +70,10 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
+    "@playwright/test": "latest",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
+    "@stryker-mutator/core": "latest",
+    "@stryker-mutator/vitest-runner": "latest",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
@@ -80,6 +83,7 @@
     "node-addon-api": "^8.5.0",
     "react": "catalog:",
     "secretlint": "^9.3.0",
+    "typescript": "latest",
     "vite": "catalog:tooling",
     "vite-plus": "catalog:",
     "vitest": "catalog:tooling",

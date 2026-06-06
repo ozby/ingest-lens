@@ -1,0 +1,281 @@
+---
+type: blueprint
+owner: ozby
+title: "CF Rate Limiting binding"
+status: archived
+complexity: XS
+created: "2026-04-22"
+last_updated: "2026-06-06"
+progress: "100%"
+depends_on: [workers-hono-port]
+tags:
+  - cloudflare-workers
+  - rate-limiting
+  - security
+---
+
+# CF Rate Limiting binding
+
+**Goal:** Add Cloudflare's native Rate Limiting binding to `apps/workers` as a
+**token-bucket edge guardrail** for authenticated Worker routes. This blueprint
+is intentionally **not** a true sliding-window implementation.
+
+## Planning Summary
+
+- **Why now:** There is no rate limiting in the Worker runtime today. The
+  authenticated API surface is effectively unbounded.
+- **Scope:** One `[[ratelimits]]` binding in `apps/workers/wrangler.toml`; one
+  reusable Hono middleware; route-level mounting on the authenticated Worker
+  routers that already call `authenticate`.
+- **Out of scope:** WAF rate-limiting rules, Turnstile, and strict global
+  sliding-window quotas. If strict accounting becomes a hard requirement, it
+  must move to a Durable Object with SQLite-backed timestamp tracking.
+
+## Refinement Summary
+
+- Completion audit confirmed the implementation already exists in repo head and passes `pnpm --filter @repo/workers test`, `check-types`, `lint`, and `build`.
+- Corrected the terminology from “sliding window” to **token bucket with a
+  mandatory 10 s or 60 s window**.
+- Dropped the stale Cloudflare PubSub note from the implementation path; it is
+  not relevant to this blueprint.
+- Moved the middleware wiring from global `index.ts` mounting to the actual
+  authenticated routers, because route-local `authenticate` must run first if
+  the limiter keys on `userId`.
+
+## Completion audit (2026-04-22)
+
+**Completion:** implemented in repo head and verified.
+
+**What landed**
+
+- `apps/workers/wrangler.toml` declares `[[ratelimits]]` with `RATE_LIMITER`
+  and the documented `100 requests / 60 seconds` window.
+- `apps/workers/src/db/client.ts` exports `RATE_LIMITER: RateLimit` on `Env`.
+- `apps/workers/src/middleware/rateLimiter.ts` keys the binding on
+  `c.get("user").userId` and returns `429` with `Retry-After: 60`.
+- `queue.ts`, `message.ts`, `topic.ts`, and `dashboard.ts` all mount
+  `authenticate` before `rateLimiter`.
+
+**Verification evidence**
+
+- `pnpm --filter @repo/workers test` → PASS
+- `pnpm --filter @repo/workers check-types` → PASS
+- `pnpm --filter @repo/workers lint` → PASS
+- `pnpm --filter @repo/workers build` → PASS
+
+**Follow-up notes**
+
+- `topicRoutes.use("*", rateLimiter)` means the WebSocket upgrade route also
+  consumes the same limiter budget. Keep that behavior unless a later
+  connection-specific throttling blueprint intentionally carves it out.
+
+## Architecture Overview
+
+```text
+before:
+  /api/queues/*, /api/messages/*, /api/topics/*, /api/dashboard/*
+    → authenticate
+    → handler
+
+after:
+  /api/queues/*, /api/messages/*, /api/topics/*, /api/dashboard/*
+    → authenticate
+    → rateLimiter(userId)
+    → handler
+
+note:
+  This is edge token-bucket limiting, not strict global sliding-window accounting.
+```
+
+## Fact-Checked Findings
+
+| ID  | Severity | Claim                                                                                       | Source                                                                       |
+| --- | -------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| F1  | HIGH     | Workers Rate Limiting is local to the Cloudflare location serving the request.              | Cloudflare Workers rate-limit docs, fetched 2026-04-22.                      |
+| F2  | HIGH     | The simple binding window must be either `10` or `60` seconds.                              | Cloudflare Workers rate-limit docs, fetched 2026-04-22.                      |
+| F3  | MEDIUM   | The binding is best treated as a fast perimeter / edge limiter, not a precise quota ledger. | Cloudflare Workers rate-limit docs + research synthesis, fetched 2026-04-22. |
+
+## Key Decisions
+
+| Decision        | Choice                                                                                               | Rationale                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Key granularity | `userId` after auth; fall back to `cf-connecting-ip` only when needed in tests or future anon routes | Per-user fairness is the useful default for the current Worker API           |
+| Window          | `100 requests / 60 seconds`                                                                          | Conservative starting point; easy to tune later                              |
+| Mount point     | `queueRoutes`, `messageRoutes`, `topicRoutes`, `dashboardRoutes` after `authenticate`                | Keeps `/health` and `/api/auth/*` out of scope and avoids pre-auth ambiguity |
+
+## Quick Reference (Execution Waves)
+
+| Wave              | Tasks     | Dependencies | Parallelizable | Effort (T-shirt) |
+| ----------------- | --------- | ------------ | -------------- | ---------------- |
+| **Wave 1**        | 1.1, 1.2  | None         | 2 agents       | XS               |
+| **Wave 2**        | 1.3       | 1.1 + 1.2    | 1 agent        | XS               |
+| **Critical path** | 1.1 → 1.3 | —            | 2 waves        | XS               |
+
+### Parallel Metrics Snapshot
+
+| Metric | Formula / Meaning                  | Target               | Actual                                              |
+| ------ | ---------------------------------- | -------------------- | --------------------------------------------------- |
+| RW0    | Ready tasks in Wave 1              | ≥ planned agents / 2 | 2                                                   |
+| CPR    | total_tasks / critical_path_length | ≥ 2.5                | 1.5 (3 tasks / 2-wave path — XS structural minimum) |
+| DD     | dependency_edges / total_tasks     | ≤ 2.0                | 0.67 (2 edges / 3 tasks)                            |
+| CP     | same-file overlaps per wave        | 0                    | 0                                                   |
+
+> CPR 1.5 is the structural floor for a 3-task XS blueprint. Splitting further would produce
+> artificial tasks with no independent test coverage. Parallelization score: **C** (accepted at XS).
+
+**Blueprint compliant: Yes**
+
+---
+
+### Phase 1: Binding, middleware, and router wiring [Complexity: XS]
+
+#### [config] Task 1.1: Wrangler binding + Env type
+
+**Status:** done
+
+**Depends:** None
+
+Add a rate-limit binding to `apps/workers/wrangler.toml` and extend the Worker
+`Env` type.
+
+**Files:**
+
+- Modify: `apps/workers/wrangler.toml`
+- Modify: `apps/workers/src/db/client.ts`
+
+**Steps (TDD):**
+
+1. Add a `[[ratelimits]]` block to `apps/workers/wrangler.toml` using a real
+   placeholder instead of the fake `1001` value:
+   ```toml
+   [[ratelimits]]
+   name = "RATE_LIMITER"
+   namespace_id = "<cloudflare-rate-limit-namespace-id>"
+   simple = { limit = 100, period = 60 }
+   ```
+2. Add `RATE_LIMITER: RateLimit` to the `Env` type in
+   `apps/workers/src/db/client.ts`.
+3. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
+
+**Acceptance:**
+
+- [x] `wrangler.toml` contains a `[[ratelimits]]` block with `limit = 100` and `period = 60`
+- [x] `Env` includes `RATE_LIMITER: RateLimit`
+- [x] `pnpm --filter @repo/workers check-types` passes
+
+---
+
+#### [middleware] Task 1.2: Create `rateLimiter` middleware
+
+**Status:** done
+
+**Depends:** None
+
+Create a reusable Hono middleware that calls
+`env.RATE_LIMITER.limit({ key: userId })` and returns `429` on failure.
+
+**Files:**
+
+- Create: `apps/workers/src/middleware/rateLimiter.ts`
+- Create: `apps/workers/src/tests/rateLimiter.test.ts`
+
+**Steps (TDD):**
+
+1. Write `rateLimiter.test.ts` with two cases: allowed request falls through;
+   blocked request returns `429` with `Retry-After: 60`.
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. Implement `rateLimiter.ts` so it reads `c.get("user")`, calls the binding,
+   and returns JSON `{ status: "error", message: "Rate limit exceeded" }`
+   when `success === false`.
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+5. Run: `pnpm --filter @repo/workers lint` — verify PASS.
+
+**Acceptance:**
+
+- [x] Tests cover allowed + blocked behavior
+- [x] Blocked requests return `429` with `Retry-After: 60`
+- [x] `pnpm --filter @repo/workers test` is green
+
+---
+
+#### [wire] Task 1.3: Mount the limiter on authenticated routers
+
+**Status:** done
+
+**Depends:** Task 1.1, Task 1.2
+
+Mount `rateLimiter` on the Worker routers that already run `authenticate`.
+Do **not** mount it globally in `index.ts`.
+
+**Files:**
+
+- Modify: `apps/workers/src/routes/queue.ts`
+- Modify: `apps/workers/src/routes/message.ts`
+- Modify: `apps/workers/src/routes/topic.ts`
+- Modify: `apps/workers/src/routes/dashboard.ts`
+
+**Steps (TDD):**
+
+1. Add assertions or route smoke tests to verify protected routes still return
+   `401` when unauthenticated and can return `429` once authenticated + blocked.
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. In each authenticated router, import `rateLimiter` and mount it directly
+   after `authenticate`, for example:
+   ```ts
+   queueRoutes.use("*", authenticate);
+   queueRoutes.use("*", rateLimiter);
+   ```
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+5. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
+
+**Acceptance:**
+
+- [x] `rateLimiter` is mounted on `queue`, `message`, `topic`, and `dashboard` routers
+- [x] `/health` and `/api/auth/*` remain out of scope for this blueprint
+- [x] `pnpm --filter @repo/workers check-types` passes
+
+---
+
+## Verification Gates
+
+| Gate           | Command                                   | Success Criteria |
+| -------------- | ----------------------------------------- | ---------------- |
+| Types          | `pnpm --filter @repo/workers check-types` | Zero errors      |
+| Lint           | `pnpm --filter @repo/workers lint`        | Zero violations  |
+| Tests          | `pnpm --filter @repo/workers test`        | All suites green |
+| Deploy dry-run | `pnpm --filter @repo/workers build`       | Exit 0           |
+
+## Cross-Plan References
+
+| Type       | Blueprint                    | Relationship                                                                                                                                                 |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Downstream | `durable-objects-fan-out`    | Topic WebSocket upgrades currently inherit the router-level limiter; carve that out only if a later blueprint needs connection-specific throttling semantics |
+| Conflict   | `analytics-engine-telemetry` | Both Task 1.1s write `wrangler.toml` + `client.ts` — cannot run in the same `/pll` invocation. Run this one first (XS).                                      |
+| Conflict   | `durable-objects-fan-out`    | Task 1.2 writes same files — serialize after this blueprint lands.                                                                                           |
+
+## Edge Cases and Error Handling
+
+| Edge Case                                  | Risk   | Solution                                                                                   | Task      |
+| ------------------------------------------ | ------ | ------------------------------------------------------------------------------------------ | --------- |
+| Auth runs after the limiter                | High   | Avoid global mounting; mount limiter on authenticated routers only                         | 1.3       |
+| Future anonymous endpoints need protection | Medium | Add a separate IP-keyed or Turnstile-backed blueprint rather than widening this one ad hoc | follow-up |
+
+## Non-goals
+
+- True sliding-window accounting
+- WAF rate limiting rules
+- Turnstile
+- Per-tier product quotas
+
+## Risks
+
+| Risk                                                          | Impact | Mitigation                                                                      |
+| ------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------- |
+| The edge limiter is mistaken for a strict global quota ledger | Medium | Keep the blueprint language explicit: this is token-bucket edge protection only |
+| The namespace ID is not provisioned before deploy             | Low    | Leave an explicit placeholder and validate before `wrangler deploy`             |
+
+## Technology Choices
+
+| Component    | Technology                       | Version     | Why                                                          |
+| ------------ | -------------------------------- | ----------- | ------------------------------------------------------------ |
+| Edge limiter | Cloudflare Rate Limiting binding | CF platform | Lowest-friction perimeter control for the current Worker API |

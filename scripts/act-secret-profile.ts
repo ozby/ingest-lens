@@ -48,8 +48,8 @@ const ACT_SECRET_PROFILES: Record<ActSecretProfileId, ActSecretProfile> = {
 
 const WORKFLOW_SECRET_PROFILES: Readonly<Record<string, ActSecretProfileId>> = {
   "ci.yml": "none",
-  "testing-e2e.yml": "none",
-  "testing-e2e-act.yml": "none",
+  "e2e.yml": "none",
+  "e2e-act.yml": "none",
   "cleanup-stale-neon-e2e-branches.yml": "neon-control-plane",
 };
 

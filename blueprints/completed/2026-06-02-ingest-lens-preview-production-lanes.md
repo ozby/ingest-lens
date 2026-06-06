@@ -1,9 +1,11 @@
 ---
 type: blueprint
+owner: ozby
+title: "IngestLens: preview and release-gated production lanes"
 status: completed
 complexity: S
 created: "2026-06-02"
-last_updated: "2026-06-05"
+last_updated: "2026-06-06"
 progress: "100% (completed on 2026-06-05 after repo-local deploy-lane verification, full client-suite proof, lint/typecheck/test, architecture drift, docs frontmatter, and blueprint lifecycle all passed.)"
 depends_on: []
 tags:
@@ -43,23 +45,23 @@ a semantic release version matching `infra/release-metadata.production.json`.
 
 ```text
 push main
-  -> deploy.preview.yml
+  -> deploy-preview.yml
   -> preview-main
   -> https://preview-main.ingest-lens.ozby.dev
   -> https://api.preview-main.ingest-lens.ozby.dev
 
 pull_request #123 open/sync/reopen
-  -> deploy.preview.yml
+  -> deploy-preview.yml
   -> preview-pr-123
   -> https://preview-pr-123.ingest-lens.ozby.dev
   -> https://api.preview-pr-123.ingest-lens.ozby.dev
 
 pull_request #123 closed
-  -> deploy.preview.yml destroy
+  -> deploy-preview.yml destroy
   -> wrangler delete client/API Workers
   -> pulumi destroy preview-pr-123
 
-workflow_dispatch deploy.production.yml release_version=1.2.3
+workflow_dispatch deploy-production.yml release_version=1.2.3
   -> validate version_pr metadata releaseVersion=1.2.3
   -> deploy prd
   -> https://ingest-lens.ozby.dev

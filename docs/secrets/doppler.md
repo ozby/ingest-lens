@@ -206,10 +206,10 @@ path while keeping local `act` runs and hosted runners aligned.
 
 Current `act` profiles:
 
-| Profile              | Used by                                            | Allowed injected secrets                                   |
-| -------------------- | -------------------------------------------------- | ---------------------------------------------------------- |
-| `none`               | `ci.yml`, `testing-e2e.yml`, `testing-e2e-act.yml` | none                                                       |
-| `neon-control-plane` | `cleanup-stale-neon-e2e-branches.yml`              | `NEON_API_KEY`, `NEON_PROJECT_ID`, `NEON_PARENT_BRANCH_ID` |
+| Profile              | Used by                               | Allowed injected secrets                                   |
+| -------------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `none`               | `ci.yml`, `e2e.yml`, `e2e-act.yml`    | none                                                       |
+| `neon-control-plane` | `cleanup-stale-neon-e2e-branches.yml` | `NEON_API_KEY`, `NEON_PROJECT_ID`, `NEON_PARENT_BRANCH_ID` |
 
 Override inference explicitly when needed:
 
@@ -225,4 +225,4 @@ bun ./scripts/act-with-webpresso.ts \
 
 ## 7. Phase 3 (Blocked)
 
-Per-PR Doppler config lifecycle (`preview_pr_<n>`) requires Cloudflare infrastructure provisioned via `cloudflare-pulumi-infra`. See `blueprints/completed/doppler-secrets/_overview.md`. The infra workspace is complete; per-PR config creation requires wiring in CI once the Worker is deployed.
+Per-PR Doppler config lifecycle (`preview_pr_<n>`) requires Cloudflare infrastructure provisioned via `cloudflare-pulumi-infra`. See `blueprints/archived/doppler-secrets/_overview.md`. The infra workspace is complete; per-PR config creation requires wiring in CI once the Worker is deployed.

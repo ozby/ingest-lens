@@ -1,5 +1,7 @@
 ---
 type: blueprint
+owner: ozby
+title: "Message replay cursor"
 status: completed
 complexity: M
 created: "2026-04-22"

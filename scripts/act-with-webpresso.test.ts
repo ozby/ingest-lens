@@ -30,8 +30,8 @@ describe("act secret profiles", () => {
     ).toBe("none");
     expect(
       resolveActSecretProfile({
-        workflowPath: ".github/workflows/testing-e2e-act.yml",
-        jobName: "full-suite-local",
+        workflowPath: ".github/workflows/e2e-act.yml",
+        jobName: "e2e-local",
       }).id,
     ).toBe("none");
   });

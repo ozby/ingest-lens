@@ -1,0 +1,346 @@
+---
+type: blueprint
+owner: ozby
+title: "Durable Objects fan-out"
+status: archived
+complexity: L
+created: "2026-04-22"
+last_updated: "2026-06-06"
+progress: "100%"
+depends_on:
+  - cf-queues-delivery
+tags:
+  - cloudflare-workers
+  - durable-objects
+  - websocket
+  - real-time
+  - fan-out
+---
+
+# Durable Objects fan-out
+
+**Goal:** Add a `TopicRoom` Durable Object per topic so authenticated clients
+can subscribe over WebSockets and receive real-time topic fan-out with
+hibernation.
+
+## Planning Summary
+
+- **Why now:** The repo has no push path for connected browser clients. Topic
+  subscribers either poll or depend on out-of-band delivery.
+- **Scope:** One SQLite-backed Durable Object class, one Worker route for
+  WebSocket upgrades, and one consumer-side notify call for topic deliveries.
+- **Out of scope:** Replay cursors, strict quota enforcement, and long-lived
+  browser auth/session state beyond the current JWT gate.
+
+## Refinement Summary
+
+- Completion audit confirmed the implementation already exists in repo head and passes `pnpm --filter @repo/workers test`, `check-types`, `lint`, and `build`.
+- Removed the stale “eliminate MongoDB change-stream dependency entirely” claim.
+  The blueprint now focuses on the Worker-native real-time path it actually
+  adds.
+- Tightened notify semantics so the consumer only calls the DO when a delivery
+  payload has a `topicId`.
+- Added a route-order note: `/:topicId/ws` must be registered **before** the
+  generic `/:id` route in `routes/topic.ts`.
+- Removed the assumption that a new test dependency is required. Use plain
+  Vitest with lightweight stubs for the DO state surface.
+- (Fx: wave-fix-1.5) Moved Task 1.5 from Wave 3 to Wave 2: the DO export in
+  `index.ts` depends only on 1.1 + 1.2 (class + binding), not on the route
+  (1.3). Wave table and critical path updated accordingly: 1.1 → 1.3 → 1.4.
+
+## Completion audit (2026-04-22)
+
+**Completion:** implemented in repo head and verified.
+
+**What landed**
+
+- `apps/workers/src/do/TopicRoom.ts` exists and is exported from
+  `apps/workers/src/index.ts`.
+- `apps/workers/wrangler.toml` declares `TOPIC_ROOMS` and creates the class via
+  `new_sqlite_classes = ["TopicRoom"]`.
+- `apps/workers/src/routes/topic.ts` registers `GET /:topicId/ws` before the
+  generic `/:id` matcher and proxies upgrades to the DO stub.
+- `apps/workers/src/consumers/deliveryConsumer.ts` notifies the DO only for
+  acked queue payloads with a non-null `topicId`.
+- `TopicRoom.test.ts`, `topicWs.test.ts`, and `deliveryConsumer.test.ts` cover
+  the WebSocket upgrade shape, broadcast behavior, and notify/no-notify
+  branches.
+
+**Verification evidence**
+
+- `pnpm --filter @repo/workers test` → PASS
+- `pnpm --filter @repo/workers check-types` → PASS
+- `pnpm --filter @repo/workers lint` → PASS
+- `pnpm --filter @repo/workers build` → PASS
+
+**Follow-up notes**
+
+- Durable replay storage remains intentionally deferred to the
+  `message-replay-cursor` blueprint.
+
+## Architecture Overview
+
+```text
+browser client
+  → GET /api/topics/:topicId/ws
+  → authenticate
+  → TOPIC_ROOMS.idFromName(topicId)
+  → TopicRoom accepts WebSocket via hibernation API
+
+queue consumer
+  → successful delivery for payload with topicId
+  → TOPIC_ROOMS.get(topicId).fetch(POST /notify)
+  → TopicRoom broadcasts JSON payload to connected sockets
+```
+
+## Fact-Checked Findings
+
+| ID  | Severity | Claim                                                                                    | Source                                    |
+| --- | -------- | ---------------------------------------------------------------------------------------- | ----------------------------------------- |
+| F1  | HIGH     | Cloudflare recommends SQLite-backed Durable Objects for new namespaces.                  | Durable Objects docs, fetched 2026-04-22. |
+| F2  | HIGH     | Durable Objects support WebSocket hibernation for long-lived connections.                | Durable Objects docs, fetched 2026-04-22. |
+| F3  | HIGH     | New SQLite-backed DO classes are declared with `new_sqlite_classes` in `[[migrations]]`. | Durable Objects docs, fetched 2026-04-22. |
+| F4  | MEDIUM   | DOs are the right coordination primitive for per-topic real-time state.                  | Research synthesis, 2026-04-22.           |
+
+## Key Decisions
+
+| Decision           | Choice                                                               | Rationale                                                 |
+| ------------------ | -------------------------------------------------------------------- | --------------------------------------------------------- |
+| Object cardinality | One `TopicRoom` per `topicId`                                        | Natural sharding and fault isolation                      |
+| Notify transport   | `stub.fetch(new Request("https://topic-room.internal/notify", ...))` | Simple and available without introducing Service Bindings |
+| Fan-out payload    | JSON body with message metadata + data needed by clients             | Avoid extra browser round-trips for the live path         |
+
+## Quick Reference (Execution Waves)
+
+| Wave              | Tasks           | Dependencies | Parallelizable | Effort (T-shirt) |
+| ----------------- | --------------- | ------------ | -------------- | ---------------- |
+| **Wave 1**        | 1.1, 1.2        | None         | 2 agents       | M, XS            |
+| **Wave 2**        | 1.3, 1.5        | 1.1 + 1.2    | 2 agents       | S, XS            |
+| **Wave 3**        | 1.4             | 1.3          | 1 agent        | S                |
+| **Critical path** | 1.1 → 1.3 → 1.4 | —            | 3 waves        | L                |
+
+### Parallel Metrics Snapshot
+
+| Metric | Formula / Meaning                  | Target               | Actual                                               |
+| ------ | ---------------------------------- | -------------------- | ---------------------------------------------------- |
+| RW0    | Ready tasks in Wave 1              | ≥ planned agents / 2 | 2                                                    |
+| CPR    | total_tasks / critical_path_length | ≥ 2.5                | 1.67 (5 tasks / 3-wave path — L structural limit)    |
+| DD     | dependency_edges / total_tasks     | ≤ 2.0                | 1.0 (5 edges / 5 tasks)                              |
+| CP     | same-file overlaps per wave        | 0                    | 0 (verified: Wave 1 and Wave 2 have no file overlap) |
+
+> CPR 1.67 is the structural floor for this 5-task L blueprint given the sequential
+> 1.3 → 1.4 chain. Task 1.5 moved from Wave 3 to Wave 2 (Fx: wave-fix-1.5) — it only
+> needs 1.1 + 1.2, not 1.3, recovering one wave of parallelism.
+> Parallelization score: **C** (accepted at L complexity with inherent DO sequencing).
+
+**Blueprint compliant: Yes**
+
+---
+
+### Phase 1: TopicRoom DO, route, and consumer notify [Complexity: L]
+
+#### [do] Task 1.1: Implement `TopicRoom`
+
+**Status:** done
+
+**Depends:** None
+
+Create the Durable Object class that accepts WebSocket upgrades and broadcasts
+notify payloads to connected sockets.
+
+**Files:**
+
+- Create: `apps/workers/src/do/TopicRoom.ts`
+- Create: `apps/workers/src/tests/TopicRoom.test.ts`
+
+**Steps (TDD):**
+
+1. Write tests using plain Vitest stubs for `acceptWebSocket()`,
+   `getWebSockets()`, and socket `send()` calls.
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. Implement `TopicRoom` with:
+   - `GET /ws` → WebSocket upgrade + `acceptWebSocket(server)`
+   - `POST /notify` → broadcast payload to `ctx.getWebSockets()`
+   - receive-only client behavior with optional `ping` / `pong`
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+5. Run: `pnpm --filter @repo/workers lint` — verify PASS.
+
+**Acceptance:**
+
+- [x] `TopicRoom` handles `/ws` and `/notify`
+- [x] Broadcast logic is covered by tests using lightweight stubs
+- [x] No new test dependency is introduced
+
+---
+
+#### [config] Task 1.2: Add DO binding + SQLite migration
+
+**Status:** done
+
+**Depends:** None
+
+Register the DO class in `wrangler.toml` and extend the Worker `Env` type.
+
+**Files:**
+
+- Modify: `apps/workers/wrangler.toml`
+- Modify: `apps/workers/src/db/client.ts`
+
+**Steps (TDD):**
+
+1. Add:
+
+   ```toml
+   [[durable_objects.bindings]]
+   name = "TOPIC_ROOMS"
+   class_name = "TopicRoom"
+
+   [[migrations]]
+   tag = "topic-room-v1"
+   new_sqlite_classes = ["TopicRoom"]
+   ```
+
+2. Add `TOPIC_ROOMS: DurableObjectNamespace` to the `Env` type.
+3. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
+
+**Acceptance:**
+
+- [x] `wrangler.toml` declares `TOPIC_ROOMS`
+- [x] Migration uses `new_sqlite_classes`
+- [x] `Env` includes `TOPIC_ROOMS: DurableObjectNamespace`
+
+---
+
+#### [route] Task 1.3: Add the WebSocket upgrade route
+
+**Status:** done
+
+**Depends:** Task 1.1, Task 1.2
+
+Add `GET /api/topics/:topicId/ws` and place it before the generic `/:id`
+matcher in `routes/topic.ts`.
+
+**Files:**
+
+- Modify: `apps/workers/src/routes/topic.ts`
+- Create: `apps/workers/src/tests/topicWs.test.ts`
+
+**Steps (TDD):**
+
+1. Write `topicWs.test.ts` verifying the route shape and auth gate.
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. Insert the route before `topicRoutes.get("/:id", ...)` and proxy the raw
+   upgrade request to the DO stub.
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+
+**Acceptance:**
+
+- [x] `/:topicId/ws` is registered before `/:id`
+- [x] Authenticated requests reach the DO stub
+- [x] Unauthenticated requests still fail at the auth layer
+
+---
+
+#### [consumer] Task 1.4: Notify the DO from the queue consumer
+
+**Status:** done
+
+**Depends:** Task 1.3
+
+On successful delivery ack, notify the topic DO **only when** the queue payload
+contains a `topicId`.
+
+**Files:**
+
+- Modify: `apps/workers/src/consumers/deliveryConsumer.ts`
+- Modify: `apps/workers/src/tests/deliveryConsumer.test.ts`
+
+**Steps (TDD):**
+
+1. Add tests asserting:
+   - ack + `topicId` → DO notify happens
+   - ack + `topicId = null` → no DO notify
+2. Run: `pnpm --filter @repo/workers test` — verify FAIL.
+3. After successful ack, call `env.TOPIC_ROOMS.get(id).fetch(...)` with the
+   broadcast payload.
+4. Run: `pnpm --filter @repo/workers test` — verify PASS.
+
+**Acceptance:**
+
+- [x] DO notify is conditional on `topicId`
+- [x] Direct queue sends do not trigger topic fan-out accidentally
+- [x] Tests cover both branches
+
+---
+
+#### [export] Task 1.5: Export the DO class from the Worker entry point
+
+**Status:** done
+
+**Depends:** Task 1.1, Task 1.2
+
+Export `TopicRoom` from `apps/workers/src/index.ts` while preserving the Worker
+entry point shape required by `cf-queues-delivery`.
+
+**Files:**
+
+- Modify: `apps/workers/src/index.ts`
+
+**Steps (TDD):**
+
+1. Add `export { TopicRoom } from "./do/TopicRoom";`
+2. Keep the default export compatible with `{ fetch, queue }` from the queues
+   blueprint.
+3. Run: `pnpm --filter @repo/workers build` — verify PASS.
+4. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
+
+**Acceptance:**
+
+- [x] `TopicRoom` is exported from `index.ts`
+- [x] The Worker still builds with both `fetch` and `queue` handlers present
+
+---
+
+## Verification Gates
+
+| Gate           | Command                                   | Success Criteria |
+| -------------- | ----------------------------------------- | ---------------- |
+| Types          | `pnpm --filter @repo/workers check-types` | Zero errors      |
+| Lint           | `pnpm --filter @repo/workers lint`        | Zero violations  |
+| Tests          | `pnpm --filter @repo/workers test`        | All suites green |
+| Deploy dry-run | `pnpm --filter @repo/workers build`       | Exit 0           |
+
+## Cross-Plan References
+
+| Type       | Blueprint                    | Relationship                                                                                   |
+| ---------- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Upstream   | `cf-queues-delivery`         | Uses the queue payload and consumer introduced there (landed — unblocked)                      |
+| Downstream | `message-replay-cursor`      | Extends the same `TopicRoom` DO with durable replay state                                      |
+| Conflict   | `cf-rate-limiting`           | Task 1.2 writes `wrangler.toml` + `client.ts` — cannot run in the same `/pll` invocation.      |
+| Conflict   | `analytics-engine-telemetry` | Task 1.1 writes same files — serialize; run last in the sequence (L complexity, runs longest). |
+
+## Edge Cases and Error Handling
+
+| Edge Case                                         | Risk   | Solution                                                                                         | Task |
+| ------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------ | ---- |
+| No clients are connected                          | Low    | Broadcasting over an empty socket list is a no-op                                                | 1.1  |
+| DO notify fails after the HTTP push ack succeeded | Medium | Treat realtime fan-out as best-effort and log locally rather than retrying the external delivery | 1.4  |
+| Generic `/:id` route captures `/ws` traffic       | High   | Register the WebSocket route before the generic lookup route                                     | 1.3  |
+
+## Non-goals
+
+- Cursor replay
+- Strict quota enforcement
+- Replacing auth/session storage
+
+## Risks
+
+| Risk                                             | Impact | Mitigation                                                                                  |
+| ------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------- |
+| Worker-side DO tests are brittle in plain Vitest | Medium | Keep most logic testable with simple stubs and let `build` validate the entrypoint contract |
+
+## Technology Choices
+
+| Component             | Technology                          | Version     | Why                                                               |
+| --------------------- | ----------------------------------- | ----------- | ----------------------------------------------------------------- |
+| Realtime coordination | Cloudflare Durable Objects (SQLite) | CF platform | Natural fit for per-topic state and hibernating WebSocket fan-out |

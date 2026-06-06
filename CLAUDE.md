@@ -65,7 +65,7 @@ For architecture, blueprint, deployment, or runtime-boundary changes run:
 python3 scripts/check_architecture_drift.py
 ```
 
-When the shared agent-kit audit is released, prefer:
+Prefer:
 
 ```bash
 wp audit architecture-drift --root .

@@ -6,7 +6,7 @@ status: completed
 complexity: M
 created: "2026-06-02"
 last_updated: "2026-06-04"
-progress: "Completed on 2026-06-04 via an allowed local-link boundary proof. `wp deploy --lane prd --dry-run`, `wp e2e --suite foundation`, and `wp audit toolchain-isolation` all pass after: (1) fixing repo-local E2E path/ownership bugs, (2) consuming the locally fixed `@webpresso/webpresso` framework package, and (3) consuming the locally fixed `@webpresso/agent-kit` audit/package-surface fixes. The remaining caveat is release adoption, not blueprint truth: fresh clones still need the fixed upstream package versions, but this consumer lane itself is complete and verified."
+progress: "100% (completed on 2026-06-04 via an allowed local-link boundary proof. `wp deploy --lane prd --dry-run`, `wp e2e --suite foundation`, and `wp audit toolchain-isolation` all pass after: (1) fixing repo-local E2E path/ownership bugs, (2) consuming the locally fixed `@webpresso/webpresso` framework package, and (3) consuming the locally fixed `@webpresso/agent-kit` audit/package-surface fixes. The remaining caveat is release adoption, not blueprint truth: fresh clones still need the fixed upstream package versions, but this consumer lane itself is complete and verified.)"
 depends_on:
   - 2026-06-02-ingest-lens-preview-production-lanes
   - "webpresso/agent-kit: 2026-06-02-agent-kit-wp-deploy-orchestrator-toolchain-isolation"
@@ -100,7 +100,7 @@ ingest-lens
 
 #### [infra] Task 1.1: Wrap existing deploy flow behind a deploy adapter
 
-**Status:** completed
+**Status:** done
 
 `agent-kit.config.ts` already points `deploy.adapterModule` at `infra/src/deploy/agent-kit-deploy-adapter.ts`. The remaining work in this task is closeout proof: verify the ordered DeployPlan still preserves the release-metadata production gate and capture the dry-run evidence.
 
@@ -115,7 +115,7 @@ ingest-lens
 
 #### [qa] Task 2.1: Route dev verbs through agent-kit-owned tools
 
-**Status:** completed
+**Status:** done
 
 Root QA/deploy verbs route through `wp`, the root `test` script no longer shells directly to Vitest, the repo-local host-adapter recursion/path bugs are fixed, and the suite planning is covered by tests. The lane is now proven under a local-link boundary that consumes the fixed upstream framework and agent-kit packages.
 
@@ -127,7 +127,7 @@ Root QA/deploy verbs route through `wp`, the root `test` script no longer shells
 
 #### [qa] Task 2.2: Toolchain-isolation audit (infra-dep aware)
 
-**Status:** completed
+**Status:** done
 
 The upstream audit surface is locally proven fixed in `webpresso/agent-kit` (it now skips `.windsurf` and honors `audit.toolchainIsolation.allowDependencies`), and this repo now carries the truthful allowlist (`tsx`, `vitest`, `@playwright/test`, `wrangler`). Under the local-link boundary, the installed `wp` consumed that fix and the audit passed.
 

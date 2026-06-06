@@ -1,5 +1,7 @@
 ---
 type: blueprint
+owner: ozby
+title: "Self-healing adaptive intake"
 status: completed
 complexity: M
 created: "2026-04-26"
