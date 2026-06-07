@@ -50,7 +50,7 @@
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.99.2",
     "axios": "catalog:",
-    "better-auth": "^1.6.9",
+    "better-auth": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "^1.1.1",

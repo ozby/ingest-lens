@@ -51,9 +51,15 @@ catalogs:
     '@webpresso/agent-kit':
       specifier: https://registry.npmjs.org/@webpresso/agent-kit/-/agent-kit-0.28.0.tgz
       version: 0.28.0
+    '@webpresso/runtime-env':
+      specifier: 0.1.0
+      version: 0.1.0
     axios:
       specifier: ^1.15.2
       version: 1.15.2
+    better-auth:
+      specifier: ^1.6.9
+      version: 1.6.9
     bunchee:
       specifier: ^6.10.0
       version: 6.10.0
@@ -176,7 +182,7 @@ importers:
         specifier: 'catalog:'
         version: 0.28.0(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.22.0)(valibot@1.4.0(typescript@6.0.3))
       '@webpresso/runtime-env':
-        specifier: 0.1.0
+        specifier: 'catalog:'
         version: 0.1.0
       husky:
         specifier: 'catalog:'
@@ -311,7 +317,7 @@ importers:
         specifier: 'catalog:'
         version: 1.15.2(debug@4.4.3)
       better-auth:
-        specifier: ^1.6.9
+        specifier: 'catalog:'
         version: 1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-sqlite3@12.10.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-sqlite3@12.10.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)))
       class-variance-authority:
         specifier: 'catalog:'
@@ -426,7 +432,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/runtime-env-local
       '@webpresso/runtime-env':
-        specifier: 0.1.0
+        specifier: 'catalog:'
         version: 0.1.0
     devDependencies:
       '@playwright/test':
@@ -529,7 +535,7 @@ importers:
         specifier: ^8.18.0
         version: 8.18.0
       better-auth:
-        specifier: ^1.6.9
+        specifier: 'catalog:'
         version: 1.6.9(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-sqlite3@12.10.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(better-sqlite3@12.10.0)(kysely@0.28.17)(postgres@3.4.9))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)))
       drizzle-orm:
         specifier: catalog:workers
@@ -581,7 +587,7 @@ importers:
         specifier: workspace:*
         version: link:../packages/runtime-env-local
       '@webpresso/runtime-env':
-        specifier: 0.1.0
+        specifier: 'catalog:'
         version: 0.1.0
     devDependencies:
       '@types/node':
@@ -639,7 +645,7 @@ importers:
   packages/runtime-env-local:
     dependencies:
       '@webpresso/runtime-env':
-        specifier: 0.1.0
+        specifier: 'catalog:'
         version: 0.1.0
       ts-pattern:
         specifier: ^5.9.0
@@ -8978,7 +8984,7 @@ snapshots:
       '@better-fetch/fetch': 1.1.21
       '@opentelemetry/semantic-conventions': 1.40.0
       '@standard-schema/spec': 1.1.0
-      better-call: 1.3.5(zod@4.3.6)
+      better-call: 1.3.5(zod@4.4.3)
       jose: 6.2.2
       kysely: 0.28.17
       nanostores: 1.3.0
@@ -13048,12 +13054,12 @@ snapshots:
       '@better-fetch/fetch': 1.1.21
       '@noble/ciphers': 2.2.0
       '@noble/hashes': 2.2.0
-      better-call: 1.3.5(zod@4.3.6)
+      better-call: 1.3.5(zod@4.4.3)
       defu: 6.1.7
       jose: 6.2.2
       kysely: 0.28.17
       nanostores: 1.3.0
-      zod: 4.3.6
+      zod: 4.4.3
     optionalDependencies:
       better-sqlite3: 12.10.0
       drizzle-kit: 0.31.10
@@ -13078,12 +13084,12 @@ snapshots:
       '@better-fetch/fetch': 1.1.21
       '@noble/ciphers': 2.2.0
       '@noble/hashes': 2.2.0
-      better-call: 1.3.5(zod@4.3.6)
+      better-call: 1.3.5(zod@4.4.3)
       defu: 6.1.7
       jose: 6.2.2
       kysely: 0.28.17
       nanostores: 1.3.0
-      zod: 4.3.6
+      zod: 4.4.3
     optionalDependencies:
       better-sqlite3: 12.10.0
       drizzle-kit: 0.31.10
@@ -13095,14 +13101,14 @@ snapshots:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
 
-  better-call@1.3.5(zod@4.3.6):
+  better-call@1.3.5(zod@4.4.3):
     dependencies:
       '@better-auth/utils': 0.4.0
       '@better-fetch/fetch': 1.1.21
       rou3: 0.7.12
       set-cookie-parser: 3.1.0
     optionalDependencies:
-      zod: 4.3.6
+      zod: 4.4.3
 
   better-sqlite3@12.10.0:
     dependencies:

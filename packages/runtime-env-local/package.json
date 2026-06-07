@@ -11,7 +11,7 @@
     "check-types": "wp typecheck"
   },
   "dependencies": {
-    "@webpresso/runtime-env": "0.1.0",
+    "@webpresso/runtime-env": "catalog:",
     "ts-pattern": "^5.9.0"
   },
   "devDependencies": {
