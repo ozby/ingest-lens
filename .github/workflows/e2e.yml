@@ -74,9 +74,7 @@ jobs:
       - uses: ./.github/actions/setup-monorepo
 
       - name: Install Doppler CLI
-        run: |
-          curl -Ls https://cli.doppler.com/install.sh | sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        uses: dopplerhq/cli-action@v3
 
       - name: Run e2e suite (auto-provisions Neon branch)
         env:
