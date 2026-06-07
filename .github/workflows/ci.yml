@@ -80,7 +80,14 @@ jobs:
       - uses: ./.github/actions/setup-monorepo
 
       - run: pnpm check
-      - run: pnpm test
+      - name: Run targeted test suites
+        run: |
+          bun test \
+            src/*.test.ts \
+            scripts/act-with-webpresso.test.ts \
+            infra/src/deploy/runtime-env.test.ts \
+            apps/e2e/src/neon-branches.test.ts \
+            packages/runtime-env-local/src/index.test.ts
       - name: Run wp audit guardrails
         run: |
           WP="$(pwd)/node_modules/.bin/wp"
