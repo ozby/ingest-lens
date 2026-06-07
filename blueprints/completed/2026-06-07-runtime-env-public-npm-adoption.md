@@ -2,11 +2,11 @@
 type: blueprint
 title: "IngestLens: public runtime-env npm adoption"
 owner: ozby
-status: in-progress
+status: completed
 complexity: S
 created: "2026-06-07"
 last_updated: "2026-06-07"
-progress: "90% (public package cutover verified; blueprint lifecycle audit blocked by local hook-surface diagnostic)"
+progress: "100% (public package cutover verified and adopted from npm on main)"
 depends_on:
   - "webpresso/framework: codex/framework-db-public-facades"
 tags:
@@ -172,6 +172,6 @@ forbidden local protocols.
 | Local workspace links misread as forbidden | False-positive cleanup of intentional monorepo packages | Only forbid local protocols for external published package metadata; keep `@repo/*` workspace links. |
 | Upstream sourcemap omission                | Noisy test output from agent-kit config setup           | Record as upstream package warning; rely on command exit status for focused test proof.              |
 
-## Open closeout note
+## Closeout note
 
-- BLOCKED — `wp audit blueprint-lifecycle --json` is currently stopped by the local pretool diagnostic `wp-pretool-guard is unavailable` before the audit executes, even after `wp setup --yes` refreshed global `@webpresso/agent-kit@0.29.1` and exposed `wp-pretool-guard` on PATH. Do not bypass; rerun once the hook surface is healthy.
+- COMPLETE — the public npm cutover landed on `main`, and the repo no longer consumes `@webpresso/runtime-env` through a local link boundary.
