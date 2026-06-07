@@ -33,7 +33,7 @@ jobs:
           node-version: "24"
           cache: pnpm
           registry-url: https://npm.pkg.github.com
-          scope: "@webpresso"
+          scope: "@ozby"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
