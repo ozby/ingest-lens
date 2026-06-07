@@ -36,7 +36,7 @@ IngestLens carried a local `@repo/runtime-env-local` package for
 consumer-specific secret-manager integration and consumed the framework
 `@webpresso/runtime-env` core through a temporary local-link boundary while the
 framework package was being prepared for public npm. The repo also pinned
-`@webpresso/agent-kit` to the older `0.28.0` tarball, which did not satisfy the
+`@webpresso/agent-kit` to the older `0.28.0` package, which did not satisfy the
 current wrapper/typecheck subpath contract.
 
 ## Architecture after
@@ -45,7 +45,7 @@ current wrapper/typecheck subpath contract.
 IngestLens
   ├── @repo/runtime-env-local           # consumer-owned secret manager layer
   ├── @webpresso/runtime-env@0.1.0      # public npm core package
-  └── @webpresso/agent-kit@0.29.1       # public npm wrapper/config package
+  └── @webpresso/agent-kit@^0.29.2      # public npm wrapper/config package
 ```
 
 The local package remains the IngestLens-owned adapter for Doppler/Infisical
@@ -54,12 +54,12 @@ from the public Webpresso npm package.
 
 ## Key Decisions
 
-| Decision                    | Choice                                                                            | Rationale                                                                                              |
-| --------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Core runtime package source | `@webpresso/runtime-env@0.1.0` from npm                                           | Remote CI can install it without local framework links.                                                |
-| Local adapter boundary      | Keep `@repo/runtime-env-local` as `workspace:*`                                   | It is consumer-owned behavior and intentionally remains in this repo.                                  |
-| Wrapper package floor       | Bump `@webpresso/agent-kit` catalog to the published `0.29.1` tarball             | Current wrapper/typecheck gates require the published subpath export fixes from the agent-kit release. |
-| Lockfile proof              | Keep `pnpm-lock.yaml` resolving public Webpresso packages with registry integrity | Ensures fresh clones do not require local framework or agent-kit checkouts.                            |
+| Decision                    | Choice                                                                            | Rationale                                                                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core runtime package source | `@webpresso/runtime-env@0.1.0` from npm                                           | Remote CI can install it without local framework links.                                                                                            |
+| Local adapter boundary      | Keep `@repo/runtime-env-local` as `workspace:*`                                   | It is consumer-owned behavior and intentionally remains in this repo.                                                                              |
+| Wrapper package floor       | Bump `@webpresso/agent-kit` catalog to the published `^0.29.2` semver package     | Current wrapper/typecheck gates require the published subpath export fixes and packaged blueprint migration SQL assets from the agent-kit release. |
+| Lockfile proof              | Keep `pnpm-lock.yaml` resolving public Webpresso packages with registry integrity | Ensures fresh clones do not require local framework or agent-kit checkouts.                                                                        |
 
 ## Quick Reference (Execution Waves)
 
@@ -74,7 +74,7 @@ from the public Webpresso npm package.
 
 **Status:** done
 
-**Depends:** `@webpresso/runtime-env@0.1.0` and `@webpresso/agent-kit@0.29.1` are visible on npm.
+**Depends:** `@webpresso/runtime-env@0.1.0` and `@webpresso/agent-kit@^0.29.2` are visible on npm.
 
 Confirm that root catalog metadata and lockfile entries resolve the shared
 Webpresso packages to public npm versions, not local `link:` or `file:`
@@ -92,7 +92,7 @@ specifiers.
 **Acceptance:**
 
 - [x] `@webpresso/runtime-env` catalog entry is `0.1.0`.
-- [x] `@webpresso/agent-kit` catalog entry uses the published `0.29.1` tarball.
+- [x] `@webpresso/agent-kit` catalog entry uses the published `^0.29.2` semver package.
 - [x] Public npm pack probe for `@webpresso/runtime-env@0.1.0` succeeds.
 - [x] No package manifest uses `link:` or `file:` for `@webpresso/runtime-env`.
 
@@ -111,7 +111,7 @@ published packages without framework or agent-kit local checkouts.
 
 - [x] Public npm pack/install probe for `@webpresso/runtime-env@0.1.0` succeeds.
 - [x] Repo install command completes without rewriting the runtime-env source back to a local link.
-- [x] Lockfile resolves `@webpresso/agent-kit@0.29.1` and `@webpresso/runtime-env@0.1.0` from public npm.
+- [x] Lockfile resolves `@webpresso/agent-kit@0.29.2` from the `^0.29.2` catalog range and `@webpresso/runtime-env@0.1.0` from public npm.
 
 #### [qa] Task 2.2: Run no-link and focused runtime-env verification
 
@@ -145,6 +145,7 @@ forbidden local protocols.
 
 - PASS — `npm pack @webpresso/runtime-env@0.1.0 --registry=https://registry.npmjs.org --@webpresso:registry=https://registry.npmjs.org`
 - PASS — `PNPM_IGNORE_SCRIPTS=true vp install` preserved public package catalog/lockfile sources
+- PASS — `@webpresso/agent-kit` catalog entry is `^0.29.2`; lockfile specifier is `^0.29.2`, with no direct registry archive URL.
 - PASS — `wp audit no-link-protocol --json` → `checked: 15`, `violations: []`
 - PASS — `wp typecheck`
 - PASS — `wp lint`
@@ -152,11 +153,11 @@ forbidden local protocols.
 
 ## Cross-Plan References
 
-| Type       | Blueprint                                                 | Relationship                                                           |
-| ---------- | --------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Upstream   | `webpresso/framework` `codex/framework-db-public-facades` | Publishes the provider-neutral runtime-env core.                       |
-| Upstream   | `webpresso/agent-kit@0.29.1`                              | Supplies the public wrapper/config subpath exports used by IngestLens. |
-| Downstream | IngestLens CI                                             | Fresh remote CI installs from npm instead of local framework links.    |
+| Type       | Blueprint                                                 | Relationship                                                                                                |
+| ---------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Upstream   | `webpresso/framework` `codex/framework-db-public-facades` | Publishes the provider-neutral runtime-env core.                                                            |
+| Upstream   | `webpresso/agent-kit@^0.29.2`                             | Supplies the public wrapper/config subpath exports and packaged blueprint migration SQL used by IngestLens. |
+| Downstream | IngestLens CI                                             | Fresh remote CI installs from npm instead of local framework links.                                         |
 
 ## Non-goals
 
@@ -174,4 +175,4 @@ forbidden local protocols.
 
 ## Closeout note
 
-- COMPLETE — the public npm cutover landed on `main`, and the repo no longer consumes `@webpresso/runtime-env` through a local link boundary.
+- COMPLETE — the public npm cutover landed on `main`; the repo no longer consumes `@webpresso/runtime-env` through a local link boundary, and `@webpresso/agent-kit` resolves through the `^0.29.2` semver catalog range.

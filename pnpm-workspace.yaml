@@ -35,7 +35,7 @@ catalog:
   # Webpresso package-source split:
   # - agent-kit is public npm
   # - runtime-env is public npm
-  "@webpresso/agent-kit": https://registry.npmjs.org/@webpresso/agent-kit/-/agent-kit-0.29.1.tgz
+  "@webpresso/agent-kit": ^0.29.2
   "@webpresso/runtime-env": 0.1.0
   axios: ^1.15.2
   better-auth: ^1.6.9
