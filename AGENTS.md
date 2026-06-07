@@ -219,6 +219,7 @@ Full details: `.agent/rules/package-conventions.md`
 - `@repo/lab-s1a-correctness` — `apps/lab/scenarios/s1a-correctness`
 - `@repo/lab-s1b-latency` — `apps/lab/scenarios/s1b-latency`
 - `@repo/logger` — `packages/logger`
+- `@repo/runtime-env-local` — `packages/runtime-env-local`
 - `@repo/test-utils` — `packages/test-utils`
 - `@repo/types` — `packages/types`
 - `@repo/typescript-config` — `packages/config-typescript`
