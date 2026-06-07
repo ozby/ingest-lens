@@ -176,8 +176,8 @@ importers:
         specifier: 'catalog:'
         version: 0.28.0(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.22.0)(valibot@1.4.0(typescript@6.0.3))
       '@webpresso/runtime-env':
-        specifier: link:../../webpresso/framework/packages/runtime-env
-        version: link:../../webpresso/framework/packages/runtime-env
+        specifier: 0.1.0
+        version: 0.1.0
       husky:
         specifier: 'catalog:'
         version: 9.1.7
@@ -426,8 +426,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/runtime-env-local
       '@webpresso/runtime-env':
-        specifier: link:../../../../webpresso/framework/packages/runtime-env
-        version: link:../../../../webpresso/framework/packages/runtime-env
+        specifier: 0.1.0
+        version: 0.1.0
     devDependencies:
       '@playwright/test':
         specifier: ^1.55.0
@@ -581,8 +581,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/runtime-env-local
       '@webpresso/runtime-env':
-        specifier: link:../../../webpresso/framework/packages/runtime-env
-        version: link:../../../webpresso/framework/packages/runtime-env
+        specifier: 0.1.0
+        version: 0.1.0
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -639,8 +639,8 @@ importers:
   packages/runtime-env-local:
     dependencies:
       '@webpresso/runtime-env':
-        specifier: link:../../../../webpresso/framework/packages/runtime-env
-        version: link:../../../../webpresso/framework/packages/runtime-env
+        specifier: 0.1.0
+        version: 0.1.0
       ts-pattern:
         specifier: ^5.9.0
         version: 5.9.0
@@ -5093,6 +5093,10 @@ packages:
     resolution: {integrity: sha512-bxyzoixdiSIYQe94LAr/ilLS0ru+IZ+922N5wwojWf4loZfKd1PwhSO26k3wqW6X0+6PqFx6IRtDFYiUT8tIyA==}
     engines: {node: '>=24'}
     hasBin: true
+
+  '@webpresso/runtime-env@0.1.0':
+    resolution: {integrity: sha512-Nini+gqSkT49DBvZzWL5SJB3ACh1ZxgyXFwp6F9AZZ/iKJFS8AlIJ6aht2GuXWzNjeNC8CPBB8j6QvBVMMDC4Q==}
+    engines: {node: '>=24'}
 
   JSONStream@1.3.5:
     resolution: {integrity: sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==}
@@ -12908,6 +12912,10 @@ snapshots:
       - unrun
       - utf-8-validate
       - valibot
+
+  '@webpresso/runtime-env@0.1.0':
+    dependencies:
+      ts-pattern: 5.9.0
 
   JSONStream@1.3.5:
     dependencies:

@@ -77,7 +77,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
-    "@webpresso/runtime-env": "link:../../webpresso/framework/packages/runtime-env",
+    "@webpresso/runtime-env": "0.1.0",
     "@repo/runtime-env-local": "workspace:*",
     "husky": "catalog:",
     "jsdom": "^29.1.1",

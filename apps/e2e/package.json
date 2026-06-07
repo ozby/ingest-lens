@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@neondatabase/api-client": "catalog:",
-    "@webpresso/runtime-env": "link:../../../../webpresso/framework/packages/runtime-env",
+    "@webpresso/runtime-env": "0.1.0",
     "@repo/runtime-env-local": "workspace:*"
   },
   "devDependencies": {

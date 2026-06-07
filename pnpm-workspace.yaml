@@ -34,7 +34,7 @@ catalog:
 
   # Webpresso package-source split:
   # - agent-kit is public npm
-  # - runtime-env is a local extraction target until published
+  # - runtime-env is public npm
   "@webpresso/agent-kit": https://registry.npmjs.org/@webpresso/agent-kit/-/agent-kit-0.28.0.tgz
   axios: ^1.15.2
   bunchee: ^6.10.0

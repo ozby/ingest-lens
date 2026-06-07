@@ -8,7 +8,7 @@
     "check-types": "wp typecheck"
   },
   "dependencies": {
-    "@webpresso/runtime-env": "link:../../../../webpresso/framework/packages/runtime-env",
+    "@webpresso/runtime-env": "0.1.0",
     "ts-pattern": "^5.9.0"
   },
   "devDependencies": {
