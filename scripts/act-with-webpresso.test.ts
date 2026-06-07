@@ -6,18 +6,8 @@ import {
   pickAllowedSecrets,
   resolveActSecretProfile,
 } from "./act-secret-profile.ts";
-mock.module("@webpresso/runtime-env", () => ({
-  createRuntimeEnv: () => ({
-    resolveRuntimeProfile: async () => ({}),
-  }),
-}));
 mock.module("@repo/runtime-env-local", () => ({
-  secretsResolver: {
-    name: "secrets",
-    provides: ["*"],
-    priority: 0,
-    resolve: async () => ({}),
-  },
+  resolveRuntimeProfile: async () => ({}),
 }));
 
 const {

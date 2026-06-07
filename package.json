@@ -78,7 +78,6 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@webpresso/agent-kit": "catalog:",
-    "@webpresso/runtime-env": "catalog:",
     "husky": "catalog:",
     "jsdom": "^29.1.1",
     "node-addon-api": "^8.5.0",

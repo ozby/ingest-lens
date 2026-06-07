@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 
-import { createRuntimeEnv } from "@webpresso/runtime-env";
-import { secretsResolver } from "@repo/runtime-env-local";
+import { resolveRuntimeProfile } from "@repo/runtime-env-local";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -14,8 +13,6 @@ import {
   resolveActSecretProfile,
   type ActSecretProfile,
 } from "./act-secret-profile.ts";
-
-const { resolveRuntimeProfile } = createRuntimeEnv(secretsResolver);
 
 export function stripPassthroughSentinel(args: string[]): string[] {
   if (args[0] === "--") {

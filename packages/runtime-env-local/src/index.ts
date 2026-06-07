@@ -4,6 +4,7 @@ import {
   RuntimeCoordinator,
   SERVICE_RUNTIME_RESOLVER_NAMES,
   SERVICE_URL_RESOLVER_NAMES,
+  getResolverNamesForProfile,
   type ResolverContext,
   type RuntimeProfile,
   type RuntimeResolver,
@@ -41,3 +42,10 @@ export const secretsResolver: RuntimeResolver = {
 };
 
 export const runtimeEnv = new RuntimeCoordinator().register(secretsResolver);
+
+export async function resolveRuntimeProfile(
+  profile: RuntimeProfile,
+  options?: { fresh?: boolean },
+): Promise<Record<string, string>> {
+  return runtimeEnv.resolveSelected(getResolverNamesForProfile(profile), options);
+}

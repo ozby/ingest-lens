@@ -14,8 +14,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
 import process from "node:process";
-import { createRuntimeEnv } from "@webpresso/runtime-env";
-import { secretsResolver } from "@repo/runtime-env-local";
+import { resolveRuntimeProfile } from "@repo/runtime-env-local";
 import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
 import { findE2eRepoRoot, resolveFromRepoRoot, resolveVpCommand } from "../src/repo-root";
@@ -32,8 +31,6 @@ const repoRoot = findE2eRepoRoot(import.meta.url);
 const CLIENT_ASSET_LOCK_PARENT_DIR = resolveFromRepoRoot(repoRoot, ".tmp");
 const CLIENT_ASSET_LOCK_DIR = resolveFromRepoRoot(repoRoot, ".tmp", "e2e-client-assets.lock");
 const vpCommand = resolveVpCommand(repoRoot);
-const { resolveRuntimeProfile } = createRuntimeEnv(secretsResolver);
-
 async function getAvailablePort(): Promise<number> {
   for (const host of ["::1", "127.0.0.1"] as const) {
     try {
