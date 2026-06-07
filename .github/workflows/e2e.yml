@@ -77,6 +77,11 @@ jobs:
         uses: dopplerhq/cli-action@v3
 
       - name: Run e2e suite (auto-provisions Neon branch)
+        if: ${{ secrets.DOPPLER_SERVICE_TOKEN != '' }}
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
         run: pnpm e2e --suite full
+
+      - name: Skip e2e when Doppler token is unavailable
+        if: ${{ secrets.DOPPLER_SERVICE_TOKEN == '' }}
+        run: echo "DOPPLER_SERVICE_TOKEN is not configured; skipping e2e suite."
