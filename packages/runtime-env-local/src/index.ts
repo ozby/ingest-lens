@@ -20,7 +20,7 @@ export {
 };
 export type { ResolverContext, RuntimeProfile, RuntimeResolver };
 
-export const secretsResolver: RuntimeResolver = {
+const secretsResolver: RuntimeResolver = {
   name: "secrets",
   provides: ["*"],
   priority: 0,
@@ -41,7 +41,7 @@ export const secretsResolver: RuntimeResolver = {
   },
 };
 
-export const runtimeEnv = new RuntimeCoordinator().register(secretsResolver);
+const runtimeEnv = new RuntimeCoordinator().register(secretsResolver);
 
 export async function resolveRuntimeProfile(
   profile: RuntimeProfile,
