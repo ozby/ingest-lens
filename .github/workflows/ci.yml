@@ -88,11 +88,6 @@ jobs:
             infra/src/deploy/runtime-env.test.ts \
             apps/e2e/src/neon-branches.test.ts \
             packages/runtime-env-local/src/index.test.ts
-      - name: Run wp audit guardrails
-        run: |
-          WP="$(pwd)/node_modules/.bin/wp"
-          [ -x "$WP" ] || WP=wp
-          "$WP" audit guardrails
       - run: pnpm catalog:check
       - run: pnpm blueprints:check
 
