@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  getNeonConfig,
-  isNeonAvailable,
-  NeonBranchProvider,
-} from "./neon-branches";
+import { getNeonConfig, isNeonAvailable, NeonBranchProvider } from "./neon-branches";
 
 const mockCreateProjectBranch = vi.fn();
 const mockDeleteProjectBranch = vi.fn();

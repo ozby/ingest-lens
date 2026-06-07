@@ -47,7 +47,9 @@ export interface SecretManagerAdapter {
   displayName: string;
   capabilities: SecretManagerCapabilities;
   checkAvailability(): Promise<{ available: boolean; detail?: string }>;
-  checkAuthentication(options?: { workspace?: string }): Promise<{ authenticated: boolean; detail?: string }>;
+  checkAuthentication(options?: {
+    workspace?: string;
+  }): Promise<{ authenticated: boolean; detail?: string }>;
   interactiveLogin?(): Promise<void>;
   interactiveSetup?(options?: { workspace?: string }): Promise<void>;
   listWorkspaces?(): Promise<string[]>;

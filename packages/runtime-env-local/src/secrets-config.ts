@@ -56,7 +56,9 @@ function validateManager(obj: Record<string, unknown>, source: string): SecretMa
 
 function validateProjectId(obj: Record<string, unknown>, source: string): string {
   if (typeof obj.projectId !== "string" || obj.projectId.length === 0) {
-    throw new Error(`Malformed secrets config at ${source}: "projectId" must be a non-empty string`);
+    throw new Error(
+      `Malformed secrets config at ${source}: "projectId" must be a non-empty string`,
+    );
   }
   return obj.projectId;
 }
@@ -101,6 +103,9 @@ export function writeSecretsConfig(config: SecretsConfig, cwd?: string): void {
   mkdirSync(path.dirname(filePath), { recursive: true });
   const payload: SecretsConfig = { manager: config.manager, projectId: config.projectId };
   if (config.projectLabel !== undefined) payload.projectLabel = config.projectLabel;
-  writeFileSync(filePath, JSON.stringify(payload, null, 2) + "\n", { encoding: "utf8", mode: 0o600 });
+  writeFileSync(filePath, JSON.stringify(payload, null, 2) + "\n", {
+    encoding: "utf8",
+    mode: 0o600,
+  });
   chmodSync(filePath, 0o600);
 }

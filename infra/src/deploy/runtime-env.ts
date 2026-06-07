@@ -23,9 +23,7 @@ export async function loadResolveRuntimeProfile(
   };
 
   if (!loaded.secretsResolver) {
-    throw new Error(
-      "Expected @repo/runtime-env-local to export secretsResolver",
-    );
+    throw new Error("Expected @repo/runtime-env-local to export secretsResolver");
   }
 
   cachedResolveRuntimeProfile = createRuntimeEnv(

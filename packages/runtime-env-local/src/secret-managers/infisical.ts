@@ -18,7 +18,10 @@ export function getInfisicalEnvFromContext(context: ExecutionContext): string {
     .exhaustive();
 }
 
-function runCommand(command: string, args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+function runCommand(
+  command: string,
+  args: string[],
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "";
@@ -82,23 +85,41 @@ export const infisicalAdapter: SecretManagerAdapter = {
   },
   async checkAuthentication() {
     try {
-      const { exitCode } = await runCommand("infisical", ["user", "get", "token", "--plain", "--silent"]);
+      const { exitCode } = await runCommand("infisical", [
+        "user",
+        "get",
+        "token",
+        "--plain",
+        "--silent",
+      ]);
       return { authenticated: exitCode === 0 };
     } catch (error) {
-      return { authenticated: false, detail: error instanceof Error ? error.message : String(error) };
+      return {
+        authenticated: false,
+        detail: error instanceof Error ? error.message : String(error),
+      };
     }
   },
   async listWorkspaces() {
-    const tokenResult = await runCommand("infisical", ["user", "get", "token", "--plain", "--silent"]);
-    if (tokenResult.exitCode !== 0) throw new Error("Not authenticated to Infisical. Run: infisical login");
+    const tokenResult = await runCommand("infisical", [
+      "user",
+      "get",
+      "token",
+      "--plain",
+      "--silent",
+    ]);
+    if (tokenResult.exitCode !== 0)
+      throw new Error("Not authenticated to Infisical. Run: infisical login");
     const token = tokenResult.stdout.trim();
     if (!token) throw new Error("Infisical returned an empty access token");
     const response = await fetch(`${resolveInfisicalApiBase()}/v1/workspace`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error(`Infisical workspace list failed: ${response.status} ${response.statusText}`);
+    if (!response.ok)
+      throw new Error(`Infisical workspace list failed: ${response.status} ${response.statusText}`);
     const data = (await response.json()) as { workspaces?: unknown };
-    if (!Array.isArray(data.workspaces)) throw new Error("Infisical /v1/workspace returned unexpected shape");
+    if (!Array.isArray(data.workspaces))
+      throw new Error("Infisical /v1/workspace returned unexpected shape");
     return data.workspaces
       .map((w) => (typeof w === "object" && w !== null ? (w as { id?: unknown }).id : undefined))
       .filter((id): id is string => typeof id === "string" && id.length > 0);
@@ -109,7 +130,8 @@ export const infisicalAdapter: SecretManagerAdapter = {
   },
   async interactiveSetup() {
     const { exitCode } = await runCommand("infisical", ["init"]);
-    if (exitCode !== 0) throw new Error("Infisical init failed. Run: infisical login && infisical init");
+    if (exitCode !== 0)
+      throw new Error("Infisical init failed. Run: infisical login && infisical init");
   },
   async fetchSecrets(request: SecretFetchRequest): Promise<Record<string, string>> {
     if ((request.mode ?? "env-map") !== "env-map") {
@@ -122,7 +144,9 @@ export const infisicalAdapter: SecretManagerAdapter = {
     if (projectId) args.push("--projectId", projectId);
     const { stdout, stderr, exitCode } = await runCommand("infisical", args);
     if (exitCode !== 0) {
-      throw new Error(`Unable to fetch secrets from Infisical. Run: infisical login && infisical init\n${stderr.trim() || stdout.trim()}`);
+      throw new Error(
+        `Unable to fetch secrets from Infisical. Run: infisical login && infisical init\n${stderr.trim() || stdout.trim()}`,
+      );
     }
     const trimmed = stdout.trim();
     if (!trimmed) throw new Error("Infisical returned an empty response");

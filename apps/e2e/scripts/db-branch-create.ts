@@ -1,8 +1,4 @@
-import {
-  generateBranchName,
-  getNeonConfig,
-  NeonBranchProvider,
-} from "../src/neon-branches";
+import { generateBranchName, getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 
 const config = getNeonConfig(process.env);
 const provider = new NeonBranchProvider(config);

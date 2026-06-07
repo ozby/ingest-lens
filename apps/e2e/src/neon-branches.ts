@@ -156,7 +156,9 @@ async function ensureBranchDatabaseUrls(
 ): Promise<BranchDatabaseUrls> {
   try {
     const { data: endpoints } = await client.listProjectEndpoints(projectId);
-    const branchEndpoints = endpoints?.endpoints?.filter((endpoint) => endpoint.branch_id === branchId);
+    const branchEndpoints = endpoints?.endpoints?.filter(
+      (endpoint) => endpoint.branch_id === branchId,
+    );
     if (!branchEndpoints?.length) {
       await client.createProjectEndpoint(projectId, {
         endpoint: {
@@ -213,7 +215,9 @@ function buildCreateProjectBranchRequest(
         autoscaling_limit_max_cu: 1,
         pooler_enabled: true,
         pooler_mode: "session",
-      } as unknown as Parameters<ReturnType<typeof createApiClient>["createProjectBranch"]>[1] extends {
+      } as unknown as Parameters<
+        ReturnType<typeof createApiClient>["createProjectBranch"]
+      >[1] extends {
         endpoints?: Array<infer E>;
       }
         ? E
@@ -325,7 +329,9 @@ export async function cleanupStaleE2EBranches(
   const cutoff = new Date((options.now ?? new Date()).getTime() - maxAgeHours * 60 * 60 * 1000);
   const branches = await listE2EBranches(config);
 
-  const stale = branches.filter((branch) => new Date(branch.createdAt).getTime() <= cutoff.getTime());
+  const stale = branches.filter(
+    (branch) => new Date(branch.createdAt).getTime() <= cutoff.getTime(),
+  );
   const deletedBranchIds: string[] = [];
   for (const branch of stale) {
     await deleteEphemeralBranch(config, branch.id);

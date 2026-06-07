@@ -26,12 +26,16 @@ export function getSelectedSecretManagerName(startDir: string = process.cwd()): 
   return readSecretsConfig(startDir)?.manager ?? null;
 }
 
-export function getSelectedSecretManagerAdapter(startDir: string = process.cwd()): SecretManagerAdapter | null {
+export function getSelectedSecretManagerAdapter(
+  startDir: string = process.cwd(),
+): SecretManagerAdapter | null {
   const manager = getSelectedSecretManagerName(startDir);
   return manager ? (secretManagerRegistry.get(manager) ?? null) : null;
 }
 
-export function getRequiredSecretManagerAdapter(startDir: string = process.cwd()): SecretManagerAdapter {
+export function getRequiredSecretManagerAdapter(
+  startDir: string = process.cwd(),
+): SecretManagerAdapter {
   const manager = getSelectedSecretManagerName(startDir);
   if (!manager) throw new Error("No secret manager configured.\nRun: wp config secrets setup");
   const adapter = secretManagerRegistry.get(manager);
@@ -39,7 +43,9 @@ export function getRequiredSecretManagerAdapter(startDir: string = process.cwd()
   return adapter;
 }
 
-export function resolveGenericSecretManagerToken(env: Record<string, string | undefined>): string | undefined {
+export function resolveGenericSecretManagerToken(
+  env: Record<string, string | undefined>,
+): string | undefined {
   return env.SECRET_MANAGER_TOKEN;
 }
 
@@ -58,7 +64,15 @@ async function fetchSecretsWithAdapter(
   adapter: SecretManagerAdapter,
   request: SelectedSecretFetchRequest,
 ): Promise<Record<string, string>> {
-  const { env = process.env, execution, scope, auth, version, mode = "env-map", secretName } = request;
+  const {
+    env = process.env,
+    execution,
+    scope,
+    auth,
+    version,
+    mode = "env-map",
+    secretName,
+  } = request;
   if (mode === "env-map" && hasRequiredSecretsInEnv(env)) return extractSecretsFromEnv(env);
   const executionScope = execution ? adapter.resolveScopeForExecution?.(execution) : undefined;
   const effectiveScope = executionScope || scope ? { ...executionScope, ...scope } : undefined;

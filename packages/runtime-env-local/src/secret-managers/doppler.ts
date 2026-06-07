@@ -12,14 +12,19 @@ export function getDopplerConfigFromContext(context: ExecutionContext): string {
   return match(context.type)
     .with("prod", () => "prd")
     .with("preview", () =>
-      context.identifier?.startsWith("pr-") ? `preview_${context.identifier.replace("-", "_")}` : "preview",
+      context.identifier?.startsWith("pr-")
+        ? `preview_${context.identifier.replace("-", "_")}`
+        : "preview",
     )
     .with("e2e", () => "dev")
     .with("dev", () => "dev")
     .exhaustive();
 }
 
-function runCommand(command: string, args: string[]): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+function runCommand(
+  command: string,
+  args: string[],
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "";
@@ -35,7 +40,9 @@ function runCommand(command: string, args: string[]): Promise<{ stdout: string; 
   });
 }
 
-export function isDopplerSecretsInjected(env: Record<string, string | undefined> = process.env): boolean {
+export function isDopplerSecretsInjected(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
   return !!(env.DOPPLER_PROJECT && (env.DOPPLER_ENVIRONMENT || env.DOPPLER_CONFIG));
 }
 
@@ -57,10 +64,17 @@ type DopplerProjectState =
 
 export async function getDopplerProjectState(targetProject?: string): Promise<DopplerProjectState> {
   try {
-    const { stdout, stderr, exitCode } = await runCommand("doppler", ["configure", "get", "project", "--plain"]);
+    const { stdout, stderr, exitCode } = await runCommand("doppler", [
+      "configure",
+      "get",
+      "project",
+      "--plain",
+    ]);
     if (exitCode !== 0) {
       const detail = stderr.trim() || stdout.trim();
-      return isUnauthenticated(detail) ? { kind: "unauthenticated", detail } : { kind: "unconfigured" };
+      return isUnauthenticated(detail)
+        ? { kind: "unauthenticated", detail }
+        : { kind: "unconfigured" };
     }
     const configuredProject = stdout.trim();
     if (!configuredProject) return { kind: "unconfigured" };
@@ -73,7 +87,10 @@ export async function getDopplerProjectState(targetProject?: string): Promise<Do
   }
 }
 
-async function autoSetup(project: string, environment: string = DOPPLER_DEFAULT_CONFIG): Promise<void> {
+async function autoSetup(
+  project: string,
+  environment: string = DOPPLER_DEFAULT_CONFIG,
+): Promise<void> {
   const { exitCode } = await runCommand("doppler", [
     "setup",
     "--project",
@@ -89,9 +106,7 @@ async function autoSetup(project: string, environment: string = DOPPLER_DEFAULT_
   }
 }
 
-function buildDopplerFetchArgs(
-  request: SecretFetchRequest,
-): string[] {
+function buildDopplerFetchArgs(request: SecretFetchRequest): string[] {
   const project = request.scope?.workspace;
   const config = request.scope?.environment || DOPPLER_DEFAULT_CONFIG;
   const args = ["secrets", "download", "--no-file", "--format", "json", "--silent"];
@@ -140,14 +155,19 @@ export const dopplerAdapter: SecretManagerAdapter = {
     if (state.kind === "unauthenticated") return { authenticated: false, detail: state.detail };
     return {
       authenticated: false,
-      detail: state.kind === "unconfigured" ? "Secret manager workspace not configured" : `Wrong workspace configured: ${state.project}`,
+      detail:
+        state.kind === "unconfigured"
+          ? "Secret manager workspace not configured"
+          : `Wrong workspace configured: ${state.project}`,
     };
   },
   async listWorkspaces() {
     const { stdout, stderr, exitCode } = await runCommand("doppler", ["projects", "--json"]);
-    if (exitCode !== 0) throw new Error(`Doppler projects list failed: ${stderr.trim() || stdout.trim()}`);
+    if (exitCode !== 0)
+      throw new Error(`Doppler projects list failed: ${stderr.trim() || stdout.trim()}`);
     const parsed = JSON.parse(stdout) as unknown;
-    if (!Array.isArray(parsed)) throw new Error("Doppler projects list returned unexpected shape (not an array)");
+    if (!Array.isArray(parsed))
+      throw new Error("Doppler projects list returned unexpected shape (not an array)");
     return parsed
       .map((p) => (typeof p === "object" && p !== null ? (p as { id?: unknown }).id : undefined))
       .filter((id): id is string => typeof id === "string" && id.length > 0);
