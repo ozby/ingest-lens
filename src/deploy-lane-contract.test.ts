@@ -30,7 +30,7 @@ describe("Cloudflare deploy lane contract", () => {
   });
 
   it("deploys main and PRs to preview lanes with PR-close cleanup, not production", () => {
-    const workflow = readRepoFile(".github/workflows/deploy.preview.yml");
+    const workflow = readRepoFile(".github/workflows/deploy-preview.yml");
 
     expect(workflow).toContain("branches: [main]");
     expect(workflow).toContain("pull_request:");
@@ -51,7 +51,7 @@ describe("Cloudflare deploy lane contract", () => {
   });
 
   it("allows production deploy only through release metadata plus an explicit semantic release version", () => {
-    const workflow = readRepoFile(".github/workflows/deploy.production.yml");
+    const workflow = readRepoFile(".github/workflows/deploy-production.yml");
     const metadata = readRepoFile("infra/release-metadata.production.json");
 
     expect(workflow).not.toContain("branches: [main]");
