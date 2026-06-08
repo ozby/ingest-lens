@@ -10,24 +10,12 @@
     ]
   },
   "hosts": {
-    "selected": [
-      "codex",
-      "claude",
-      "opencode"
-    ],
-    "requiredCapabilities": [
-      "verify",
-      "plan-refine"
-    ]
+    "selected": ["codex", "claude", "opencode"],
+    "requiredCapabilities": ["verify", "plan-refine"]
   },
   "audit": {
     "toolchainIsolation": {
-      "allowDependencies": [
-        "@playwright/test",
-        "tsx",
-        "vitest",
-        "wrangler"
-      ]
+      "allowDependencies": ["@playwright/test", "tsx", "vitest", "wrangler"]
     }
   },
   "rules": {
