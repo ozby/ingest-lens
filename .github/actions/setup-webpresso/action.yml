@@ -1,0 +1,21 @@
+name: Set up Webpresso tooling
+description: >
+  Install shared Webpresso CLIs needed by the base-kit workflow surface.
+  Resolves @webpresso/agent-kit from package.json and installs vite-plus only
+  when the consumer repo explicitly catalogs it.
+runs:
+  using: composite
+  steps:
+    - name: Install shared Webpresso CLIs
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        AGENT_KIT_VERSION="$(node -e "const pkg=require('./package.json'); console.log(pkg.devDependencies?.['@webpresso/agent-kit'] || pkg.dependencies?.['@webpresso/agent-kit'] || 'latest')")"
+        VITE_PLUS_VERSION="$(node -e "const fs=require('fs'); const text=fs.existsSync('pnpm-workspace.yaml') ? fs.readFileSync('pnpm-workspace.yaml','utf8') : ''; const match=text.match(/^\\s*vite-plus:\\s*(.+)$/m); console.log(match ? match[1].trim() : '')")"
+
+        if [[ -n "${VITE_PLUS_VERSION}" ]]; then
+          npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+        else
+          npm install -g "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+        fi

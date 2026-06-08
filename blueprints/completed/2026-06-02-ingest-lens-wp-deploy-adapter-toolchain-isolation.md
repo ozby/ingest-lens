@@ -33,7 +33,7 @@ managed tool binaries. Production release metadata stays anchored at
 `infra/release-metadata.production.json`.
 
 Upstream: `webpresso/agent-kit/blueprints/in-progress/2026-06-02-agent-kit-wp-deploy-orchestrator-toolchain-isolation.md`.
-Builds on the in-progress `2026-06-02-ingest-lens-preview-production-lanes.md`
+Builds on the completed `2026-06-02-ingest-lens-preview-production-lanes.md`
 (which already defines `preview-main`/`preview-pr-<n>`/release-gated `prd`
 lanes); this blueprint wraps that flow behind the adapter contract rather than
 redefining the lanes.

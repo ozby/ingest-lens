@@ -2,17 +2,27 @@
   "mcp": {
     "context-mode": {
       "type": "local",
-      "command": ["context-mode"]
+      "command": [
+        "context-mode"
+      ]
     },
     "agent-kit": {
       "type": "local",
-      "command": ["wp", "mcp"]
+      "command": [
+        "wp",
+        "mcp"
+      ]
     },
     "webpresso": {
       "type": "local",
-      "command": ["wp", "mcp"]
+      "command": [
+        "wp",
+        "mcp"
+      ]
     }
   },
-  "plugin": ["context-mode"],
+  "plugin": [
+    "context-mode"
+  ],
   "$schema": "https://opencode.ai/config.json"
 }

@@ -10,26 +10,24 @@
     ]
   },
   "hosts": {
-    "selected": ["codex", "claude", "opencode"],
-    "requiredCapabilities": ["verify", "plan-refine"],
-    "visibility": {
-      "codex": {
-        "verify": "visible-after-restart",
-        "plan-refine": "visible-after-restart"
-      },
-      "claude": {
-        "verify": "visible-after-restart",
-        "plan-refine": "visible-after-restart"
-      },
-      "opencode": {
-        "verify": "visible-after-restart",
-        "plan-refine": "visible-after-restart"
-      }
-    }
+    "selected": [
+      "codex",
+      "claude",
+      "opencode"
+    ],
+    "requiredCapabilities": [
+      "verify",
+      "plan-refine"
+    ]
   },
   "audit": {
     "toolchainIsolation": {
-      "allowDependencies": ["tsx", "vitest", "@playwright/test", "wrangler"]
+      "allowDependencies": [
+        "@playwright/test",
+        "tsx",
+        "vitest",
+        "wrangler"
+      ]
     }
   },
   "rules": {
