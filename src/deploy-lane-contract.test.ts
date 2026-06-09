@@ -69,9 +69,11 @@ describe("Cloudflare deploy lane contract", () => {
     );
     expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
     expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
-    expect(workflow).toContain('deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"');
     expect(workflow).toContain(
-      'release_version: ${{ needs.validate-release.outputs.release_version }}',
+      'deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"',
+    );
+    expect(workflow).toContain(
+      "release_version: ${{ needs.validate-release.outputs.release_version }}",
     );
     expect(metadata).toContain('"releaseKind": "version_pr"');
     expect(metadata).toContain('"requiredChecks"');
