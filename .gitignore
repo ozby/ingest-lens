@@ -71,6 +71,8 @@ apps/workers/reports/
 /tooling/
 .gstack/
 .webpresso/
+!.webpresso/
+!.webpresso/secrets.config.json
 
 # agent-kit compile cache (always regeneratable)
 .rulesync/

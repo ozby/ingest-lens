@@ -31,11 +31,16 @@ describe("Cloudflare deploy lane contract", () => {
 
   it("deploys main and PRs to preview lanes with PR-close cleanup, not production", () => {
     const workflow = readRepoFile(".github/workflows/deploy-preview.yml");
+    const reusableSha = "317fc3aa5952f5dee0604413a0b9dd1e6d7635dd";
 
     expect(workflow).toContain("branches: [main]");
     expect(workflow).toContain("pull_request:");
     expect(workflow).toContain("types: [opened, synchronize, reopened, closed]");
-    expect(workflow).toContain("preview-main");
+    expect(workflow).toContain(
+      `uses: webpresso/agent-kit/.github/workflows/cloudflare-preview.yml@${reusableSha}`,
+    );
+    expect(workflow).toContain('dashed_lane="preview-main"');
+    expect(workflow).toContain('canonical_lane="preview_main"');
     expect(workflow).toContain("PR_NUMBER: ${{ github.event.pull_request.number }}");
     expect(workflow).toContain(
       "github.event.pull_request.head.repo.full_name == github.repository",
@@ -43,26 +48,30 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain(
       "contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)",
     );
-    expect(workflow).toContain("printf 'lane=%s\\n'");
-    expect(workflow).toContain("packages: read");
+    expect(workflow).toContain("printf 'canonical_lane=%s\\n'");
+    expect(workflow).toContain("printf 'dashed_lane=%s\\n'");
     expect(workflow).toContain("--destroy");
-    expect(workflow).not.toContain("deploy:production");
-    expect(workflow).not.toContain("--lane prd");
+    expect(workflow).toContain("pnpm install --frozen-lockfile");
+    expect(workflow).toContain("pnpm run lint");
+    expect(workflow).not.toContain("setup-monorepo");
   });
 
   it("allows production deploy only through release metadata plus an explicit semantic release version", () => {
     const workflow = readRepoFile(".github/workflows/deploy-production.yml");
     const metadata = readRepoFile("infra/release-metadata.production.json");
+    const reusableSha = "317fc3aa5952f5dee0604413a0b9dd1e6d7635dd";
 
     expect(workflow).not.toContain("branches: [main]");
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("release_version:");
-    expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
-    expect(workflow).toContain("ref: main");
-    expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
-    expect(workflow).toContain("packages: read");
     expect(workflow).toContain(
-      'bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION_INPUT}"',
+      `uses: webpresso/agent-kit/.github/workflows/cloudflare-production.yml@${reusableSha}`,
+    );
+    expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
+    expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
+    expect(workflow).toContain('deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"');
+    expect(workflow).toContain(
+      'release_version: ${{ needs.validate-release.outputs.release_version }}',
     );
     expect(metadata).toContain('"releaseKind": "version_pr"');
     expect(metadata).toContain('"requiredChecks"');
