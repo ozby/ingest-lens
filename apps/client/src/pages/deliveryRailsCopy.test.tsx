@@ -4,6 +4,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import Queues from "./Queues";
 import Topics from "./Topics";
 
+const authState = {
+  user: { id: "user-1", name: "Operator", email: "operator@example.com" },
+  isAuthenticated: true,
+  isLoading: false,
+  login: vi.fn(),
+  register: vi.fn(),
+  logout: vi.fn(),
+};
+
 const apiMocks = vi.hoisted(() => ({
   deleteQueue: vi.fn(),
   deleteTopic: vi.fn(),
@@ -12,19 +21,11 @@ const apiMocks = vi.hoisted(() => ({
   getTopics: vi.fn(),
 }));
 
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => authState,
+}));
+
 vi.mock("@/services/api", () => ({ default: apiMocks }));
-vi.mock("@/components/NavBar", () => ({
-  default: () => <div>NavBar</div>,
-}));
-vi.mock("@/components/Sidebar", () => ({
-  default: () => <div>Sidebar</div>,
-}));
-vi.mock("@/components/QueueForm", () => ({
-  default: ({ trigger }: { trigger: React.ReactNode }) => <>{trigger}</>,
-}));
-vi.mock("@/components/TopicForm", () => ({
-  default: ({ trigger }: { trigger: React.ReactNode }) => <>{trigger}</>,
-}));
 
 describe("delivery rail copy", () => {
   beforeEach(() => {

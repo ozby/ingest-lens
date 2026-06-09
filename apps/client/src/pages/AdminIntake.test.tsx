@@ -4,41 +4,27 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import AdminIntake from "./AdminIntake";
 
+const authState = {
+  user: { id: "user-1", name: "Operator", email: "operator@example.com" },
+  isAuthenticated: true,
+  isLoading: false,
+  login: vi.fn(),
+  register: vi.fn(),
+  logout: vi.fn(),
+};
+
 const apiMocks = vi.hoisted(() => ({
   approveIntakeSuggestion: vi.fn(),
   getIntakeSuggestions: vi.fn(),
   rejectIntakeSuggestion: vi.fn(),
 }));
 
-vi.mock("@/services/api", () => ({
-  default: apiMocks,
+vi.mock("../context/AuthContext", () => ({
+  useAuth: () => authState,
 }));
 
-vi.mock("@/components/NavBar", () => ({
-  default: () => <div>NavBar</div>,
-}));
-vi.mock("@/components/Sidebar", () => ({
-  default: () => <div>Sidebar</div>,
-}));
-vi.mock("@/components/MappingSuggestionReview", () => ({
-  default: ({
-    suggestion,
-    onToggle,
-  }: {
-    suggestion: { id: string; sourcePath: string; targetField: string };
-    onToggle?: (id: string, selected: boolean) => void;
-  }) => (
-    <div>
-      <span>{suggestion.id}</span>
-      <span>{suggestion.sourcePath}</span>
-      <span>{suggestion.targetField}</span>
-      <input
-        aria-label={`approve-${suggestion.id}`}
-        type="checkbox"
-        onChange={(event) => onToggle?.(suggestion.id, event.currentTarget.checked)}
-      />
-    </div>
-  ),
+vi.mock("@/services/api", () => ({
+  default: apiMocks,
 }));
 
 const attempt = {
@@ -144,7 +130,7 @@ describe("AdminIntake page", () => {
       </MemoryRouter>,
     );
 
-    const check = await screen.findByLabelText("approve-s-1");
+    const check = await screen.findByRole("checkbox");
     await user.click(check);
     await user.click(screen.getByRole("button", { name: "Approve selected" }));
 

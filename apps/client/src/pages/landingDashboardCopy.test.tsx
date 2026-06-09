@@ -4,60 +4,34 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import Index from "./Index";
 import Dashboard from "./Dashboard";
 
-const navigateMock = vi.fn();
 const authState = {
   isAuthenticated: false,
   isLoading: false,
+  user: { id: "user-1", name: "Operator", email: "operator@example.com" },
   login: vi.fn(),
   register: vi.fn(),
+  logout: vi.fn(),
 };
 
 const apiMocks = vi.hoisted(() => ({
   getAllQueueMetrics: vi.fn(),
+  getServerActivityHistory: vi.fn(),
   getQueues: vi.fn(),
   getServerMetrics: vi.fn(),
   getTopics: vi.fn(),
 }));
-
-vi.mock("react-router-dom", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("react-router-dom")>();
-  return { ...actual, useNavigate: () => navigateMock };
-});
 
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => authState,
 }));
 
 vi.mock("@/services/api", () => ({ default: apiMocks }));
-vi.mock("@/components/NavBar", () => ({
-  default: () => <div>NavBar</div>,
-}));
-vi.mock("@/components/Sidebar", () => ({
-  default: () => <div>Sidebar</div>,
-}));
-vi.mock("@/components/MetricsCard", () => ({
-  default: ({ title, description }: { title: string; description: string }) => (
-    <div>
-      <span>{title}</span>
-      <span>{description}</span>
-    </div>
-  ),
-}));
-vi.mock("@/components/ServerMetrics", () => ({
-  default: () => <div>Server metrics</div>,
-}));
-vi.mock("@/components/QueueForm", () => ({
-  default: ({ trigger }: { trigger: React.ReactNode }) => <>{trigger}</>,
-}));
-vi.mock("@/components/TopicForm", () => ({
-  default: ({ trigger }: { trigger: React.ReactNode }) => <>{trigger}</>,
-}));
 
 describe("landing and dashboard copy", () => {
   beforeEach(() => {
-    navigateMock.mockReset();
     authState.isAuthenticated = false;
     authState.isLoading = false;
+    authState.user = { id: "user-1", name: "Operator", email: "operator@example.com" };
     Object.values(apiMocks).forEach((mockFn) => mockFn.mockReset());
   });
 
@@ -87,6 +61,7 @@ describe("landing and dashboard copy", () => {
       errorCount: 0,
       avgResponseTime: 0,
     });
+    apiMocks.getServerActivityHistory.mockResolvedValueOnce([]);
 
     render(
       <MemoryRouter>
