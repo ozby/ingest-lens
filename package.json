@@ -74,6 +74,7 @@
     "@repo/runtime-env-local": "workspace:*",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
     "@stryker-mutator/core": "latest",
+    "@stryker-mutator/typescript-checker": "latest",
     "@stryker-mutator/vitest-runner": "latest",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
