@@ -1,30 +1,18 @@
-import { createRequire } from "node:module";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
 
-type ResolveRuntimeProfile = (profile: "secrets-only") => Promise<Record<string, string>>;
+import { resolveRuntimeEnvironment } from "@webpresso/agent-kit/local";
 
-const require = createRequire(import.meta.url);
+type ResolveRuntimeProfile = (profile: "secrets-only") => Record<string, string>;
 
 let cachedResolveRuntimeProfile: ResolveRuntimeProfile | null = null;
 
-export async function loadResolveRuntimeProfile(
-  resolveModule: (specifier: string) => string = require.resolve,
-  importModule: (specifier: string) => Promise<unknown> = (specifier) => import(specifier),
-): Promise<ResolveRuntimeProfile> {
+export async function loadResolveRuntimeProfile(): Promise<ResolveRuntimeProfile> {
   if (cachedResolveRuntimeProfile) return cachedResolveRuntimeProfile;
-
-  const modulePath = resolveModule("@repo/runtime-env-local");
-  const moduleHref = pathToFileURL(modulePath).href;
-  const loaded = (await importModule(moduleHref)) as {
-    resolveRuntimeProfile?: ResolveRuntimeProfile;
-  };
-
-  if (!loaded.resolveRuntimeProfile) {
-    throw new Error("Expected @repo/runtime-env-local to export resolveRuntimeProfile");
-  }
-
-  cachedResolveRuntimeProfile = loaded.resolveRuntimeProfile;
+  cachedResolveRuntimeProfile = (profile) =>
+    resolveRuntimeEnvironment({
+      cwd: process.cwd(),
+      profile,
+    });
   return cachedResolveRuntimeProfile;
 }
 
@@ -36,7 +24,7 @@ export async function resolveDeployRuntimeEnv(
     const resolveRuntimeProfile = await loadResolveRuntimeProfile();
     return {
       ...process.env,
-      ...(await resolveRuntimeProfile(profile)),
+      ...resolveRuntimeProfile(profile),
     } as NodeJS.ProcessEnv;
   } catch (error) {
     const missing = requiredDirectEnv.filter((key) => !process.env[key]);

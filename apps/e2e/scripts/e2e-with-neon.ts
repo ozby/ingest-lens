@@ -14,7 +14,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
 import process from "node:process";
-import { resolveRuntimeProfile } from "@repo/runtime-env-local";
+import { resolveRuntimeEnvironment } from "@webpresso/agent-kit/local";
 import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
 import { findE2eRepoRoot, resolveFromRepoRoot, resolveVpCommand } from "../src/repo-root";
@@ -68,7 +68,7 @@ const clientInspectorPort = requiresClientWorker ? await getAvailablePort() : 92
 const clientBaseUrl = `http://localhost:${clientPort}`;
 
 // ── Load secrets from the selected secret manager ──────────────────────
-const runtimeSecrets = await resolveRuntimeProfile("secrets-only");
+const runtimeSecrets = resolveRuntimeEnvironment({ cwd: repoRoot, profile: "secrets-only" });
 const secretEnv = {
   ...process.env,
   ...runtimeSecrets,
