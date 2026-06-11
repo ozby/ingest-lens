@@ -86,8 +86,7 @@
     "typescript": "latest",
     "vite": "catalog:tooling",
     "vite-plus": "catalog:",
-    "vitest": "catalog:tooling",
-    "webpresso": "latest"
+    "vitest": "catalog:tooling"
   },
   "engines": {
     "node": ">=24"
