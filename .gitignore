@@ -48,6 +48,9 @@ Thumbs.db
 # Stryker incremental cache
 .stryker-incremental.json
 
+# Local git worktrees (separate git repos; never part of this repo's tree)
+_worktrees/
+
 # Git worktrees (parallel blueprint lanes)
 .worktrees/
 
