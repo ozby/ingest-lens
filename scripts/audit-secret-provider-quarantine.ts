@@ -14,6 +14,9 @@ const IGNORED_DIRS = new Set([
   "blueprints",
   "dist",
   "coverage",
+  // Git worktrees are separate repos checked out locally; their files are
+  // not part of this repo's tracked surface and must not be scanned.
+  "_worktrees",
 ]);
 
 const TEXT_FILE_PATTERN = /\.(md|ts|tsx|js|json|ya?ml|toml|txt)$/i;
