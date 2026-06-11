@@ -31,7 +31,7 @@ jobs:
     name: Deploy production release
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: validate-release
-    uses: webpresso/agent-kit/.github/workflows/cloudflare-production.yml@1db9b8d3de11a67096b9cc56ed988ba95d6cc221
+    uses: webpresso/agent-kit/.github/workflows/cloudflare-production.yml@4ba75c74138e4bbfa2b72189e6f0a3dd05fef7a9
     with:
       install_command: |
         export NODE_AUTH_TOKEN='${{ github.token }}'
