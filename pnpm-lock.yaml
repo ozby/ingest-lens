@@ -208,9 +208,6 @@ importers:
       vitest:
         specifier: catalog:tooling
         version: 4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
-      webpresso:
-        specifier: latest
-        version: 0.0.0-placeholder
 
   apps/client:
     dependencies:
@@ -8522,9 +8519,6 @@ packages:
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
-
-  webpresso@0.0.0-placeholder:
-    resolution: {integrity: sha512-VEr5DvijygasV/kFSOqabEry4zE4EAG78CILPT51T2a/TcFmhCbmUbsU/dV4hP7mDHBxas5hNNlxRQFQjJVz9w==}
 
   whatwg-mimetype@5.0.0:
     resolution: {integrity: sha512-sXcNcHOC51uPGF0P/D4NVtrkjSU2fNsm9iog4ZvZJsL3rjoDAzXZhkm2MWt1y+PUdggKAYVoMAIYcs78wJ51Cw==}
@@ -16904,8 +16898,6 @@ snapshots:
   weapon-regex@1.3.6: {}
 
   webidl-conversions@8.0.1: {}
-
-  webpresso@0.0.0-placeholder: {}
 
   whatwg-mimetype@5.0.0: {}
 

@@ -56,7 +56,7 @@ jobs:
   deploy-preview:
     if: ${{ github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)) }}
     needs: resolve
-    uses: webpresso/agent-kit/.github/workflows/cloudflare-preview.yml@317fc3aa5952f5dee0604413a0b9dd1e6d7635dd
+    uses: webpresso/agent-kit/.github/workflows/cloudflare-preview.yml@1db9b8d3de11a67096b9cc56ed988ba95d6cc221
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: deploy
@@ -70,13 +70,14 @@ jobs:
       verify_command: pnpm run lint
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       runner: ubuntu-latest
+      skip_when_ci_secret_missing: true
     secrets:
       ci_secret_provider_token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
 
   destroy-preview:
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
     needs: resolve
-    uses: webpresso/agent-kit/.github/workflows/cloudflare-preview.yml@317fc3aa5952f5dee0604413a0b9dd1e6d7635dd
+    uses: webpresso/agent-kit/.github/workflows/cloudflare-preview.yml@1db9b8d3de11a67096b9cc56ed988ba95d6cc221
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: destroy
@@ -91,5 +92,6 @@ jobs:
       deploy_command: ":"
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
       runner: ubuntu-latest
+      skip_when_ci_secret_missing: true
     secrets:
       ci_secret_provider_token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
