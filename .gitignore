@@ -245,6 +245,8 @@ agent-rules/ts-coding-conventions.md
 .omc/
 .opencode/
 .codex/
+_worktrees/
+.webpresso/hooks-manifest.json
 .claude/settings.json
 .claude/settings.local.json
 .claude/agents/
