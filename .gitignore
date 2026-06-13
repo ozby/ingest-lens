@@ -269,3 +269,7 @@ _worktrees/
 .agent/.blueprints.snapshot.sql
 .agent/.tail-hint-history.jsonl
 # <<< managed by webpresso (generated)
+
+# wp setup scaffolds these scripts but wp audit commands replace them
+scripts/audit-secret-provider-quarantine.ts
+scripts/check-no-dev-vars.ts
