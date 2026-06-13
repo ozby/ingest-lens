@@ -10,11 +10,7 @@
     ]
   },
   "hosts": {
-    "selected": [
-      "codex",
-      "claude",
-      "opencode"
-    ],
+    "selected": ["codex", "claude", "opencode"],
     "requiredCapabilities": [
       "fix",
       "verify",
@@ -52,12 +48,7 @@
   },
   "audit": {
     "toolchainIsolation": {
-      "allowDependencies": [
-        "@playwright/test",
-        "tsx",
-        "vitest",
-        "wrangler"
-      ]
+      "allowDependencies": ["@playwright/test", "tsx", "vitest", "wrangler"]
     }
   },
   "rules": {
