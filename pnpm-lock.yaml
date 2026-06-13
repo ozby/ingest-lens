@@ -49,8 +49,8 @@ catalogs:
       specifier: ^6.0.1
       version: 6.0.1
     '@webpresso/agent-kit':
-      specifier: ^0.30.3
-      version: 0.30.3
+      specifier: ^0.34.2
+      version: 0.34.2
     '@webpresso/runtime-env':
       specifier: 0.1.0
       version: 0.1.0
@@ -183,7 +183,7 @@ importers:
         version: 19.2.14
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.22.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.22.0)(valibot@1.4.0(typescript@6.0.3))
       husky:
         specifier: 'catalog:'
         version: 9.1.7
@@ -409,7 +409,7 @@ importers:
         version: 6.0.1(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jose@6.2.2)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jose@6.2.2)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       tailwindcss:
         specifier: 'catalog:'
         version: 4.2.4
@@ -440,7 +440,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       vitest:
         specifier: catalog:tooling
         version: 4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
@@ -468,7 +468,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
 
   apps/lab/scenarios/s1a-correctness:
     dependencies:
@@ -490,7 +490,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
 
   apps/lab/scenarios/s1b-latency:
     dependencies:
@@ -509,7 +509,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
 
   apps/workers:
     dependencies:
@@ -555,7 +555,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       drizzle-kit:
         specifier: catalog:workers
         version: 0.31.10
@@ -589,7 +589,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -613,7 +613,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       drizzle-kit:
         specifier: catalog:workers
         version: 0.31.10
@@ -628,7 +628,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       bunchee:
         specifier: 'catalog:'
         version: 6.10.0(typescript@6.0.3)
@@ -647,7 +647,7 @@ importers:
         version: 25.6.0
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       vitest:
         specifier: catalog:tooling
         version: 4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
@@ -662,7 +662,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       bunchee:
         specifier: 'catalog:'
         version: 6.10.0(typescript@6.0.3)
@@ -677,7 +677,7 @@ importers:
         version: 7.0.0-dev.20260421.2
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
 
   packages/ui:
     dependencies:
@@ -750,7 +750,7 @@ importers:
         version: 6.0.1(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
       '@webpresso/agent-kit':
         specifier: 'catalog:'
-        version: 0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
+        version: 0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))
       bunchee:
         specifier: 'catalog:'
         version: 6.10.0(typescript@6.0.3)
@@ -5086,38 +5086,38 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webpresso/agent-kit-runtime-darwin-arm64@0.30.3':
-    resolution: {integrity: sha512-VpgA5hHGj9QWRzgG5SX0++iybA4jPlyLXhC3cOnPk8YNFDeaAmka/yTytR2qrq3FNOoMaLX/S777lxgg2BWZuw==}
+  '@webpresso/agent-kit-runtime-darwin-arm64@0.34.2':
+    resolution: {integrity: sha512-BCbQzlUg5JHciln+LbPaqbUX2NNaPwR9rRq7gGBhkpK/K1I2ic0/DXiElmNKkhWPK7RPoKHz+nPAA7gNX+AE1g==}
     cpu: [arm64]
     os: [darwin]
     hasBin: true
 
-  '@webpresso/agent-kit-runtime-darwin-x64@0.30.3':
-    resolution: {integrity: sha512-0K2iVWchOq9z/lgypPdonJWmNpEgUrJy8hpz9MOPhFQOfl8gro60tlvAFs/L+ZU9g+2+1WPyOzre5lA2CraHRg==}
+  '@webpresso/agent-kit-runtime-darwin-x64@0.34.2':
+    resolution: {integrity: sha512-lZLg7DeiC+pUsAu7iG4VfdoNOMfdDEnL9+NHh5ViCHAYQ+ZX77d9mm+WLeuS0SqVFUgJFn05LwWeIqIvmxzt5w==}
     cpu: [x64]
     os: [darwin]
     hasBin: true
 
-  '@webpresso/agent-kit-runtime-linux-arm64@0.30.3':
-    resolution: {integrity: sha512-YUnHKVBFQe+MJqox+xQxx+TXOrtMtG996J351GGryEl4IszI0aOcC00zr3BDb9aXK5nO5bX30NNmOmaqM7zX0g==}
+  '@webpresso/agent-kit-runtime-linux-arm64@0.34.2':
+    resolution: {integrity: sha512-YGXfRm5r4hxXDp1QTuAS/CpjgnGXDpMfInzOVX5fg7dWPxqvKAXwLdV1wHXR4izMLZjoeGpRe9YZxC+5o0HkJA==}
     cpu: [arm64]
     os: [linux]
     hasBin: true
 
-  '@webpresso/agent-kit-runtime-linux-x64@0.30.3':
-    resolution: {integrity: sha512-PxcK2ihhs4wTl5vcgueOtzW4IyC4CY96TpXJrJNqYznlgvF1LmcLcqSYwPyDfFYrWyuD1Kkos8l2FyNBL3K2Fg==}
+  '@webpresso/agent-kit-runtime-linux-x64@0.34.2':
+    resolution: {integrity: sha512-MiV/sHvXV5M8NJMTCfSGPR5Z0aVgEULfHrXStUMhe0MYlmx8kGYnbYMy9bqhBga55A+MoVR7lJ02XNxGlsny1w==}
     cpu: [x64]
     os: [linux]
     hasBin: true
 
-  '@webpresso/agent-kit-runtime-windows-x64@0.30.3':
-    resolution: {integrity: sha512-wBnjG5kRNGXfcZkwRthRTY5rI+gLnbmYpeuZ/S5NBqt4sP1jxjXKNrDWkueMtP12WTM6f8ZsSD20B8O5zmwHCA==}
+  '@webpresso/agent-kit-runtime-windows-x64@0.34.2':
+    resolution: {integrity: sha512-CE7pkoAkgmYn+7ChmVOVTxh4yvPHww8bWzo3aGx2sdvZzLFyA/ghRKk5XWPjCw5Y7k79UycoAXCmf8wTN7LciQ==}
     cpu: [x64]
     os: [win32]
     hasBin: true
 
-  '@webpresso/agent-kit@0.30.3':
-    resolution: {integrity: sha512-LoEMIIywgK52T4Z9M/Mcsowmk+JHwyo+KX4DQZn3eImMsbelG3eiDHvr1f4vJh3DTsQToiPmFd/a993psgcyRg==}
+  '@webpresso/agent-kit@0.34.2':
+    resolution: {integrity: sha512-bOA7Rt+smWuI3eyit7nSC1IHpIyfRVUT+2K20MIxhfove6MX/mtTSUACDPx3g9SmcK9wsWuL6smxl87tMZR/Bg==}
     engines: {node: '>=24'}
     hasBin: true
 
@@ -12628,22 +12628,22 @@ snapshots:
   '@voidzero-dev/vite-plus-win32-x64-msvc@0.1.24':
     optional: true
 
-  '@webpresso/agent-kit-runtime-darwin-arm64@0.30.3':
+  '@webpresso/agent-kit-runtime-darwin-arm64@0.34.2':
     optional: true
 
-  '@webpresso/agent-kit-runtime-darwin-x64@0.30.3':
+  '@webpresso/agent-kit-runtime-darwin-x64@0.34.2':
     optional: true
 
-  '@webpresso/agent-kit-runtime-linux-arm64@0.30.3':
+  '@webpresso/agent-kit-runtime-linux-arm64@0.34.2':
     optional: true
 
-  '@webpresso/agent-kit-runtime-linux-x64@0.30.3':
+  '@webpresso/agent-kit-runtime-linux-x64@0.34.2':
     optional: true
 
-  '@webpresso/agent-kit-runtime-windows-x64@0.30.3':
+  '@webpresso/agent-kit-runtime-windows-x64@0.34.2':
     optional: true
 
-  '@webpresso/agent-kit@0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jose@6.2.2)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))':
+  '@webpresso/agent-kit@0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jose@6.2.2)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))':
     dependencies:
       '@manypkg/find-root': 3.1.0
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
@@ -12676,11 +12676,11 @@ snapshots:
       '@stryker-mutator/core': 9.6.1(@types/node@25.6.0)
       '@stryker-mutator/typescript-checker': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(typescript@6.0.3)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)))
-      '@webpresso/agent-kit-runtime-darwin-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-darwin-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-windows-x64': 0.30.3
+      '@webpresso/agent-kit-runtime-darwin-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-darwin-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-windows-x64': 0.34.2
       wrangler: 4.84.1(@cloudflare/workers-types@4.20260423.1)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
@@ -12725,7 +12725,7 @@ snapshots:
       - utf-8-validate
       - valibot
 
-  '@webpresso/agent-kit@0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.22.0)(valibot@1.4.0(typescript@6.0.3))':
+  '@webpresso/agent-kit@0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.22.0)(valibot@1.4.0(typescript@6.0.3))':
     dependencies:
       '@manypkg/find-root': 3.1.0
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
@@ -12758,11 +12758,11 @@ snapshots:
       '@stryker-mutator/core': 9.6.1(@types/node@25.6.0)
       '@stryker-mutator/typescript-checker': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(typescript@6.0.3)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)))
-      '@webpresso/agent-kit-runtime-darwin-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-darwin-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-windows-x64': 0.30.3
+      '@webpresso/agent-kit-runtime-darwin-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-darwin-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-windows-x64': 0.34.2
       wrangler: 4.84.1(@cloudflare/workers-types@4.20260423.1)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
@@ -12807,7 +12807,7 @@ snapshots:
       - utf-8-validate
       - valibot
 
-  '@webpresso/agent-kit@0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))':
+  '@webpresso/agent-kit@0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))':
     dependencies:
       '@manypkg/find-root': 3.1.0
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
@@ -12840,11 +12840,11 @@ snapshots:
       '@stryker-mutator/core': 9.6.1(@types/node@25.6.0)
       '@stryker-mutator/typescript-checker': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(typescript@6.0.3)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)))
-      '@webpresso/agent-kit-runtime-darwin-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-darwin-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-windows-x64': 0.30.3
+      '@webpresso/agent-kit-runtime-darwin-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-darwin-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-windows-x64': 0.34.2
       wrangler: 4.84.1(@cloudflare/workers-types@4.20260423.1)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
@@ -12889,7 +12889,7 @@ snapshots:
       - utf-8-validate
       - valibot
 
-  '@webpresso/agent-kit@0.30.3(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))':
+  '@webpresso/agent-kit@0.34.2(@cloudflare/workers-types@4.20260423.1)(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(oxlint-tsgolint@0.23.0)(valibot@1.4.0(typescript@6.0.3))':
     dependencies:
       '@manypkg/find-root': 3.1.0
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
@@ -12922,11 +12922,11 @@ snapshots:
       '@stryker-mutator/core': 9.6.1(@types/node@25.9.1)
       '@stryker-mutator/typescript-checker': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(typescript@6.0.3)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)))
-      '@webpresso/agent-kit-runtime-darwin-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-darwin-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-arm64': 0.30.3
-      '@webpresso/agent-kit-runtime-linux-x64': 0.30.3
-      '@webpresso/agent-kit-runtime-windows-x64': 0.30.3
+      '@webpresso/agent-kit-runtime-darwin-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-darwin-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-arm64': 0.34.2
+      '@webpresso/agent-kit-runtime-linux-x64': 0.34.2
+      '@webpresso/agent-kit-runtime-windows-x64': 0.34.2
       wrangler: 4.84.1(@cloudflare/workers-types@4.20260423.1)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
