@@ -55,7 +55,7 @@ export function getNeonConfig(env: RuntimeEnv): NeonConfig {
   };
 }
 
-function neonHeaders(config: NeonConfig): HeadersInit {
+function neonHeaders(config: NeonConfig): Record<string, string> {
   return {
     Authorization: `Bearer ${config.apiKey}`,
     "Content-Type": "application/json",
@@ -153,10 +153,11 @@ async function requestConnectionUri(config: NeonConfig, params: URLSearchParams)
     }
     await sleep(2000);
   }
-  if (!body.uri) {
+  const uri = body?.uri;
+  if (!uri) {
     throw new Error("Neon API did not return a connection URI");
   }
-  return body.uri;
+  return uri;
 }
 
 async function getConnectionUri(

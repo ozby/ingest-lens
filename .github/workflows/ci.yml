@@ -79,6 +79,7 @@ jobs:
       - uses: ./.github/actions/setup-monorepo
 
       - run: pnpm check
+      - run: pnpm --filter @repo/infra check-types
       - name: Run targeted test suites
         run: |
           bun test \
