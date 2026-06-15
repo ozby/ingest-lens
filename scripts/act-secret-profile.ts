@@ -34,8 +34,8 @@ const ACT_SECRET_PROFILES: Record<ActSecretProfileId, ActSecretProfile> = {
   },
   "github-auth-preflight": {
     id: "github-auth-preflight",
-    description: "GitHub repo/action probes plus package-read auth for CI preflight rehearsal.",
-    allowedKeys: ["GITHUB_TOKEN", "GITHUB_PAT", "GH_PACKAGES_TOKEN"],
+    description: "GitHub repo/action auth for CI preflight rehearsal.",
+    allowedKeys: ["GITHUB_TOKEN", "GITHUB_PAT"],
     requiredKeys: [],
   },
   "neon-control-plane": {

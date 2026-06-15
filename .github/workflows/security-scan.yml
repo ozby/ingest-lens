@@ -13,7 +13,6 @@ jobs:
     outputs:
       repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}
       action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}
-      packages_token_ok: ${{ steps.packages.outputs.packages_token_ok }}
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: Probe repository access
@@ -49,12 +48,6 @@ jobs:
             fi
           done
           echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
-      - name: Probe GitHub Packages token
-        id: packages
-        uses: ./.github/actions/probe-packages-token
-        with:
-          token: ${{ github.token }}
-
   scan:
     name: Secret + dependency scan
     needs: auth-preflight
@@ -62,7 +55,6 @@ jobs:
     if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      GH_PACKAGES_TOKEN: ${{ github.token }}
       NODE_AUTH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v6
@@ -72,7 +64,7 @@ jobs:
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: OSV Scanner
         uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
@@ -83,16 +75,9 @@ jobs:
             ./
 
       - name: Setup monorepo dependencies
-        if: ${{ needs.auth-preflight.outputs.packages_token_ok == 'true' }}
         uses: ./.github/actions/setup-monorepo
 
       - name: Secretlint
-        if: ${{ needs.auth-preflight.outputs.packages_token_ok == 'true' }}
         run: |
           pnpm exec secretlint "**/*"
         continue-on-error: false
-
-      - name: Secretlint skipped (token missing or no package access)
-        if: ${{ needs.auth-preflight.outputs.packages_token_ok != 'true' }}
-        run: |
-          echo "github.token cannot download @webpresso packages for this repo; skipping dependency-backed secretlint step."

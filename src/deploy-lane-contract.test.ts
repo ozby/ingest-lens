@@ -51,7 +51,7 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("printf 'dashed_lane=%s\\n'");
     expect(workflow).toContain("--destroy");
     expect(workflow).toContain("pnpm install --frozen-lockfile");
-    expect(workflow).toContain("pnpm run lint");
+    expect(workflow).toContain("wp lint");
     expect(workflow).not.toContain("setup-monorepo");
   });
 

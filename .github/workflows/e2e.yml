@@ -14,7 +14,6 @@ jobs:
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      GH_PACKAGES_TOKEN: ${{ github.token }}
       NODE_AUTH_TOKEN: ${{ github.token }}
       DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
 

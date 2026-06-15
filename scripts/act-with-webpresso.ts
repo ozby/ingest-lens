@@ -240,7 +240,6 @@ export function applyGithubCliFallback(
   return {
     ...secretMap,
     ...(secretMap.GITHUB_TOKEN ? {} : { GITHUB_TOKEN: fallbackToken }),
-    ...(secretMap.GH_PACKAGES_TOKEN ? {} : { GH_PACKAGES_TOKEN: fallbackToken }),
   };
 }
 

@@ -67,7 +67,7 @@ jobs:
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
         EOF
         NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" pnpm install --frozen-lockfile
-      verify_command: pnpm run lint
+      verify_command: wp lint
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       runner: ubuntu-latest
       skip_when_ci_secret_missing: true
