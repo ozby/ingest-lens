@@ -13,7 +13,7 @@ import {
   resolvePreviewLane,
 } from "./lanes";
 import { findRepoRoot, resolveVpCommand } from "./repo-root";
-import { resolveDeployRuntimeEnv } from "./runtime-env";
+import { DIRECT_DEPLOY_RUNTIME_ENV_NAMES, resolveDeployRuntimeEnv } from "./runtime-env";
 
 type PulumiOutputs = {
   hyperdriveId: string;
@@ -360,12 +360,7 @@ async function deployPreview(): Promise<void> {
   const workersRoot = join(repoRoot, "apps", "workers");
   const clientRoot = join(repoRoot, "apps", "client");
   const runtimeEnv = await resolveDeployRuntimeEnv("secrets-only", [
-    "CLOUDFLARE_ACCOUNT_ID",
-    "CLOUDFLARE_API_TOKEN",
-    "CLOUDFLARE_ZONE_ID",
-    "NEON_API_KEY",
-    "NEON_PROJECT_ID",
-    "PULUMI_ACCESS_TOKEN",
+    ...DIRECT_DEPLOY_RUNTIME_ENV_NAMES,
     ...PREVIEW_API_SECRET_NAMES,
   ]);
 

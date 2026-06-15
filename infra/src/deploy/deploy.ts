@@ -10,7 +10,7 @@ import process from "node:process";
 
 import { findRepoRoot } from "./repo-root";
 import { readProductionReleaseMetadata, validateProductionReleaseMetadata } from "./release-gate";
-import { resolveDeployRuntimeEnv } from "./runtime-env";
+import { DIRECT_DEPLOY_RUNTIME_ENV_NAMES, resolveDeployRuntimeEnv } from "./runtime-env";
 
 function readArg(name: string): string | undefined {
   const index = process.argv.indexOf(name);
@@ -26,14 +26,7 @@ if (!stack) {
 const repoRoot = findRepoRoot();
 const infraRoot = join(repoRoot, "infra");
 
-const runtimeEnv = await resolveDeployRuntimeEnv("secrets-only", [
-  "CLOUDFLARE_ACCOUNT_ID",
-  "CLOUDFLARE_API_TOKEN",
-  "CLOUDFLARE_ZONE_ID",
-  "NEON_API_KEY",
-  "NEON_PROJECT_ID",
-  "PULUMI_ACCESS_TOKEN",
-]);
+const runtimeEnv = await resolveDeployRuntimeEnv("secrets-only", DIRECT_DEPLOY_RUNTIME_ENV_NAMES);
 
 function run(command: string, ...args: string[]) {
   const result = spawnSync(command, args, {
