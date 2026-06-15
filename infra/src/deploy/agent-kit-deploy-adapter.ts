@@ -6,6 +6,8 @@ type DeployLane = "prd" | "preview_main" | `preview_pr_${number}` | (string & {}
 type DeployRequest = {
   lane: DeployLane;
   dryRun: boolean;
+  mode?: "deploy" | "destroy";
+  releaseVersion?: string;
 };
 
 type DeployStep = {
@@ -15,6 +17,8 @@ type DeployStep = {
   command: string;
   args: string[];
   cwd: string;
+  runtimeProfile?: string;
+  env?: Record<string, string>;
 };
 
 type DeployPlan = {
@@ -22,6 +26,7 @@ type DeployPlan = {
   lane: DeployLane;
   provider: string;
   requiredCredentials: string[];
+  releaseVersion?: string;
   steps: DeployStep[];
 };
 
@@ -74,6 +79,7 @@ export const webpressoDeployAdapter: DeployAdapter = {
         "NEON_API_KEY",
         "NEON_PROJECT_ID",
       ],
+      releaseVersion: request.releaseVersion,
       steps: [
         {
           kind: "command",
@@ -82,9 +88,15 @@ export const webpressoDeployAdapter: DeployAdapter = {
           command: "bun",
           args: [
             join(deployDir, request.lane === "prd" ? "deploy-production.ts" : "deploy-preview.ts"),
-            ...(request.lane === "prd" ? [] : ["--lane", stack]),
+            ...(request.lane === "prd"
+              ? request.releaseVersion
+                ? ["--release-version", request.releaseVersion]
+                : []
+              : ["--lane", stack, ...(request.mode === "destroy" ? ["--destroy"] : [])]),
           ],
           cwd: repoRoot,
+          runtimeProfile: "secrets-only",
+          env: request.releaseVersion ? { RELEASE_VERSION: request.releaseVersion } : undefined,
         },
       ],
     };

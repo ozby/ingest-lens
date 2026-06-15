@@ -12,7 +12,6 @@ jobs:
     outputs:
       repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}
       action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}
-      packages_token_ok: ${{ steps.packages.outputs.packages_token_ok }}
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: Probe repository access
@@ -47,20 +46,13 @@ jobs:
             fi
           done
           echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
-      - name: Probe GitHub Packages token
-        id: packages
-        uses: ./.github/actions/probe-packages-token
-        with:
-          token: ${{ github.token }}
-
   cleanup:
-    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' && needs.auth-preflight.outputs.packages_token_ok == 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' }}
     needs: auth-preflight
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      GH_PACKAGES_TOKEN: ${{ github.token }}
       NODE_AUTH_TOKEN: ${{ github.token }}
       HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
       HAS_DIRECT_NEON_SECRETS: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' && secrets.NEON_PARENT_BRANCH_ID != '' && '1' || '' }}
@@ -110,8 +102,8 @@ jobs:
         run: pnpm --filter @repo/e2e run db:branch:cleanup
 
   cleanup-skipped:
-    if: ${{ needs.auth-preflight.outputs.repo_access_ok != 'true' || needs.auth-preflight.outputs.action_downloads_ok != 'true' || needs.auth-preflight.outputs.packages_token_ok != 'true' }}
+    if: ${{ needs.auth-preflight.outputs.repo_access_ok != 'true' || needs.auth-preflight.outputs.action_downloads_ok != 'true' }}
     needs: auth-preflight
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Skipping stale Neon cleanup because auth preflight failed (repo access, action downloads, or package token)."
+      - run: echo "Skipping stale Neon cleanup because auth preflight failed (repo access or action downloads)."

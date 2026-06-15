@@ -3,6 +3,13 @@
     "playwright": {
       "command": "vp",
       "args": ["dlx", "@playwright/mcp@latest", "--caps=testing,storage,network,devtools"]
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      }
     }
   }
 }

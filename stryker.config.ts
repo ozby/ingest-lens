@@ -8,7 +8,7 @@ export default {
     break: 0,
   },
   vitest: {
+    ...(baseConfig as { vitest?: Record<string, unknown> }).vitest,
     configFile: "vitest.config.ts",
   },
-  mutate: ["src/**/*.ts", "!src/**/*.test.ts", "!src/**/*.d.ts"],
 };

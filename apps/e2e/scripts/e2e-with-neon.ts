@@ -68,7 +68,7 @@ const clientInspectorPort = requiresClientWorker ? await getAvailablePort() : 92
 const clientBaseUrl = `http://localhost:${clientPort}`;
 
 // ── Load secrets from the selected secret manager ──────────────────────
-const runtimeSecrets = await resolveRuntimeProfile("secrets-only");
+const runtimeSecrets = await resolveRuntimeProfile("secrets-only", { fresh: true });
 const secretEnv = {
   ...process.env,
   ...runtimeSecrets,

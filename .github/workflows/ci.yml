@@ -8,7 +8,6 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  GH_PACKAGES_TOKEN: ${{ github.token }}
   NODE_AUTH_TOKEN: ${{ github.token }}
 
 concurrency:
@@ -95,7 +94,7 @@ jobs:
         run: |
           BASE=${{ github.base_ref || 'main' }}
           git fetch origin "$BASE" --depth=50 2>/dev/null || true
-          COMMITS=$(git log "origin/$BASE..HEAD" --format="%H" 2>/dev/null || true)
+          COMMITS=$(git rev-list --no-merges "origin/$BASE..HEAD" 2>/dev/null || true)
           if [ -z "$COMMITS" ]; then
             echo "No branch commits to validate."
             exit 0
@@ -115,6 +114,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-monorepo
-      - run: bun ./scripts/affected-mutation.ts
+      - run: wp test --affected
         env:
           GITHUB_BASE_REF: main
