@@ -77,7 +77,7 @@ jobs:
         uses: ./.github/actions/setup-ci-secret-provider-cli
 
       - name: Load CI secret-provider env
-        if: ${{ env.CI_SECRET_PROVIDER_TOKEN != "" }}
+        if: ${{ env.CI_SECRET_PROVIDER_TOKEN != '' }}
         uses: ./.github/actions/load-ci-secret-provider-env
         with:
           token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
