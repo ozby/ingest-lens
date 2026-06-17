@@ -243,9 +243,7 @@ scripts/check-no-dev-vars.ts
 # instruction surfaces (for example selected `.claude/*` files).
 .agent/
 .agents/
-.gemini/
 .cursor/
-.windsurf/
 .omx/
 .omc/
 .opencode/
@@ -261,9 +259,6 @@ _worktrees/
 .claude/worktrees/
 .claude/scheduled_tasks.lock
 .cursor/rules/
-.windsurf/skills/
-.windsurf/rules/
-.gemini/commands/
 .opencode/agents/
 .opencode/commands/
 .agents/skills/
@@ -273,4 +268,9 @@ _worktrees/
 .agent/.blueprints.lock
 .agent/.blueprints.snapshot.sql
 .agent/.tail-hint-history.jsonl
+# Stryker writes these mutation-test artifacts beside consumer source trees.
+.stryker-tmp/
+reports/mutation/
+reports/stryker-incremental.json
+stryker-setup-*.js
 # <<< managed by webpresso (generated)

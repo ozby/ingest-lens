@@ -79,8 +79,8 @@ jobs:
 
       - uses: ./.github/actions/setup-monorepo
 
-      - run: pnpm check
-      - run: pnpm --filter @repo/infra check-types
+      - run: vp check
+      - run: vp run --filter @repo/infra check-types
       - name: Run targeted test suites
         run: |
           bun test \
@@ -89,8 +89,8 @@ jobs:
             infra/src/deploy/runtime-env.test.ts \
             apps/e2e/src/neon-branches.test.ts \
             packages/runtime-env-local/src/index.test.ts
-      - run: pnpm catalog:check
-      - run: pnpm blueprints:check
+      - run: vp run catalog:check
+      - run: vp run blueprints:check
 
       - name: Validate Lore commits
         run: |
@@ -104,7 +104,7 @@ jobs:
           FAIL=0
           for SHA in $COMMITS; do
             git log -1 --format="%B" "$SHA" > /tmp/commit-msg.txt
-            WP_SKIP_UPDATE_CHECK=1 ./node_modules/.bin/wp audit commit-message --require-lore --message-file /tmp/commit-msg.txt || FAIL=1
+            WP_SKIP_UPDATE_CHECK=1 vp exec wp audit commit-message --require-lore --message-file /tmp/commit-msg.txt || FAIL=1
           done
           exit $FAIL
 

@@ -1,4 +1,4 @@
-import { reactConfig } from "@webpresso/agent-kit/vitest/react";
+import { reactConfig } from "@webpresso/agent-config/vitest/react";
 import { mergeConfig } from "vite-plus/test/config";
 import { existsSync } from "node:fs";
 import { dirname, parse, resolve } from "node:path";

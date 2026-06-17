@@ -27,7 +27,7 @@
     "@cloudflare/vitest-pool-workers": "catalog:workers",
     "@cloudflare/workers-types": "catalog:workers",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:",
+    "@webpresso/agent-config": "catalog:",
     "drizzle-kit": "catalog:workers",
     "wrangler": "catalog:workers"
   }

@@ -79,5 +79,5 @@ jobs:
 
       - name: Secretlint
         run: |
-          pnpm exec secretlint "**/*"
+          vp exec secretlint "**/*"
         continue-on-error: false
