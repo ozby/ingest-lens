@@ -56,7 +56,7 @@ jobs:
   deploy-preview:
     if: ${{ github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)) }}
     needs: resolve
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@daf14c5e8cd64e515d7635f377284956d0fce988
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@daf14c54460c7e8f9e870a2077771ef0e098d9e1
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: deploy
@@ -73,7 +73,7 @@ jobs:
   destroy-preview:
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
     needs: resolve
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@daf14c5e8cd64e515d7635f377284956d0fce988
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@daf14c54460c7e8f9e870a2077771ef0e098d9e1
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: destroy
