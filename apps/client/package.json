@@ -83,7 +83,7 @@
     "@types/react-dom": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@vitejs/plugin-react": "catalog:",
-    "@webpresso/agent-kit": "catalog:",
+    "@webpresso/agent-config": "catalog:",
     "tailwindcss": "catalog:",
     "vite": "catalog:tooling",
     "wrangler": "catalog:workers"

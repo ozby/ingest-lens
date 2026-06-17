@@ -1,3 +1,3 @@
-import { typescriptBaseConfig } from "@webpresso/agent-kit/stryker";
+import { typescriptBaseConfig } from "@webpresso/agent-config/stryker";
 
 export default { ...typescriptBaseConfig };

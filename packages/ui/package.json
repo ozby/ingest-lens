@@ -62,7 +62,7 @@
     "@types/react-dom": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@vitejs/plugin-react": "catalog:",
-    "@webpresso/agent-kit": "catalog:",
+    "@webpresso/agent-config": "catalog:",
     "bunchee": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
