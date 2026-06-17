@@ -58,6 +58,16 @@ export function isDopplerSecretsInjected(
   return !!(env.DOPPLER_PROJECT && (env.DOPPLER_ENVIRONMENT || env.DOPPLER_CONFIG));
 }
 
+export function getInjectedDopplerScope(
+  env: Record<string, string | undefined> = process.env,
+): SecretManagerScope | null {
+  if (!isDopplerSecretsInjected(env)) return null;
+  return {
+    workspace: env.DOPPLER_PROJECT,
+    environment: env.DOPPLER_ENVIRONMENT || env.DOPPLER_CONFIG,
+  };
+}
+
 function isUnauthenticated(output: string): boolean {
   const normalized = output.toLowerCase();
   return (
@@ -146,6 +156,8 @@ export const dopplerAdapter: SecretManagerAdapter = {
     interactiveLogin: true,
   },
   resolveScopeForExecution(execution): SecretManagerScope {
+    const injectedScope = getInjectedDopplerScope();
+    if (injectedScope) return injectedScope;
     const config = readSecretsConfig();
     return {
       workspace: config?.manager === "doppler" ? config.projectId : undefined,
