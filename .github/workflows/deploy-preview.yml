@@ -61,7 +61,7 @@ jobs:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: deploy
       install_command: pnpm install --frozen-lockfile
-      verify_command: wp lint
+      verify_command: pnpm run lint
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       runner: ubuntu-latest
       skip_when_ci_secret_missing: true

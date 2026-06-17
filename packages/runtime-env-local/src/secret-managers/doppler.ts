@@ -24,9 +24,10 @@ export function getDopplerConfigFromContext(context: ExecutionContext): string {
 function runCommand(
   command: string,
   args: string[],
+  env: NodeJS.ProcessEnv = process.env,
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
+    const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"], env });
     let stdout = "";
     let stderr = "";
     proc.stdout?.on("data", (chunk) => {
@@ -38,6 +39,17 @@ function runCommand(
     proc.on("error", reject);
     proc.on("close", (code) => resolve({ stdout, stderr, exitCode: code ?? 1 }));
   });
+}
+
+export function buildDopplerCommandEnv(
+  auth: SecretFetchRequest["auth"],
+  env: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv {
+  if (!auth?.accessToken) return env;
+  return {
+    ...env,
+    DOPPLER_TOKEN: auth.accessToken,
+  };
 }
 
 export function isDopplerSecretsInjected(
@@ -196,7 +208,11 @@ export const dopplerAdapter: SecretManagerAdapter = {
       throw new Error("The selected secret manager adapter only supports env-map mode in v1.");
     }
     const args = buildDopplerFetchArgs(request);
-    const { stdout, stderr, exitCode } = await runCommand("doppler", args);
+    const { stdout, stderr, exitCode } = await runCommand(
+      "doppler",
+      args,
+      buildDopplerCommandEnv(request.auth),
+    );
     if (exitCode !== 0) {
       throw new Error(
         `Unable to fetch secrets from Doppler. Run: doppler login && doppler setup\n${stderr.trim() || stdout.trim()}`,

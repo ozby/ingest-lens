@@ -54,7 +54,7 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("pnpm install --frozen-lockfile");
     expect(workflow).not.toContain("GH_PACKAGES_TOKEN");
     expect(workflow).not.toContain("github-packages.npmrc");
-    expect(workflow).toContain("wp lint");
+    expect(workflow).toContain("pnpm run lint");
     expect(workflow).not.toContain("setup-monorepo");
     expect(npmrc).toContain("@ozby:registry=https://npm.pkg.github.com");
     expect(npmrc).toContain("//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}");

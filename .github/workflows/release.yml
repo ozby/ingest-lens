@@ -23,7 +23,7 @@ jobs:
     uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@daf14c54460c7e8f9e870a2077771ef0e098d9e1
     with:
       install_command: pnpm install --frozen-lockfile
-      verify_command: wp lint
+      verify_command: pnpm run lint
       deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"
       release_version: ${{ needs.release.outputs.release_version }}
       runner: ubuntu-latest
