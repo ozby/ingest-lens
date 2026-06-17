@@ -15,7 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  wp-check:
+    name: wp-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
