@@ -31,6 +31,7 @@ describe("Cloudflare deploy lane contract", () => {
 
   it("deploys main and PRs to preview lanes with PR-close cleanup, not production", () => {
     const workflow = readRepoFile(".github/workflows/deploy-preview.yml");
+    const npmrc = readRepoFile(".npmrc");
 
     expect(workflow).toContain("branches: [main]");
     expect(workflow).toContain("pull_request:");
@@ -51,8 +52,12 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("printf 'dashed_lane=%s\\n'");
     expect(workflow).toContain("--destroy");
     expect(workflow).toContain("pnpm install --frozen-lockfile");
+    expect(workflow).toContain("export NODE_AUTH_TOKEN='${{ github.token }}'");
+    expect(workflow).not.toContain("GH_PACKAGES_TOKEN");
+    expect(workflow).not.toContain("github-packages.npmrc");
     expect(workflow).toContain("wp lint");
     expect(workflow).not.toContain("setup-monorepo");
+    expect(npmrc).toContain("@ozby:registry=https://npm.pkg.github.com");
   });
 
   it("allows production deploy only through release metadata plus an explicit semantic release version", () => {
@@ -66,6 +71,8 @@ describe("Cloudflare deploy lane contract", () => {
       /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
     );
     expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
+    expect(workflow).toContain("export NODE_AUTH_TOKEN='${{ github.token }}'");
+    expect(workflow).not.toContain("GH_PACKAGES_TOKEN");
     expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
     expect(workflow).toContain(
       'deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"',

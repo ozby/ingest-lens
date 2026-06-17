@@ -569,8 +569,8 @@ importers:
   infra:
     dependencies:
       '@ozby/wrangler-sync':
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: ^0.3.0
+        version: 0.3.0
       '@pulumi/cloudflare':
         specifier: ^6.14.0
         version: 6.14.0(typescript@6.0.3)
@@ -3133,8 +3133,8 @@ packages:
     resolution: {integrity: sha512-nkOyZEF1vH527CkdQtOp1HMrVFEM4ResURvI2JFeGoup+h+43J/k/FgdOR9b9Isxg+Yae7qVDa7y3nssE8b3TQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@ozby/wrangler-sync@0.1.0':
-    resolution: {integrity: sha512-T+tM3hQhb1f9tfrx8TaXFWr1pEeDkuOrEsbxB49eOuwuQgvlEgsYp4GSw1sUBzACFfYd36bL8RAB5mI5h6HymQ==, tarball: https://npm.pkg.github.com/download/@ozby/wrangler-sync/0.1.0/4d3ccdc75a006b213ac59099743fa4f2c7edd7bc}
+  '@ozby/wrangler-sync@0.3.0':
+    resolution: {integrity: sha512-QLzxLq5td9ftg+mMySJWsjGbEWQaQDeYbx/ZGBDmVdKtfT7KFX8qGsN8Dsj1YICsS2q7wdIAYQ7WpFklBGeglg==, tarball: https://npm.pkg.github.com/download/@ozby/wrangler-sync/0.3.0/20281950b94a04a52daf7319a3ea1aaddc9c9053}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -11085,7 +11085,7 @@ snapshots:
 
   '@oxlint/plugins@1.61.0': {}
 
-  '@ozby/wrangler-sync@0.1.0': {}
+  '@ozby/wrangler-sync@0.3.0': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true

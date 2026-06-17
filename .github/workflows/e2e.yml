@@ -76,6 +76,12 @@ jobs:
       - name: Install CI secret-provider bridge CLI
         uses: ./.github/actions/setup-ci-secret-provider-cli
 
+      - name: Load CI secret-provider env
+        if: ${{ env.CI_SECRET_PROVIDER_TOKEN != "" }}
+        uses: ./.github/actions/load-ci-secret-provider-env
+        with:
+          token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
+
       - name: Run e2e suite (auto-provisions Neon branch)
         if: ${{ env.CI_SECRET_PROVIDER_TOKEN != '' }}
         run: pnpm e2e --suite full

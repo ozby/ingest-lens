@@ -35,4 +35,6 @@ test("release workflow delegates to the public changesets release harness", () =
   );
   assert.match(workflow, /version_command: pnpm run version/u);
   assert.match(workflow, /publish_command: pnpm run release:publish/u);
+  assert.match(workflow, /export NODE_AUTH_TOKEN='\$\{\{ github\.token \}\}'/u);
+  assert.doesNotMatch(workflow, /GH_PACKAGES_TOKEN/u);
 });
