@@ -57,6 +57,7 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("wp lint");
     expect(workflow).not.toContain("setup-monorepo");
     expect(npmrc).toContain("@ozby:registry=https://npm.pkg.github.com");
+    expect(npmrc).toContain("//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}");
   });
 
   it("allows production deploy only through release metadata plus an explicit semantic release version", () => {
@@ -197,6 +198,15 @@ describe("Cloudflare deploy lane contract", () => {
     expect(deployScript).not.toContain("@webpresso/framework/db/neon");
     expect(previewScript).not.toContain("@webpresso/framework/db/neon");
     expect(previewScript).not.toContain("DEPLOY_DEPLOY_DOMAIN");
+  });
+
+  it("exports the generic secret-manager bootstrap token before loading CI provider env", () => {
+    const action = readRepoFile(".github/actions/load-ci-secret-provider-env/action.yml");
+
+    expect(action).toContain("Export generic secret-manager bootstrap token");
+    expect(action).toContain("SECRET_MANAGER_TOKEN<<__SECRET_MANAGER_TOKEN__");
+    expect(action).toContain('echo "${{ inputs.token }}"');
+    expect(action).toContain("dopplerhq/secrets-fetch-action@v2.0.0");
   });
 
   it("aliases shared UI package source for Vite without requiring prebuilt dist artifacts", () => {

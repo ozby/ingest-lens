@@ -7,6 +7,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Export generic secret-manager bootstrap token
+      shell: bash
+      run: |
+        {
+          echo "SECRET_MANAGER_TOKEN<<__SECRET_MANAGER_TOKEN__"
+          echo "${{ inputs.token }}"
+          echo "__SECRET_MANAGER_TOKEN__"
+        } >> "$GITHUB_ENV"
+
     - name: Load secret-provider env
       uses: dopplerhq/secrets-fetch-action@v2.0.0
       with:
