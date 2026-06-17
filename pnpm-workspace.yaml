@@ -36,11 +36,11 @@ catalog:
   "@neondatabase/api-client": ^1.13.0
 
   # Webpresso package-source split:
-  # - agent-kit is public npm
-  # - agent-config is public npm
+  # - agent-config is the consumer-installed package surface
+  # - agent-kit versions the shared global wp CLI installed by setup-webpresso
   # - runtime-env is public npm
   "@webpresso/agent-config": ^0.1.4
-  "@webpresso/agent-kit": ^2.0.0
+  "@webpresso/agent-kit": ^2.0.2
   "@webpresso/runtime-env": 0.1.0
   axios: ^1.15.2
   better-auth: ^1.6.9
@@ -79,7 +79,6 @@ catalogs:
 confirmModulesPurge: false
 
 allowBuilds:
-  "@webpresso/agent-kit": true
   "@swc/core": true
   better-sqlite3: true
   esbuild: true
@@ -89,6 +88,7 @@ allowBuilds:
   workerd: true
   "@webpresso/agent-vitest": true
   "@webpresso/agent-workers-test": true
+  "@webpresso/agent-kit": set this to true or false
 
 overrides:
   "@commitlint/config-validator>ajv": "8.18.0"

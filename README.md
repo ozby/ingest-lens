@@ -30,7 +30,9 @@ Bootstrap through the repo itself:
 vp install
 ```
 
-Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. The repo already carries `@webpresso/agent-kit`, so repair/doctor flows should use the local wrapper (`pnpm exec wp ...`) after install instead of a separate npm-global bootstrap path.
+Success signal: dependencies install and `postinstall` runs `wp setup` to
+bootstrap agent hooks/links, completing with no error. This repo installs
+`@webpresso/agent-config` only; `wp` stays a separate global CLI surface.
 
 ```bash
 with-secrets -- vp run dev   # or: pnpm dev
