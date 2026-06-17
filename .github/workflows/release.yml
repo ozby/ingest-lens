@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   release:
-    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@3f0136f88a488bc0894ab81ab3c8544b2e8dabf2
+    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@daf14c5e8cd64e515d7635f377284956d0fce988
     with:
       install_command: |
         export NODE_AUTH_TOKEN='${{ github.token }}'
@@ -22,7 +22,7 @@ jobs:
   deploy:
     needs: release
     if: ${{ needs.release.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@5bbbe43e6f152b802bcce655a8dadeb661f908b5
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@daf14c5e8cd64e515d7635f377284956d0fce988
     with:
       install_command: |
         export NODE_AUTH_TOKEN='${{ github.token }}'
