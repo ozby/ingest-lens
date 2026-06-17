@@ -39,8 +39,8 @@ jobs:
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
         EOF
-        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" pnpm install --frozen-lockfile
-      verify_command: wp lint
+        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" vp install --frozen-lockfile
+      verify_command: vp run lint
       deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"
       release_version: ${{ needs.validate-release.outputs.release_version }}
       runner: ubuntu-latest

@@ -15,23 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          registry-url: https://npm.pkg.github.com
-          scope: "@ozby"
-
-      - name: Enable Corepack pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.33.0 --activate
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-monorepo
 
       - name: Run e2e suite (auto-provisions Neon branch)
-        run: pnpm e2e --suite full
+        run: vp run e2e --suite full

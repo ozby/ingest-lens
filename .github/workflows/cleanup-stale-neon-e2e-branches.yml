@@ -60,23 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          registry-url: https://npm.pkg.github.com
-          scope: "@ozby"
-
-      - name: Enable Corepack pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.33.0 --activate
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-monorepo
 
       - name: Inject Neon control-plane secrets from Doppler
         if: env.HAS_DOPPLER_TOKEN == '1'
@@ -91,7 +75,7 @@ jobs:
 
       - name: Cleanup stale e2e branches via Doppler-managed env
         if: env.HAS_DOPPLER_TOKEN == '1'
-        run: pnpm --filter @repo/e2e run db:branch:cleanup
+        run: vp run --filter @repo/e2e db:branch:cleanup
 
       - name: Cleanup stale e2e branches via direct GitHub Secrets fallback
         env:
@@ -99,7 +83,7 @@ jobs:
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
           NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
         if: env.HAS_DOPPLER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS == '1'
-        run: pnpm --filter @repo/e2e run db:branch:cleanup
+        run: vp run --filter @repo/e2e db:branch:cleanup
 
   cleanup-skipped:
     if: ${{ needs.auth-preflight.outputs.repo_access_ok != 'true' || needs.auth-preflight.outputs.action_downloads_ok != 'true' }}

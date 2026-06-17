@@ -1,3 +1,3 @@
-import { nodeConfig } from "@webpresso/agent-kit/vitest/node";
+import { nodeConfig } from "@webpresso/agent-config/vitest/node";
 
 export default nodeConfig;
