@@ -12,9 +12,7 @@ jobs:
   release:
     uses: webpresso/github-actions/.github/workflows/changesets-release.yml@daf14c54460c7e8f9e870a2077771ef0e098d9e1
     with:
-      install_command: |
-        export NODE_AUTH_TOKEN='${{ github.token }}'
-        pnpm install --frozen-lockfile
+      install_command: pnpm install --frozen-lockfile
       version_command: pnpm run version
       publish_command: pnpm run release:publish
       runner: ubuntu-latest
@@ -24,9 +22,7 @@ jobs:
     if: ${{ needs.release.outputs.should_deploy == 'true' }}
     uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@daf14c54460c7e8f9e870a2077771ef0e098d9e1
     with:
-      install_command: |
-        export NODE_AUTH_TOKEN='${{ github.token }}'
-        pnpm install --frozen-lockfile
+      install_command: pnpm install --frozen-lockfile
       verify_command: wp lint
       deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"
       release_version: ${{ needs.release.outputs.release_version }}

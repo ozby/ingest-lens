@@ -52,7 +52,6 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("printf 'dashed_lane=%s\\n'");
     expect(workflow).toContain("--destroy");
     expect(workflow).toContain("pnpm install --frozen-lockfile");
-    expect(workflow).toContain("export NODE_AUTH_TOKEN='${{ github.token }}'");
     expect(workflow).not.toContain("GH_PACKAGES_TOKEN");
     expect(workflow).not.toContain("github-packages.npmrc");
     expect(workflow).toContain("wp lint");
@@ -71,7 +70,7 @@ describe("Cloudflare deploy lane contract", () => {
       /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
     );
     expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
-    expect(workflow).toContain("export NODE_AUTH_TOKEN='${{ github.token }}'");
+    expect(workflow).toContain("install_command: pnpm install --frozen-lockfile");
     expect(workflow).not.toContain("GH_PACKAGES_TOKEN");
     expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
     expect(workflow).toContain(

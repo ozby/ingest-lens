@@ -14,6 +14,10 @@ const FALLBACK_RELATIVE_PATH = ".webpresso/secrets.config.json";
 const GIT_RELATIVE_DIR = "webpresso";
 const GIT_FILE_NAME = "secrets.json";
 
+function getFallbackSecretsConfigPath(cwd: string): string {
+  return path.join(cwd, FALLBACK_RELATIVE_PATH);
+}
+
 function resolveGitCommonDir(cwd: string): string | null {
   try {
     const out = execFileSync("git", ["rev-parse", "--git-common-dir"], {
@@ -31,7 +35,13 @@ function resolveGitCommonDir(cwd: string): string | null {
 export function getSecretsConfigPath(cwd: string = process.cwd()): string {
   const gitDir = resolveGitCommonDir(cwd);
   if (gitDir !== null) return path.join(gitDir, GIT_RELATIVE_DIR, GIT_FILE_NAME);
-  return path.join(cwd, FALLBACK_RELATIVE_PATH);
+  return getFallbackSecretsConfigPath(cwd);
+}
+
+function getSecretsConfigCandidatePaths(cwd: string = process.cwd()): string[] {
+  const primary = getSecretsConfigPath(cwd);
+  const fallback = getFallbackSecretsConfigPath(cwd);
+  return primary === fallback ? [primary] : [primary, fallback];
 }
 
 function isManagerName(value: unknown): value is SecretManagerName {
@@ -83,13 +93,15 @@ function parseConfig(raw: string, source: string): SecretsConfig {
 }
 
 export function readSecretsConfig(cwd?: string): SecretsConfig | null {
-  const filePath = getSecretsConfigPath(cwd);
-  if (!existsSync(filePath)) return null;
-  return parseConfig(readFileSync(filePath, "utf8"), filePath);
+  for (const filePath of getSecretsConfigCandidatePaths(cwd)) {
+    if (!existsSync(filePath)) continue;
+    return parseConfig(readFileSync(filePath, "utf8"), filePath);
+  }
+  return null;
 }
 
 export function hasSecretsConfig(cwd?: string): boolean {
-  return existsSync(getSecretsConfigPath(cwd));
+  return getSecretsConfigCandidatePaths(cwd).some((filePath) => existsSync(filePath));
 }
 
 export function writeSecretsConfig(config: SecretsConfig, cwd?: string): void {

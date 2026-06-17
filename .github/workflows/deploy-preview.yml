@@ -60,9 +60,7 @@ jobs:
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: deploy
-      install_command: |
-        export NODE_AUTH_TOKEN='${{ github.token }}'
-        pnpm install --frozen-lockfile
+      install_command: pnpm install --frozen-lockfile
       verify_command: wp lint
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       runner: ubuntu-latest
@@ -77,9 +75,7 @@ jobs:
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: destroy
-      install_command: |
-        export NODE_AUTH_TOKEN='${{ github.token }}'
-        pnpm install --frozen-lockfile
+      install_command: pnpm install --frozen-lockfile
       verify_command: ":"
       deploy_command: ":"
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
