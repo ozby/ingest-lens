@@ -1,6 +1,7 @@
 {
   "referenceConsumerBaselines": {
     "@webpresso/framework": "1.0.1",
-    "@webpresso/agent-kit": "0.18.19"
+    "@webpresso/agent-kit": "2.0.0",
+    "@webpresso/agent-config": "0.1.4"
   }
 }

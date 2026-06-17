@@ -23,9 +23,9 @@ jobs:
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
         EOF
-        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" pnpm install --frozen-lockfile
-      version_command: pnpm run version
-      publish_command: pnpm run release:publish
+        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" vp install --frozen-lockfile
+      version_command: vp run version
+      publish_command: vp run release:publish
       runner: ubuntu-latest
 
   # GitHub Actions does not support referencing a reusable-workflow job's
@@ -52,8 +52,8 @@ jobs:
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
         EOF
-        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" pnpm install --frozen-lockfile
-      verify_command: pnpm run lint
+        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" vp install --frozen-lockfile
+      verify_command: vp run lint
       deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"
       release_version: ${{ needs.gate.outputs.release_version }}
       runner: ubuntu-latest

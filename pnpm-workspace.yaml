@@ -36,7 +36,9 @@ catalog:
 
   # Webpresso package-source split:
   # - agent-kit is public npm
+  # - agent-config is public npm
   # - runtime-env is public npm
+  "@webpresso/agent-config": ^0.1.4
   "@webpresso/agent-kit": ^2.0.0
   "@webpresso/runtime-env": 0.1.0
   axios: ^1.15.2

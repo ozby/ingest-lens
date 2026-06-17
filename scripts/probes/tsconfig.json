@@ -1,5 +1,5 @@
 {
-  "extends": "@webpresso/agent-kit/tsconfig/base.json",
+  "extends": "@webpresso/agent-config/tsconfig/base.json",
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
