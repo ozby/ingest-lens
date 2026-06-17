@@ -80,7 +80,7 @@ jobs:
       - uses: ./.github/actions/setup-monorepo
 
       - run: vp check
-      - run: vp run check-types --filter @repo/infra
+      - run: vp run --filter @repo/infra check-types
       - name: Run targeted test suites
         run: |
           bun test \

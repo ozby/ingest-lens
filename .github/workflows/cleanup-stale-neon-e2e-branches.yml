@@ -75,7 +75,7 @@ jobs:
 
       - name: Cleanup stale e2e branches via Doppler-managed env
         if: env.HAS_DOPPLER_TOKEN == '1'
-        run: vp run db:branch:cleanup --filter @repo/e2e
+        run: vp run --filter @repo/e2e db:branch:cleanup
 
       - name: Cleanup stale e2e branches via direct GitHub Secrets fallback
         env:
@@ -83,7 +83,7 @@ jobs:
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
           NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
         if: env.HAS_DOPPLER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS == '1'
-        run: vp run db:branch:cleanup --filter @repo/e2e
+        run: vp run --filter @repo/e2e db:branch:cleanup
 
   cleanup-skipped:
     if: ${{ needs.auth-preflight.outputs.repo_access_ok != 'true' || needs.auth-preflight.outputs.action_downloads_ok != 'true' }}
