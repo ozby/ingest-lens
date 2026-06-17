@@ -66,7 +66,7 @@ jobs:
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
         EOF
-        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" pnpm install --frozen-lockfile
+        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" vp install --frozen-lockfile
       verify_command: wp lint
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       runner: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
         EOF
-        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" pnpm install --frozen-lockfile
+        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" vp install --frozen-lockfile
       verify_command: ":"
       deploy_command: ":"
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy

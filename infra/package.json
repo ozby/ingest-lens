@@ -20,7 +20,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:",
+    "@webpresso/agent-config": "catalog:",
     "tsx": "^4.21.0"
   }
 }

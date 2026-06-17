@@ -78,7 +78,7 @@ jobs:
 
       - name: Run e2e suite (auto-provisions Neon branch)
         if: ${{ env.DOPPLER_TOKEN != '' }}
-        run: pnpm e2e --suite full
+        run: vp run e2e --suite full
 
       - name: Skip e2e when Doppler token is unavailable
         if: ${{ env.DOPPLER_TOKEN == '' }}

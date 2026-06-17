@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import { createMockHyperdrive } from "@webpresso/agent-kit/workers-test";
+import { createMockHyperdrive } from "@webpresso/agent-config/workers-test";
 import { streamRoutes } from "./stream";
 import { buildCookieValue } from "../middleware/session-cookie";
 import type { Env } from "../env";
