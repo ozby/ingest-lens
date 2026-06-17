@@ -10,11 +10,11 @@ files** — never add one.
 - Node `>=24`
 - pnpm `11.1.1` (via the repo's `packageManager` field)
 - Bun (used by the repo's scripts)
-- `vp` + the repo-local `wp` wrapper exposed after install
+- global `wp` plus `vp`
 
-`vp install` pulls in the repo's pinned `@webpresso/agent-kit` dependency and
-runs `wp setup` during `postinstall`. If hooks or bootstrap drift later, prefer
-`pnpm exec wp ...` inside the repo over a separate npm-global bootstrap path.
+`vp install` pulls in the repo's pinned dependencies and runs `wp setup` during
+`postinstall`. Consumers install `@webpresso/agent-config` directly; `wp`
+remains a separate global CLI bootstrap.
 
 ## Setup
 

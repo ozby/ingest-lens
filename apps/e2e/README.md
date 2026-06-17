@@ -5,12 +5,12 @@ Repo-owned end-to-end surface for IngestLens. Zero manual env vars — secrets a
 ## Running
 
 ```bash
-pnpm e2e --suite full                        # from repo root — auto-provisions Neon branch
+wp e2e --suite full                          # from repo root — auto-provisions Neon branch
 wp e2e --suite foundation                    # host-adapter path against an already-running worker
-pnpm --filter @repo/e2e run auth:dev-bench   # against deployed dev.ingest-lens.ozby.dev
+vp run --filter @repo/e2e auth:dev-bench     # against deployed dev.ingest-lens.ozby.dev
 ```
 
-The root `pnpm e2e` script (`apps/e2e/scripts/e2e-with-neon.ts`):
+The root `wp e2e` script (`apps/e2e/scripts/e2e-with-neon.ts`):
 
 1. Loads secrets from Doppler
 2. Creates an ephemeral Neon branch (1h TTL)
@@ -40,7 +40,7 @@ Reviewer-facing claim mapping lives in
 
 ## Deployed dev auth bench
 
-`pnpm --filter @repo/e2e run auth:dev-bench` exercises the deployed Webpresso auth
+`vp run --filter @repo/e2e auth:dev-bench` exercises the deployed Webpresso auth
 flow end to end against:
 
 - `https://dev.ingest-lens.ozby.dev`
@@ -55,8 +55,8 @@ and protected-route redirect back to the auth landing page.
 All require the repo-selected secret manager:
 
 ```bash
-with-secrets -- pnpm --dir apps/e2e db:branch:create
-with-secrets -- pnpm --dir apps/e2e db:branch:list
-with-secrets -- pnpm --dir apps/e2e db:branch:delete
-with-secrets -- pnpm --dir apps/e2e db:branch:cleanup
+with-secrets -- vp run --filter @repo/e2e db:branch:create
+with-secrets -- vp run --filter @repo/e2e db:branch:list
+with-secrets -- vp run --filter @repo/e2e db:branch:delete
+with-secrets -- vp run --filter @repo/e2e db:branch:cleanup
 ```
