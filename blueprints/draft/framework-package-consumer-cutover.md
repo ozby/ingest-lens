@@ -2,9 +2,9 @@
 type: blueprint
 status: draft
 complexity: L
-created: '2026-06-17'
-last_updated: '2026-06-17'
-progress: '0% (drafted for separate PR lane)'
+created: "2026-06-17"
+last_updated: "2026-06-17"
+progress: "0% (drafted for separate PR lane)"
 depends_on: []
 tags:
   - consumer
@@ -25,19 +25,19 @@ tags:
 
 ## Key decisions
 
-| Decision | Choice | Rationale |
-| --- | --- | --- |
-| Consumer migration style | same-wave hard cut | Matches the no-bridge policy. |
-| Surface model | keep facade-first | Consumer should still install one framework umbrella package plus agent-kit. |
-| Scope | manifests, imports, baselines, docs, gates | A half-cut would leave release-proof ambiguous. |
+| Decision                 | Choice                                     | Rationale                                                                    |
+| ------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------- |
+| Consumer migration style | same-wave hard cut                         | Matches the no-bridge policy.                                                |
+| Surface model            | keep facade-first                          | Consumer should still install one framework umbrella package plus agent-kit. |
+| Scope                    | manifests, imports, baselines, docs, gates | A half-cut would leave release-proof ambiguous.                              |
 
 ## Quick Reference (Execution Waves)
 
-| Wave | Tasks | Dependencies | Parallelizable | Effort |
-| --- | --- | --- | --- | --- |
-| **Wave 0** | 1.1, 1.2 | None | 2 agents | XS-S |
-| **Wave 1** | 2.1, 2.2 | Wave 0 | 2 agents | S |
-| **Critical path** | 1.1 → 2.1 | — | 2 waves | L |
+| Wave              | Tasks     | Dependencies | Parallelizable | Effort |
+| ----------------- | --------- | ------------ | -------------- | ------ |
+| **Wave 0**        | 1.1, 1.2  | None         | 2 agents       | XS-S   |
+| **Wave 1**        | 2.1, 2.2  | Wave 0       | 2 agents       | S      |
+| **Critical path** | 1.1 → 2.1 | —            | 2 waves        | L      |
 
 ### Phase 1: Consumer inventory and manifest cutover [Complexity: S]
 
@@ -108,18 +108,18 @@ Run the normal consumer package-surface/install/typecheck/test proof so this rep
 
 ## Verification Gates
 
-| Gate | Command | Success Criteria |
-| --- | --- | --- |
-| Package surface | repo package-surface proof | pass |
-| Typecheck/lint/tests | repo standard gates | pass |
-| Install proof | consumer install/fresh-clone check | pass |
-| Blueprint audit | `~/.vite-plus/bin/wp audit blueprint-lifecycle blueprints/draft/framework-package-consumer-cutover.md` | passes |
+| Gate                 | Command                                                                                                | Success Criteria |
+| -------------------- | ------------------------------------------------------------------------------------------------------ | ---------------- |
+| Package surface      | repo package-surface proof                                                                             | pass             |
+| Typecheck/lint/tests | repo standard gates                                                                                    | pass             |
+| Install proof        | consumer install/fresh-clone check                                                                     | pass             |
+| Blueprint audit      | `~/.vite-plus/bin/wp audit blueprint-lifecycle blueprints/draft/framework-package-consumer-cutover.md` | passes           |
 
 ## Cross-Plan References
 
-| Type | Blueprint | Relationship |
-| --- | --- | --- |
-| Upstream | framework package identity cutover and surface reduction | consumer follows the new package identity |
+| Type     | Blueprint                                                  | Relationship                                         |
+| -------- | ---------------------------------------------------------- | ---------------------------------------------------- |
+| Upstream | framework package identity cutover and surface reduction   | consumer follows the new package identity            |
 | Upstream | monorepo framework package cutover and surface enforcement | external proof should match monorepo policy/doctrine |
 | Upstream | framework package surface alignment and policy convergence | package-surface guidance should agree with agent-kit |
 
