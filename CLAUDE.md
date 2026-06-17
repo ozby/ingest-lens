@@ -8,7 +8,7 @@
 - **Type checker:** `tsgo --noEmit` (from `@typescript/native-preview`) — never use `tsc`
 - **Package manager:** pnpm workspaces
 - **Scripts:** `.ts` files executed via `bun` — never `.mjs`, never `ts-node`
-- **Secrets:** selected secret manager via `wp config secrets` + `with-secrets` (Doppler is the current project default); no `dotenv`, no `.env` files
+- **Secrets:** selected secret manager via `wp config secrets` + `with-secrets` (configured secret provider is the current project default); no `dotenv`, no `.env` files
 
 ## Common Commands
 
@@ -264,5 +264,5 @@ Pin to release tags (`v<version>`) — `main` of `webpresso/agent-kit` does not 
 This repo uses the global-install `wp` runtime contract
 (`.webpressorc.json#globalInstall = true`). Keep invoking `wp …` directly and
 do not reintroduce wrapper scripts such as `scripts/run-webpresso-cli.ts`.
-The repo installs `@webpresso/agent-config` directly for shared config/test
-subpaths; do not reintroduce a direct `@webpresso/agent-kit` dependency.
+The root `@webpresso/agent-kit` devDependency remains intentional because this
+repo still imports shared config/runtime subpaths from that package.

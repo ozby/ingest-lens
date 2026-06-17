@@ -45,7 +45,7 @@ defer JWTs is visible and reversible.
 - Zero external dependencies — no Auth0, no Okta, no JWKS endpoint to
   serve
 - Simple consumer integration: one environment variable, one header
-- Easy to test: deterministic token in CI via Doppler config
+- Easy to test: deterministic token in CI via the configured secret-provider bridge config
 
 ### Negative
 

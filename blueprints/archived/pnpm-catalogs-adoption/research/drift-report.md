@@ -81,7 +81,7 @@ The `pnpm-workspace.yaml` had no catalog block at all before this blueprint.
 
 ## Notes
 
-- `dotenv` appears in multiple packages but should be removed per project policy (Doppler-only).
+- `dotenv` appears in multiple packages but should be removed per project policy (provider-bridge).
   Kept in drift report for visibility; catalog entry added for now.
 - `react`/`react-dom` are peerDependencies in packages/ui — catalog reference still applies to
   the direct dependency in apps/client and satisfies the peer declaration.

@@ -41,7 +41,7 @@ lab work. It unblocks scenarios 1a and 1b and every scenario after.
   - a `ScenarioRunner` interface with a typed `run({ sessionId, signal }): AsyncIterable<ScenarioEvent>` shape,
   - a `SessionLock` Durable Object with `acquire`, `release`, `waitingRoom`, TTL-auto-release (F6T: init guarded by `blockConcurrencyWhile`; check `getAlarm()` before `setAlarm()` on fetch),
   - a `LabConcurrencyGauge` Durable Object that tracks active sessions **by sessionId with TTL reaper alarm** (F-02: raw counter leaks on crash; sessioned map with alarm-swept expiry is crash-safe),
-  - a `KillSwitchKV` helper over CF KV used by the shell's feature-flag middleware (F-01: Doppler injects at deploy time; runtime toggling needs KV),
+  - a `KillSwitchKV` helper over CF KV used by the shell's feature-flag middleware (F-01: the secret provider injects at deploy time; runtime toggling needs KV),
   - a `TelemetryCollector` that batches `ScenarioEvent`s to ~10Hz for SSE fan-out **and persists a durable copy to `lab.events_archive`** (F-05: ring buffer alone cannot support `Last-Event-ID` replay at 166 ev/s),
   - a whitelisting `Sanitizer` that strips internal identifiers, stack traces, and non-allowlisted fields before events reach users (CEO review H5),
   - a `Histogram` (inline ~200-line t-digest impl; F11T-reversed — `@thi.ng/tdigest` was a fabricated package per source verification) and a `PricingTable` (CF unit prices pinned with `effectiveDate`) (F-10: moved here from Lane C so Lanes B and C can run truly parallel without writing to `@repo/lab-core`),
@@ -103,7 +103,7 @@ lab work. It unblocks scenarios 1a and 1b and every scenario after.
 | Slot lock                   | Durable Object with alarm-based TTL (F6T: `getAlarm()` check + `blockConcurrencyWhile` init)      | Actor model matches "one writer per session"; alarms auto-release leaks                                                |
 | Concurrency gauge shape     | **Sessioned DO map with TTL alarm reaper**, not naked counter (F-02)                              | A naked counter leaks on crash; keyed-by-sessionId + alarm sweep is crash-safe                                         |
 | Gauge vs lock acquire order | **Gauge is acquired only AFTER lock is granted** (F-02)                                           | Avoids waiting-room visitors consuming gauge slots                                                                     |
-| Runtime kill switch         | `KillSwitchKV` over CF KV (F-01)                                                                  | Doppler injects at deploy time; runtime flip needs KV/DO, not Doppler                                                  |
+| Runtime kill switch         | `KillSwitchKV` over CF KV (F-01)                                                                  | the secret provider injects at deploy time; runtime flip needs KV/DO, not the secret provider                          |
 | Events archive              | Durable append to `lab.events_archive` keyed by `(session_id, event_id)`; retention 7 days (F-05) | SSE ring buffer cannot support `Last-Event-ID` replay at 166 ev/s; DB replay covers the whole run                      |
 | Telemetry batching          | Server-side ~10Hz fixed cadence                                                                   | Avoids SSE flood; downstream UI updates feel live                                                                      |
 | Sanitizer policy            | Allowlist-only (default-deny)                                                                     | Unknown event shapes never leak — aligns with CEO review H5                                                            |
@@ -438,7 +438,7 @@ Accurate Quantiles Using t-Digests" (2019).
 
 Implement `KillSwitchKV` — a small helper over CF KV that reads and writes a
 runtime kill switch. Replaces the wrong-by-design "read `LAB_ENABLED` per
-request from Doppler env" in the prior blueprint draft. Used by the shell
+request from the configured secret-provider selection env" in the prior blueprint draft. Used by the shell
 middleware (Lane D) to 404 the lab surface and by `CostAutoFlip` (Lane E) to
 flip the switch without redeploying.
 
@@ -559,23 +559,23 @@ add Stryker CI once the lab core stabilizes.
 
 Agents consulted:
 
-1. **Phase 1 Tech Fact-Check** — CF docs, Hyperdrive, Queues, Workers limits, HTMX, Doppler, CF billing, TDigest libs
+1. **Phase 1 Tech Fact-Check** — CF docs, Hyperdrive, Queues, Workers limits, HTMX, configured secret provider, CF billing, TDigest libs
 2. **Phase 2 Codebase Verification** — `@repo/workers` structure, existing DO (`TopicRoom`), Drizzle pattern, catalog names, `.worktrees/` convention, `deepFreeze` location
-3. **Phase 3 Architecture Adversarial** — race conditions, CPU budget, SSE replay math, Doppler-vs-runtime, admin secret blast radius, cross-path contention
+3. **Phase 3 Architecture Adversarial** — race conditions, CPU budget, SSE replay math, configured secret provider-vs-runtime, admin secret blast radius, cross-path contention
 
-| Finding       | Severity | Fix                                                                        | Applied in             |
-| ------------- | -------- | -------------------------------------------------------------------------- | ---------------------- |
-| F-01          | CRITICAL | `KillSwitchKV` replaces wrong "Doppler-runtime-flip" design                | Task 1.8               |
-| F-02          | CRITICAL | Gauge = sessioned map + TTL reaper; acquire after lock                     | Task 1.3               |
-| F-04          | CRITICAL | Runner moves into DO in Lanes B/C; core exposes contract only              | Contract in Task 1.1   |
-| F-05          | CRITICAL | `TelemetryCollector` persists to `lab.events_archive`; `replayFrom` method | Task 1.5               |
-| F-007C        | CRITICAL | Drop `test:mutation` gate; note non-goal                                   | Verification Gates     |
-| F-10          | HIGH     | `Histogram` + `PricingTable` moved from Lane C to here                     | Task 1.7               |
-| F-12          | HIGH     | Per-package drizzle.config + CI guard + search_path + role grant           | Task 1.6               |
-| F-20          | LOW      | Lock TTL default 300s, tunable per scenario                                | Task 1.2               |
-| F6T           | LOW      | DO alarm init pattern documented                                           | Task 1.2               |
-| F11T-reversed | MEDIUM   | `@thi.ng/tdigest` was fabricated; inline t-digest impl is primary          | Task 1.7, Tech Choices |
-| F-codebase    | MEDIUM   | `@repo/test-utils` extraction; `apps/workers` shim preserves tests         | Task 1.9               |
+| Finding       | Severity | Fix                                                                            | Applied in             |
+| ------------- | -------- | ------------------------------------------------------------------------------ | ---------------------- |
+| F-01          | CRITICAL | `KillSwitchKV` replaces wrong "configured secret provider-runtime-flip" design | Task 1.8               |
+| F-02          | CRITICAL | Gauge = sessioned map + TTL reaper; acquire after lock                         | Task 1.3               |
+| F-04          | CRITICAL | Runner moves into DO in Lanes B/C; core exposes contract only                  | Contract in Task 1.1   |
+| F-05          | CRITICAL | `TelemetryCollector` persists to `lab.events_archive`; `replayFrom` method     | Task 1.5               |
+| F-007C        | CRITICAL | Drop `test:mutation` gate; note non-goal                                       | Verification Gates     |
+| F-10          | HIGH     | `Histogram` + `PricingTable` moved from Lane C to here                         | Task 1.7               |
+| F-12          | HIGH     | Per-package drizzle.config + CI guard + search_path + role grant               | Task 1.6               |
+| F-20          | LOW      | Lock TTL default 300s, tunable per scenario                                    | Task 1.2               |
+| F6T           | LOW      | DO alarm init pattern documented                                               | Task 1.2               |
+| F11T-reversed | MEDIUM   | `@thi.ng/tdigest` was fabricated; inline t-digest impl is primary              | Task 1.7, Tech Choices |
+| F-codebase    | MEDIUM   | `@repo/test-utils` extraction; `apps/workers` shim preserves tests             | Task 1.9               |
 
 Parallelization score: **A** (RW1=7, CPR=3.0, DD=0.89, CP=0). Ready for `/pll` with 6-8 agents.
 
@@ -593,15 +593,15 @@ Parallelization score: **A** (RW1=7, CPR=3.0, DD=0.89, CP=0). Ready for `/pll` w
 
 ## Technology Choices
 
-| Component        | Technology              | Version (catalog)            | Why                                                                  |
-| ---------------- | ----------------------- | ---------------------------- | -------------------------------------------------------------------- |
-| Runtime          | Cloudflare Workers      | current                      | Repo standard                                                        |
-| DO storage       | CF Durable Objects      | current                      | Actor model fits slot lock + gauge                                   |
-| KV (kill switch) | CF Workers KV           | current                      | Runtime-mutable state Doppler cannot provide (F-01)                  |
-| Histogram        | Inline t-digest impl    | ~200 LOC                     | Prior agent's `@thi.ng/tdigest` claim was fabricated (F11T-reversed) |
-| Test runner      | Vitest + miniflare      | catalog:tooling              | Repo standard                                                        |
-| Test utilities   | `@repo/test-utils`      | new package                  | Extracted from `apps/workers/src/tests/helpers.ts` (F-codebase)      |
-| Type checker     | tsgo                    | `@typescript/native-preview` | CLAUDE.md mandate                                                    |
-| ORM              | Drizzle                 | catalog:workers              | Repo standard for Postgres; per-package drizzle.config.ts (F-12)     |
-| Script executor  | bun (for `.ts` scripts) | current                      | CLAUDE.md mandate                                                    |
-| Secrets          | Doppler                 | current                      | CLAUDE.md mandate; **not** used for runtime flags (F-01)             |
+| Component        | Technology                 | Version (catalog)            | Why                                                                    |
+| ---------------- | -------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| Runtime          | Cloudflare Workers         | current                      | Repo standard                                                          |
+| DO storage       | CF Durable Objects         | current                      | Actor model fits slot lock + gauge                                     |
+| KV (kill switch) | CF Workers KV              | current                      | Runtime-mutable state configured secret provider cannot provide (F-01) |
+| Histogram        | Inline t-digest impl       | ~200 LOC                     | Prior agent's `@thi.ng/tdigest` claim was fabricated (F11T-reversed)   |
+| Test runner      | Vitest + miniflare         | catalog:tooling              | Repo standard                                                          |
+| Test utilities   | `@repo/test-utils`         | new package                  | Extracted from `apps/workers/src/tests/helpers.ts` (F-codebase)        |
+| Type checker     | tsgo                       | `@typescript/native-preview` | CLAUDE.md mandate                                                      |
+| ORM              | Drizzle                    | catalog:workers              | Repo standard for Postgres; per-package drizzle.config.ts (F-12)       |
+| Script executor  | bun (for `.ts` scripts)    | current                      | CLAUDE.md mandate                                                      |
+| Secrets          | configured secret provider | current                      | CLAUDE.md mandate; **not** used for runtime flags (F-01)               |

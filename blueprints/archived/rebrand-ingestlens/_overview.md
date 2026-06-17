@@ -213,7 +213,7 @@ do not spread this work across other tasks.
 **Steps (TDD):**
 
 1. Run `rg -n "Mongo|Redis|Express|api-server|notification-server|node-pubsub|\\.new" .env.example docker-compose.yml blueprints/README.md docs/project/ROADMAP.md .agent docs AGENTS.md` to capture the stale-artifact baseline.
-2. Rewrite or remove stale local-stack guidance for Workers/Postgres/Doppler reality, and update blueprint/roadmap references to the current IngestLens sequence.
+2. Rewrite or remove stale local-stack guidance for Workers/Postgres/configured secret provider reality, and update blueprint/roadmap references to the current IngestLens sequence.
 3. Review each tracked `.new` file against its canonical counterpart, then delete only files proven redundant.
 4. Run `pnpm blueprints:check && pnpm docs:check && pnpm format:check`.
 

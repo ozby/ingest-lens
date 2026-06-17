@@ -28,7 +28,7 @@ on `main`.
 ## Planning Summary
 
 - **Current state:** `.github/workflows/ci.yml` exists but is minimal. Pipelines should gate merges on type-check, lint, test, mutation (affected), blueprint validation, catalog drift, and security scans.
-- **Target:** A fast happy path (≤8 min on warm cache), mandatory required-status-checks on `main`, preview deploys that self-clean on PR close, and OIDC federation between GitHub and Doppler/Cloudflare so long-lived secrets never live in Actions secrets.
+- **Target:** A fast happy path (≤8 min on warm cache), mandatory required-status-checks on `main`, preview deploys that self-clean on PR close, and OIDC federation between GitHub and configured secret provider/Cloudflare so long-lived secrets never live in Actions secrets.
 
 ## Architecture Overview
 
@@ -36,8 +36,8 @@ on `main`.
 .github/
   workflows/
     ci.yml                  required gates: types, lint, test, blueprint, catalog-drift, mutation-affected
-    preview-deploy.yml      per-PR: provisions preview stack + Doppler config, deploys, posts URL
-    preview-destroy.yml     on PR close: destroys stack + Doppler config
+    preview-deploy.yml      per-PR: provisions preview stack + secret-provider config, deploys, posts URL
+    preview-destroy.yml     on PR close: destroys stack + secret-provider config
     release.yml             tag-based release, SBOM + provenance
     security-scan.yml       gitleaks, osv-scanner, semgrep
     renovate.yml            scheduled dependency PR fan-out
@@ -47,11 +47,11 @@ on `main`.
 
 ## Fact-Checked Findings
 
-| ID  | Severity | Claim                                            | Reality                                                                                                       | Fix                                               |
-| --- | -------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| F1  | HIGH     | Workflow already gates everything needed         | No. Current `ci.yml` is minimal.                                                                              | Rewrite with the gate matrix in Task 2.1.         |
-| F2  | HIGH     | GitHub Actions OIDC can auth to Doppler directly | Yes via short-lived service tokens exchanged from the OIDC JWT.                                               | Use it; no long-lived `DOPPLER_TOKEN` in Actions. |
-| F3  | MEDIUM   | `actions/cache` is enough for pnpm               | Works, but cache thrash on lockfile bumps is real. Use pnpm's own store path + `hashFiles('pnpm-lock.yaml')`. | Composite action handles it.                      |
+| ID  | Severity | Claim                                                               | Reality                                                                                                       | Fix                                                          |
+| --- | -------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| F1  | HIGH     | Workflow already gates everything needed                            | No. Current `ci.yml` is minimal.                                                                              | Rewrite with the gate matrix in Task 2.1.                    |
+| F2  | HIGH     | GitHub Actions OIDC can auth to configured secret provider directly | Yes via short-lived service tokens exchanged from the OIDC JWT.                                               | Use it; no long-lived `CI_SECRET_PROVIDER_TOKEN` in Actions. |
+| F3  | MEDIUM   | `actions/cache` is enough for pnpm                                  | Works, but cache thrash on lockfile bumps is real. Use pnpm's own store path + `hashFiles('pnpm-lock.yaml')`. | Composite action handles it.                                 |
 
 ## Evidence Base
 
@@ -110,7 +110,7 @@ on `main`.
 **Acceptance:**
 
 - [x] PR open → preview URL posted as a bot comment.
-- [x] PR close/merge → stack + Doppler config destroyed.
+- [x] PR close/merge → stack + secret-provider config destroyed.
 
 ### Phase 4: Security + supply chain [Complexity: M]
 
@@ -159,12 +159,12 @@ on `main`.
 
 ## Technology Choices
 
-| Component | Technology                         | Why                             |
-| --------- | ---------------------------------- | ------------------------------- |
-| Runner    | GitHub Actions hosted Ubuntu       | Standard                        |
-| pnpm      | corepack + catalog-pinned version  | Reproducible installs           |
-| Secrets   | OIDC → Doppler → Pulumi/Cloudflare | No long-lived tokens in Actions |
-| Scans     | gitleaks, osv-scanner, semgrep     | Secret, vuln, and semantic SAST |
+| Component | Technology                                            | Why                             |
+| --------- | ----------------------------------------------------- | ------------------------------- |
+| Runner    | GitHub Actions hosted Ubuntu                          | Standard                        |
+| pnpm      | corepack + catalog-pinned version                     | Reproducible installs           |
+| Secrets   | OIDC → configured secret provider → Pulumi/Cloudflare | No long-lived tokens in Actions |
+| Scans     | gitleaks, osv-scanner, semgrep                        | Secret, vuln, and semantic SAST |
 
 ## Refinement Summary (2026-04-22 pass)
 

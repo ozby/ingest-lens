@@ -112,7 +112,7 @@ this block is preserved verbatim across `ak sync` runs.
 - Vitest
 - TypeScript
 - Pulumi
-- Doppler
+- configured secret provider
 - Webpresso/Agent Kit (`wp`, blueprints, audits)
 
 ### Architecture governance
@@ -206,7 +206,7 @@ Full details: `.agent/rules/package-conventions.md`
 
 - Client UI (`apps/client`, `packages/ui`) — frontend lane owner / UI maintainer
 - Workers API (`apps/workers`) — backend lane owner / Workers maintainer
-- Infra + deploy (`infra`, Wrangler, Pulumi, Doppler) — infrastructure operator
+- Infra + deploy (`infra`, Wrangler, Pulumi, configured secret provider) — infrastructure operator
 - E2E + Neon branch tooling (`apps/e2e`) — QA / release lane owner
 - Agent/runtime surfaces (`.agent`, audits, blueprints, CI guardrails) — repo operator
 

@@ -38,7 +38,7 @@ deployment. Older states of the codebase are not separately maintained.
 
 ## Handling of secrets
 
-This repository uses `with-secrets` (Doppler-wrapped) for secret injection and
+This repository uses `with-secrets` (secret-provider-wrapped) for secret injection and
 contains **no `.env` files**. Never commit secrets, tokens, or credentials.
 Secret scanning is enforced via secretlint and the repo's CI security workflow.
 If you discover a leaked secret, treat it as a vulnerability and report it

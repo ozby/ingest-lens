@@ -45,14 +45,14 @@ last because it observes and documents what the earlier lanes ship.
     daily spend via Workers Analytics Engine** + the `PricingTable` in
     Lane A, NOT the CF GraphQL billing API which is not authoritative for
     billing (F9T). Alerts at $5 / $10 / $20 / $50 thresholds. At $50, **flips
-    `KillSwitchKV` via Lane A's helper — not Doppler** (F-01). Caches last
+    `KillSwitchKV` via Lane A's helper — not the secret provider** (F-01). Caches last
     estimate in KV; only recomputes every 3rd tick to stay under CPU budget
     (F-13)
   - `KillSwitchAutoReset` scheduled Worker — at UTC 00:00 daily, if the
     switch is disabled with a stored `autoResetAt`, resets it to enabled
     (F-11). Caps at 3 auto-resets per 7-day window
   - `AdminBypassToken` module — short-lived JWT (5-min TTL) minted by the
-    heartbeat cron using `LAB_ADMIN_SECRET` (new Doppler secret, rotated
+    heartbeat cron using `LAB_ADMIN_SECRET` (new secret-provider-managed secret, rotated
     monthly). Each bypass call to the runner DO is logged to
     `lab.heartbeat.audit` with caller fingerprint + timestamp; rate-limited
     to 1/min by a DO counter (F-06)
@@ -88,7 +88,7 @@ last because it observes and documents what the earlier lanes ship.
 │ - compute today's spend       │  spent ≥ $10 →  alert (tier 2)
 │ - compare vs tiers            │  spent ≥ $20 →  alert (tier 3)
 │                              │  spent ≥ $50 →  alert (tier 4) + auto-flip
-│                              │                  LAB_ENABLED=false via Doppler
+│                              │                  LAB_ENABLED=false via the configured secret-provider bridge
 └──────────────────────────────┘                  CLI proxy (one-way door)
 
 docs/runbooks/lab-incident.md
@@ -102,19 +102,19 @@ CLAUDE.md (update)            →  "FE is HTMX-on-Hono SSR in apps/lab/* only"
 
 ## Key Decisions
 
-| Decision               | Choice                                                                                                                                                                                                                                                      | Rationale                                                                                        | Finding |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
-| Heartbeat cadence      | 15 min (100-msg workload); weekly (10k)                                                                                                                                                                                                                     | 100-msg scenarios cost ~$0; 10k weekly keeps the full check honest without burning $             | F-19    |
-| Alert threshold        | 3 consecutive failures                                                                                                                                                                                                                                      | Avoids single-blip pages; 45-min degradation window                                              | —       |
-| Alert transport        | Webhook URL in Doppler (Slack/email-neutral)                                                                                                                                                                                                                | Zero coupling to a specific provider                                                             | —       |
-| Cost source            | **Self-computed via Workers Analytics Engine + `PricingTable`**                                                                                                                                                                                             | CF GraphQL Analytics is explicitly not authoritative for billing                                 | F9T     |
-| Cost fetch cache       | KV-cached; recompute every 3rd tick (45 min)                                                                                                                                                                                                                | Scheduled-Worker CPU budget is tight; analytics API latency                                      | F-13    |
-| Cost auto-flip         | At $50, flip **`KillSwitchKV`** (NOT Doppler)                                                                                                                                                                                                               | Doppler is build-time; runtime toggle is KV                                                      | F-01    |
-| Kill-switch auto-reset | Daily at UTC 00:00; max 3 auto-resets per 7-day window                                                                                                                                                                                                      | Prevents portfolio going dark for a weekend after a one-time blip; cap prevents auto-reset loops | F-11    |
-| Admin bypass           | Short-lived JWT (5 min) minted from `LAB_ADMIN_SECRET`; rate-limited 1/min; audit-logged                                                                                                                                                                    | Long-lived shared secret is too much blast radius                                                | F-06    |
-| Doppler API token      | **Any token type with write scope** — either a Service Account Identity token or a Service Token provisioned with write scope (F10T-softened: Service Tokens are read-only **by default** but can be issued with optional write scope per the Doppler docs) | Flip ritual requires write scope; token type is an operator choice                               | F10T    |
-| Runbook format         | Markdown with three named scripts                                                                                                                                                                                                                           | Easy to scan at 3am                                                                              | —       |
-| README diagram         | ASCII in markdown                                                                                                                                                                                                                                           | Matches repo discipline                                                                          | —       |
+| Decision                  | Choice                                                                                                                                                                                                                                                                         | Rationale                                                                                        | Finding |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ------- |
+| Heartbeat cadence         | 15 min (100-msg workload); weekly (10k)                                                                                                                                                                                                                                        | 100-msg scenarios cost ~$0; 10k weekly keeps the full check honest without burning $             | F-19    |
+| Alert threshold           | 3 consecutive failures                                                                                                                                                                                                                                                         | Avoids single-blip pages; 45-min degradation window                                              | —       |
+| Alert transport           | Webhook URL in the configured secret-provider selection (Slack/email-neutral)                                                                                                                                                                                                  | Zero coupling to a specific provider                                                             | —       |
+| Cost source               | **Self-computed via Workers Analytics Engine + `PricingTable`**                                                                                                                                                                                                                | CF GraphQL Analytics is explicitly not authoritative for billing                                 | F9T     |
+| Cost fetch cache          | KV-cached; recompute every 3rd tick (45 min)                                                                                                                                                                                                                                   | Scheduled-Worker CPU budget is tight; analytics API latency                                      | F-13    |
+| Cost auto-flip            | At $50, flip **`KillSwitchKV`** (NOT configured secret provider)                                                                                                                                                                                                               | the secret provider is build-time; runtime toggle is KV                                          | F-01    |
+| Kill-switch auto-reset    | Daily at UTC 00:00; max 3 auto-resets per 7-day window                                                                                                                                                                                                                         | Prevents portfolio going dark for a weekend after a one-time blip; cap prevents auto-reset loops | F-11    |
+| Admin bypass              | Short-lived JWT (5 min) minted from `LAB_ADMIN_SECRET`; rate-limited 1/min; audit-logged                                                                                                                                                                                       | Long-lived shared secret is too much blast radius                                                | F-06    |
+| secret-provider API token | **Any token type with write scope** — either a Service Account Identity token or a Service Token provisioned with write scope (F10T-softened: Service Tokens are read-only **by default** but can be issued with optional write scope per the configured secret provider docs) | Flip ritual requires write scope; token type is an operator choice                               | F10T    |
+| Runbook format            | Markdown with three named scripts                                                                                                                                                                                                                                              | Easy to scan at 3am                                                                              | —       |
+| README diagram            | ASCII in markdown                                                                                                                                                                                                                                                              | Matches repo discipline                                                                          | —       |
 
 ## Quick Reference (Execution Waves)
 
@@ -196,7 +196,7 @@ estimate in KV and only recomputes every 3rd tick (45 min, F-13) to stay
 under scheduled-Worker CPU budget. Posts alerts at $5 / $10 / $20 / $50
 thresholds (per-tier per-day idempotence via KV). At $50, calls
 `KillSwitchKV.flip("cost-ceiling", autoResetAt=<next UTC midnight>)` — NOT
-Doppler (F-01).
+configured secret provider (F-01).
 
 **Files:**
 
@@ -215,7 +215,7 @@ Doppler (F-01).
 **Acceptance:**
 
 - [x] No reference to CF GraphQL Analytics for billing (F9T)
-- [x] Kill switch flipped via `KillSwitchKV`, NEVER Doppler (F-01)
+- [x] Kill switch flipped via `KillSwitchKV`, NEVER configured secret provider (F-01)
 - [x] Per-tier per-day idempotence via KV
 - [x] Analytics query failure never results in spurious flip
 - [x] Cache hit reduces CPU budget measurably (timing test)
@@ -233,7 +233,7 @@ Doppler (F-01).
 Write `docs/runbooks/lab-incident.md` with three scripts:
 
 1. **"Lab being abused / high cost"** — confirm via billing dashboard, flip
-   `LAB_KILL_SWITCH=true` via Doppler CLI, verify via `/lab` returning 404,
+   `LAB_KILL_SWITCH=true` via the configured secret-provider bridge CLI, verify via `/lab` returning 404,
    post-incident: review rate-limit config
 2. **"Heartbeat failing"** — query `lab.heartbeat` last 5 rows, check CF
    Queues status page, check Hyperdrive pool metrics, re-run heartbeat
@@ -258,7 +258,7 @@ Write `docs/runbooks/lab-incident.md` with three scripts:
 
 - [x] Each script is scannable in under 60 seconds at 3am
 - [x] Exact commands (not descriptions) where applicable
-- [x] Referenced env vars documented in Doppler config doc
+- [x] Referenced env vars documented in the configured secret-provider selection config doc
 
 ---
 
@@ -362,7 +362,7 @@ instead of resetting.
 **Depends:** Lane A (contract + test-utils)
 
 Short-lived admin bypass token. Mints 5-minute JWTs signed with a new
-Doppler secret `LAB_ADMIN_SECRET` (rotated monthly; rotation runbook
+secret-provider-managed secret `LAB_ADMIN_SECRET` (rotated monthly; rotation runbook
 included). The heartbeat crons (Task 5.1) are the only legitimate callers;
 other surfaces reject admin tokens. Every bypass writes to
 `lab.heartbeat.audit(ts, caller_ip, token_hash, reason)`. Rate-limited via
@@ -415,40 +415,40 @@ so this has huge headroom; anything faster is a leak indicator.
 
 ## Edge Cases and Error Handling
 
-| Edge Case                                   | Risk                             | Solution                                                                                    | Task     | Finding |
-| ------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------- | -------- | ------- |
-| Webhook URL unreachable                     | Alert lost                       | Retry with exponential backoff; after 3 retries, log loudly                                 | 5.1, 5.2 | —       |
-| Analytics query rate-limit                  | Missed alert                     | Cache in KV; recompute every 3rd tick; fail-safe on error                                   | 5.2      | F-13    |
-| Heartbeat during a real user's lock hold    | Noise                            | Admin bypass via short-lived JWT + audit log                                                | 5.1      | F-06    |
-| KV unreachable during $50 event             | Can't flip                       | Retry 3x; if still failing, page alert "manual flip required via Doppler/wrangler redeploy" | 5.2      | F-01    |
-| Auto-reset loops on a persistent cost spike | Lab keeps flipping on            | 3-resets-per-7-days cap                                                                     | 5.6      | F-11    |
-| Manual disable without `autoResetAt`        | Auto-reset wipes operator intent | Auto-reset only acts when `autoResetAt` is present                                          | 5.6      | F-11    |
-| Admin token leaks                           | Unlimited bypass                 | 5-min TTL + 1/min rate limit + audit trail + monthly rotation                               | 5.7      | F-06    |
-| Admin bypass used > 1/min                   | Leak signal                      | DO counter rejects; metric emitted for alert                                                | 5.7      | F-06    |
-| Runbook drift                               | Wrong instructions at 3am        | Runbook lives under `docs/`, touched when scope changes the flow it describes               | 5.3      | —       |
-| `CLAUDE.md` note read as blanket approval   | Unwanted HTMX precedent          | Explicit scope language; "not a precedent for other apps"                                   | 5.5      | F-18    |
+| Edge Case                                   | Risk                             | Solution                                                                                                                  | Task     | Finding |
+| ------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
+| Webhook URL unreachable                     | Alert lost                       | Retry with exponential backoff; after 3 retries, log loudly                                                               | 5.1, 5.2 | —       |
+| Analytics query rate-limit                  | Missed alert                     | Cache in KV; recompute every 3rd tick; fail-safe on error                                                                 | 5.2      | F-13    |
+| Heartbeat during a real user's lock hold    | Noise                            | Admin bypass via short-lived JWT + audit log                                                                              | 5.1      | F-06    |
+| KV unreachable during $50 event             | Can't flip                       | Retry 3x; if still failing, page alert "manual flip required via the configured secret-provider bridge/wrangler redeploy" | 5.2      | F-01    |
+| Auto-reset loops on a persistent cost spike | Lab keeps flipping on            | 3-resets-per-7-days cap                                                                                                   | 5.6      | F-11    |
+| Manual disable without `autoResetAt`        | Auto-reset wipes operator intent | Auto-reset only acts when `autoResetAt` is present                                                                        | 5.6      | F-11    |
+| Admin token leaks                           | Unlimited bypass                 | 5-min TTL + 1/min rate limit + audit trail + monthly rotation                                                             | 5.7      | F-06    |
+| Admin bypass used > 1/min                   | Leak signal                      | DO counter rejects; metric emitted for alert                                                                              | 5.7      | F-06    |
+| Runbook drift                               | Wrong instructions at 3am        | Runbook lives under `docs/`, touched when scope changes the flow it describes                                             | 5.3      | —       |
+| `CLAUDE.md` note read as blanket approval   | Unwanted HTMX precedent          | Explicit scope language; "not a precedent for other apps"                                                                 | 5.5      | F-18    |
 
 ## Non-goals
 
 - No Grafana / Datadog integration — webhooks only for v1
 - No PagerDuty / on-call rotation — single webhook URL
 - No admin UI — runbook is the interface
-- No multi-webhook fan-out — one URL in Doppler; add later if needed
+- No multi-webhook fan-out — one URL in the configured secret-provider selection; add later if needed
 - No use of CF billing API — not authoritative, replaced by self-compute (F9T)
-- No Doppler-driven runtime kill switch — Doppler is build-time only (F-01)
+- No configured secret provider-driven runtime kill switch — the secret provider is build-time only here (F-01)
 
 ## Refinement Summary (2026-04-24)
 
-| Finding | Severity | Fix                                                                        | Applied in                     |
-| ------- | -------- | -------------------------------------------------------------------------- | ------------------------------ |
-| F-01    | CRITICAL | `CostEstimatorCron` flips `KillSwitchKV`, NOT Doppler                      | Task 5.2, Scope, Key Decisions |
-| F-06    | HIGH     | `AdminBypassToken` with 5-min JWT, rate-limit, audit                       | Task 5.7                       |
-| F-11    | HIGH     | `KillSwitchAutoReset` daily cron with 3-per-7-days cap                     | Task 5.6                       |
-| F-13    | HIGH     | Billing/analytics estimate cached; recompute every 3rd tick                | Task 5.2                       |
-| F9T     | HIGH     | Self-compute spend via Workers Analytics Engine, not CF GraphQL            | Task 5.2                       |
-| F-18    | MEDIUM   | CLAUDE.md scope language explicit ("not a precedent for other apps")       | Task 5.5                       |
-| F-19    | MEDIUM   | Heartbeat default workload 100; weekly 10k run separate cron               | Task 5.1                       |
-| F10T    | LOW      | Doppler Service Account (write-scope) token for runbook, not Service Token | Key Decisions, runbook         |
+| Finding | Severity | Fix                                                                                           | Applied in                     |
+| ------- | -------- | --------------------------------------------------------------------------------------------- | ------------------------------ |
+| F-01    | CRITICAL | `CostEstimatorCron` flips `KillSwitchKV`, NOT configured secret provider                      | Task 5.2, Scope, Key Decisions |
+| F-06    | HIGH     | `AdminBypassToken` with 5-min JWT, rate-limit, audit                                          | Task 5.7                       |
+| F-11    | HIGH     | `KillSwitchAutoReset` daily cron with 3-per-7-days cap                                        | Task 5.6                       |
+| F-13    | HIGH     | Billing/analytics estimate cached; recompute every 3rd tick                                   | Task 5.2                       |
+| F9T     | HIGH     | Self-compute spend via Workers Analytics Engine, not CF GraphQL                               | Task 5.2                       |
+| F-18    | MEDIUM   | CLAUDE.md scope language explicit ("not a precedent for other apps")                          | Task 5.5                       |
+| F-19    | MEDIUM   | Heartbeat default workload 100; weekly 10k run separate cron                                  | Task 5.1                       |
+| F10T    | LOW      | configured secret provider Service Account (write-scope) token for runbook, not Service Token | Key Decisions, runbook         |
 
 Parallelization score: **A** (RW0=4, CPR=3.5, DD=0.86, CP=0).
 
@@ -457,14 +457,14 @@ Parallelization score: **A** (RW0=4, CPR=3.5, DD=0.86, CP=0).
 | Risk                               | Impact                      | Mitigation                                                               |
 | ---------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
 | CF billing API shape changes       | Cost monitor misreads spend | Pinned fixture in tests reveals drift; alert if shape diff detected      |
-| Doppler API auth rotates           | Kill-switch fails to flip   | Rotate in staging first; kill-switch has manual fallback path in runbook |
+| secret-provider API auth rotates   | Kill-switch fails to flip   | Rotate in staging first; kill-switch has manual fallback path in runbook |
 | Heartbeat noise masks real outages | Alert fatigue               | 3-consecutive-failure gate already mitigates; can tune to 5 if needed    |
 
 ## Technology Choices
 
-| Component       | Technology                   | Version | Why                          |
-| --------------- | ---------------------------- | ------- | ---------------------------- |
-| Cron scheduling | CF Workers scheduled trigger | current | Repo standard                |
-| Webhook         | `fetch` to URL from Doppler  | current | Zero deps, transport-neutral |
-| Billing API     | CF GraphQL Analytics API     | current | Official source of truth     |
-| Doppler API     | Official REST endpoint       | current | Already used in repo         |
+| Component           | Technology                                                   | Version | Why                          |
+| ------------------- | ------------------------------------------------------------ | ------- | ---------------------------- |
+| Cron scheduling     | CF Workers scheduled trigger                                 | current | Repo standard                |
+| Webhook             | `fetch` to URL from the configured secret-provider selection | current | Zero deps, transport-neutral |
+| Billing API         | CF GraphQL Analytics API                                     | current | Official source of truth     |
+| secret-provider API | Official REST endpoint                                       | current | Already used in repo         |

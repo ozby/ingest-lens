@@ -1,228 +1,90 @@
 ---
 type: runbook
-last_updated: "2026-05-23"
+last_updated: "2026-06-17"
 ---
 
-# Doppler Secret Management Runbook
+# Secret Provider Management Runbook
 
-This runbook covers the complete setup for the `ingest-lens` Doppler project.
-All commands require the [Doppler CLI](https://docs.doppler.com/docs/install-cli) and a Doppler account with access to both projects.
+This runbook documents the **consumer-facing** secret contract for `ingest-lens`.
+Provider implementation details are intentionally kept behind Webpresso surfaces.
 
-> **Current repo contract (authoritative):**
->
-> - configure manager/workspace through `wp config secrets ...`
-> - execute secret-scoped commands through `with-secrets -- <cmd>`
-> - never persist `.env*` / `.dev.vars*` files
->
-> Historical completed blueprints may still mention older provider-run examples;
-> treat this runbook + repo scripts as the current source of truth.
+## Current repo contract
 
-> **Two Doppler projects are used:**
->
-> - `ingest-lens` — application secrets (MongoDB URI, JWT, ports, etc.)
-> - `ozby-shell` — infrastructure credentials (`CLOUDFLARE_API_TOKEN`, `PULUMI_ACCESS_TOKEN`, Neon DB connection strings). These are kept in a separate project because they are shared across multiple repos and scoped to an operator account rather than a single application.
+Use only these surfaces:
 
----
+- configure the repo secret selection through `wp config secrets ...`
+- run secret-scoped commands through `with-secrets -- <cmd>`
+- pass CI bootstrap through `CI_SECRET_PROVIDER_TOKEN`
+- never persist `.env*` / `.dev.vars*` files
 
-## 1. Create the `ingest-lens` Project in Doppler
+## What lives where
 
-1. Log in to [dashboard.doppler.com](https://dashboard.doppler.com).
-2. Select your workspace (or create one).
-3. Click **+ New Project** → name it `ingest-lens`.
-4. Doppler auto-creates three default configs: `dev`, `stg`, `prd`. Delete `stg` — we use `preview` instead.
+- committed metadata only: `.webpresso/secrets.config.json`
+- local runtime selection only: `.git/webpresso/secrets.json`
+- secret values: the configured secret provider / platform secret stores
+- CI bootstrap token: GitHub Actions secret `CI_SECRET_PROVIDER_TOKEN`
 
----
+## Local bootstrap
 
-## 2. Config Hierarchy
-
-```
-dev              ← local development (overrides only)
-  └── preview    ← shared preview root (branch secrets)
-        ├── preview_main      ← staging / main-branch preview
-        └── preview_pr_<n>    ← per-PR ephemeral (Phase 3, blocked on CF infra)
-prd              ← production
-```
-
-**How inheritance works:** child configs inherit all secrets from their parent and can override individual values. Set shared secrets at the highest applicable level to avoid duplication.
-
-To create the `preview` root config and its children in the Doppler dashboard:
-
-1. In the `ingest-lens` project, click **+ Add Config**.
-2. Name it `preview` (type: **Branch**).
-3. Add `preview_main` as a branch config under `preview`.
-4. `preview_pr_<n>` configs are created dynamically in Phase 3 (not yet implemented).
-
----
-
-## 3. Required Secrets per Config
-
-### `ingest-lens` project
-
-| Secret              | `dev`                           | `preview` (root / inherited) | `prd`                        |
-| ------------------- | ------------------------------- | ---------------------------- | ---------------------------- |
-| `MONGODB_URI`       | `mongodb://localhost:27017/dev` | connection string per env    | Atlas production URI         |
-| `JWT_SECRET`        | any local secret string         | set at `preview` root        | strong random 64-char string |
-| `NODE_ENV`          | `development`                   | `development`                | `production`                 |
-| `API_PORT`          | `3001`                          | `3001`                       | `3001`                       |
-| `NOTIFICATION_PORT` | `3002`                          | `3002`                       | `3002`                       |
-
-### `ozby-shell` project (infrastructure credentials)
-
-| Secret                  | `dev`                                         | `production`                                  |
-| ----------------------- | --------------------------------------------- | --------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`  | scoped API token (deploy)                     | same or production token                      |
-| `CLOUDFLARE_ACCOUNT_ID` | CF account ID                                 | same                                          |
-| `CLOUDFLARE_ZONE_ID`    | CF zone for the domain                        | same                                          |
-| `PULUMI_ACCESS_TOKEN`   | personal access token                         | CI service token                              |
-| `DATABASE_URL`          | Neon dev branch URL                           | Neon production branch URL                    |
-| `NEON_API_KEY`          | Neon API key for E2E / cleanup workflow       | Neon API key for E2E / cleanup workflow       |
-| `NEON_PROJECT_ID`       | Neon project id for E2E / cleanup workflow    | Neon project id for E2E / cleanup workflow    |
-| `NEON_PARENT_BRANCH_ID` | Neon parent branch for E2E / cleanup workflow | Neon parent branch for E2E / cleanup workflow |
-
-The `infra/` workspace scripts resolve secrets through the repo-selected secret manager:
+From the repo root:
 
 ```bash
-# Local preview
-pnpm --filter @repo/infra preview
-# expands to: with-secrets -- pulumi preview
-
-# Deploy to production
-pnpm --filter @repo/infra up:prd
-# expands to: with-secrets -- pulumi up --yes
+vp install --frozen-lockfile
+wp config secrets show
 ```
 
-**Rules:**
-
-- `MONGODB_URI` must be set in every config individually — it is never shared.
-- `JWT_SECRET` should be set once at the `preview` root and inherited by child configs; override in `prd` with a separate value.
-- `NODE_ENV`, `API_PORT`, and `NOTIFICATION_PORT` can be set at `preview` root and overridden per-child as needed.
-- All Cloudflare and Pulumi credentials live exclusively in `ozby-shell` — never in `ingest-lens`.
-
----
-
-## 4. Running Locally
-
-### 4a. Install the Doppler CLI
+If no local runtime selection exists yet, choose one with the canonical Webpresso surface:
 
 ```bash
-brew install dopplerhq/cli/doppler
-doppler --version
+wp config secrets --help
 ```
 
-### 4b. Authenticate
+Then run secret-aware commands only through the wrapper:
 
 ```bash
-doppler login
+with-secrets -- pnpm --filter @repo/infra preview
+with-secrets -- pnpm --filter @repo/infra up:prd
+with-secrets -- bun infra/src/deploy/deploy.ts dev
 ```
 
-### 4c. Configure the repo secret manager
+## CI bootstrap
 
-Run once from the repo root:
+GitHub Actions must store only a single bootstrap secret:
+
+- `CI_SECRET_PROVIDER_TOKEN`
+
+That token is consumed by the repo’s CI secret-provider bridge, which injects the
+required runtime env vars for deploy/e2e jobs without exposing provider-specific
+CLI details in the consumer workflow contract.
+
+Do **not** add raw deploy secrets such as `CLOUDFLARE_API_TOKEN` as ordinary
+repository secrets when the secret-provider bridge is available.
+
+## Required runtime values
+
+The concrete values depend on the active lane and environment, but the deploy,
+preview, and e2e flows expect these names to be available once the secret
+provider has injected them:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_ZONE_ID`
+- `PULUMI_ACCESS_TOKEN`
+- `NEON_API_KEY`
+- `NEON_PROJECT_ID`
+- `NEON_PARENT_BRANCH_ID`
+- any application/database vars required by the active lane
+
+## Verification
 
 ```bash
-wp config secrets setup
+vp run verify:secrets
+wp audit absolute-path-policy --root .
+wp audit secret-provider-quarantine
 ```
 
-### 4d. Start the dev server
+## Notes
 
-```bash
-with-secrets -- vp run dev
-# expands to: with-secrets -- vp run dev
-```
-
-To skip Doppler injection for local/offline debugging (for example, when the
-required values are already present in your shell environment):
-
-```bash
-vp run dev:offline
-```
-
----
-
-## 5. CI Service Token Setup
-
-**Never use a personal token in CI.** Use a service token scoped to the specific config.
-
-1. In the Doppler dashboard, go to `ingest-lens` → **Access** → **Service Tokens**.
-2. Click **+ Generate** → select the config (e.g., `preview_main`) → set an expiry.
-3. Copy the token (shown once).
-4. Add it as a secret in your CI provider (GitHub Actions: `Settings → Secrets → DOPPLER_SERVICE_TOKEN`).
-
-In CI, inject secrets through the same public contract:
-
-```yaml
-- name: Inject secrets
-  run: with-secrets -- vp run test
-  env:
-    SECRET_MANAGER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
-```
-
-Or use the official Doppler secrets fetch action to hydrate subsequent steps:
-
-```yaml
-- uses: dopplerhq/secrets-fetch-action@v2.0.0
-  with:
-    doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
-    inject-env-vars: true
-```
-
-The scheduled Neon cleanup workflow prefers this path. When
-`SECRET_MANAGER_TOKEN` is present, it hydrates Neon control-plane secrets from
-the selected manager without hardcoding provider commands into the workflow
-YAML.
-
----
-
-## 6. Quick Reference
-
-| Task                       | Command                      |
-| -------------------------- | ---------------------------- |
-| Configure local secrets    | `wp config secrets setup`    |
-| Run dev with secrets       | `with-secrets -- vp run dev` |
-| Run dev without secrets    | `vp run dev:offline`         |
-| Run local CI workflow      | `vp run act:ci`              |
-| Run local E2E workflow     | `vp run act:e2e`             |
-| Run local cleanup workflow | `vp run act:cleanup`         |
-| Show selected config       | `wp config secrets show`     |
-| Check secret-manager auth  | `wp config secrets status`   |
-
-The local workflow scripts (`vp run act:ci`, `vp run act:e2e`, `vp run act:cleanup`,
-and `vp run act:list`) expand through `scripts/act-with-webpresso.ts`, which:
-
-- infers a least-privilege secret profile from the target workflow/job,
-- only resolves managed secrets when that profile actually needs them,
-- filters injected values to the profile allowlist,
-- never forwards `DOPPLER_SERVICE_TOKEN` or `DOPPLER_TOKEN` into the `act` container,
-- can opt into `GITHUB_PAT` → `GITHUB_TOKEN` mapping with `ACT_MAP_GITHUB_PAT=1`
-  for the `github-api` profile,
-- mounts absolute local `file:/...` package sources into the act job container,
-- and injects the result into `act` via a temporary `--secret-file`.
-
-The GitHub workflows themselves now use the Node 24-native action majors
-(`actions/checkout@v6`, `actions/setup-node@v6`) and activate pnpm with
-Corepack (`corepack prepare pnpm@10.33.0 --activate`) instead of
-`pnpm/action-setup`. This removes the remaining Node 20 deprecation warning
-path while keeping local `act` runs and hosted runners aligned.
-
-Current `act` profiles:
-
-| Profile              | Used by                               | Allowed injected secrets                                   |
-| -------------------- | ------------------------------------- | ---------------------------------------------------------- |
-| `none`               | `ci.yml`, `e2e.yml`, `e2e-act.yml`    | none                                                       |
-| `neon-control-plane` | `cleanup-stale-neon-e2e-branches.yml` | `NEON_API_KEY`, `NEON_PROJECT_ID`, `NEON_PARENT_BRANCH_ID` |
-
-Override inference explicitly when needed:
-
-```bash
-bun ./scripts/act-with-webpresso.ts \
-  --secret-profile neon-control-plane \
-  workflow_dispatch \
-  -W .github/workflows/cleanup-stale-neon-e2e-branches.yml \
-  -j cleanup
-```
-
----
-
-## 7. Phase 3 (Blocked)
-
-Per-PR Doppler config lifecycle (`preview_pr_<n>`) requires Cloudflare infrastructure provisioned via `cloudflare-pulumi-infra`. See `blueprints/archived/doppler-secrets/_overview.md`. The infra workspace is complete; per-PR config creation requires wiring in CI once the Worker is deployed.
+- Historical blueprints may still mention older provider-branded examples.
+  Treat this runbook and the repo scripts/workflows as the current source of truth.
+- The repo intentionally documents the **contract**, not the underlying vendor.

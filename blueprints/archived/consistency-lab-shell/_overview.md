@@ -29,7 +29,7 @@ tags:
 from Lanes B/C, exposes HTTP routes for scenario 1a and 1b, renders HTMX-on-
 Hono SSR pages per the design review, streams live telemetry over SSE with
 DB-backed replay for reconnects, and gates the entire surface behind the
-**`KillSwitchKV` runtime toggle** (F-01: Doppler is build-time; runtime
+**`KillSwitchKV` runtime toggle** (F-01: the secret provider is build-time; runtime
 flip needs KV). This is Lane D.
 
 ## Planning Summary
@@ -114,8 +114,8 @@ Hono router                          wrangler.toml bindings:
 | Template engine     | Hono JSX (TSX)                                                                                                                                         | Already supported                                                                                           | —         |
 | SSE replay          | `Last-Event-ID` drives `TelemetryCollector.replayFrom(sessionId, lastEventId)` against `lab.events_archive` (NOT an in-memory ring buffer)             | Ring buffer of 256 cannot cover 10k events / 166 ev/s                                                       | F-05      |
 | SSE keepalive       | Comment frame every 15s from the stream handler                                                                                                        | Workers drop streams at 100s idle; keepalive defeats it during DB stalls                                    | F-09      |
-| Session auth secret | **Dedicated `LAB_SESSION_SECRET` in Doppler, separate from `JWT_SECRET`**                                                                              | Lab XSS path cannot leak prod JWT signing material                                                          | F-08      |
-| Kill switch         | `KillSwitchKV` read per-request with 5s local cache                                                                                                    | Doppler injects at build; runtime needs KV/DO                                                               | F-01      |
+| Session auth secret | **Dedicated `LAB_SESSION_SECRET` in the configured secret-provider selection, separate from `JWT_SECRET`**                                             | Lab XSS path cannot leak prod JWT signing material                                                          | F-08      |
+| Kill switch         | `KillSwitchKV` read per-request with 5s local cache                                                                                                    | the secret provider injects at build; runtime needs KV/DO                                                   | F-01      |
 | Gauge acquire order | **Lock first, gauge second**. Release gauge before lock.                                                                                               | Waiting-room visitors must NOT consume gauge slots; crash-safe ordering                                     | F-02      |
 | CF Worker CPU       | `limits.cpu_ms = 300000` in wrangler.toml; paid tier required                                                                                          | Default 30s is insufficient for scenario runs; paid tier permits up to 300s                                 | F5T, F-15 |
 | CSS                 | Single static `/lab/assets/lab.css` with CSS variables                                                                                                 | Design-review-locked tokens                                                                                 | —         |
@@ -486,7 +486,7 @@ Parallelization score preserved (refinement didn't change the wave structure, on
 | Paid tier not provisioned for deployment target          | `limits.cpu_ms = 300000` rejected | Documented in README as a hard prereq                                                    | F-15          |
 | SSE archive replay misses data for > 7-day reconnect     | Older runs unreplayable           | `lab.events_archive` has 7-day retention documented                                      | F-05          |
 | KV read latency on every request                         | Latency spike                     | 5s local cache; measured                                                                 | F-01          |
-| `LAB_SESSION_SECRET` not provisioned in staging/prod     | Cookies fail verification         | Deploy runbook includes Doppler rotation ritual                                          | F-08          |
+| `LAB_SESSION_SECRET` not provisioned in staging/prod     | Cookies fail verification         | Deploy runbook includes configured secret provider rotation ritual                       | F-08          |
 | Workers 100s idle timeout drops SSE during DB stall      | User sees dead stream             | 15s keepalive frame                                                                      | F-09          |
 | Gauge leak on shell crash between lock and gauge acquire | Cap drifts                        | Lane A's sessioned gauge reaper sweeps stale entries                                     | F-02          |
 | Font license misattribution                              | Licensing non-compliance          | JetBrains Mono is OFL 1.1 (probe p08 confirmed); single OFL-1.1 license file covers both | F-16-reversed |

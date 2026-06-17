@@ -2,7 +2,7 @@
 
 Thanks for your interest. IngestLens runs on Cloudflare Workers and uses
 [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner, with
-`with-secrets` (Doppler-wrapped) for secret injection. There are **no `.env`
+`with-secrets` (secret-provider-wrapped) for secret injection. There are **no `.env`
 files** — never add one.
 
 ## Prerequisites
@@ -10,11 +10,11 @@ files** — never add one.
 - Node `>=24`
 - pnpm `11.1.1` (via the repo's `packageManager` field)
 - Bun (used by the repo's scripts)
-- global `wp` plus `vp`
+- `vp` + the repo-local `wp` wrapper exposed after install
 
-`vp install` pulls in the repo's pinned dependencies and runs `wp setup` during
-`postinstall`. Consumers install `@webpresso/agent-config` directly; `wp`
-remains a separate global CLI bootstrap.
+`vp install` pulls in the repo's pinned `@webpresso/agent-kit` dependency and
+runs `wp setup` during `postinstall`. If hooks or bootstrap drift later, prefer
+`pnpm exec wp ...` inside the repo over a separate npm-global bootstrap path.
 
 ## Setup
 
