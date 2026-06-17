@@ -31,6 +31,13 @@ runs:
         cache: false
         run-install: false
 
+    - name: Install shared wp CLI
+      shell: bash
+      run: |
+        set -euo pipefail
+        eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
+        vp install -g "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+
     - name: Install dependencies
       run: vp install --frozen-lockfile
       shell: bash
