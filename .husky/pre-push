@@ -1,1 +1,23 @@
+#!/usr/bin/env sh
+set -eu
+BASE="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')"
+if [ -z "${BASE}" ]; then
+  if git rev-parse --verify origin/main >/dev/null 2>&1; then
+    BASE="main"
+  elif git rev-parse --verify origin/master >/dev/null 2>&1; then
+    BASE="master"
+  else
+    BASE="main"
+  fi
+fi
+git fetch origin "${BASE}" --depth=50 2>/dev/null || true
+COMMITS=$(git rev-list --no-merges "origin/${BASE}..HEAD" 2>/dev/null || git rev-list --no-merges "${BASE}..HEAD" 2>/dev/null || true)
+if [ -n "${COMMITS}" ]; then
+  FAIL=0
+  for SHA in ${COMMITS}; do
+    git log -1 --format="%B" "${SHA}" > /tmp/commit-msg.txt
+    wp audit commit-message --require-lore --message-file /tmp/commit-msg.txt || FAIL=1
+  done
+  [ "${FAIL}" -eq 0 ] || exit "${FAIL}"
+fi
 vp check

@@ -334,7 +334,7 @@ export async function main(): Promise<void> {
       secretFile,
     ];
     const injectedSecretKeys = Object.keys(secretMap)
-      .filter((key) => key !== "DOPPLER_SERVICE_TOKEN" && key !== "DOPPLER_TOKEN")
+      .filter((key) => key !== "CI_SECRET_PROVIDER_TOKEN")
       .sort();
     console.error(
       `▶ act ${finalArgs.join(" ")}\n  secret profile: ${secretProfile.id}\n  injected secrets: ${injectedSecretKeys.join(", ") || "(none)"}`,

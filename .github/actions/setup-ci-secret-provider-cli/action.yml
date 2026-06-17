@@ -1,0 +1,7 @@
+name: Setup CI secret-provider CLI
+description: Install the CLI bridge needed by this repo's secret-provider contract
+runs:
+  using: composite
+  steps:
+    - name: Install secret-provider CLI bridge
+      uses: dopplerhq/cli-action@v3

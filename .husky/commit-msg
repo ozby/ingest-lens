@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 set -eu
-wp audit commit-message --message-file "$1"
+wp audit commit-message --require-lore --message-file "$1"

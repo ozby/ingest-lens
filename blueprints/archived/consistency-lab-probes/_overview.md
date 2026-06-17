@@ -6,7 +6,7 @@ status: archived
 complexity: S
 created: "2026-04-24"
 last_updated: "2026-06-06"
-progress: "Implemented and merged to main 2026-04-25. 11 probes (p01–p11) under scripts/probes/consistency-lab/. Type-check clean, lint clean. Deploy-gated probes (p01 Hyperdrive LISTEN/NOTIFY, p02 CPU 300s, p06 Doppler, p09 CF Queues) require live CF + Neon environment and cannot be confirmed without that context."
+progress: "Implemented and merged to main 2026-04-25. 11 probes (p01–p11) under scripts/probes/consistency-lab/. Type-check clean, lint clean. Deploy-gated probes (p01 Hyperdrive LISTEN/NOTIFY, p02 CPU 300s, p06 configured secret provider, p09 CF Queues) require live CF + Neon environment and cannot be confirmed without that context."
 depends_on: []
 tags:
   - lab
@@ -33,28 +33,28 @@ the user surfaced. Current runtime totals: **11 CONFIRMED, 5 PARTIAL,
 0 WRONG, 1 SKIPPED.** Runtime probes are the final gate; downstream
 blueprints are updated to match the source-verified reality.
 
-| #   | Original claim                             | Verdict                                        | Blueprint action                                                                                              |
-| --- | ------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 1   | Hyperdrive supports LISTEN/NOTIFY          | **REVERSED** (unsupported)                     | Scenario 1a/1b third path renamed `PostgresDirectNotifyPath`; direct `connect()` from DO, Hyperdrive bypassed |
-| 2   | Worker CPU configurable to 300s on paid    | CONFIRMED                                      | No change                                                                                                     |
-| 3   | HTMX 4 rewrites SSE                        | SOFTENED (no HTMX 4 exists)                    | Pin at `htmx.org@2.0.10` + `htmx-ext-sse@2.2.4`; wording relaxed                                              |
-| 4   | Workers Assets binding                     | CONFIRMED                                      | No change                                                                                                     |
-| 5   | `@thi.ng/tdigest` ESM                      | **FABRICATED**                                 | Histogram is inline ~200-line t-digest as primary                                                             |
-| 6   | Doppler Service Tokens read-only           | SOFTENED                                       | Any token type with write scope is fine                                                                       |
-| 7   | Inter Tight OFL 1.1                        | CONFIRMED                                      | No change                                                                                                     |
-| 8   | JetBrains Mono Apache 2.0                  | **REVERSED** (font is OFL 1.1)                 | Single `OFL-1.1.txt` covers both fonts                                                                        |
-| 9   | CF Queues rejects second consumer          | SOFTENED (no doc says so)                      | Dedicated queues kept, justification reworded                                                                 |
-| 10  | No public CF billing API                   | CONFIRMED                                      | No change                                                                                                     |
-| 11  | Workers `connect()` TCP API exists         | CONFIRMED (docs rich)                          | Validates the redesigned third-path structure                                                                 |
-| 12  | `@neondatabase/serverless` supports LISTEN | PARTIAL — no doc mention                       | Raw `connect()` retained as the chosen path; Neon driver ruled out                                            |
-| 13  | Worker subrequest cap 1000/req paid        | CONFIRMED                                      | Scenario runner DO default 100-msg batches safely under                                                       |
-| 14  | Hyperdrive has no per-query charge         | CONFIRMED                                      | PricingTable: removed "Hyperdrive write" line; Postgres cost flows through                                    |
-| 15  | `ak` CLI exists + supports `--suite`       | CONFIRMED                                      | AK suite registration tasks 2.7 / 3.7 are real, not aspirational                                              |
-| 16  | Postgres NOTIFY 8000-byte payload cap      | CONFIRMED                                      | Scenario schema encoded size << 8000; guardrail added to Key Decisions                                        |
-| 17  | Inter Tight ships as published package     | CONFIRMED (`@fontsource-variable/inter-tight`) | Lane D font source pinned to Fontsource package                                                               |
+| #   | Original claim                                      | Verdict                                        | Blueprint action                                                                                              |
+| --- | --------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1   | Hyperdrive supports LISTEN/NOTIFY                   | **REVERSED** (unsupported)                     | Scenario 1a/1b third path renamed `PostgresDirectNotifyPath`; direct `connect()` from DO, Hyperdrive bypassed |
+| 2   | Worker CPU configurable to 300s on paid             | CONFIRMED                                      | No change                                                                                                     |
+| 3   | HTMX 4 rewrites SSE                                 | SOFTENED (no HTMX 4 exists)                    | Pin at `htmx.org@2.0.10` + `htmx-ext-sse@2.2.4`; wording relaxed                                              |
+| 4   | Workers Assets binding                              | CONFIRMED                                      | No change                                                                                                     |
+| 5   | `@thi.ng/tdigest` ESM                               | **FABRICATED**                                 | Histogram is inline ~200-line t-digest as primary                                                             |
+| 6   | configured secret provider Service Tokens read-only | SOFTENED                                       | Any token type with write scope is fine                                                                       |
+| 7   | Inter Tight OFL 1.1                                 | CONFIRMED                                      | No change                                                                                                     |
+| 8   | JetBrains Mono Apache 2.0                           | **REVERSED** (font is OFL 1.1)                 | Single `OFL-1.1.txt` covers both fonts                                                                        |
+| 9   | CF Queues rejects second consumer                   | SOFTENED (no doc says so)                      | Dedicated queues kept, justification reworded                                                                 |
+| 10  | No public CF billing API                            | CONFIRMED                                      | No change                                                                                                     |
+| 11  | Workers `connect()` TCP API exists                  | CONFIRMED (docs rich)                          | Validates the redesigned third-path structure                                                                 |
+| 12  | `@neondatabase/serverless` supports LISTEN          | PARTIAL — no doc mention                       | Raw `connect()` retained as the chosen path; Neon driver ruled out                                            |
+| 13  | Worker subrequest cap 1000/req paid                 | CONFIRMED                                      | Scenario runner DO default 100-msg batches safely under                                                       |
+| 14  | Hyperdrive has no per-query charge                  | CONFIRMED                                      | PricingTable: removed "Hyperdrive write" line; Postgres cost flows through                                    |
+| 15  | `ak` CLI exists + supports `--suite`                | CONFIRMED                                      | AK suite registration tasks 2.7 / 3.7 are real, not aspirational                                              |
+| 16  | Postgres NOTIFY 8000-byte payload cap               | CONFIRMED                                      | Scenario schema encoded size << 8000; guardrail added to Key Decisions                                        |
+| 17  | Inter Tight ships as published package              | CONFIRMED (`@fontsource-variable/inter-tight`) | Lane D font source pinned to Fontsource package                                                               |
 
 The probes below now act as **regression gates** — they will fail if CF,
-HTMX, or Doppler later change behavior and invalidate one of the
+HTMX, or configured secret provider later change behavior and invalidate one of the
 corrected claims.
 
 ## Planning Summary
@@ -314,11 +314,11 @@ distributions (uniform, Gaussian, Pareto heavy-tail), asserts p99 within
 
 **Status:** done
 
-**Depends:** Doppler sandbox project provisioned
+**Depends:** configured secret provider sandbox project provisioned
 
-Reproduce the Doppler secret-update claim. Uses a Service Account token
+Reproduce the secret-provider-managed secret-update claim. Uses a Service Account token
 (write scope) to `POST /v3/configs/config/secrets` against a sandbox
-Doppler project and asserts the update lands. Also tries with a Service
+secret-provider project and asserts the update lands. Also tries with a Service
 Token (read-only) and asserts it returns 403.
 
 **Files:**
@@ -332,7 +332,7 @@ Token (read-only) and asserts it returns 403.
 
 **Acceptance:**
 
-- [x] Probe emits verdict — deploy-gated; requires Doppler sandbox project
+- [x] Probe emits verdict — deploy-gated; requires configured secret provider sandbox project
 - [x] Runbook ritual confirmed to work end-to-end — deploy-gated
 
 ---
@@ -481,7 +481,7 @@ recent `verdicts.jsonl` shows all `CONFIRMED`.
 | Downstream | `consistency-lab-01a-correctness` | Blocked until 0.1 (LISTEN/NOTIFY), 0.9 (queues) CONFIRMED                                 |
 | Downstream | `consistency-lab-01b-latency`     | Same as 01a                                                                               |
 | Downstream | `consistency-lab-shell`           | Blocked until 0.2 (CPU limit), 0.3 (HTMX SSE), 0.4 (Assets), 0.7/0.8 (licenses) CONFIRMED |
-| Downstream | `consistency-lab-ops`             | Blocked until 0.6 (Doppler), 0.10 (billing) CONFIRMED                                     |
+| Downstream | `consistency-lab-ops`             | Blocked until 0.6 (configured secret provider), 0.10 (billing) CONFIRMED                  |
 
 ## NOT in scope
 
@@ -494,7 +494,7 @@ recent `verdicts.jsonl` shows all `CONFIRMED`.
 
 - `bun` for `.ts` scripts (repo convention)
 - Neon branch helpers (`@repo/neon`) for the Hyperdrive probe's sandbox branch
-- Doppler-based secrets pattern for the probe's token provisioning
+- configured secret provider-based secrets pattern for the probe's token provisioning
 - Wrangler for deploy-gated probes
 
 ## Risks

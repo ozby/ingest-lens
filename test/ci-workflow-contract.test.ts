@@ -11,6 +11,6 @@ test("CI workflow exposes wp-check as the branch-protection-facing gate", () => 
 });
 
 test("CI mutation lane uses the repo-owned mutation script", () => {
-  assert.match(workflow, /pnpm run mutation/u);
+  assert.match(workflow, /wp test --mutation/u);
   assert.doesNotMatch(workflow, /wp test --affected/u);
 });

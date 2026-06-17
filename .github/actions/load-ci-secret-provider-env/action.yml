@@ -1,0 +1,14 @@
+name: Load CI secret-provider env
+description: Inject CI secrets for this repo through the configured secret-provider bridge
+inputs:
+  token:
+    description: Bootstrap token for the configured CI secret-provider bridge
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Load secret-provider env
+      uses: dopplerhq/secrets-fetch-action@v2.0.0
+      with:
+        doppler-token: ${{ inputs.token }}
+        inject-env-vars: true

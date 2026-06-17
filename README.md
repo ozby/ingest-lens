@@ -22,7 +22,7 @@ IngestLens is an integration-observability application that validates incoming t
 
 ## Quick start
 
-This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (Doppler-wrapped) for secret injection. There are **no `.env` files**.
+This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (secret-provider-wrapped) for secret injection. There are **no `.env` files**.
 
 Bootstrap through the repo itself:
 

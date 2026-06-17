@@ -37,7 +37,6 @@ jobs:
             "https://api.github.com/repos/actions/checkout/tarball/refs/tags/v6"
             "https://api.github.com/repos/actions/setup-node/tarball/refs/tags/v6"
             "https://api.github.com/repos/oven-sh/setup-bun/tarball/refs/tags/v2"
-            "https://api.github.com/repos/dopplerhq/secrets-fetch-action/tarball/refs/tags/v2.0.0"
           )
           for url in "${urls[@]}"; do
             if ! curl -fsSIL -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "$url" >/dev/null; then
@@ -54,7 +53,7 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       NODE_AUTH_TOKEN: ${{ github.token }}
-      HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
+      HAS_CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN != '' && '1' || '' }}
       HAS_DIRECT_NEON_SECRETS: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' && secrets.NEON_PARENT_BRANCH_ID != '' && '1' || '' }}
 
     steps:
@@ -78,19 +77,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Inject Neon control-plane secrets from Doppler
-        if: env.HAS_DOPPLER_TOKEN == '1'
-        uses: dopplerhq/secrets-fetch-action@v2.0.0
+      - name: Inject Neon control-plane secrets from the CI secret provider
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN == '1'
+        uses: ./.github/actions/load-ci-secret-provider-env
         with:
-          doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
-          inject-env-vars: true
+          token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
 
-      - name: Skip when neither Doppler nor direct Neon credentials are available
-        if: env.HAS_DOPPLER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS != '1'
+      - name: Skip when neither the CI secret provider nor direct Neon credentials are available
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS != '1'
         run: echo "Skipping Neon cleanup because no secret-manager token or direct Neon credentials are configured."
 
-      - name: Cleanup stale e2e branches via Doppler-managed env
-        if: env.HAS_DOPPLER_TOKEN == '1'
+      - name: Cleanup stale e2e branches via the injected secret-manager env
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN == '1'
         run: pnpm --filter @repo/e2e run db:branch:cleanup
 
       - name: Cleanup stale e2e branches via direct GitHub Secrets fallback
@@ -98,7 +96,7 @@ jobs:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
           NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-        if: env.HAS_DOPPLER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS == '1'
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS == '1'
         run: pnpm --filter @repo/e2e run db:branch:cleanup
 
   cleanup-skipped:

@@ -72,7 +72,7 @@ jobs:
       runner: ubuntu-latest
       skip_when_ci_secret_missing: true
     secrets:
-      ci_secret_provider_token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
 
   destroy-preview:
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
@@ -94,7 +94,7 @@ jobs:
       runner: ubuntu-latest
       skip_when_ci_secret_missing: true
     secrets:
-      ci_secret_provider_token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
 
   deploy-verify:
     if: ${{ github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)) }}

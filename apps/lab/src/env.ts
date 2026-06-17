@@ -20,7 +20,7 @@
  * Workers Assets (F12T):
  *   LAB_ASSETS
  *
- * Secrets (Doppler-managed; F-08):
+ * Secrets (secret-provider-managed; F-08):
  *   LAB_SESSION_SECRET  — cookie signing key; NEVER use JWT_SECRET
  *   HEARTBEAT_WEBHOOK_URL — wired by Lane E
  */

@@ -4,8 +4,8 @@
  * KV schema: one key "lab:kill-switch" with value:
  *   { enabled: bool, reason: string, flippedAt: ISO8601, autoResetAt?: ISO8601 }
  *
- * Per-request cache ≤ 5s (F-01: Doppler injects at deploy time; runtime
- * toggling needs KV, not Doppler).
+ * Per-request cache ≤ 5s (F-01: the secret provider injects at deploy time; runtime
+ * toggling needs KV, not the secret provider).
  */
 
 export interface KillSwitchState {

@@ -70,10 +70,10 @@ id = "placeholder-lab-kill-switch-kv-id"
 binding = "HYPERDRIVE"
 id = "placeholder-lab-hyperdrive-id"
 
-# ─── Secrets (injected by Doppler at deploy time) ─────────────────────────────
+# ─── Secrets (injected by configured secret provider at deploy time) ─────────────────────────────
 # LAB_SESSION_SECRET — dedicated secret; never reuse JWT_SECRET (F-08)
 # HEARTBEAT_WEBHOOK_URL — wired by Lane E (consistency-lab-ops)
-# LAB_RUN_TOKEN — bearer token for /lab/*/run endpoints (FIX-4); set via Doppler
+# LAB_RUN_TOKEN — bearer token for /lab/*/run endpoints (FIX-4); set via the configured secret-provider bridge
 
 # ─── Scheduled triggers (F-19, F-11, F-01) ───────────────────────────────────
 [triggers]
@@ -89,6 +89,6 @@ dataset = "lab_events"
 
 [vars]
 NODE_ENV = "development"
-# LAB_RUN_TOKEN must be set as a Doppler secret in production.
-# This placeholder is only used for local wrangler dev without Doppler.
+# LAB_RUN_TOKEN must be set as a secret-provider-managed secret in production.
+# This placeholder is only used for local wrangler dev without configured secret provider.
 LAB_RUN_TOKEN = "change-me-set-via-doppler"

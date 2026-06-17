@@ -15,7 +15,7 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       NODE_AUTH_TOKEN: ${{ github.token }}
-      DOPPLER_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
+      CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6
@@ -73,13 +73,13 @@ jobs:
 
       - uses: ./.github/actions/setup-monorepo
 
-      - name: Install Doppler CLI
-        uses: dopplerhq/cli-action@v3
+      - name: Install CI secret-provider bridge CLI
+        uses: ./.github/actions/setup-ci-secret-provider-cli
 
       - name: Run e2e suite (auto-provisions Neon branch)
-        if: ${{ env.DOPPLER_TOKEN != '' }}
+        if: ${{ env.CI_SECRET_PROVIDER_TOKEN != '' }}
         run: pnpm e2e --suite full
 
-      - name: Skip e2e when Doppler token is unavailable
-        if: ${{ env.DOPPLER_TOKEN == '' }}
-        run: echo "DOPPLER_SERVICE_TOKEN is not configured; skipping e2e suite."
+      - name: Skip e2e when the CI secret-provider token is unavailable
+        if: ${{ env.CI_SECRET_PROVIDER_TOKEN == '' }}
+        run: echo "CI_SECRET_PROVIDER_TOKEN is not configured; skipping e2e suite."

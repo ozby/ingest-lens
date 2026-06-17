@@ -10,7 +10,7 @@ brew "bun"            # script runner for local wrappers and unified agent-surfa
 brew "pnpm"           # repo uses pnpm@9.15.2 (corepack-pinned via packageManager field)
 
 # --- Secrets ---
-brew "dopplerhq/cli/doppler"  # all secrets managed via Doppler — no .env files
+brew "a secret-provider bridge CLI"  # temporary provider bridge behind the Webpresso secret contract
 
 # --- GitHub / CI ---
 brew "gh"             # GitHub CLI: PR review, branch protection checks, Actions runs

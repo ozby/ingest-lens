@@ -92,7 +92,7 @@ before:                              after (as shipped):
 | F2  | HIGH     | mongoose is incompatible with Workers         | Yes — uses Node `net`/`tls` which are absent in the CF runtime. Hard-cut required.                                            | Delete mongoose + `@types/mongoose` in the same commit.                                      |
 | F3  | HIGH     | Drizzle + postgres-js works with Hyperdrive   | Yes — Hyperdrive exposes a standard Postgres connection string; `postgres-js` connects via it inside a Worker.                | Use `drizzle-orm@^0.33` + `postgres@^3`.                                                     |
 | F4  | MEDIUM   | SSE / real-time push works in Workers         | Partial — Workers support `ReadableStream` for SSE; WebSocket upgrade via `CF-WebSocket` API. Native WS upgrade is supported. | Use Hono's `streamSSE` helper; for WS use `upgradeWebSocket` from `hono/cloudflare-workers`. |
-| F5  | LOW      | Wrangler dev mode supports Hyperdrive locally | Yes via `wrangler dev --local` with a `.dev.vars` Postgres URL. No Doppler needed locally for DB URL.                         | Document in `apps/workers/.dev.vars.example`.                                                |
+| F5  | LOW      | Wrangler dev mode supports Hyperdrive locally | Yes via `wrangler dev --local` with a `.dev.vars` Postgres URL. No configured secret provider needed locally for DB URL.      | Document in `apps/workers/.dev.vars.example`.                                                |
 
 ## Evidence Base
 
@@ -251,7 +251,7 @@ Drizzle table definitions.
 
 | Type       | Blueprint                     | Relationship                                                       |
 | ---------- | ----------------------------- | ------------------------------------------------------------------ |
-| Upstream   | `doppler-secrets`             | Doppler provides runtime secrets for Workers                       |
+| Upstream   | `doppler-secrets`             | configured secret provider provides runtime secrets for Workers    |
 | Upstream   | `pnpm-catalogs-adoption`      | Catalog must exist before adding Hono/Drizzle entries              |
 | Downstream | `cloudflare-pulumi-infra`     | Pulumi provisions Hyperdrive + Worker routes after this lands      |
 | Downstream | `stryker-mutation-guardrails` | Mutation gates move from api-server workspace to workers workspace |

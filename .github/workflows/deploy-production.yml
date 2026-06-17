@@ -31,7 +31,7 @@ jobs:
     name: Deploy production release
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: validate-release
-    uses: webpresso/agent-kit/.github/workflows/cloudflare-production.yml@4ba75c74138e4bbfa2b72189e6f0a3dd05fef7a9
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@5bbbe43e6f152b802bcce655a8dadeb661f908b5
     with:
       install_command: |
         export NODE_AUTH_TOKEN='${{ github.token }}'
@@ -45,4 +45,4 @@ jobs:
       release_version: ${{ needs.validate-release.outputs.release_version }}
       runner: ubuntu-latest
     secrets:
-      ci_secret_provider_token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}

@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 /**
- * E2E test runner — zero manual env vars. Secrets are loaded via Doppler, and
+ * E2E test runner — zero manual env vars. Secrets are loaded via the configured secret-provider bridge, and
  * a Neon branch is provisioned automatically.
  *
  * Usage: bun scripts/e2e-with-neon.ts [--suite auth|foundation|full]
  *
- * No env vars required — Doppler handles everything.
+ * No env vars required — configured secret provider handles everything.
  */
 import { spawn, spawnSync, type ChildProcessByStdio } from "node:child_process";
 import type { Readable } from "node:stream";

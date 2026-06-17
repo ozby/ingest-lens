@@ -62,12 +62,17 @@
     "qa": "wp lint && wp typecheck && vp run test && wp test --mutation && wp e2e",
     "deploy:preview": "wp deploy --lane preview_main",
     "deploy:production": "wp deploy --lane prd",
-    "deploy:dry-run": "wp deploy --lane prd --dry-run"
+    "deploy:dry-run": "wp deploy --lane prd --dry-run",
+    "changeset": "changeset",
+    "changeset:status": "changeset status",
+    "version": "changeset version",
+    "release:publish": "pnpm build"
   },
   "dependencies": {
     "rulesync": "8.15.1"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@playwright/test": "latest",

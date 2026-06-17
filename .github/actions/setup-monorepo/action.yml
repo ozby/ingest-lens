@@ -25,6 +25,13 @@ runs:
       with:
         bun-version: latest
 
+    - name: Install global Webpresso CLIs
+      shell: bash
+      run: |
+        set -euo pipefail
+        eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
+        npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
       shell: bash

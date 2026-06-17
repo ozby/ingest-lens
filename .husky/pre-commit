@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
 set -eu
-WP_SKIP_UPDATE_CHECK=1 wp audit docs-frontmatter
-WP_SKIP_UPDATE_CHECK=1 wp audit secrets-policy
-WP_SKIP_UPDATE_CHECK=1 wp audit no-dev-vars
-WP_SKIP_UPDATE_CHECK=1 wp audit secret-provider-quarantine
-WP_SKIP_UPDATE_CHECK=1 wp audit secrets-config
-WP_SKIP_UPDATE_CHECK=1 wp audit absolute-path-policy --root .
+WP_BIN=./node_modules/.bin/wp
+WP_SKIP_UPDATE_CHECK=1 "$WP_BIN" audit docs-frontmatter
+WP_SKIP_UPDATE_CHECK=1 "$WP_BIN" audit secrets-policy
+WP_SKIP_UPDATE_CHECK=1 "$WP_BIN" audit no-dev-vars
+WP_SKIP_UPDATE_CHECK=1 "$WP_BIN" audit secret-provider-quarantine
+WP_SKIP_UPDATE_CHECK=1 "$WP_BIN" audit secrets-config
+WP_SKIP_UPDATE_CHECK=1 "$WP_BIN" audit absolute-path-policy --root .

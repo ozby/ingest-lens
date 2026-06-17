@@ -60,7 +60,7 @@ describe("act secret profiles", () => {
         {
           GITHUB_TOKEN: "github-token",
           NEON_API_KEY: "neon-token",
-          DOPPLER_TOKEN: "doppler-token",
+          CI_SECRET_PROVIDER_TOKEN: "secret-provider-token",
         },
         getActSecretProfile("neon-control-plane").allowedKeys,
       ),

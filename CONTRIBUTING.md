@@ -2,7 +2,7 @@
 
 Thanks for your interest. IngestLens runs on Cloudflare Workers and uses
 [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner, with
-`with-secrets` (Doppler-wrapped) for secret injection. There are **no `.env`
+`with-secrets` (secret-provider-wrapped) for secret injection. There are **no `.env`
 files** — never add one.
 
 ## Prerequisites

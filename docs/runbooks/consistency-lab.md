@@ -16,7 +16,7 @@ last_updated: "2026-04-25"
 **Steps:**
 
 1. Confirm spend via Cloudflare dashboard → Analytics → Billing (do NOT use CF GraphQL API — not authoritative).
-2. Kill the lab immediately via KV (not Doppler — runtime only):
+2. Kill the lab immediately via KV (not the secret provider — runtime only):
 
    ```bash
    # Using wrangler KV CLI

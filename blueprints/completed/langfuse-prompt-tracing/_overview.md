@@ -206,7 +206,7 @@ Do **not** add `@langfuse/tracing`, `@langfuse/otel`, or any
 
 Add Langfuse configuration to the Worker’s typed env surface and existing
 Wrangler env-var blocks. `LANGFUSE_BASE_URL` is plaintext config; API keys stay
-in Doppler / Wrangler secrets and are never committed.
+in the configured secret-provider selection / Wrangler secrets and are never committed.
 
 **Files:**
 
@@ -219,7 +219,7 @@ in Doppler / Wrangler secrets and are never committed.
    `LANGFUSE_BASE_URL`.
 2. Append `LANGFUSE_BASE_URL = "https://cloud.langfuse.com"` to both
    `[env.dev.vars]` and `[env.prd.vars]`.
-3. Add `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` to Doppler-backed Worker
+3. Add `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` to secret-provider-backed Worker
    secrets outside the repo.
 4. Run: `pnpm --filter @repo/workers check-types` — verify PASS.
 
@@ -488,16 +488,16 @@ resolved prompt text and version, then schedule Langfuse trace/score work with
 
 ## Technology Choices
 
-| Component             | Technology                                       | Version                  | Why                                                                   |
-| --------------------- | ------------------------------------------------ | ------------------------ | --------------------------------------------------------------------- |
-| Prompt retrieval      | `@langfuse/client`                               | latest compatible        | Universal JS client with prompt caching/fallback support              |
-| Prompt cache          | `prompt.get(..., { cacheTtlSeconds })`           | built-in                 | Official stale-while-revalidate behavior; no custom cache code        |
-| Prompt fallback       | `prompt.get(..., { fallback })`                  | built-in                 | Preserves availability without extra repo-side retry logic            |
-| Score ingest          | `langfuse.score.create()` + `langfuse.flush()`   | built-in                 | Official score path for JS/TS, with short-lived-env guidance          |
-| Trace export          | Manual OTLP HTTP/JSON                            | n/a                      | Workers-safe and doc-backed; avoids Node-only tracing packages        |
-| Background scheduling | `c.executionCtx.waitUntil(...)`                  | Hono/Cloudflare built-in | Correct API surface for fire-and-forget work from Hono on Workers     |
-| Trace correlation     | `mappingTraceId.replace(/-/g, "")`               | n/a                      | Reuses existing correlation ID while satisfying Langfuse trace format |
-| Secrets/config        | Doppler + Wrangler secrets + `LANGFUSE_BASE_URL` | existing                 | Matches repo policy: no `.env` files                                  |
+| Component             | Technology                                                          | Version                  | Why                                                                   |
+| --------------------- | ------------------------------------------------------------------- | ------------------------ | --------------------------------------------------------------------- |
+| Prompt retrieval      | `@langfuse/client`                                                  | latest compatible        | Universal JS client with prompt caching/fallback support              |
+| Prompt cache          | `prompt.get(..., { cacheTtlSeconds })`                              | built-in                 | Official stale-while-revalidate behavior; no custom cache code        |
+| Prompt fallback       | `prompt.get(..., { fallback })`                                     | built-in                 | Preserves availability without extra repo-side retry logic            |
+| Score ingest          | `langfuse.score.create()` + `langfuse.flush()`                      | built-in                 | Official score path for JS/TS, with short-lived-env guidance          |
+| Trace export          | Manual OTLP HTTP/JSON                                               | n/a                      | Workers-safe and doc-backed; avoids Node-only tracing packages        |
+| Background scheduling | `c.executionCtx.waitUntil(...)`                                     | Hono/Cloudflare built-in | Correct API surface for fire-and-forget work from Hono on Workers     |
+| Trace correlation     | `mappingTraceId.replace(/-/g, "")`                                  | n/a                      | Reuses existing correlation ID while satisfying Langfuse trace format |
+| Secrets/config        | configured secret provider + Wrangler secrets + `LANGFUSE_BASE_URL` | existing                 | Matches repo policy: no `.env` files                                  |
 
 ## Refinement Summary
 
