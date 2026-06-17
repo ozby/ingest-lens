@@ -35,7 +35,7 @@ bootstrap agent hooks/links, completing with no error. This repo installs
 `@webpresso/agent-config` only; `wp` stays a separate global CLI surface.
 
 ```bash
-with-secrets -- vp run dev   # or: pnpm dev
+with-secrets -- vp run dev
 ```
 
 Success signal: secrets are injected and the vite-plus dev server / Cloudflare Worker dev process starts and stays running.
@@ -43,7 +43,7 @@ Success signal: secrets are injected and the vite-plus dev server / Cloudflare W
 Run the dev server without secret injection:
 
 ```bash
-vp run dev                   # or: pnpm dev:offline
+vp run dev
 ```
 
 Success signal: the dev server starts without secret injection.

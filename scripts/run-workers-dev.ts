@@ -35,7 +35,7 @@ for (const [name, value] of forwardedVars) {
   args.push("--var", `${name}:${value}`);
 }
 
-const child = spawn("pnpm", args, {
+const child = spawn("wp", args, {
   cwd: workersDir,
   stdio: "inherit",
   env: process.env,
