@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@webpresso/agent-kit": "catalog:",
+    "@webpresso/agent-config": "catalog:",
     "vitest": "catalog:tooling"
   }
 }

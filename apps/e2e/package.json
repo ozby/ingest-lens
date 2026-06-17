@@ -20,10 +20,10 @@
     "@repo/runtime-env-local": "workspace:*"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:",
+    "@webpresso/agent-config": "catalog:",
     "vitest": "catalog:tooling"
   }
 }

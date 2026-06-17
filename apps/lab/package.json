@@ -19,6 +19,6 @@
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:workers",
     "@typescript/native-preview": "catalog:tooling",
-    "@webpresso/agent-kit": "catalog:"
+    "@webpresso/agent-config": "catalog:"
   }
 }
