@@ -117,7 +117,6 @@ describe("applyGithubCliFallback", () => {
     expect(
       applyGithubCliFallback({}, getActSecretProfile("github-auth-preflight"), "gho_example"),
     ).toEqual({
-      GH_PACKAGES_TOKEN: "gho_example",
       GITHUB_TOKEN: "gho_example",
     });
   });
@@ -125,12 +124,11 @@ describe("applyGithubCliFallback", () => {
   it("does not override explicit auth-preflight secrets", () => {
     expect(
       applyGithubCliFallback(
-        { GITHUB_TOKEN: "explicit-gh", GH_PACKAGES_TOKEN: "explicit-packages" },
+        { GITHUB_TOKEN: "explicit-gh" },
         getActSecretProfile("github-auth-preflight"),
         "gho_example",
       ),
     ).toEqual({
-      GH_PACKAGES_TOKEN: "explicit-packages",
       GITHUB_TOKEN: "explicit-gh",
     });
   });

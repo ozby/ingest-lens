@@ -51,7 +51,7 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("printf 'dashed_lane=%s\\n'");
     expect(workflow).toContain("--destroy");
     expect(workflow).toContain("pnpm install --frozen-lockfile");
-    expect(workflow).toContain("pnpm run lint");
+    expect(workflow).toContain("wp lint");
     expect(workflow).not.toContain("setup-monorepo");
   });
 
@@ -188,8 +188,8 @@ describe("Cloudflare deploy lane contract", () => {
       "api.preview-pr-42.ingest-lens.ozby.dev",
     );
     expect(typeof neonBranches.getNeonConfig).toBe("function");
-    expect(deployScript).not.toContain("@webpresso/webpresso/db/neon");
-    expect(previewScript).not.toContain("@webpresso/webpresso/db/neon");
+    expect(deployScript).not.toContain("@webpresso/framework/db/neon");
+    expect(previewScript).not.toContain("@webpresso/framework/db/neon");
     expect(previewScript).not.toContain("DEPLOY_DEPLOY_DOMAIN");
   });
 
