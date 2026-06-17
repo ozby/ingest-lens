@@ -22,7 +22,7 @@ IngestLens is an integration-observability application that validates incoming t
 
 ## Quick start
 
-This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (Doppler-wrapped) for secret injection. There are **no `.env` files**.
+This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (secret-provider-wrapped) for secret injection. There are **no `.env` files**.
 
 Bootstrap through the repo itself:
 
@@ -30,12 +30,10 @@ Bootstrap through the repo itself:
 vp install
 ```
 
-Success signal: dependencies install and `postinstall` runs `wp setup` to
-bootstrap agent hooks/links, completing with no error. This repo installs
-`@webpresso/agent-config` only; `wp` stays a separate global CLI surface.
+Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. The repo already carries `@webpresso/agent-kit`, so repair/doctor flows should use the local wrapper (`pnpm exec wp ...`) after install instead of a separate npm-global bootstrap path.
 
 ```bash
-with-secrets -- vp run dev
+with-secrets -- vp run dev   # or: pnpm dev
 ```
 
 Success signal: secrets are injected and the vite-plus dev server / Cloudflare Worker dev process starts and stays running.
@@ -43,7 +41,7 @@ Success signal: secrets are injected and the vite-plus dev server / Cloudflare W
 Run the dev server without secret injection:
 
 ```bash
-vp run dev
+vp run dev                   # or: pnpm dev:offline
 ```
 
 Success signal: the dev server starts without secret injection.

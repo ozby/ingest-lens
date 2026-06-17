@@ -48,7 +48,7 @@ IngestLens
   └── @webpresso/agent-kit@^0.29.3      # public npm wrapper/config package
 ```
 
-The local package remains the IngestLens-owned adapter for Doppler/Infisical
+The local package remains the IngestLens-owned adapter for configured secret provider/Infisical
 selection, while the provider-neutral runtime context/profile core resolves
 from the public Webpresso npm package.
 

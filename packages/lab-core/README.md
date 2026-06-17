@@ -28,7 +28,7 @@ pnpm --filter @repo/lab-core lint        # oxlint
 ## Key invariants
 
 - **All tables live in the `lab` Postgres schema** — CI guard (`scripts/check-lab-migrations.ts`) blocks any `public.*` DDL.
-- **KillSwitchKV is the only runtime kill switch** — Doppler is build-time only (F-01).
+- **KillSwitchKV is the only runtime kill switch** — the secret provider is build-time only here (F-01).
 - **AdminBypassToken uses constant-time comparison** — prevents timing-based token enumeration (F-06).
 - **Hyperdrive has no per-query charge** — it is omitted from `PRICING_TABLE` (probe p14).
 - **No external dependencies at runtime** — `@repo/lab-core` must remain self-contained.

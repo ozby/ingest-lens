@@ -74,5 +74,5 @@ contract now that the local repo already uses `act-with-webpresso` and
 ## Acceptance
 
 - [x] Upstream dependency now points at the completed helper-contract slug.
-- [x] The lane reflects current local helper reality instead of the older Doppler-first framing.
+- [x] The lane reflects current local helper reality instead of the older configured secret provider-first framing.
 - [x] Scope stays on downstream adoption and docs/preset cleanup.

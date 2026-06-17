@@ -338,7 +338,7 @@ loading + one authenticated API call.
 - A custom build step that inlines environment via an HTTP fetch at runtime (build-time env injection is simpler + safe)
 - Turning `apps/client/` into a server-rendered app (would require a `main` script and change the Worker shape)
 - Service Worker / PWA offline behavior
-- prd deploy (needs a separate Doppler config + Pulumi stack — blocked by unrelated prereqs)
+- prd deploy (needs a separate secret-provider config + Pulumi stack — blocked by unrelated prereqs)
 - Moving the API to share the SPA root domain (stays at `api.<domain>`)
 - Authentication UX work — the existing JWT flow is assumed to work; this blueprint just makes it reachable from a browser
 
@@ -347,7 +347,7 @@ loading + one authenticated API call.
 - `apps/client/` — React + Vite + Tailwind + components scaffold
 - `apps/workers/wrangler.toml` — the API's `[env.dev] / [env.prd]` + `custom_domain = true` pattern is the exact template to copy
 - `infra/src/deploy/deploy.ts` — the 3-phase orchestrator; extending to 4 phases is additive
-- Doppler `ozby-shell/dev` — holds the CF token that already deploys Workers; no new secrets needed for the client
+- configured secret provider `ozby-shell/dev` — holds the CF token that already deploys Workers; no new secrets needed for the client
 - CF token scopes already granted for Workers Scripts:Edit, KV, R2, Hyperdrive, Routes, DNS — static-assets deploy uses Workers Scripts:Edit which is already present
 
 ## Risks
@@ -363,11 +363,11 @@ loading + one authenticated API call.
 
 ## Technology Choices
 
-| Component         | Technology                                              | Version / Source | Why                                                |
-| ----------------- | ------------------------------------------------------- | ---------------- | -------------------------------------------------- |
-| Static host       | CF Workers + `[assets]` binding                         | current          | CF-official; single toolchain; probe p04 validated |
-| SPA fallback mode | `not_found_handling = "single-page-application"`        | current          | Exactly what Vite's hash routing needs             |
-| Build tool        | Vite                                                    | existing catalog | Already used by `apps/client`                      |
-| API transport     | Fetch with `credentials: "include"` + exact-origin CORS | current          | Lowest-privilege CORS policy                       |
-| Deploy CLI        | wrangler 2.0.x (already pinned)                         | existing         | Same tool the API Worker uses                      |
-| Token scope       | Reuses existing `CLOUDFLARE_API_TOKEN` in Doppler       | current          | Already has Workers Scripts:Edit + DNS:Edit        |
+| Component         | Technology                                                                         | Version / Source | Why                                                |
+| ----------------- | ---------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------- |
+| Static host       | CF Workers + `[assets]` binding                                                    | current          | CF-official; single toolchain; probe p04 validated |
+| SPA fallback mode | `not_found_handling = "single-page-application"`                                   | current          | Exactly what Vite's hash routing needs             |
+| Build tool        | Vite                                                                               | existing catalog | Already used by `apps/client`                      |
+| API transport     | Fetch with `credentials: "include"` + exact-origin CORS                            | current          | Lowest-privilege CORS policy                       |
+| Deploy CLI        | wrangler 2.0.x (already pinned)                                                    | existing         | Same tool the API Worker uses                      |
+| Token scope       | Reuses existing `CLOUDFLARE_API_TOKEN` in the configured secret-provider selection | current          | Already has Workers Scripts:Edit + DNS:Edit        |

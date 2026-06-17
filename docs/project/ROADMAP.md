@@ -37,7 +37,7 @@ The repo currently has one active simplification program:
 | pnpm-catalogs-adoption             | Standardise deps via pnpm catalogs                                                |
 | vite-plus-migration                | Replace Turbo with Vite Plus                                                      |
 | commit-hooks-guardrails            | Husky + lint-staged + commitlint + secretlint                                     |
-| doppler-secrets                    | Config inheritance via Doppler                                                    |
+| secret-provider-contract           | Secret-provider contract adoption                                                 |
 | ci-hardening                       | GitHub Actions gates + setup action                                               |
 | cloudflare-pulumi-infra            | Pulumi IaC for CF infrastructure                                                  |
 | client-workers-assets-deploy       | SPA hosted on Workers Assets (ADR 006)                                            |

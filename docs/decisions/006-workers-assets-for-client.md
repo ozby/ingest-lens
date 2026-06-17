@@ -65,7 +65,7 @@ Cloudflare Pages is not used.
   without a custom 404 Worker.
 - `custom_domain = true` keeps DNS and TLS lifecycle inside wrangler; no manual
   Cloudflare dashboard configuration is required.
-- Doppler already holds the CF token with `Workers Scripts:Edit` scope; no new
+- configured secret provider already holds the CF token with `Workers Scripts:Edit` scope; no new
   secrets or token scopes are needed.
 - One `bun ./infra/src/deploy/deploy.ts <stack>` command deploys both Workers
   atomically in the correct order.

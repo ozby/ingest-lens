@@ -62,13 +62,13 @@ apps/workers/*/wrangler.toml      # per-Worker code + bindings (generated/checke
 | --- | -------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | F1  | HIGH     | Pulumi can manage everything Cloudflare offers | Mostly yes via `@pulumi/cloudflare ^6.x`, but per-Worker routes still change often enough that wrangler-managed code deploys are faster. | Keep wrangler for Worker code; Pulumi owns account resources. |
 | F2  | HIGH     | Pulumi stacks can be anonymous per-PR          | Yes — reference repo uses `preview-pr-<n>` stacks created by CI.                                                                         | Mirror the naming + lifecycle.                                |
-| F3  | MEDIUM   | Secrets live inside Pulumi state               | No — secrets stay in Doppler; Pulumi reads them via the `@pulumiverse/doppler` provider at plan time.                                    | Doppler blueprint must land first.                            |
+| F3  | MEDIUM   | Secrets live inside Pulumi state               | No — secrets stay in the configured secret-provider selection; Pulumi reads them via the `@pulumiverse/doppler` provider at plan time.   | configured secret provider blueprint must land first.         |
 
 ## Evidence Base
 
 - `[reference repo]` (`runtime: nodejs`, `nodeargs: --import tsx`, `packages.neon: terraform-provider kislerdm/neon 1.0.2`).
 - `[reference repo]` (dependency list).
-- `[reference repo]` (Pulumi vs. wrangler split, Canonical Preview Naming, Doppler config inheritance).
+- `[reference repo]` (Pulumi vs. wrangler split, Canonical Preview Naming, secret-provider config inheritance).
 
 ## Task Pool
 

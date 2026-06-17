@@ -18,15 +18,15 @@ Global env vars passed to all tasks: `MONGODB_URI`, `NODE_ENV`, `LOG_LEVEL`, `JW
 
 ## Root package.json scripts referencing turbo
 
-| Script           | Command                                           |
-| ---------------- | ------------------------------------------------- |
-| `build`          | `turbo run build`                                 |
-| `clean`          | `turbo run clean`                                 |
-| `dev`            | `bun ./scripts/with-doppler.ts dev turbo run dev` |
-| `dev:no-doppler` | `turbo run dev`                                   |
-| `lint`           | `turbo run lint`                                  |
-| `test`           | `turbo run test`                                  |
-| `check-types`    | `turbo run check-types`                           |
+| Script           | Command                                                          |
+| ---------------- | ---------------------------------------------------------------- |
+| `build`          | `turbo run build`                                                |
+| `clean`          | `turbo run clean`                                                |
+| `dev`            | `bun ./scripts/legacy provider-wrapper helper dev turbo run dev` |
+| `dev:no-doppler` | `turbo run dev`                                                  |
+| `lint`           | `turbo run lint`                                                 |
+| `test`           | `turbo run test`                                                 |
+| `check-types`    | `turbo run check-types`                                          |
 
 Root devDependencies: `"turbo": "^2.4.4"`
 
