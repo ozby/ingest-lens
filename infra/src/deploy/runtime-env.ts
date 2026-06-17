@@ -29,18 +29,18 @@ export async function resolveDeployRuntimeEnv(
   profile: "secrets-only",
   requiredDirectEnv: readonly string[],
 ): Promise<NodeJS.ProcessEnv> {
-  const missing = requiredDirectEnv.filter((key) => !process.env[key]);
-
-  if (process.env.CI === "true") {
-    if (missing.length > 0) {
-      throw new Error(`Deploy runtime is missing required values: ${missing.join(", ")}`);
-    }
-    return { ...process.env };
-  }
+  const current = { ...process.env } as NodeJS.ProcessEnv;
+  const missingDirectEnv = requiredDirectEnv.filter((key) => !current[key]);
+  if (missingDirectEnv.length === 0) return current;
 
   const resolveRuntimeProfile = loadResolveRuntimeProfile();
-  return {
-    ...process.env,
+  const merged = {
+    ...current,
     ...(await resolveRuntimeProfile(profile)),
   } as NodeJS.ProcessEnv;
+  const stillMissing = requiredDirectEnv.filter((key) => !merged[key]);
+  if (stillMissing.length > 0) {
+    throw new Error(`Deploy runtime is missing required values: ${stillMissing.join(", ")}`);
+  }
+  return merged;
 }

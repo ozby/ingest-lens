@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   release:
-    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@daf14c54460c7e8f9e870a2077771ef0e098d9e1
+    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@8ebdfb1e1b3a93f853b353c9356ef15e96c3beab
     with:
       install_command: pnpm install --frozen-lockfile
       version_command: pnpm run version
@@ -20,7 +20,7 @@ jobs:
   deploy:
     needs: release
     if: ${{ needs.release.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@daf14c54460c7e8f9e870a2077771ef0e098d9e1
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@8ebdfb1e1b3a93f853b353c9356ef15e96c3beab
     with:
       install_command: pnpm install --frozen-lockfile
       verify_command: pnpm run lint

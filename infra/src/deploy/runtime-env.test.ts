@@ -38,7 +38,7 @@ describe("runtime env deploy resolution", () => {
     });
     setResolveRuntimeProfileForTests(resolver);
 
-    const env = await resolveDeployRuntimeEnv("secrets-only", []);
+    const env = await resolveDeployRuntimeEnv("secrets-only", ["JWT_SECRET"]);
 
     expect(resolver).toHaveBeenCalledWith("secrets-only");
     expect(env.PATH).toBe("/usr/bin");
@@ -58,8 +58,26 @@ describe("runtime env deploy resolution", () => {
     expect(env.CLOUDFLARE_API_TOKEN).toBe("token");
   });
 
-  it("fails loudly in CI when required deploy values are missing", async () => {
-    const resolver = vi.fn();
+  it("resolves runtime secrets in CI when direct env is incomplete", async () => {
+    const resolver = vi.fn().mockResolvedValue({
+      CLOUDFLARE_API_TOKEN: "token",
+      NEON_API_KEY: "neon",
+    });
+    setResolveRuntimeProfileForTests(resolver);
+    process.env.CI = "true";
+
+    const env = await resolveDeployRuntimeEnv("secrets-only", [
+      "CLOUDFLARE_API_TOKEN",
+      "NEON_API_KEY",
+    ]);
+
+    expect(resolver).toHaveBeenCalledWith("secrets-only");
+    expect(env.CLOUDFLARE_API_TOKEN).toBe("token");
+    expect(env.NEON_API_KEY).toBe("neon");
+  });
+
+  it("fails loudly in CI when required deploy values are still missing after secret resolution", async () => {
+    const resolver = vi.fn().mockResolvedValue({});
     setResolveRuntimeProfileForTests(resolver);
     process.env.CI = "true";
 
@@ -68,7 +86,7 @@ describe("runtime env deploy resolution", () => {
     ).rejects.toThrow(
       "Deploy runtime is missing required values: CLOUDFLARE_API_TOKEN, NEON_API_KEY",
     );
-    expect(resolver).not.toHaveBeenCalled();
+    expect(resolver).toHaveBeenCalledWith("secrets-only");
   });
 
   it("rethrows resolver failures outside CI", async () => {
@@ -76,7 +94,7 @@ describe("runtime env deploy resolution", () => {
     const resolver = vi.fn().mockRejectedValue(error);
     setResolveRuntimeProfileForTests(resolver);
 
-    await expect(resolveDeployRuntimeEnv("secrets-only", [])).rejects.toBe(error);
+    await expect(resolveDeployRuntimeEnv("secrets-only", ["JWT_SECRET"])).rejects.toBe(error);
     expect(resolver).toHaveBeenCalledWith("secrets-only");
   });
 });
