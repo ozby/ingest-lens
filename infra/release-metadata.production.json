@@ -2,6 +2,9 @@
   "releaseKind": "version_pr",
   "durableObjectMigration": "none",
   "rolloutMode": "direct",
-  "requiredChecks": ["production-smoke", "production-journey"],
-  "releaseVersion": "0.1.0"
+  "requiredChecks": [
+    "production-smoke",
+    "production-journey"
+  ],
+  "releaseVersion": "0.1.1"
 }
