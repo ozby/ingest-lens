@@ -586,9 +586,6 @@ importers:
 
   infra:
     dependencies:
-      '@ozby/wrangler-sync':
-        specifier: ^0.1.0
-        version: 0.1.0
       '@pulumi/cloudflare':
         specifier: ^6.14.0
         version: 6.14.0(typescript@6.0.3)
@@ -601,6 +598,9 @@ importers:
       '@repo/runtime-env-local':
         specifier: workspace:*
         version: link:../packages/runtime-env-local
+      '@repo/wrangler-sync':
+        specifier: workspace:*
+        version: link:../packages/wrangler-sync
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -662,6 +662,18 @@ importers:
       ts-pattern:
         specifier: ^5.9.0
         version: 5.9.0
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.6.0
+      '@webpresso/agent-config':
+        specifier: 'catalog:'
+        version: 0.1.4(@cloudflare/vitest-pool-workers@0.14.9(@cloudflare/workers-types@4.20260423.1)(@vitest/runner@4.1.7)(@vitest/snapshot@4.1.7)(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0))))(@opentelemetry/api@1.9.0)(@playwright/test@1.60.0)(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(@stryker-mutator/typescript-checker@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(typescript@6.0.3))(@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@25.6.0))(vitest@4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0))))(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(jsdom@29.1.1(@noble/hashes@2.2.0))(tsx@4.21.0)(typescript@6.0.3)(wrangler@4.84.1(@cloudflare/workers-types@4.20260423.1))
+      vitest:
+        specifier: catalog:tooling
+        version: 4.1.7(@opentelemetry/api@1.9.0)(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0))
+
+  packages/wrangler-sync:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -2870,11 +2882,6 @@ packages:
   '@oxlint/plugins@1.61.0':
     resolution: {integrity: sha512-nkOyZEF1vH527CkdQtOp1HMrVFEM4ResURvI2JFeGoup+h+43J/k/FgdOR9b9Isxg+Yae7qVDa7y3nssE8b3TQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-
-  '@ozby/wrangler-sync@0.1.0':
-    resolution: {integrity: sha512-T+tM3hQhb1f9tfrx8TaXFWr1pEeDkuOrEsbxB49eOuwuQgvlEgsYp4GSw1sUBzACFfYd36bL8RAB5mI5h6HymQ==, tarball: https://npm.pkg.github.com/download/@ozby/wrangler-sync/0.1.0/4d3ccdc75a006b213ac59099743fa4f2c7edd7bc}
-    engines: {node: '>=20'}
-    hasBin: true
 
   '@playwright/test@1.60.0':
     resolution: {integrity: sha512-O71yZIbAh/PxDMNGns37GHBIfrVkEVyn+AXyIa5dOTfb4/xNvRWV+Vv/NMbNCtODB/pO7vLlF2OTmMVLhmr7Ag==}
@@ -10098,8 +10105,6 @@ snapshots:
     optional: true
 
   '@oxlint/plugins@1.61.0': {}
-
-  '@ozby/wrangler-sync@0.1.0': {}
 
   '@playwright/test@1.60.0':
     dependencies:

@@ -11,11 +11,11 @@
     "check-types": "wp typecheck"
   },
   "dependencies": {
-    "@ozby/wrangler-sync": "^0.1.0",
     "@pulumi/cloudflare": "^6.14.0",
     "@pulumi/pulumi": "^3.232.0",
     "@pulumiverse/doppler": "^0.9.0",
-    "@repo/runtime-env-local": "workspace:*"
+    "@repo/runtime-env-local": "workspace:*",
+    "@repo/wrangler-sync": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

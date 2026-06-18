@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 /**
  * Syncs Pulumi stack outputs into apps/workers/wrangler.toml.
- * Uses @ozby/wrangler-sync — generic Pulumi→wrangler binding patcher.
+ * Uses @repo/wrangler-sync — generic Pulumi→wrangler binding patcher.
  *
  * Usage: bun ./src/deploy/sync-wrangler-ids.ts <stack>
  *        (must be run from `infra/` — matches deploy.ts cwd convention)
  */
-import { syncWranglerBindings } from "@ozby/wrangler-sync";
+import { syncWranglerBindings } from "@repo/wrangler-sync";
 import { join } from "node:path";
 import process from "node:process";
 

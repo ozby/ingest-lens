@@ -55,7 +55,6 @@ jobs:
     if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      NODE_AUTH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v6
         with:

@@ -1,0 +1,18 @@
+{
+  "name": "@repo/wrangler-sync",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check-types": "wp typecheck",
+    "test": "wp test --file vitest.config.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@webpresso/agent-config": "catalog:",
+    "vitest": "catalog:tooling"
+  }
+}
