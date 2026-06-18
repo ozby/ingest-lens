@@ -31,7 +31,7 @@ jobs:
     name: Deploy production release
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: validate-release
-    uses: webpresso/agent-kit/.github/workflows/cloudflare-production.yml@4ba75c74138e4bbfa2b72189e6f0a3dd05fef7a9
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@11e2b313823763e5f8ced862d4a798d8070e3628
     with:
       install_command: |
         set -euo pipefail

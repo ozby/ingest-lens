@@ -15,7 +15,7 @@ test("package scripts and changeset config expose the shared release surface", (
     devDependencies?: Record<string, string>;
   };
 
-  assert.equal(pkg.version, "0.1.0");
+  assert.match(pkg.version, /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/u);
   assert.equal(pkg.scripts["changeset"], "changeset");
   assert.equal(pkg.scripts["changeset:status"], "changeset status");
   assert.equal(
@@ -44,8 +44,8 @@ test("production workflow stays manual-only while release.yml delegates Changese
       "u",
     ),
   );
-  assert.match(releaseWorkflow, /version_command: pnpm run version/u);
-  assert.match(releaseWorkflow, /publish_command: pnpm run release:publish/u);
+  assert.match(releaseWorkflow, /version_command: vp run version/u);
+  assert.match(releaseWorkflow, /publish_command: vp run release:publish/u);
 
   // release.yml must use the shared cloudflare-production reusable workflow
   assert.match(
