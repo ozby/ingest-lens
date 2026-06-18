@@ -42,7 +42,7 @@ jobs:
   deploy:
     needs: gate
     if: ${{ needs.gate.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@5bbbe43e6f152b802bcce655a8dadeb661f908b5
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@11e2b313823763e5f8ced862d4a798d8070e3628
     with:
       install_command: |
         set -euo pipefail

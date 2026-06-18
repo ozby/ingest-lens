@@ -36,8 +36,9 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("pull_request:");
     expect(workflow).toContain("types: [opened, synchronize, reopened, closed]");
     expect(workflow).toMatch(
-      /uses: webpresso\/agent-kit\/.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+      /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     );
+    expect(workflow).toContain("github.event.pull_request.head.ref != 'changeset-release/main'");
     expect(workflow).toContain('dashed_lane="preview-main"');
     expect(workflow).toContain('canonical_lane="preview_main"');
     expect(workflow).toContain("PR_NUMBER: ${{ github.event.pull_request.number }}");
@@ -63,7 +64,7 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("release_version:");
     expect(workflow).toMatch(
-      /uses: webpresso\/agent-kit\/.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
+      /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
     );
     expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
     expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");

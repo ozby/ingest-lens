@@ -7,8 +7,17 @@ on:
 
 jobs:
   e2e:
-    # Fork-PR safety: only run on push-to-main or same-repo PRs.
-    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+    # Fork-PR safety: only run on same-repo PRs, and skip pure Changesets
+    # version automation because feature branches already proved browser/runtime
+    # behavior before the generated release PR.
+    if: >-
+      ${{
+        (github.event_name == 'push' &&
+          !startsWith(github.event.head_commit.message, 'Version Packages')) ||
+        (github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.head.ref != 'changeset-release/main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
