@@ -62,14 +62,9 @@ jobs:
       mode: deploy
       install_command: |
         set -euo pipefail
-        export NODE_AUTH_TOKEN="${GITHUB_TOKEN:-${NODE_AUTH_TOKEN:-}}"
         eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
         npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
-        cat > "$RUNNER_TEMP/github-packages.npmrc" <<EOF
-        @ozby:registry=https://npm.pkg.github.com
-        //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
-        EOF
-        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" vp install --frozen-lockfile
+        vp install --frozen-lockfile
       verify_command: wp lint
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       runner: ubuntu-latest
@@ -86,14 +81,9 @@ jobs:
       mode: destroy
       install_command: |
         set -euo pipefail
-        export NODE_AUTH_TOKEN="${GITHUB_TOKEN:-${NODE_AUTH_TOKEN:-}}"
         eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
         npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
-        cat > "$RUNNER_TEMP/github-packages.npmrc" <<EOF
-        @ozby:registry=https://npm.pkg.github.com
-        //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
-        EOF
-        NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/github-packages.npmrc" vp install --frozen-lockfile
+        vp install --frozen-lockfile
       verify_command: ":"
       deploy_command: ":"
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy

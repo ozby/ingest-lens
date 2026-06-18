@@ -8,7 +8,6 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  NODE_AUTH_TOKEN: ${{ github.token }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -89,6 +88,7 @@ jobs:
             infra/src/deploy/runtime-env.test.ts \
             apps/e2e/src/neon-branches.test.ts \
             packages/runtime-env-local/src/index.test.ts
+            packages/wrangler-sync/src/index.test.ts
       - run: vp run catalog:check
       - run: vp run blueprints:check
 
