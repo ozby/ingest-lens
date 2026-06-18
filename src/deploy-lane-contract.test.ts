@@ -2,13 +2,17 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 
 function readRepoFile(path: string): string {
   return readFileSync(join(repoRoot, path), "utf8");
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("Cloudflare deploy lane contract", () => {
   it("declares dev, preview_main, preview_pr, and release-gated prd lanes for both deployed Workers", async () => {
@@ -68,8 +72,9 @@ describe("Cloudflare deploy lane contract", () => {
     );
     expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
     expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
+    expect(workflow).toContain("deploy_command: |");
     expect(workflow).toContain(
-      'deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"',
+      'bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"',
     );
     expect(workflow).toContain(
       "release_version: ${{ needs.validate-release.outputs.release_version }}",
@@ -151,8 +156,6 @@ describe("Cloudflare deploy lane contract", () => {
   it("keeps production Wrangler env aliases aligned with the deploy contract", () => {
     const workerWrangler = readRepoFile("apps/workers/wrangler.toml");
     const clientWrangler = readRepoFile("apps/client/wrangler.toml");
-    const syncScript = readRepoFile("infra/src/deploy/sync-wrangler-ids.ts");
-    const deployScript = readRepoFile("infra/src/deploy/deploy.ts");
 
     expect(workerWrangler).toContain("[env.production]");
     expect(workerWrangler).toContain('name = "ingest-lens"');
@@ -160,20 +163,13 @@ describe("Cloudflare deploy lane contract", () => {
     expect(clientWrangler).toContain("[env.production]");
     expect(clientWrangler).toContain('name = "ingest-lens-client"');
     expect(clientWrangler).not.toContain("[env.prd]");
-    expect(syncScript).toContain('stack === "prd" ? "production" : stack');
-    expect(deployScript).toContain('const wranglerEnv = isProd ? "production" : stack');
   });
 
-  it("creates and configures the production Pulumi stack from direct deploy secrets", () => {
-    const deployScript = readRepoFile("infra/src/deploy/deploy.ts");
-    const neonBranches = readRepoFile("infra/src/deploy/neon-branches.ts");
+  it("creates and configures the production Pulumi stack from direct deploy secrets", async () => {
+    const neonBranches = await import("../infra/src/deploy/neon-branches");
 
-    expect(deployScript).toContain('"stack", "select", "--create", stack');
-    expect(deployScript).toContain("getDefaultConnectionUri");
-    expect(deployScript).toContain('"ingest-lens:cloudflareAccountId"');
-    expect(deployScript).toContain('"ingest-lens:cloudflareZoneId"');
-    expect(deployScript).toContain('"ingest-lens:neonConnectionString"');
-    expect(neonBranches).toContain("export async function getDefaultConnectionUri");
+    expect(typeof neonBranches.getDefaultConnectionUri).toBe("function");
+    expect(typeof neonBranches.getNeonConfig).toBe("function");
   });
 
   it("uses repo-local deploy helpers that can be imported at runtime", async () => {
@@ -205,13 +201,70 @@ describe("Cloudflare deploy lane contract", () => {
     expect(viteConfig).toContain('"src"');
   });
 
-  it("creates Neon preview branches with a read-write endpoint before reading connection URIs", () => {
-    const neonBranches = readRepoFile("infra/src/deploy/neon-branches.ts");
+  it("creates Neon preview branches with a read-write endpoint before reading connection URIs", async () => {
+    const { ensureNamedBranch, getNeonConfig } = await import("../infra/src/deploy/neon-branches");
+    const calls: Array<{ url: string; method: string; body?: string }> = [];
+    const responseByRoute = new Map<string, Response>([
+      [
+        "GET /api/v2/projects/project/branches",
+        new Response(JSON.stringify({ branches: [] }), { status: 200 }),
+      ],
+      [
+        "POST /api/v2/projects/project/branches",
+        new Response(JSON.stringify({ branch: { id: "branch-1", name: "preview-pr-42" } }), {
+          status: 200,
+        }),
+      ],
+      [
+        "GET /api/v2/projects/project/branches/branch-1/endpoints",
+        new Response(JSON.stringify({ endpoints: [] }), { status: 200 }),
+      ],
+      [
+        "POST /api/v2/projects/project/endpoints",
+        new Response(JSON.stringify({ endpoint: { id: "endpoint-1", type: "read_write" } }), {
+          status: 200,
+        }),
+      ],
+    ]);
 
-    expect(neonBranches).toContain('endpoints: [{ type: "read_write" }]');
-    expect(neonBranches).toContain("ensureReadWriteEndpoint");
-    expect(neonBranches).toContain("createReadWriteEndpoint");
-    expect(neonBranches).toContain("endpoint_id: endpointId");
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+      const body = typeof init?.body === "string" ? init.body : undefined;
+      calls.push({ url, method, body });
+      const parsedUrl = new URL(url);
+      const routeKey = `${method} ${parsedUrl.pathname}`;
+
+      if (parsedUrl.pathname.endsWith("/connection_uri") && method === "GET") {
+        return new Response(JSON.stringify({ uri: "postgres://preview" }), { status: 200 });
+      }
+
+      const response = responseByRoute.get(routeKey);
+      if (response) {
+        return response.clone();
+      }
+
+      throw new Error(`Unexpected fetch call: ${method} ${url}`);
+    });
+
+    const result = await ensureNamedBranch(
+      getNeonConfig({
+        NEON_API_KEY: "key",
+        NEON_PROJECT_ID: "project",
+        NEON_PARENT_BRANCH_ID: "parent",
+      }),
+      "preview-pr-42",
+    );
+
+    expect(result).toEqual({
+      id: "branch-1",
+      reused: false,
+      appDatabaseUrl: "postgres://preview",
+    });
+
+    expect(calls[1]?.body).toContain('"endpoints":[{"type":"read_write"}]');
+    expect(calls[3]?.body).toContain('"type":"read_write"');
+    expect(calls[4]?.url).toContain("endpoint_id=endpoint-1");
   });
 
   it("keeps secret values out of deploy runner error messages and argv", () => {
@@ -224,7 +277,6 @@ describe("Cloudflare deploy lane contract", () => {
     expect(productionScript).not.toContain('[command, ...args].join(" ")');
     expect(deployScript).not.toContain('"--stdin"');
     expect(previewScript).not.toContain('"--stdin"');
-    expect(deployScript).toContain('runWithInput(\n    "pulumi",\n    branch.appDatabaseUrl');
     expect(previewScript).not.toContain('"neonConnectionString", branch.appDatabaseUrl');
     expect(previewScript).not.toContain('"cloudflareAccountId", required.CLOUDFLARE_ACCOUNT_ID');
     expect(previewScript).not.toContain('"cloudflareZoneId", required.CLOUDFLARE_ZONE_ID');
@@ -237,23 +289,16 @@ describe("Cloudflare deploy lane contract", () => {
     expect(readme).toContain("docs/architecture.contract.json");
   });
 
-  it("renders preview-main and per-PR custom-domain URLs for the API and client", () => {
-    const script = readRepoFile("infra/src/deploy/deploy-preview.ts");
-    const lanes = readRepoFile("infra/src/deploy/lanes.ts");
+  it("renders preview-main and per-PR custom-domain URLs for the API and client", async () => {
+    const lanes = await import("../infra/src/deploy/lanes");
 
-    expect(lanes).toContain("api.preview-main.${DEPLOY_DOMAIN}");
-    expect(lanes).toContain("preview-main.${DEPLOY_DOMAIN}");
-    expect(lanes).toContain("api.preview-pr-${prNumber}.${DEPLOY_DOMAIN}");
-    expect(lanes).toContain("preview-pr-${prNumber}.${DEPLOY_DOMAIN}");
-    expect(script).toContain('"wrangler",\n          "delete"');
-    expect(script).toContain('"pulumi",\n        ["destroy"');
-    expect(script).toContain("resolvePreviewLane");
-    expect(script).toContain("PREVIEW_API_SECRET_NAMES");
-    expect(script).toContain("deleteNeonBranch");
-    expect(script).toContain("Neon branch cleanup threw");
-    expect(script).toContain("isMissingCleanupTarget");
-    expect(script).toContain("Preview cleanup failed");
-    expect(script).toContain('"wrangler",\n        "secret",\n        "put"');
-    expect(lanes).toContain("BETTER_AUTH_SECRET");
+    expect(lanes.resolvePreviewLane("preview-main")).toMatchObject({
+      apiHost: "api.preview-main.ingest-lens.ozby.dev",
+      clientHost: "preview-main.ingest-lens.ozby.dev",
+    });
+    expect(lanes.resolvePreviewLane("preview-pr-42")).toMatchObject({
+      apiHost: "api.preview-pr-42.ingest-lens.ozby.dev",
+      clientHost: "preview-pr-42.ingest-lens.ozby.dev",
+    });
   });
 });

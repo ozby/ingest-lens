@@ -18,18 +18,29 @@ test("release automation skips heavy PR and merge validations outside the releas
   const e2eWorkflow = readFileSync(".github/workflows/e2e.yml", "utf8");
   const previewWorkflow = readFileSync(".github/workflows/deploy-preview.yml", "utf8");
   const securityWorkflow = readFileSync(".github/workflows/security-scan.yml", "utf8");
+  const cleanupWorkflow = readFileSync(
+    ".github/workflows/cleanup-stale-neon-e2e-branches.yml",
+    "utf8",
+  );
 
   assert.match(e2eWorkflow, /github\.event\.pull_request\.head\.ref != 'changeset-release\/main'/u);
   assert.match(
     e2eWorkflow,
     /!startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/u,
   );
+  assert.match(e2eWorkflow, /DOPPLER_TOKEN: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u);
   assert.match(
     previewWorkflow,
     /github\.event\.pull_request\.head\.ref != 'changeset-release\/main'/u,
   );
   assert.match(
+    previewWorkflow,
+    /ci_secret_provider_token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
+  );
+  assert.match(
     securityWorkflow,
     /github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.ref != 'changeset-release\/main'/u,
   );
+  assert.match(cleanupWorkflow, /HAS_CI_SECRET_PROVIDER_TOKEN/u);
+  assert.match(cleanupWorkflow, /doppler-token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u);
 });

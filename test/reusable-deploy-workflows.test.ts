@@ -35,6 +35,10 @@ test("production workflow stays manual-only while release.yml delegates Changese
   assert.doesNotMatch(workflow, /tags:\s*\["v\*"\]/u);
   assert.match(workflow, /workflow_dispatch:/u);
   assert.match(workflow, /release_version:/u);
+  assert.match(
+    workflow,
+    /ci_secret_provider_token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
+  );
 
   // release.yml must use the shared Changesets reusable workflow
   assert.match(
@@ -54,6 +58,10 @@ test("production workflow stays manual-only while release.yml delegates Changese
       String.raw`uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@[0-9a-f]{40}`,
       "u",
     ),
+  );
+  assert.match(
+    releaseWorkflow,
+    /ci_secret_provider_token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
   );
 
   // GitHub Actions cannot pass reusable-workflow outputs directly into a second

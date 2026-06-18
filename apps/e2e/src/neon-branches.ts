@@ -202,12 +202,16 @@ function buildCreateProjectBranchRequest(
 ): Parameters<typeof createApiClient>[0] extends never
   ? never
   : Parameters<ReturnType<typeof createApiClient>["createProjectBranch"]>[1] {
+  const branchPayload: Record<string, unknown> = {
+    name: branchName,
+    expires_at: expiresAt,
+  };
+  if (config.parentBranchId) {
+    branchPayload.parent_id = config.parentBranchId;
+  }
+
   return {
-    branch: {
-      name: branchName,
-      parent_id: config.parentBranchId,
-      expires_at: expiresAt,
-    } as Record<string, unknown>,
+    branch: branchPayload,
     endpoints: [
       {
         type: EndpointType.ReadWrite,
