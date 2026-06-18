@@ -89,7 +89,7 @@
     "node-addon-api": "^8.5.0",
     "react": "catalog:",
     "secretlint": "^9.3.0",
-    "tsx": "^4.22.4",
+    "tsx": "catalog:",
     "typescript": "catalog:tooling",
     "vite": "catalog:tooling",
     "vite-plus": "catalog:",

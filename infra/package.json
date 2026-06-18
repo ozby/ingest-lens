@@ -21,6 +21,6 @@
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-config": "catalog:",
-    "tsx": "^4.21.0"
+    "tsx": "catalog:"
   }
 }
