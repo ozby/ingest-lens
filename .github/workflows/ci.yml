@@ -87,7 +87,7 @@ jobs:
             scripts/act-with-webpresso.test.ts \
             infra/src/deploy/runtime-env.test.ts \
             apps/e2e/src/neon-branches.test.ts \
-            packages/runtime-env-local/src/index.test.ts
+            packages/runtime-env-local/src/index.test.ts \
             packages/wrangler-sync/src/index.test.ts
       - run: vp run catalog:check
       - run: vp run blueprints:check
