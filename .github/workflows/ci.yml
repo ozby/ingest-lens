@@ -103,6 +103,11 @@ jobs:
           fi
           FAIL=0
           for SHA in $COMMITS; do
+            SUBJECT=$(git log -1 --format="%s" "$SHA")
+            if [ "$SUBJECT" = "Version Packages" ]; then
+              echo "Skipping lore validation for generated Version Packages commit: $SHA"
+              continue
+            fi
             git log -1 --format="%B" "$SHA" > /tmp/commit-msg.txt
             WP_SKIP_UPDATE_CHECK=1 vp exec wp audit commit-message --require-lore --message-file /tmp/commit-msg.txt || FAIL=1
           done
