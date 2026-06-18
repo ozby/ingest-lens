@@ -18,7 +18,10 @@ jobs:
     uses: webpresso/github-actions/.github/workflows/changesets-release.yml@3f0136f88a488bc0894ab81ab3c8544b2e8dabf2
     with:
       install_command: |
-        export NODE_AUTH_TOKEN='${{ github.token }}'
+        set -euo pipefail
+        export NODE_AUTH_TOKEN="${GITHUB_TOKEN:-${NODE_AUTH_TOKEN:-}}"
+        eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
+        npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
         cat > "$RUNNER_TEMP/github-packages.npmrc" <<EOF
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
@@ -47,7 +50,10 @@ jobs:
     uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@5bbbe43e6f152b802bcce655a8dadeb661f908b5
     with:
       install_command: |
-        export NODE_AUTH_TOKEN='${{ github.token }}'
+        set -euo pipefail
+        export NODE_AUTH_TOKEN="${GITHUB_TOKEN:-${NODE_AUTH_TOKEN:-}}"
+        eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
+        npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
         cat > "$RUNNER_TEMP/github-packages.npmrc" <<EOF
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}

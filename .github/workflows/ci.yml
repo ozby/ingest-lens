@@ -116,6 +116,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup-monorepo
-      - run: wp test --affected
+      - run: wp test --mutation
         env:
           GITHUB_BASE_REF: main
