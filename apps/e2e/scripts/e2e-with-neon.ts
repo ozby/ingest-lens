@@ -18,6 +18,12 @@ import { resolveRuntimeProfile } from "@repo/runtime-env-local";
 import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
 import { findE2eRepoRoot, resolveFromRepoRoot, resolveVpCommand } from "../src/repo-root";
+import { resolveE2eAuthSecrets, resolveE2eSecretEnv } from "../src/runtime-secrets";
+import {
+  buildWorkerSpawnLifecycleOptions,
+  signalWorkerProcessTreeSync,
+  terminateWorkerProcessTree,
+} from "../src/worker-process-lifecycle";
 
 const suite = process.argv.includes("--suite")
   ? process.argv[process.argv.indexOf("--suite") + 1]
@@ -68,11 +74,11 @@ const clientInspectorPort = requiresClientWorker ? await getAvailablePort() : 92
 const clientBaseUrl = `http://localhost:${clientPort}`;
 
 // ── Load secrets from the selected secret manager ──────────────────────
-const runtimeSecrets = await resolveRuntimeProfile("secrets-only", { fresh: true });
-const secretEnv = {
-  ...process.env,
-  ...runtimeSecrets,
-} as NodeJS.ProcessEnv;
+process.env.RUN_E2E ??= "1";
+const secretEnv = await resolveE2eSecretEnv({
+  env: process.env,
+  resolveRuntimeProfile,
+});
 const neonConfig = getNeonConfig(secretEnv);
 const provider = new NeonBranchProvider(neonConfig);
 
@@ -162,17 +168,24 @@ async function releaseClientAssetLock() {
   await rm(CLIENT_ASSET_LOCK_DIR, { recursive: true, force: true });
 }
 
+let cleanupPromise: Promise<void> | null = null;
+
 async function cleanup() {
+  cleanupPromise ??= cleanupOnce();
+  return cleanupPromise;
+}
+
+async function cleanupOnce() {
   if (clientWorker) {
-    try {
-      clientWorker.kill("SIGTERM");
-    } catch {}
+    await terminateWorkerProcessTree(clientWorker).catch((error) => {
+      console.error("  Failed to terminate client worker process tree:", String(error));
+    });
     clientWorker = null;
   }
   if (apiWorker) {
-    try {
-      apiWorker.kill("SIGTERM");
-    } catch {}
+    await terminateWorkerProcessTree(apiWorker).catch((error) => {
+      console.error("  Failed to terminate API worker process tree:", String(error));
+    });
     apiWorker = null;
   }
   await releaseClientAssetLock().catch(() => {});
@@ -188,11 +201,36 @@ async function cleanup() {
   }
 }
 
+function signalActiveWorkersSync() {
+  if (clientWorker) signalWorkerProcessTreeSync(clientWorker);
+  if (apiWorker) signalWorkerProcessTreeSync(apiWorker);
+}
+
+function cleanupAndExit(exitCode: number) {
+  cleanup()
+    .catch((error) => {
+      console.error("  Cleanup failed:", String(error));
+      signalActiveWorkersSync();
+    })
+    .finally(() => process.exit(exitCode));
+}
+
 process.on("SIGINT", () => {
-  cleanup().then(() => process.exit(1));
+  cleanupAndExit(1);
 });
 process.on("SIGTERM", () => {
-  cleanup().then(() => process.exit(1));
+  cleanupAndExit(1);
+});
+process.on("uncaughtException", (error) => {
+  console.error("E2e failed with uncaught exception:", error);
+  cleanupAndExit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("E2e failed with unhandled rejection:", reason);
+  cleanupAndExit(1);
+});
+process.on("exit", () => {
+  signalActiveWorkersSync();
 });
 
 async function runMigrations(connectionUri: string) {
@@ -206,6 +244,7 @@ async function runMigrations(connectionUri: string) {
     const r = spawnSync("psql", ["-d", connectionUri, "-v", "ON_ERROR_STOP=1", "-f", f], {
       stdio: "inherit",
     });
+    if (r.error) throw new Error(`Migration failed: ${f}: ${r.error.message}`);
     if (r.status !== 0) throw new Error(`Migration failed: ${f}`);
   }
 }
@@ -260,20 +299,28 @@ try {
 
   // ── 2. Run migrations ─────────────────────────────────────────────
   console.log("🔄 Running migrations...");
-  spawnSync(
+  const extensionResult = spawnSync(
     "psql",
     [connectionUri, "-v", "ON_ERROR_STOP=1", "-c", "CREATE EXTENSION IF NOT EXISTS pgcrypto;"],
     { stdio: "inherit" },
   );
+  if (extensionResult.error) {
+    throw new Error(`Extension setup failed: ${extensionResult.error.message}`);
+  }
+  if (extensionResult.status !== 0) {
+    throw new Error(`Extension setup failed with exit code ${extensionResult.status ?? 1}`);
+  }
   await runMigrations(connectionUri);
   console.log("  Migrations done.");
 
   // ── 3. Start wrangler dev ─────────────────────────────────────────
   console.log("🚀 Starting wrangler dev...");
-  const jwtSecret = secretEnv.JWT_SECRET ?? "local-dev-jwt-secret";
+  const { jwtSecret, betterAuthSecret } = resolveE2eAuthSecrets(secretEnv);
   const workerVars: string[] = [
     "--var",
     `JWT_SECRET:${jwtSecret}`,
+    "--var",
+    `BETTER_AUTH_SECRET:${betterAuthSecret}`,
     "--var",
     `DATABASE_URL:${connectionUri}`,
   ];
@@ -283,9 +330,6 @@ try {
       REVIEWER_FLOW_SUITES.has(normalizedSuiteId) ? "1.1" : secretEnv.AUTO_HEAL_THRESHOLD,
     ],
     ["LOW_CONFIDENCE_THRESHOLD", secretEnv.LOW_CONFIDENCE_THRESHOLD],
-    ["LANGFUSE_PUBLIC_KEY", secretEnv.LANGFUSE_PUBLIC_KEY],
-    ["LANGFUSE_SECRET_KEY", secretEnv.LANGFUSE_SECRET_KEY],
-    ["LANGFUSE_BASE_URL", secretEnv.LANGFUSE_BASE_URL ?? "https://cloud.langfuse.com"],
     ...(requiresClientWorker ? ([["ALLOWED_ORIGIN", clientBaseUrl]] as const) : []),
   ] as const) {
     if (!value) continue;
@@ -308,11 +352,13 @@ try {
       ...workerVars,
     ],
     {
+      ...buildWorkerSpawnLifecycleOptions(),
       cwd: repoRoot,
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
         ...secretEnv,
+        BETTER_AUTH_SECRET: betterAuthSecret,
         JWT_SECRET: jwtSecret,
         DATABASE_URL: connectionUri,
         ...(requiresClientWorker ? { ALLOWED_ORIGIN: clientBaseUrl } : {}),
@@ -321,7 +367,7 @@ try {
   );
   pipeWorkerLogs("api-worker", apiWorker.stdout, "stdout");
   pipeWorkerLogs("api-worker", apiWorker.stderr, "stderr");
-  await waitForHttpOk("api-worker", `${apiBaseUrl}/health`, 30_000, apiWorker);
+  await waitForHttpOk("api-worker", `${apiBaseUrl}/health`, 60_000, apiWorker);
   console.log("  API worker healthy.");
 
   if (requiresClientWorker) {
@@ -333,7 +379,10 @@ try {
       ["run", "build"],
       {
         cwd: resolveFromRepoRoot(repoRoot, "apps", "client"),
-        env: { ...process.env, ...secretEnv, VITE_API_BASE_URL: apiBaseUrl },
+        // Browser e2e exercises the shipped client worker. Keep client API calls
+        // same-origin (/api, /auth) so AUTH_PROXY_BASE_URL owns forwarding and
+        // Playwright does not depend on cross-origin cookie behavior.
+        env: { ...process.env, ...secretEnv, VITE_API_BASE_URL: "" },
       },
       "client build",
     );
@@ -357,6 +406,7 @@ try {
         `AUTH_PROXY_BASE_URL:${apiBaseUrl}`,
       ],
       {
+        ...buildWorkerSpawnLifecycleOptions(),
         cwd: repoRoot,
         stdio: ["ignore", "pipe", "pipe"],
         env: { ...process.env, ...secretEnv },
@@ -364,7 +414,7 @@ try {
     );
     pipeWorkerLogs("client-worker", clientWorker.stdout, "stdout");
     pipeWorkerLogs("client-worker", clientWorker.stderr, "stderr");
-    await waitForHttpOk("client-worker", `${clientBaseUrl}/`, 30_000, clientWorker);
+    await waitForHttpOk("client-worker", `${clientBaseUrl}/`, 60_000, clientWorker);
     console.log("  Client worker healthy.");
   }
 

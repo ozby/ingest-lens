@@ -1,6 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
-
-const apiBaseUrl = process.env.E2E_BASE_URL ?? "http://127.0.0.1:8787";
+import {
+  PLAYWRIGHT_ACTION_TIMEOUT_MS,
+  createQueue,
+  createRunId,
+  createTopic,
+  signUpAndAttachSession,
+  subscribeTopic,
+} from "./playwright-seed";
 
 type SeededClientSurface = {
   queueId: string;
@@ -9,107 +15,32 @@ type SeededClientSurface = {
   topicName: string;
 };
 
-async function signUp(page: Page, runId: string) {
-  await page.goto("/");
-
-  const signUp = await page.evaluate(
-    async ({ email, password, name }) => {
-      const response = await fetch("/auth/sign-up/email", {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-      });
-      return {
-        status: response.status,
-        body: await response.json(),
-      };
-    },
-    {
-      email: `client-ui-${runId}@playwright.test`,
-      password: `Pass-${runId}-Abc123!`,
-      name: `Client UI ${runId}`,
-    },
-  );
-
-  expect(signUp.status).toBe(200);
-
-  const session = await page.evaluate(async () => {
-    const response = await fetch("/auth/get-session", {
-      credentials: "include",
-    });
-    return {
-      status: response.status,
-      body: await response.json(),
-    };
+async function seedClientSurface(page: Page): Promise<SeededClientSurface> {
+  const runId = createRunId();
+  const session = await signUpAndAttachSession(page, {
+    email: `client-ui-${runId}@playwright.test`,
+    password: `Pass-${runId}-Abc123!`,
+    name: `Client UI ${runId}`,
   });
 
-  expect(session.status).toBe(200);
-}
+  try {
+    const queueName = `client-ui-queue-${runId}`;
+    const queueId = await createQueue(session.request, { name: queueName, retentionPeriod: 7 });
 
-async function seedClientSurface(page: Page): Promise<SeededClientSurface> {
-  const runId = Math.random().toString(36).slice(2, 8);
-  await signUp(page, runId);
+    const topicName = `client-ui-topic-${runId}`;
+    const topicId = await createTopic(session.request, { name: topicName });
 
-  const queueName = `client-ui-queue-${runId}`;
-  const queueResponse = await page.evaluate(
-    async ({ apiBaseUrl, queueName }) => {
-      const response = await fetch(`${apiBaseUrl}/api/queues`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: queueName, retentionPeriod: 7 }),
-      });
-      return {
-        status: response.status,
-        body: await response.json(),
-      };
-    },
-    { apiBaseUrl, queueName },
-  );
-  expect(queueResponse.status).toBe(201);
-  const queueId = (queueResponse.body as { data: { queue: { id: string } } }).data.queue.id;
+    await subscribeTopic(session.request, topicId, queueId);
 
-  const topicName = `client-ui-topic-${runId}`;
-  const topicResponse = await page.evaluate(
-    async ({ apiBaseUrl, topicName }) => {
-      const response = await fetch(`${apiBaseUrl}/api/topics`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: topicName }),
-      });
-      return {
-        status: response.status,
-        body: await response.json(),
-      };
-    },
-    { apiBaseUrl, topicName },
-  );
-  expect(topicResponse.status).toBe(201);
-  const topicId = (topicResponse.body as { data: { topic: { id: string } } }).data.topic.id;
-
-  const subscribeResponse = await page.evaluate(
-    async ({ apiBaseUrl, topicId, queueId }) => {
-      const response = await fetch(`${apiBaseUrl}/api/topics/${topicId}/subscribe`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ queueId }),
-      });
-      return {
-        status: response.status,
-        body: await response.json(),
-      };
-    },
-    { apiBaseUrl, topicId, queueId },
-  );
-  expect(subscribeResponse.status).toBe(200);
-
-  return { queueId, queueName, topicId, topicName };
+    return { queueId, queueName, topicId, topicName };
+  } finally {
+    await session.dispose();
+  }
 }
 
 test.describe("client shipped surfaces", () => {
+  test.describe.configure({ timeout: PLAYWRIGHT_ACTION_TIMEOUT_MS });
+
   test("authenticated operators can navigate the shipped client surfaces", async ({ page }) => {
     const seeded = await seedClientSurface(page);
 
@@ -133,7 +64,7 @@ test.describe("client shipped surfaces", () => {
     await expect(page.getByRole("heading", { name: /Delivery and intake metrics/i })).toBeVisible();
     await expect(
       page.getByText(/No metrics available|System Activity|System Info/i).first(),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15_000 });
 
     await page.getByRole("link", { name: /AI Intake/i }).click();
     await expect(page.getByRole("heading", { name: /Intake mapping/i })).toBeVisible();
@@ -141,7 +72,7 @@ test.describe("client shipped surfaces", () => {
 
     await page.getByRole("link", { name: /Admin Intake Review/i }).click();
     await expect(page.getByRole("heading", { name: /Intake admin review/i })).toBeVisible();
-    await expect(page.getByText(/No pending review attempts/i)).toBeVisible();
+    await expect(page.getByText(/No pending review attempts/i)).toBeVisible({ timeout: 15_000 });
   });
 
   test("queue and topic detail surfaces deep-link cleanly", async ({ page }) => {

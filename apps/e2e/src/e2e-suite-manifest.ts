@@ -50,17 +50,6 @@ const CLIENT_UI_FILES = ["journeys/client-surfaces.spec.ts"] as const;
 const BRANDING_FILES = ["journeys/ingestlens-branding.e2e.ts"] as const;
 const NEON_BRANCH_PROVIDER_FILES = ["journeys/neon-branch-provider.e2e.ts"] as const;
 const INTAKE_UI_FILES = ["journeys/intake-heal-ui.spec.ts"] as const;
-const FULL_VITEST_FILES = [
-  ...FOUNDATION_FILES,
-  ...AUTH_FILES,
-  ...MESSAGING_FILES,
-  ...HARDENING_FILES,
-  ...INTAKE_FILES,
-  ...HEALING_FILES,
-  ...DEMO_FILES,
-  ...CLIENT_VITEST_FILES,
-  ...BRANDING_FILES,
-] as const;
 const FULL_UI_FILES = [...CLIENT_UI_FILES, ...INTAKE_UI_FILES] as const;
 
 const S1B_LATENCY_FILES = [
@@ -210,7 +199,15 @@ const E2E_SUITES: readonly E2ESuiteDefinition[] = [
     fileMatchers: [],
     batchKey: "full",
     steps: [
-      createVitestStep("full", FULL_VITEST_FILES),
+      createVitestStep("foundation", FOUNDATION_FILES),
+      createVitestStep("auth", AUTH_FILES),
+      createVitestStep("messaging", MESSAGING_FILES),
+      createVitestStep("hardening", HARDENING_FILES),
+      createVitestStep("intake", INTAKE_FILES),
+      createVitestStep("healing", HEALING_FILES),
+      createVitestStep("demo", DEMO_FILES),
+      createVitestStep("client", CLIENT_VITEST_FILES),
+      createVitestStep("branding", BRANDING_FILES),
       {
         runner: "playwright",
         logName: "full-ui",

@@ -34,6 +34,10 @@ export function getSecretsConfigPath(cwd: string = process.cwd()): string {
   return path.join(cwd, FALLBACK_RELATIVE_PATH);
 }
 
+function getTrackedSecretsConfigPath(cwd: string = process.cwd()): string {
+  return path.join(cwd, FALLBACK_RELATIVE_PATH);
+}
+
 function isManagerName(value: unknown): value is SecretManagerName {
   return value === "doppler" || value === "infisical";
 }
@@ -84,12 +88,22 @@ function parseConfig(raw: string, source: string): SecretsConfig {
 
 export function readSecretsConfig(cwd?: string): SecretsConfig | null {
   const filePath = getSecretsConfigPath(cwd);
-  if (!existsSync(filePath)) return null;
-  return parseConfig(readFileSync(filePath, "utf8"), filePath);
+  if (existsSync(filePath)) return parseConfig(readFileSync(filePath, "utf8"), filePath);
+
+  const fallbackPath = getTrackedSecretsConfigPath(cwd);
+  if (fallbackPath !== filePath && existsSync(fallbackPath)) {
+    return parseConfig(readFileSync(fallbackPath, "utf8"), fallbackPath);
+  }
+
+  return null;
 }
 
 export function hasSecretsConfig(cwd?: string): boolean {
-  return existsSync(getSecretsConfigPath(cwd));
+  const filePath = getSecretsConfigPath(cwd);
+  if (existsSync(filePath)) return true;
+
+  const fallbackPath = getTrackedSecretsConfigPath(cwd);
+  return fallbackPath !== filePath && existsSync(fallbackPath);
 }
 
 export function writeSecretsConfig(config: SecretsConfig, cwd?: string): void {

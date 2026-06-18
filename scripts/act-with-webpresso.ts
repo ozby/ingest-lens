@@ -151,7 +151,7 @@ function processCustomFlag(state: ParsedArgState, argv: string[], index: number)
     const profileId = argv[index + 1];
     if (!profileId || !isActSecretProfileId(profileId)) {
       throw new Error(
-        "--secret-profile requires one of: none, github-api, github-auth-preflight, neon-control-plane.",
+        "--secret-profile requires one of: none, e2e-runtime, github-api, github-auth-preflight, neon-control-plane.",
       );
     }
     state.explicitProfileId = profileId;

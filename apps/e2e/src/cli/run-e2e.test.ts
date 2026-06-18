@@ -63,19 +63,152 @@ describe("run-e2e", () => {
         "--poolOptions.threads.maxThreads",
         "3",
         "journeys/worker-health.e2e.ts",
-        "journeys/auth-session.e2e.ts",
-        "journeys/queue-message-flow.e2e.ts",
-        "journeys/topic-publish-flow.e2e.ts",
-        "journeys/ownership-hardening.e2e.ts",
-        "journeys/intake-mapping-flow.e2e.ts",
-        "journeys/self-healing-intake.e2e.ts",
-        "journeys/public-fixture-demo-flow.e2e.ts",
-        "journeys/client-route-code-splitting.e2e.ts",
-        "journeys/ingestlens-branding.e2e.ts",
         "--reporter=verbose",
       ],
       suiteId: "full",
     });
+  });
+
+  it("builds every declared step for the split full suite", () => {
+    expect(
+      buildJourneyRunCommands({
+        suite: "full",
+        files: [],
+        workers: "3",
+        passthrough: ["--reporter=verbose"],
+      }),
+    ).toEqual([
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/worker-health.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/auth-session.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/queue-message-flow.e2e.ts",
+          "journeys/topic-publish-flow.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/ownership-hardening.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/intake-mapping-flow.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/self-healing-intake.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/public-fixture-demo-flow.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/client-route-code-splitting.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/vitest",
+        args: [
+          "run",
+          "--config",
+          "vitest.journeys.config.ts",
+          "--poolOptions.threads.maxThreads",
+          "3",
+          "journeys/ingestlens-branding.e2e.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+      {
+        command: "./node_modules/.bin/playwright",
+        args: [
+          "test",
+          "--config",
+          "playwright.config.ts",
+          "journeys/client-surfaces.spec.ts",
+          "journeys/intake-heal-ui.spec.ts",
+          "--reporter=verbose",
+        ],
+        suiteId: "full",
+      },
+    ]);
   });
 
   it("builds every declared step for mixed suites", () => {

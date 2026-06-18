@@ -22,18 +22,30 @@ const {
 } = await import("./act-with-webpresso.ts");
 
 describe("act secret profiles", () => {
-  it("defaults local CI and local E2E workflows to zero injected secrets", () => {
+  it("defaults local CI workflow rehearsal to zero injected secrets", () => {
     expect(
       resolveActSecretProfile({
         workflowPath: ".github/workflows/ci.yml",
       }).id,
     ).toBe("none");
+  });
+
+  it("routes local E2E workflow rehearsal through the runtime secret profile", () => {
     expect(
       resolveActSecretProfile({
         workflowPath: ".github/workflows/e2e-act.yml",
         jobName: "e2e-local",
       }).id,
-    ).toBe("none");
+    ).toBe("e2e-runtime");
+  });
+
+  it("requires only the external Neon secrets needed for local E2E branch provisioning", () => {
+    expect(
+      listMissingRequiredSecrets(
+        { NEON_API_KEY: "neon-token" },
+        getActSecretProfile("e2e-runtime").requiredKeys,
+      ),
+    ).toEqual(["NEON_PROJECT_ID"]);
   });
 
   it("routes Neon maintenance jobs to the control-plane profile", () => {

@@ -24,9 +24,13 @@ export function getDopplerConfigFromContext(context: ExecutionContext): string {
 function runCommand(
   command: string,
   args: string[],
+  env?: Record<string, string | undefined>,
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
+    const proc = spawn(command, args, {
+      env: env ? { ...process.env, ...env } : process.env,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
     let stdout = "";
     let stderr = "";
     proc.stdout?.on("data", (chunk) => {
@@ -106,13 +110,18 @@ async function autoSetup(
   }
 }
 
-function buildDopplerFetchArgs(request: SecretFetchRequest): string[] {
+export function buildDopplerFetchArgs(request: SecretFetchRequest): string[] {
   const project = request.scope?.workspace;
   const config = request.scope?.environment || DOPPLER_DEFAULT_CONFIG;
   const args = ["secrets", "download", "--no-file", "--format", "json", "--silent"];
+  if (request.auth?.accessToken) return args;
   if (project) args.push("--project", project);
   if (config) args.push("--config", config);
   return args;
+}
+
+function buildDopplerFetchEnv(request: SecretFetchRequest): Record<string, string> | undefined {
+  return request.auth?.accessToken ? { DOPPLER_TOKEN: request.auth.accessToken } : undefined;
 }
 
 function parseJsonSecrets(stdout: string, provider: string): Record<string, string> {
@@ -196,7 +205,11 @@ export const dopplerAdapter: SecretManagerAdapter = {
       throw new Error("The selected secret manager adapter only supports env-map mode in v1.");
     }
     const args = buildDopplerFetchArgs(request);
-    const { stdout, stderr, exitCode } = await runCommand("doppler", args);
+    const { stdout, stderr, exitCode } = await runCommand(
+      "doppler",
+      args,
+      buildDopplerFetchEnv(request),
+    );
     if (exitCode !== 0) {
       throw new Error(
         `Unable to fetch secrets from Doppler. Run: doppler login && doppler setup\n${stderr.trim() || stdout.trim()}`,

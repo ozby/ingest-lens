@@ -10,7 +10,7 @@ import {
   type RuntimeResolver,
 } from "@webpresso/runtime-env";
 
-import { fetchSelectedSecrets } from "./secret-selection";
+import { fetchSelectedSecrets, resolveGenericSecretManagerToken } from "./secret-selection";
 
 export {
   DATABASE_RESOLVER_NAMES,
@@ -31,7 +31,7 @@ const secretsResolver: RuntimeResolver = {
         execution: ctx.execution,
       });
     } catch (error) {
-      if (ctx.execution.type === "e2e") {
+      if (ctx.execution.type === "e2e" && !resolveGenericSecretManagerToken(ctx.env)) {
         const message = error instanceof Error ? error.message : String(error);
         console.warn(`[runtime-env-local] Skipping secrets resolution in E2E: ${message}`);
         return {};

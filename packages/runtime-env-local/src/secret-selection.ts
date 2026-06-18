@@ -43,10 +43,26 @@ export function getRequiredSecretManagerAdapter(
   return adapter;
 }
 
+function nonEmptyEnvValue(
+  env: Record<string, string | undefined>,
+  key: string,
+): string | undefined {
+  const value = env[key];
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
 export function resolveGenericSecretManagerToken(
   env: Record<string, string | undefined>,
 ): string | undefined {
-  return env.SECRET_MANAGER_TOKEN;
+  return (
+    nonEmptyEnvValue(env, "SECRET_MANAGER_TOKEN") ??
+    nonEmptyEnvValue(env, "CI_SECRET_PROVIDER_TOKEN") ??
+    nonEmptyEnvValue(env, "DOPPLER_TOKEN")
+  );
+}
+
+export function shouldUseInjectedSecretEnv(env: Record<string, string | undefined>): boolean {
+  return hasRequiredSecretsInEnv(env) && !resolveGenericSecretManagerToken(env);
 }
 
 export interface SelectedSecretFetchRequest {
@@ -73,7 +89,7 @@ async function fetchSecretsWithAdapter(
     mode = "env-map",
     secretName,
   } = request;
-  if (mode === "env-map" && hasRequiredSecretsInEnv(env)) return extractSecretsFromEnv(env);
+  if (mode === "env-map" && shouldUseInjectedSecretEnv(env)) return extractSecretsFromEnv(env);
   const executionScope = execution ? adapter.resolveScopeForExecution?.(execution) : undefined;
   const effectiveScope = executionScope || scope ? { ...executionScope, ...scope } : undefined;
   return adapter.fetchSecrets({ scope: effectiveScope, auth, mode, version, secretName });
@@ -104,7 +120,7 @@ export async function fetchSelectedSecrets(
 ): Promise<Record<string, string>> {
   const effectiveEnv = request.env ?? env;
   const { startDir = process.cwd() } = request;
-  if (hasRequiredSecretsInEnv(effectiveEnv)) return extractSecretsFromEnv(effectiveEnv);
+  if (shouldUseInjectedSecretEnv(effectiveEnv)) return extractSecretsFromEnv(effectiveEnv);
   const config = readSecretsConfig(startDir);
   const adapter = getRequiredSecretManagerAdapter(startDir);
   const scope = buildSecretScope(config, request.scope);

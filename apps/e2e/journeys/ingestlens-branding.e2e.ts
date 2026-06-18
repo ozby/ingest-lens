@@ -1,12 +1,32 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { repoRoot, runCommand } from "./command";
+import { repoRoot } from "./command";
 
 const clientRoot = path.join(repoRoot, "apps/client");
 
 function readClientSource(relativePath: string): string {
   return readFileSync(path.join(clientRoot, "src", relativePath), "utf8");
+}
+
+function collectSourceFiles(dir: string): string[] {
+  const entries = readdirSync(dir, { withFileTypes: true });
+  return entries.flatMap((entry) => {
+    const nextPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      return collectSourceFiles(nextPath);
+    }
+    if (!entry.isFile()) {
+      return [];
+    }
+    if (!/\.(?:ts|tsx)$/u.test(entry.name)) {
+      return [];
+    }
+    if (/\.test\.(?:ts|tsx)$/u.test(entry.name)) {
+      return [];
+    }
+    return [nextPath];
+  });
 }
 
 describe("IngestLens branding proof", () => {
@@ -36,16 +56,12 @@ describe("IngestLens branding proof", () => {
     expect(intake).toContain("Intake mapping");
     expect(adminIntake).toContain("Intake admin review");
 
-    const staleCopyScan = runCommand("rg", [
-      "-n",
-      "--glob",
-      "!**/*.test.tsx",
-      "--glob",
-      "!**/*.test.ts",
-      "PubSub Dashboard|Overview of your message queuing system|Monitor the performance of your message queuing system",
-      "apps/client/src",
-    ]);
+    const staleCopyPattern =
+      /PubSub Dashboard|Overview of your message queuing system|Monitor the performance of your message queuing system/u;
+    const staleCopyMatches = collectSourceFiles(path.join(clientRoot, "src")).filter((filePath) =>
+      staleCopyPattern.test(readFileSync(filePath, "utf8")),
+    );
 
-    expect(staleCopyScan.status).toBe(1);
+    expect(staleCopyMatches).toEqual([]);
   }, 120_000);
 });

@@ -2,6 +2,7 @@ import { basename } from "node:path";
 
 export type ActSecretProfileId =
   | "none"
+  | "e2e-runtime"
   | "github-api"
   | "github-auth-preflight"
   | "neon-control-plane";
@@ -26,6 +27,28 @@ const ACT_SECRET_PROFILES: Record<ActSecretProfileId, ActSecretProfile> = {
     allowedKeys: [],
     requiredKeys: [],
   },
+  "e2e-runtime": {
+    id: "e2e-runtime",
+    description: "Runtime secrets required to rehearse the Neon-backed E2E workflow locally.",
+    allowedKeys: [
+      "AUTO_HEAL_THRESHOLD",
+      "BETTER_AUTH_SECRET",
+      "CI_SECRET_PROVIDER_TOKEN",
+      "CLOUDFLARE_API_TOKEN",
+      "DOPPLER_TOKEN",
+      "ENCRYPTION_KEY",
+      "JWT_SECRET",
+      "LANGFUSE_BASE_URL",
+      "LANGFUSE_PUBLIC_KEY",
+      "LANGFUSE_SECRET_KEY",
+      "LOW_CONFIDENCE_THRESHOLD",
+      "NEON_API_KEY",
+      "NEON_PARENT_BRANCH_ID",
+      "NEON_PROJECT_ID",
+      "SECRET_MANAGER_TOKEN",
+    ],
+    requiredKeys: ["NEON_API_KEY", "NEON_PROJECT_ID"],
+  },
   "github-api": {
     id: "github-api",
     description: "Least-privilege GitHub API token surface for workflow jobs.",
@@ -49,7 +72,7 @@ const ACT_SECRET_PROFILES: Record<ActSecretProfileId, ActSecretProfile> = {
 const WORKFLOW_SECRET_PROFILES: Readonly<Record<string, ActSecretProfileId>> = {
   "ci.yml": "none",
   "e2e.yml": "none",
-  "e2e-act.yml": "none",
+  "e2e-act.yml": "e2e-runtime",
   "cleanup-stale-neon-e2e-branches.yml": "neon-control-plane",
 };
 

@@ -242,9 +242,8 @@ const QueueDetail = () => {
       apiService.getQueue(id),
       apiService.getQueueMetrics(id),
     ]);
-    await fetchMessages();
     return { queue: queueData, metrics: queueMetrics };
-  }, [id, fetchMessages]);
+  }, [id]);
 
   const { data: loadedData, isLoading, error: loadError } = useDataLoading(loadQueue, [id]);
 
@@ -252,7 +251,8 @@ const QueueDetail = () => {
     if (!loadedData) return;
     setQueue(loadedData.queue);
     setMetrics(loadedData.metrics);
-  }, [loadedData]);
+    void fetchMessages();
+  }, [fetchMessages, loadedData]);
 
   useEffect(() => {
     if (!loadError) return;

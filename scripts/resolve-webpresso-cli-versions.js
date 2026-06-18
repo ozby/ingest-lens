@@ -25,11 +25,7 @@ function resolveCatalogAwareVersion(name) {
   return raw;
 }
 
-const agentKitVersion =
-  readWorkspaceCatalogVersion("@webpresso/agent-kit") ||
-  resolveCatalogAwareVersion("@webpresso/agent-kit") ||
-  process.env.WP_SETUP_AGENT_KIT_VERSION ||
-  FALLBACK_AGENT_KIT_VERSION;
+const agentKitVersion = process.env.WP_SETUP_AGENT_KIT_VERSION || FALLBACK_AGENT_KIT_VERSION;
 const vitePlusVersion = resolveCatalogAwareVersion("vite-plus");
 
 console.log(`AGENT_KIT_VERSION=${JSON.stringify(agentKitVersion)}`);

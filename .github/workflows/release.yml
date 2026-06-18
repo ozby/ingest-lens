@@ -42,7 +42,7 @@ jobs:
   deploy:
     needs: gate
     if: ${{ needs.gate.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@11e2b313823763e5f8ced862d4a798d8070e3628
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@74fdaf19341304e7dd327dc7008a81d10394cd31
     with:
       install_command: |
         set -euo pipefail
@@ -67,3 +67,14 @@ jobs:
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
+      cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      neon_api_key: ${{ secrets.NEON_API_KEY }}
+      neon_project_id: ${{ secrets.NEON_PROJECT_ID }}
+      neon_parent_branch_id: ${{ secrets.NEON_PARENT_BRANCH_ID }}
+      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
+      jwt_secret: ${{ secrets.JWT_SECRET }}
+      langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}

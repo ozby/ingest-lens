@@ -18,6 +18,13 @@ describe("global wp contract", () => {
 
     expect(packageJson.devDependencies?.["@webpresso/agent-config"]).toBe("catalog:");
     expect(packageJson.devDependencies?.["@webpresso/agent-kit"]).toBeUndefined();
+
+    const workspace = readFileSync(
+      new URL("../../../pnpm-workspace.yaml", import.meta.url),
+      "utf8",
+    );
+    expect(workspace).toContain('"@webpresso/agent-config": ^0.1.4');
+    expect(workspace).not.toContain('"@webpresso/agent-kit"');
     expect(packageJson.scripts?.["setup:agent"]).toBe("wp setup");
     expect(packageJson.scripts?.postinstall).toContain("wp setup");
     expect(JSON.stringify(packageJson.scripts ?? {})).not.toContain("run-webpresso-cli");
