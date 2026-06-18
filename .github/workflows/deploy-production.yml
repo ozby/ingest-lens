@@ -34,7 +34,10 @@ jobs:
     uses: webpresso/agent-kit/.github/workflows/cloudflare-production.yml@4ba75c74138e4bbfa2b72189e6f0a3dd05fef7a9
     with:
       install_command: |
-        export NODE_AUTH_TOKEN='${{ github.token }}'
+        set -euo pipefail
+        export NODE_AUTH_TOKEN="${GITHUB_TOKEN:-${NODE_AUTH_TOKEN:-}}"
+        eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
+        npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
         cat > "$RUNNER_TEMP/github-packages.npmrc" <<EOF
         @ozby:registry=https://npm.pkg.github.com
         //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
