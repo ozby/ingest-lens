@@ -3,5 +3,5 @@
   "durableObjectMigration": "none",
   "rolloutMode": "direct",
   "requiredChecks": ["production-smoke", "production-journey"],
-  "releaseVersion": "0.1.0"
+  "releaseVersion": "0.1.1"
 }
