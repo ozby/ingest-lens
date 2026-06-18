@@ -53,7 +53,7 @@ jobs:
     timeout-minutes: 10
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      HAS_DOPPLER_TOKEN: ${{ (secrets.DOPPLER_SERVICE_TOKEN != '' || secrets.DOPPLER_TOKEN != '') && '1' || '' }}
+      HAS_CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN != '' && '1' || '' }}
       HAS_DIRECT_NEON_SECRETS: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' && secrets.NEON_PARENT_BRANCH_ID != '' && '1' || '' }}
 
     steps:
@@ -61,19 +61,19 @@ jobs:
 
       - uses: ./.github/actions/setup-monorepo
 
-      - name: Inject Neon control-plane secrets from Doppler
-        if: env.HAS_DOPPLER_TOKEN == '1'
+      - name: Inject Neon control-plane secrets from CI bootstrap token
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN == '1'
         uses: dopplerhq/secrets-fetch-action@v2.0.0
         with:
-          doppler-token: ${{ secrets.DOPPLER_SERVICE_TOKEN || secrets.DOPPLER_TOKEN }}
+          doppler-token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
           inject-env-vars: true
 
-      - name: Skip when neither Doppler nor direct Neon credentials are available
-        if: env.HAS_DOPPLER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS != '1'
+      - name: Skip when neither CI bootstrap nor direct Neon credentials are available
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS != '1'
         run: echo "Skipping Neon cleanup because no secret-manager token or direct Neon credentials are configured."
 
       - name: Cleanup stale e2e branches via Doppler-managed env
-        if: env.HAS_DOPPLER_TOKEN == '1'
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN == '1'
         run: vp run --filter @repo/e2e db:branch:cleanup
 
       - name: Cleanup stale e2e branches via direct GitHub Secrets fallback
@@ -81,7 +81,7 @@ jobs:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
           NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-        if: env.HAS_DOPPLER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS == '1'
+        if: env.HAS_CI_SECRET_PROVIDER_TOKEN != '1' && env.HAS_DIRECT_NEON_SECRETS == '1'
         run: vp run --filter @repo/e2e db:branch:cleanup
 
   cleanup-skipped:

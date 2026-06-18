@@ -85,6 +85,29 @@ describe("NeonBranchProvider", () => {
     expect(branch.name).toBe("e2e/test");
     expect(branch.createdAt).toBeInstanceOf(Date);
     expect(branch.expiresAt).toBeInstanceOf(Date);
+    expect(mockCreateProjectBranch.mock.calls[0]?.[1]).toMatchObject({
+      branch: {
+        name: "e2e/test",
+      },
+    });
+    expect(mockCreateProjectBranch.mock.calls[0]?.[1]?.branch).not.toHaveProperty("parent_id");
+  });
+
+  it("includes parent_id only when a parent branch is configured", async () => {
+    const provider = new NeonBranchProvider({
+      apiKey: "key",
+      projectId: "project",
+      parentBranchId: "parent-branch",
+    });
+
+    await provider.createBranch({ name: "e2e/test", ttlMs: 3_600_000 });
+
+    expect(mockCreateProjectBranch.mock.calls[0]?.[1]).toMatchObject({
+      branch: {
+        name: "e2e/test",
+        parent_id: "parent-branch",
+      },
+    });
   });
 
   it("deletes a branch", async () => {
