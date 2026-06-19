@@ -92,7 +92,7 @@ jobs:
           node-version: "24"
           cache: false
           run-install: false
-      - run: vp install -g "@webpresso/agent-kit@2.1.1"
+      - run: vp install -g "@webpresso/agent-config"
       - run: vp install --frozen-lockfile
 
       - run: vp check
@@ -152,8 +152,29 @@ jobs:
           node-version: "24"
           cache: false
           run-install: false
-      - run: vp install -g "@webpresso/agent-kit@2.1.1"
+      - run: vp install -g "@webpresso/agent-config"
       - run: vp install --frozen-lockfile
       - run: wp test --mutation
         env:
           GITHUB_BASE_REF: main
+
+  deploy-preview:
+    name: Deploy preview (PR)
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' && github.head_ref != 'changeset-release/main' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
+    needs: wp-check
+    concurrency:
+      group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@3d89dc46dae56b59815e5bbb638fba02414d59f6
+    with:
+      lane: preview_pr_${{ github.event.pull_request.number }}
+      mode: deploy
+      install_command: |
+        npm install -g vite-plus @webpresso/agent-config
+        vp install --frozen-lockfile
+      verify_command: wp lint
+      deploy_command: bun infra/src/deploy/deploy-preview.ts --lane preview-pr-${{ github.event.pull_request.number }}
+      secret_profile: preview
+      runner: ubuntu-latest
+    secrets:
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}

@@ -16,11 +16,11 @@ permissions:
 
 jobs:
   release:
-    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@b0464171f61f5c90b4c2082fc05954f4324d96dd
+    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@3d89dc46dae56b59815e5bbb638fba02414d59f6
     with:
       install_command: |
         set -euo pipefail
-        npm install -g vite-plus@0.1.24 @webpresso/agent-kit@2.1.1
+        npm install -g vite-plus @webpresso/agent-config
         vp install --frozen-lockfile
       version_command: vp run version
       publish_command: vp run release:publish
@@ -42,11 +42,11 @@ jobs:
   deploy:
     needs: gate
     if: ${{ needs.gate.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@b0464171f61f5c90b4c2082fc05954f4324d96dd
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@3d89dc46dae56b59815e5bbb638fba02414d59f6
     with:
       install_command: |
         set -euo pipefail
-        npm install -g vite-plus@0.1.24 @webpresso/agent-kit@2.1.1
+        npm install -g vite-plus @webpresso/agent-config
         vp install --frozen-lockfile
       verify_command: vp run lint
       deploy_command: |
