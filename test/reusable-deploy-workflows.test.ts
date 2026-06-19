@@ -35,9 +35,10 @@ test("production workflow stays manual-only while release.yml delegates Changese
   assert.doesNotMatch(workflow, /tags:\s*\["v\*"\]/u);
   assert.match(workflow, /workflow_dispatch:/u);
   assert.match(workflow, /release_version:/u);
+  assert.match(workflow, /secret_profile:\s*deploy/u);
   assert.match(
     workflow,
-    /ci_secret_provider_token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
+    /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
   );
 
   // release.yml must use the shared Changesets reusable workflow
@@ -59,9 +60,10 @@ test("production workflow stays manual-only while release.yml delegates Changese
       "u",
     ),
   );
+  assert.match(releaseWorkflow, /secret_profile:\s*deploy/u);
   assert.match(
     releaseWorkflow,
-    /ci_secret_provider_token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
+    /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
   );
 
   // GitHub Actions cannot pass reusable-workflow outputs directly into a second
@@ -83,7 +85,7 @@ test("production workflow stays manual-only while release.yml delegates Changese
   assert.match(releaseWorkflow, /pull-requests:\s*write/u);
   assert.match(
     releaseWorkflow,
-    /packages:\s*read/u,
-    "release.yml must grant packages:read so cloudflare-production.yml job does not exceed the caller's explicit permissions block",
+    /packages:\s*write/u,
+    "release.yml must grant packages:write so the shared changesets release workflow can publish packages and the downstream deploy call inherits a sufficient caller permission ceiling",
   );
 });

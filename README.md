@@ -30,7 +30,7 @@ Bootstrap through the repo itself:
 vp install
 ```
 
-Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. The repo already carries `@webpresso/agent-kit`, so repair/doctor flows should use the local wrapper (`pnpm exec wp ...`) after install instead of a separate npm-global bootstrap path.
+Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local Agent Kit wrapper. Doppler CI for this repo now uses the ozby workplace project `ingest-lens`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
 
 ```bash
 with-secrets -- vp run dev   # or: pnpm dev

@@ -5,7 +5,7 @@ last_updated: "2026-06-17"
 
 # Secret Provider Management Runbook
 
-This runbook documents the **consumer-facing** secret contract for `ingest-lens`.
+This runbook documents the **consumer-facing** secret contract for `ingest-lens`. The repo now uses the separate **ozby** Doppler workplace with the per-app project `ingest-lens`.
 Provider implementation details are intentionally kept behind Webpresso surfaces.
 
 ## Current repo contract
@@ -14,7 +14,7 @@ Use only these surfaces:
 
 - configure the repo secret selection through `wp config secrets ...`
 - run secret-scoped commands through `with-secrets -- <cmd>`
-- pass CI bootstrap through `CI_SECRET_PROVIDER_TOKEN`
+- pass CI through the shared reusable workflow contract using profile-specific Doppler config tokens
 - never persist `.env*` / `.dev.vars*` files
 
 ## What lives where
@@ -22,7 +22,7 @@ Use only these surfaces:
 - committed metadata only: `.webpresso/secrets.config.json`
 - local runtime selection only: `.git/webpresso/secrets.json`
 - secret values: the configured secret provider / platform secret stores
-- CI bootstrap token: GitHub Actions secret `CI_SECRET_PROVIDER_TOKEN`
+- reusable workflow caller inputs: repo-owned `secret_profile` plus mapped GitHub secret `ci_secret_provider_token`
 
 ## Local bootstrap
 
@@ -49,16 +49,16 @@ with-secrets -- bun infra/src/deploy/deploy.ts dev
 
 ## CI bootstrap
 
-GitHub Actions must store only a single bootstrap secret:
+GitHub Actions uses the shared reusable workflow contract from
+`webpresso/github-actions`:
 
-- `CI_SECRET_PROVIDER_TOKEN`
+- preview and production callers pass `secret_profile: preview|deploy` and map
+  `ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}`
+- the shared workflow validates the committed profile name, then uses the
+  mapped Doppler config token to inject runtime secrets for that config
 
-That token is consumed by the repo’s CI secret-provider bridge, which injects the
-required runtime env vars for deploy/e2e jobs without exposing provider-specific
-CLI details in the consumer workflow contract.
-
-Do **not** add raw deploy secrets such as `CLOUDFLARE_API_TOKEN` as ordinary
-repository secrets when the secret-provider bridge is available.
+Do **not** inline raw `DOPPLER_TOKEN` / `DOPPLER_SERVICE_TOKEN` environment
+exports inside workflow steps; keep the token on the reusable-workflow secret boundary.
 
 ## Required runtime values
 

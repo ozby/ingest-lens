@@ -57,63 +57,39 @@ jobs:
   deploy-preview:
     if: ${{ github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)) }}
     needs: resolve
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@11e2b313823763e5f8ced862d4a798d8070e3628
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@b0464171f61f5c90b4c2082fc05954f4324d96dd
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: deploy
       install_command: |
         set -euo pipefail
-        eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
-        npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+        npm install -g vite-plus@0.1.24 @webpresso/agent-kit@2.1.1
         vp install --frozen-lockfile
       verify_command: wp lint
       deploy_command: |
-        export CLOUDFLARE_ACCOUNT_ID='${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'
-        export CLOUDFLARE_API_TOKEN='${{ secrets.CLOUDFLARE_API_TOKEN }}'
-        export CLOUDFLARE_ZONE_ID='${{ secrets.CLOUDFLARE_ZONE_ID }}'
-        export NEON_API_KEY='${{ secrets.NEON_API_KEY }}'
-        export NEON_PROJECT_ID='${{ secrets.NEON_PROJECT_ID }}'
-        export NEON_PARENT_BRANCH_ID='${{ secrets.NEON_PARENT_BRANCH_ID }}'
-        export PULUMI_ACCESS_TOKEN='${{ secrets.PULUMI_ACCESS_TOKEN }}'
-        export BETTER_AUTH_SECRET='${{ secrets.BETTER_AUTH_SECRET }}'
-        export JWT_SECRET='${{ secrets.JWT_SECRET }}'
-        export LANGFUSE_PUBLIC_KEY='${{ secrets.LANGFUSE_PUBLIC_KEY }}'
-        export LANGFUSE_SECRET_KEY='${{ secrets.LANGFUSE_SECRET_KEY }}'
         bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
+      secret_profile: preview
       runner: ubuntu-latest
-      skip_when_ci_secret_missing: true
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
 
   destroy-preview:
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
     needs: resolve
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@11e2b313823763e5f8ced862d4a798d8070e3628
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@b0464171f61f5c90b4c2082fc05954f4324d96dd
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: destroy
       install_command: |
         set -euo pipefail
-        eval "$(node ./scripts/resolve-webpresso-cli-versions.js)"
-        npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+        npm install -g vite-plus@0.1.24 @webpresso/agent-kit@2.1.1
         vp install --frozen-lockfile
       verify_command: ":"
       deploy_command: ":"
       destroy_command: |
-        export CLOUDFLARE_ACCOUNT_ID='${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'
-        export CLOUDFLARE_API_TOKEN='${{ secrets.CLOUDFLARE_API_TOKEN }}'
-        export CLOUDFLARE_ZONE_ID='${{ secrets.CLOUDFLARE_ZONE_ID }}'
-        export NEON_API_KEY='${{ secrets.NEON_API_KEY }}'
-        export NEON_PROJECT_ID='${{ secrets.NEON_PROJECT_ID }}'
-        export NEON_PARENT_BRANCH_ID='${{ secrets.NEON_PARENT_BRANCH_ID }}'
-        export PULUMI_ACCESS_TOKEN='${{ secrets.PULUMI_ACCESS_TOKEN }}'
-        export BETTER_AUTH_SECRET='${{ secrets.BETTER_AUTH_SECRET }}'
-        export JWT_SECRET='${{ secrets.JWT_SECRET }}'
-        export LANGFUSE_PUBLIC_KEY='${{ secrets.LANGFUSE_PUBLIC_KEY }}'
-        export LANGFUSE_SECRET_KEY='${{ secrets.LANGFUSE_SECRET_KEY }}'
         bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
+      secret_profile: preview
       runner: ubuntu-latest
-      skip_when_ci_secret_missing: true
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
 

@@ -34,8 +34,7 @@ agent-kit's catalog is the single source of truth for generated agent surfaces.
 Agent-kit owns the generated agent surfaces in this file; the Webpresso CLI host owns the end-user command surface.
 
 Defaults worth preserving:
-- `omx` refreshes via `vp upgrade`, then runs `omx setup --yes --scope user`.
-- `omc` uses the Claude Code plugin marketplace path when `claude` is on `PATH`.
+- External tools such as `omx`, `omc`, and `gstack` are self-installed and updated with their native installers when you choose to use them.
 - `wp setup` repairs the managed `.gitignore` block for regenerated surfaces.
 - Track repo-owned instruction sources (`AGENTS.md`, `agent-rules/`, `agent-skills/`).
 - Ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.omx/`, `.codex/`, `.claude/skills/`, etc.).
@@ -189,6 +188,7 @@ Full details: `.agent/rules/package-conventions.md`
 - `@repo/typescript-config` — `packages/config-typescript`
 - `@repo/ui` — `packages/ui`
 - `@repo/workers` — `apps/workers`
+- `@repo/wrangler-sync` — `packages/wrangler-sync`
 - `client` — `apps/client`
 - `ingest-lens` — `.`
 

@@ -264,5 +264,6 @@ Pin to release tags (`v<version>`) — `main` of `webpresso/agent-kit` does not 
 This repo uses the global-install `wp` runtime contract
 (`.webpressorc.json#globalInstall = true`). Keep invoking `wp …` directly and
 do not reintroduce wrapper scripts such as `scripts/run-webpresso-cli.ts`.
-The root `@webpresso/agent-kit` devDependency remains intentional because this
-repo still imports shared config/runtime subpaths from that package.
+Do not add `@webpresso/agent-kit` as a project dependency; this repo consumes
+the shared tooling contract through the global `wp` runtime plus
+`@webpresso/agent-config`.

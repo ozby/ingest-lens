@@ -23,7 +23,6 @@ jobs:
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      DOPPLER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
       ENCRYPTION_KEY: ${{ secrets.JWT_SECRET }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
@@ -88,15 +87,24 @@ jobs:
           test "${{ steps.repo.outputs.repo_access_ok }}" = "true"
           test "${{ steps.actions.outputs.action_downloads_ok }}" = "true"
 
-      - uses: ./.github/actions/setup-monorepo
-
-      - name: Install Doppler CLI
-        uses: dopplerhq/cli-action@v3
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Enable Corepack pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: voidzero-dev/setup-vp@2dec1e33f4ab2c6d5bce1b0c4607961bb1a3f7a1 # v1.12.0
+        with:
+          node-version: "24"
+          cache: false
+          run-install: false
+      - run: vp install -g "@webpresso/agent-kit@2.1.1"
+      - run: vp install --frozen-lockfile
 
       - name: Run e2e suite (auto-provisions Neon branch)
-        if: ${{ env.DOPPLER_TOKEN != '' }}
         run: vp run e2e --suite full
-
-      - name: Skip e2e when Doppler token is unavailable
-        if: ${{ env.DOPPLER_TOKEN == '' }}
-        run: echo "CI_SECRET_PROVIDER_TOKEN is not configured; skipping e2e suite."
