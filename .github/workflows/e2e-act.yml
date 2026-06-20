@@ -32,5 +32,8 @@ jobs:
           run-install: false
       - run: vp install --frozen-lockfile
 
+      - name: Install Playwright browser
+        run: vp exec --filter @repo/e2e -- playwright install --with-deps chromium
+
       - name: Run e2e suite (auto-provisions Neon branch)
         run: bun apps/e2e/scripts/e2e-with-neon.ts --suite full

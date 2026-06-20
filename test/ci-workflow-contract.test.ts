@@ -86,6 +86,10 @@ test("e2e workflows invoke the repo-local runner instead of the global wp surfac
   const e2eActWorkflow = readFileSync(".github/workflows/e2e-act.yml", "utf8");
 
   for (const workflowText of [e2eWorkflow, e2eActWorkflow]) {
+    assert.match(
+      workflowText,
+      /run:\s*vp exec --filter @repo\/e2e -- playwright install --with-deps chromium/u,
+    );
     assert.match(workflowText, /run:\s*bun apps\/e2e\/scripts\/e2e-with-neon\.ts --suite full/u);
     assert.doesNotMatch(workflowText, /run:\s*vp run e2e --suite full/u);
   }
