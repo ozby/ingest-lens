@@ -81,8 +81,15 @@ jobs:
           node-version: "24"
           package-manager-cache: false
           cli-global-packages: "vite-plus"
+      - name: Expose wp alias from Vite Plus
+        shell: bash
+        run: |
+          set -euo pipefail
+          vp_bin="$(command -v vp)"
+          install -d "${RUNNER_TEMP}/webpresso-bin"
+          ln -sf "${vp_bin}" "${RUNNER_TEMP}/webpresso-bin/wp"
+          echo "${RUNNER_TEMP}/webpresso-bin" >> "${GITHUB_PATH}"
       - run: vp install --frozen-lockfile
-
       - run: vp check
       - run: vp run --filter @repo/infra check-types
       - name: Run targeted test suites
@@ -129,6 +136,14 @@ jobs:
           node-version: "24"
           package-manager-cache: false
           cli-global-packages: "vite-plus"
+      - name: Expose wp alias from Vite Plus
+        shell: bash
+        run: |
+          set -euo pipefail
+          vp_bin="$(command -v vp)"
+          install -d "${RUNNER_TEMP}/webpresso-bin"
+          ln -sf "${vp_bin}" "${RUNNER_TEMP}/webpresso-bin/wp"
+          echo "${RUNNER_TEMP}/webpresso-bin" >> "${GITHUB_PATH}"
       - run: vp install --frozen-lockfile
       - run: wp test --mutation
         env:
