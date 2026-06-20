@@ -57,13 +57,12 @@ jobs:
   deploy-preview:
     if: ${{ github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)) }}
     needs: resolve
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@3d89dc46dae56b59815e5bbb638fba02414d59f6
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@5cd210dadf5cd0c04ccfaf3e10025efd7dbd6439
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: deploy
       install_command: |
         set -euo pipefail
-        npm install -g vite-plus @webpresso/agent-config
         vp install --frozen-lockfile
       verify_command: wp lint
       deploy_command: |
@@ -76,13 +75,12 @@ jobs:
   destroy-preview:
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
     needs: resolve
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@3d89dc46dae56b59815e5bbb638fba02414d59f6
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@5cd210dadf5cd0c04ccfaf3e10025efd7dbd6439
     with:
       lane: ${{ needs.resolve.outputs.canonical_lane }}
       mode: destroy
       install_command: |
         set -euo pipefail
-        npm install -g vite-plus @webpresso/agent-config
         vp install --frozen-lockfile
       verify_command: ":"
       deploy_command: ":"
