@@ -76,7 +76,7 @@ jobs:
           test "${{ steps.repo.outputs.repo_access_ok }}" = "true"
           test "${{ steps.actions.outputs.action_downloads_ok }}" = "true"
 
-      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@f6fc93375f4ce83c8234341ec22137f43deff148
+      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
         with:
           node-version: "24"
           package-manager-cache: false
@@ -131,7 +131,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@f6fc93375f4ce83c8234341ec22137f43deff148
+      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
         with:
           node-version: "24"
           package-manager-cache: false
@@ -160,7 +160,7 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@f6fc93375f4ce83c8234341ec22137f43deff148
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
     with:
       lane: preview_pr_${{ github.event.pull_request.number }}
       mode: deploy
@@ -172,3 +172,14 @@ jobs:
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
+      cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      neon_api_key: ${{ secrets.NEON_API_KEY }}
+      neon_project_id: ${{ secrets.NEON_PROJECT_ID }}
+      neon_parent_branch_id: ${{ secrets.NEON_PARENT_BRANCH_ID }}
+      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
+      jwt_secret: ${{ secrets.JWT_SECRET }}
+      langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}

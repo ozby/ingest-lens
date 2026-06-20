@@ -117,3 +117,25 @@ test("shared Cloudflare workflow callers grant OIDC permissions", () => {
     assert.match(callerBlock, /permissions:[\s\S]*id-token:\s*write/u);
   }
 });
+
+test("Cloudflare reusable workflow callers forward direct deploy secrets", () => {
+  const workflows = [
+    readRepoFile(".github/workflows/ci.yml"),
+    readRepoFile(".github/workflows/deploy-preview.yml"),
+    readRepoFile(".github/workflows/deploy-production.yml"),
+    readRepoFile(".github/workflows/release.yml"),
+  ];
+
+  for (const workflow of workflows) {
+    if (!workflow.includes("cloudflare-")) continue;
+    assert.match(workflow, /cloudflare_account_id:\s*\$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/u);
+    assert.match(workflow, /cloudflare_api_token:\s*\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/u);
+    assert.match(workflow, /cloudflare_zone_id:\s*\$\{\{ secrets\.CLOUDFLARE_ZONE_ID \}\}/u);
+    assert.match(workflow, /neon_api_key:\s*\$\{\{ secrets\.NEON_API_KEY \}\}/u);
+    assert.match(workflow, /pulumi_access_token:\s*\$\{\{ secrets\.PULUMI_ACCESS_TOKEN \}\}/u);
+    assert.match(workflow, /better_auth_secret:\s*\$\{\{ secrets\.BETTER_AUTH_SECRET \}\}/u);
+    assert.match(workflow, /jwt_secret:\s*\$\{\{ secrets\.JWT_SECRET \}\}/u);
+    assert.match(workflow, /langfuse_public_key:\s*\$\{\{ secrets\.LANGFUSE_PUBLIC_KEY \}\}/u);
+    assert.match(workflow, /langfuse_secret_key:\s*\$\{\{ secrets\.LANGFUSE_SECRET_KEY \}\}/u);
+  }
+});

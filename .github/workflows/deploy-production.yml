@@ -35,7 +35,7 @@ jobs:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@f6fc93375f4ce83c8234341ec22137f43deff148
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
     with:
       install_command: |
         set -euo pipefail
@@ -48,3 +48,14 @@ jobs:
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
+      cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+      neon_api_key: ${{ secrets.NEON_API_KEY }}
+      neon_project_id: ${{ secrets.NEON_PROJECT_ID }}
+      neon_parent_branch_id: ${{ secrets.NEON_PARENT_BRANCH_ID }}
+      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
+      jwt_secret: ${{ secrets.JWT_SECRET }}
+      langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}
