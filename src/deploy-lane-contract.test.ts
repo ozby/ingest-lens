@@ -33,12 +33,16 @@ describe("Cloudflare deploy lane contract", () => {
     ]);
   });
 
-  it("deploys main and PRs to preview lanes with PR-close cleanup, not production", () => {
+  it("keeps standalone preview deploys manual/main/cleanup-only so PR deploys stay behind CI", () => {
     const workflow = readRepoFile(".github/workflows/deploy-preview.yml");
+    const ciWorkflow = readRepoFile(".github/workflows/ci.yml");
 
     expect(workflow).toContain("branches: [main]");
     expect(workflow).toContain("pull_request:");
-    expect(workflow).toContain("types: [opened, synchronize, reopened, closed]");
+    expect(workflow).toContain("types: [closed]");
+    expect(workflow).not.toContain("types: [opened, synchronize, reopened, closed]");
+    expect(ciWorkflow).toContain("name: Deploy preview (PR)");
+    expect(ciWorkflow).toContain("needs: wp-check");
     expect(workflow).toMatch(
       /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     );
