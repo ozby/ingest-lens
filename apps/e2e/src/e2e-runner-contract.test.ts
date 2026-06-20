@@ -17,6 +17,16 @@ describe("repo-local e2e runner contract", () => {
     );
     expect(runnerScript).not.toMatch(/runCommandOrThrow\(\s*"bun",\s*\[\s*"run",\s*"build"/su);
   });
+
+  it("keeps the client bundle proof repo-local instead of shelling through the global wp script surface", () => {
+    const bundleJourney = readFileSync(
+      resolve(REPO_ROOT, "apps", "e2e", "journeys", "client-route-code-splitting.e2e.ts"),
+      "utf8",
+    );
+
+    expect(bundleJourney).not.toContain('runCommand("pnpm", ["client:bundle:check"]');
+    expect(bundleJourney).not.toContain("client:bundle:check");
+  });
 });
 
 it("does not forward Langfuse credentials to local wrangler e2e", () => {

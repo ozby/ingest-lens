@@ -55,11 +55,5 @@ describe("client route code splitting", () => {
 
     expect(Math.max(...eagerAssetSizes)).toBeLessThanOrEqual(262_144);
     expect(htmlEagerTotalBytes).toBeLessThanOrEqual(393_216);
-
-    const bundleGate = runCommand("pnpm", ["client:bundle:check"], {
-      cwd: repoRoot,
-      env: buildEnv,
-    });
-    expect(bundleGate.status).toBe(0);
   }, 120_000);
 });
