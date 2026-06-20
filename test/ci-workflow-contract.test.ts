@@ -19,7 +19,7 @@ test("CI installs caller-pinned Vite Plus through the shared toolchain", () => {
     workflow,
     /uses: webpresso\/github-actions\/\.github\/actions\/setup-webpresso-toolchain@[0-9a-f]{40}/u,
   );
-  assert.match(workflow, /cli-global-packages:\s*"vite-plus"/u);
+  assert.match(workflow, /cli-global-packages:\s*"vite-plus @webpresso\/agent-kit"/u);
   assert.match(workflow, /name:\s*Expose wp alias from Vite Plus/u);
   assert.match(workflow, /ln -sf "\$\{vp_bin\}" "\$\{RUNNER_TEMP\}\/webpresso-bin\/wp"/u);
   assert.doesNotMatch(workflow, /voidzero-dev\/setup-vp/u);

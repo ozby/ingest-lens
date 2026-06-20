@@ -80,7 +80,7 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
-          cli-global-packages: "vite-plus"
+          cli-global-packages: "vite-plus @webpresso/agent-kit"
       - name: Expose wp alias from Vite Plus
         shell: bash
         run: |
@@ -135,7 +135,7 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
-          cli-global-packages: "vite-plus"
+          cli-global-packages: "vite-plus @webpresso/agent-kit"
       - name: Expose wp alias from Vite Plus
         shell: bash
         run: |
