@@ -2,7 +2,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { repoRoot, runCommand } from "./command";
-import { resolveWorkspaceBinary } from "../src/repo-root";
 
 const clientRoot = path.join(repoRoot, "apps/client");
 const buildEnv = { ...process.env, NODE_ENV: "production" };
@@ -13,7 +12,7 @@ function readIndexHtml(): string {
 
 describe("client route code splitting", () => {
   it("builds route-split assets without large-chunk regressions", () => {
-    const build = runCommand(resolveWorkspaceBinary(repoRoot, "vite"), ["build"], {
+    const build = runCommand(path.join(clientRoot, "node_modules", ".bin", "vite"), ["build"], {
       cwd: clientRoot,
       env: buildEnv,
     });
