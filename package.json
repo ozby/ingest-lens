@@ -91,7 +91,7 @@
     "tsx": "catalog:",
     "typescript": "catalog:tooling",
     "vite": "catalog:tooling",
-    "vite-plus": "catalog:",
+    "vite-plus": "0.1.20",
     "vitest": "catalog:tooling"
   },
   "engines": {

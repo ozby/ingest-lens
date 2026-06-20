@@ -14,6 +14,16 @@ test("CI skips mutation for generated Version Packages merges", () => {
   assert.match(workflow, /!startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/u);
 });
 
+test("CI installs caller-pinned Vite Plus through the shared toolchain", () => {
+  assert.match(
+    workflow,
+    /uses: webpresso\/github-actions\/\.github\/actions\/setup-webpresso-toolchain@[0-9a-f]{40}/u,
+  );
+  assert.match(workflow, /cli-global-packages:\s*"vite-plus"/u);
+  assert.doesNotMatch(workflow, /voidzero-dev\/setup-vp/u);
+  assert.doesNotMatch(workflow, /corepack prepare pnpm@10\.33\.0/u);
+});
+
 test("CI preview deploy caller grants OIDC permissions to the shared workflow", () => {
   const deployPreviewJob =
     workflow.match(/\n  deploy-preview:[\s\S]*?\n  mutation:|\n  deploy-preview:[\s\S]*$/u)?.[0] ??
