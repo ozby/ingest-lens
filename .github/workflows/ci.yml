@@ -163,7 +163,7 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@5cd210dadf5cd0c04ccfaf3e10025efd7dbd6439
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@f6fc93375f4ce83c8234341ec22137f43deff148
     with:
       lane: preview_pr_${{ github.event.pull_request.number }}
       mode: deploy
