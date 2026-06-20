@@ -54,3 +54,13 @@ test("release automation skips heavy PR and merge validations outside the releas
   assert.doesNotMatch(cleanupWorkflow, /CI_SECRET_PROVIDER_TOKEN/u);
   assert.doesNotMatch(cleanupWorkflow, /doppler-token:/u);
 });
+
+test("e2e workflows invoke the repo-local runner instead of the global wp surface", () => {
+  const e2eWorkflow = readFileSync(".github/workflows/e2e.yml", "utf8");
+  const e2eActWorkflow = readFileSync(".github/workflows/e2e-act.yml", "utf8");
+
+  for (const workflowText of [e2eWorkflow, e2eActWorkflow]) {
+    assert.match(workflowText, /run:\s*bun apps\/e2e\/scripts\/e2e-with-neon\.ts --suite full/u);
+    assert.doesNotMatch(workflowText, /run:\s*vp run e2e --suite full/u);
+  }
+});

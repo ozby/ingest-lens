@@ -17,7 +17,12 @@ import process from "node:process";
 import { resolveRuntimeProfile } from "@repo/runtime-env-local";
 import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
-import { findE2eRepoRoot, resolveFromRepoRoot, resolveVpCommand } from "../src/repo-root";
+import {
+  findE2eRepoRoot,
+  resolveFromRepoRoot,
+  resolveVpCommand,
+  resolveWorkspaceBinary,
+} from "../src/repo-root";
 
 const suite = process.argv.includes("--suite")
   ? process.argv[process.argv.indexOf("--suite") + 1]
@@ -329,8 +334,8 @@ try {
     await acquireClientAssetLock(120_000);
     console.log("🏗️ Building client for browser suite...");
     runCommandOrThrow(
-      "bun",
-      ["run", "build"],
+      resolveWorkspaceBinary(repoRoot, "vite"),
+      ["build"],
       {
         cwd: resolveFromRepoRoot(repoRoot, "apps", "client"),
         env: { ...process.env, ...secretEnv, VITE_API_BASE_URL: apiBaseUrl },
