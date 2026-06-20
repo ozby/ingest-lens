@@ -8,6 +8,7 @@ export interface SecretsConfig {
   manager: SecretManagerName;
   projectId: string;
   projectLabel?: string;
+  profiles?: Record<string, { environment: string }>;
 }
 
 const FALLBACK_RELATIVE_PATH = ".webpresso/secrets.config.json";
@@ -63,6 +64,24 @@ function validateProjectId(obj: Record<string, unknown>, source: string): string
   return obj.projectId;
 }
 
+function readProfileEnvironment(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+  const environment = (value as { environment?: unknown }).environment;
+  return typeof environment === "string" && environment.length > 0 ? environment : undefined;
+}
+
+function parseProfiles(value: unknown): Record<string, { environment: string }> | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+  const profiles: Record<string, { environment: string }> = {};
+  for (const [profileName, profileValue] of Object.entries(value as Record<string, unknown>)) {
+    if (profileName.length === 0) continue;
+    const environment = readProfileEnvironment(profileValue);
+    if (!environment) continue;
+    profiles[profileName] = { environment };
+  }
+  return Object.keys(profiles).length > 0 ? profiles : undefined;
+}
+
 function parseConfig(raw: string, source: string): SecretsConfig {
   let parsed: unknown;
   try {
@@ -79,6 +98,8 @@ function parseConfig(raw: string, source: string): SecretsConfig {
   if (typeof obj.projectLabel === "string" && obj.projectLabel.length > 0) {
     config.projectLabel = obj.projectLabel;
   }
+  const profiles = parseProfiles(obj.profiles);
+  if (profiles) config.profiles = profiles;
   return config;
 }
 
@@ -103,6 +124,8 @@ export function writeSecretsConfig(config: SecretsConfig, cwd?: string): void {
   mkdirSync(path.dirname(filePath), { recursive: true });
   const payload: SecretsConfig = { manager: config.manager, projectId: config.projectId };
   if (config.projectLabel !== undefined) payload.projectLabel = config.projectLabel;
+  if (config.profiles && Object.keys(config.profiles).length > 0)
+    payload.profiles = config.profiles;
   writeFileSync(filePath, JSON.stringify(payload, null, 2) + "\n", {
     encoding: "utf8",
     mode: 0o600,

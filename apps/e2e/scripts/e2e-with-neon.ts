@@ -17,7 +17,12 @@ import process from "node:process";
 import { resolveRuntimeProfile } from "@repo/runtime-env-local";
 import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
-import { findE2eRepoRoot, resolveFromRepoRoot, resolveVpCommand } from "../src/repo-root";
+import {
+  findE2eRepoRoot,
+  resolveFromRepoRoot,
+  resolveVpCommand,
+  resolveWorkspaceBinary,
+} from "../src/repo-root";
 
 const suite = process.argv.includes("--suite")
   ? process.argv[process.argv.indexOf("--suite") + 1]
@@ -283,9 +288,8 @@ try {
       REVIEWER_FLOW_SUITES.has(normalizedSuiteId) ? "1.1" : secretEnv.AUTO_HEAL_THRESHOLD,
     ],
     ["LOW_CONFIDENCE_THRESHOLD", secretEnv.LOW_CONFIDENCE_THRESHOLD],
-    ["LANGFUSE_PUBLIC_KEY", secretEnv.LANGFUSE_PUBLIC_KEY],
-    ["LANGFUSE_SECRET_KEY", secretEnv.LANGFUSE_SECRET_KEY],
-    ["LANGFUSE_BASE_URL", secretEnv.LANGFUSE_BASE_URL ?? "https://cloud.langfuse.com"],
+    // Local e2e must be deterministic and must not depend on production Langfuse prompt state.
+    // Omitting Langfuse vars exercises the worker's static fallback prompt path.
     ...(requiresClientWorker ? ([["ALLOWED_ORIGIN", clientBaseUrl]] as const) : []),
   ] as const) {
     if (!value) continue;
@@ -313,6 +317,9 @@ try {
       env: {
         ...process.env,
         ...secretEnv,
+        LANGFUSE_PUBLIC_KEY: "",
+        LANGFUSE_SECRET_KEY: "",
+        LANGFUSE_BASE_URL: "",
         JWT_SECRET: jwtSecret,
         DATABASE_URL: connectionUri,
         ...(requiresClientWorker ? { ALLOWED_ORIGIN: clientBaseUrl } : {}),
@@ -329,8 +336,8 @@ try {
     await acquireClientAssetLock(120_000);
     console.log("🏗️ Building client for browser suite...");
     runCommandOrThrow(
-      "bun",
-      ["run", "build"],
+      resolveWorkspaceBinary(repoRoot, "vite"),
+      ["build"],
       {
         cwd: resolveFromRepoRoot(repoRoot, "apps", "client"),
         env: { ...process.env, ...secretEnv, VITE_API_BASE_URL: apiBaseUrl },
@@ -370,7 +377,11 @@ try {
 
   // ── 4. Run e2e tests ──────────────────────────────────────────────
   console.log(`🧪 Running e2e suite: ${suite}`);
-  const testResult = spawnSync("bun", ["./src/cli/run-e2e.ts", "--suite", suite], {
+  const testArgs = ["./src/cli/run-e2e.ts", "--suite", suite];
+  if (normalizedSuiteId === "full") {
+    testArgs.push("--workers", "1");
+  }
+  const testResult = spawnSync("bun", testArgs, {
     cwd: resolveFromRepoRoot(repoRoot, "apps", "e2e"),
     stdio: "inherit",
     env: {

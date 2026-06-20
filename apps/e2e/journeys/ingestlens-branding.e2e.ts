@@ -46,6 +46,6 @@ describe("IngestLens branding proof", () => {
       "apps/client/src",
     ]);
 
-    expect(staleCopyScan.status).toBe(1);
+    expect(staleCopyScan.combinedOutput).toBe("");
   }, 120_000);
 });

@@ -295,7 +295,7 @@ describe("self-healing adaptive intake", () => {
     );
 
     expect(result.response.status).toBe(200);
-    expect(result.body.status).toBe("ok");
+    expect(result.body.status).toBe("success");
     expect(result.body.rolledBackTo).toBe(revisionAId);
   });
 

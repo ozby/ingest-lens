@@ -35,9 +35,10 @@ test("production workflow stays manual-only while release.yml delegates Changese
   assert.doesNotMatch(workflow, /tags:\s*\["v\*"\]/u);
   assert.match(workflow, /workflow_dispatch:/u);
   assert.match(workflow, /release_version:/u);
+  assert.match(workflow, /secret_profile:\s*deploy/u);
   assert.match(
     workflow,
-    /ci_secret_provider_token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
+    /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
   );
 
   // release.yml must use the shared Changesets reusable workflow
@@ -59,9 +60,10 @@ test("production workflow stays manual-only while release.yml delegates Changese
       "u",
     ),
   );
+  assert.match(releaseWorkflow, /secret_profile:\s*deploy/u);
   assert.match(
     releaseWorkflow,
-    /ci_secret_provider_token: \$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
+    /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
   );
 
   // GitHub Actions cannot pass reusable-workflow outputs directly into a second
@@ -83,7 +85,57 @@ test("production workflow stays manual-only while release.yml delegates Changese
   assert.match(releaseWorkflow, /pull-requests:\s*write/u);
   assert.match(
     releaseWorkflow,
-    /packages:\s*read/u,
-    "release.yml must grant packages:read so cloudflare-production.yml job does not exceed the caller's explicit permissions block",
+    /packages:\s*write/u,
+    "release.yml must grant packages:write so the shared changesets release workflow can publish packages and the downstream deploy call inherits a sufficient caller permission ceiling",
   );
+});
+
+test("shared Cloudflare workflow callers grant OIDC permissions", () => {
+  const ciWorkflow = readRepoFile(".github/workflows/ci.yml");
+  const previewWorkflow = readRepoFile(".github/workflows/deploy-preview.yml");
+  const productionWorkflow = readRepoFile(".github/workflows/deploy-production.yml");
+
+  const callerBlocks = [
+    ciWorkflow.match(
+      /\n  deploy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+    previewWorkflow.match(
+      /\n  deploy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+    previewWorkflow.match(
+      /\n  destroy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+    productionWorkflow.match(
+      /\n  deploy:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+  ];
+
+  assert.equal(callerBlocks.length, 4);
+  for (const callerBlock of callerBlocks) {
+    assert.match(callerBlock, /permissions:[\s\S]*contents:\s*read/u);
+    assert.match(callerBlock, /permissions:[\s\S]*packages:\s*read/u);
+    assert.match(callerBlock, /permissions:[\s\S]*id-token:\s*write/u);
+  }
+});
+
+test("Cloudflare reusable workflow callers forward direct deploy secrets", () => {
+  const workflows = [
+    readRepoFile(".github/workflows/ci.yml"),
+    readRepoFile(".github/workflows/deploy-preview.yml"),
+    readRepoFile(".github/workflows/deploy-production.yml"),
+    readRepoFile(".github/workflows/release.yml"),
+  ];
+
+  for (const workflow of workflows) {
+    if (!workflow.includes("cloudflare-")) continue;
+    assert.match(workflow, /cloudflare_account_id:\s*\$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/u);
+    assert.match(workflow, /cloudflare_api_token:\s*\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/u);
+    assert.match(workflow, /cloudflare_zone_id:\s*\$\{\{ secrets\.CLOUDFLARE_ZONE_ID \}\}/u);
+    assert.match(workflow, /neon_api_key:\s*\$\{\{ secrets\.NEON_API_KEY \}\}/u);
+    assert.match(workflow, /pulumi_access_token:\s*\$\{\{ secrets\.PULUMI_ACCESS_TOKEN \}\}/u);
+    assert.match(workflow, /better_auth_secret:\s*\$\{\{ secrets\.BETTER_AUTH_SECRET \}\}/u);
+    assert.match(workflow, /jwt_secret:\s*\$\{\{ secrets\.JWT_SECRET \}\}/u);
+    assert.match(workflow, /langfuse_public_key:\s*\$\{\{ secrets\.LANGFUSE_PUBLIC_KEY \}\}/u);
+    assert.match(workflow, /langfuse_secret_key:\s*\$\{\{ secrets\.LANGFUSE_SECRET_KEY \}\}/u);
+  }
 });

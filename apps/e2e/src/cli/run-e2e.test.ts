@@ -60,7 +60,7 @@ describe("run-e2e", () => {
         "run",
         "--config",
         "vitest.journeys.config.ts",
-        "--poolOptions.threads.maxThreads",
+        "--maxWorkers",
         "3",
         "journeys/worker-health.e2e.ts",
         "journeys/auth-session.e2e.ts",

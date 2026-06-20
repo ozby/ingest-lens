@@ -87,7 +87,7 @@ function buildStepCommand(
   const commandArgs = ["run", "--config", configPath];
 
   if (args.workers !== undefined) {
-    commandArgs.push("--poolOptions.threads.maxThreads", String(args.workers));
+    commandArgs.push("--maxWorkers", String(args.workers));
   }
 
   commandArgs.push(...fixedFiles, ...args.passthrough);
