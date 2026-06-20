@@ -288,9 +288,8 @@ try {
       REVIEWER_FLOW_SUITES.has(normalizedSuiteId) ? "1.1" : secretEnv.AUTO_HEAL_THRESHOLD,
     ],
     ["LOW_CONFIDENCE_THRESHOLD", secretEnv.LOW_CONFIDENCE_THRESHOLD],
-    ["LANGFUSE_PUBLIC_KEY", secretEnv.LANGFUSE_PUBLIC_KEY],
-    ["LANGFUSE_SECRET_KEY", secretEnv.LANGFUSE_SECRET_KEY],
-    ["LANGFUSE_BASE_URL", secretEnv.LANGFUSE_BASE_URL ?? "https://cloud.langfuse.com"],
+    // Local e2e must be deterministic and must not depend on production Langfuse prompt state.
+    // Omitting Langfuse vars exercises the worker's static fallback prompt path.
     ...(requiresClientWorker ? ([["ALLOWED_ORIGIN", clientBaseUrl]] as const) : []),
   ] as const) {
     if (!value) continue;
@@ -318,6 +317,9 @@ try {
       env: {
         ...process.env,
         ...secretEnv,
+        LANGFUSE_PUBLIC_KEY: "",
+        LANGFUSE_SECRET_KEY: "",
+        LANGFUSE_BASE_URL: "",
         JWT_SECRET: jwtSecret,
         DATABASE_URL: connectionUri,
         ...(requiresClientWorker ? { ALLOWED_ORIGIN: clientBaseUrl } : {}),
@@ -375,7 +377,11 @@ try {
 
   // ── 4. Run e2e tests ──────────────────────────────────────────────
   console.log(`🧪 Running e2e suite: ${suite}`);
-  const testResult = spawnSync("bun", ["./src/cli/run-e2e.ts", "--suite", suite], {
+  const testArgs = ["./src/cli/run-e2e.ts", "--suite", suite];
+  if (normalizedSuiteId === "full") {
+    testArgs.push("--workers", "1");
+  }
+  const testResult = spawnSync("bun", testArgs, {
     cwd: resolveFromRepoRoot(repoRoot, "apps", "e2e"),
     stdio: "inherit",
     env: {

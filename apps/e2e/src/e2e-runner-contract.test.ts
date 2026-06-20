@@ -18,3 +18,15 @@ describe("repo-local e2e runner contract", () => {
     expect(runnerScript).not.toMatch(/runCommandOrThrow\(\s*"bun",\s*\[\s*"run",\s*"build"/su);
   });
 });
+
+it("does not forward Langfuse credentials to local wrangler e2e", () => {
+  const runnerScript = readFileSync(
+    resolve(REPO_ROOT, "apps", "e2e", "scripts", "e2e-with-neon.ts"),
+    "utf8",
+  );
+
+  expect(runnerScript).toContain('LANGFUSE_PUBLIC_KEY: ""');
+  expect(runnerScript).toContain('LANGFUSE_SECRET_KEY: ""');
+  expect(runnerScript).toContain('testArgs.push("--workers", "1")');
+  expect(runnerScript).not.toContain('["LANGFUSE_PUBLIC_KEY", secretEnv.LANGFUSE_PUBLIC_KEY]');
+});
