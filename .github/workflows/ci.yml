@@ -160,6 +160,10 @@ jobs:
     name: Deploy preview (PR)
     if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' && github.head_ref != 'changeset-release/main' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
     needs: wp-check
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true

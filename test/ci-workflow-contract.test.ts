@@ -14,6 +14,20 @@ test("CI skips mutation for generated Version Packages merges", () => {
   assert.match(workflow, /!startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/u);
 });
 
+test("CI preview deploy caller grants OIDC permissions to the shared workflow", () => {
+  const deployPreviewJob =
+    workflow.match(/\n  deploy-preview:[\s\S]*?\n  mutation:|\n  deploy-preview:[\s\S]*$/u)?.[0] ??
+    "";
+
+  assert.match(
+    deployPreviewJob,
+    /uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+  );
+  assert.match(deployPreviewJob, /permissions:[\s\S]*contents:\s*read/u);
+  assert.match(deployPreviewJob, /permissions:[\s\S]*packages:\s*read/u);
+  assert.match(deployPreviewJob, /permissions:[\s\S]*id-token:\s*write/u);
+});
+
 test("release automation skips heavy PR and merge validations outside the release lane", () => {
   const e2eWorkflow = readFileSync(".github/workflows/e2e.yml", "utf8");
   const previewWorkflow = readFileSync(".github/workflows/deploy-preview.yml", "utf8");

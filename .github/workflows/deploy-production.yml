@@ -31,6 +31,10 @@ jobs:
     name: Deploy production release
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: validate-release
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
     uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@f6fc93375f4ce83c8234341ec22137f43deff148
     with:
       install_command: |

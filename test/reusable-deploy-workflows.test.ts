@@ -89,3 +89,31 @@ test("production workflow stays manual-only while release.yml delegates Changese
     "release.yml must grant packages:write so the shared changesets release workflow can publish packages and the downstream deploy call inherits a sufficient caller permission ceiling",
   );
 });
+
+test("shared Cloudflare workflow callers grant OIDC permissions", () => {
+  const ciWorkflow = readRepoFile(".github/workflows/ci.yml");
+  const previewWorkflow = readRepoFile(".github/workflows/deploy-preview.yml");
+  const productionWorkflow = readRepoFile(".github/workflows/deploy-production.yml");
+
+  const callerBlocks = [
+    ciWorkflow.match(
+      /\n  deploy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+    previewWorkflow.match(
+      /\n  deploy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+    previewWorkflow.match(
+      /\n  destroy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+    productionWorkflow.match(
+      /\n  deploy:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
+    )?.[0] ?? "",
+  ];
+
+  assert.equal(callerBlocks.length, 4);
+  for (const callerBlock of callerBlocks) {
+    assert.match(callerBlock, /permissions:[\s\S]*contents:\s*read/u);
+    assert.match(callerBlock, /permissions:[\s\S]*packages:\s*read/u);
+    assert.match(callerBlock, /permissions:[\s\S]*id-token:\s*write/u);
+  }
+});
