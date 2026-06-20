@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   release:
-    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
+    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@53869e557de386bd4d04656b275d6691d153bff9
     with:
       install_command: |
         set -euo pipefail
@@ -41,7 +41,7 @@ jobs:
   deploy:
     needs: gate
     if: ${{ needs.gate.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@53869e557de386bd4d04656b275d6691d153bff9
     with:
       install_command: |
         set -euo pipefail

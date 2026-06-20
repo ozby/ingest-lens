@@ -76,7 +76,7 @@ jobs:
           test "${{ steps.repo.outputs.repo_access_ok }}" = "true"
           test "${{ steps.actions.outputs.action_downloads_ok }}" = "true"
 
-      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
+      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@53869e557de386bd4d04656b275d6691d153bff9
         with:
           node-version: "24"
           package-manager-cache: false
@@ -131,7 +131,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
+      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@53869e557de386bd4d04656b275d6691d153bff9
         with:
           node-version: "24"
           package-manager-cache: false
@@ -160,7 +160,7 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@ab90b5f82e4444af1bfe0443edf85632fef9f1e0
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@53869e557de386bd4d04656b275d6691d153bff9
     with:
       lane: preview_pr_${{ github.event.pull_request.number }}
       mode: deploy
