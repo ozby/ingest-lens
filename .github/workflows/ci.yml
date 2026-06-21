@@ -18,7 +18,7 @@ jobs:
     name: wp-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           fetch-depth: 0
 
@@ -76,22 +76,17 @@ jobs:
           test "${{ steps.repo.outputs.repo_access_ok }}" = "true"
           test "${{ steps.actions.outputs.action_downloads_ok }}" = "true"
 
-      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@53869e557de386bd4d04656b275d6691d153bff9
-        with:
-          node-version: "24"
-          package-manager-cache: false
-          cli-global-packages: "vite-plus @webpresso/agent-kit"
-      - name: Expose wp alias from Vite Plus
+      - name: Install shared Webpresso CLIs
         shell: bash
         run: |
           set -euo pipefail
-          vp_bin="$(command -v vp)"
-          install -d "${RUNNER_TEMP}/webpresso-bin"
-          ln -sf "${vp_bin}" "${RUNNER_TEMP}/webpresso-bin/wp"
-          echo "${RUNNER_TEMP}/webpresso-bin" >> "${GITHUB_PATH}"
+          VITE_PLUS_VERSION=$(node -p "require('./package.json').devDependencies['vite-plus'].replace(/^[^0-9]*/, '')")
+          AGENT_KIT_VERSION="${WP_SETUP_AGENT_KIT_VERSION:-2.3.2}"
+          npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - run: vp install --frozen-lockfile
       - run: vp check
-      - run: vp run --filter @repo/infra check-types
+      - run: wp typecheck
       - name: Run targeted test suites
         run: |
           bun test \
@@ -128,31 +123,49 @@ jobs:
     if: ${{ github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'Version Packages') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           fetch-depth: 0
-      - uses: webpresso/github-actions/.github/actions/setup-webpresso-toolchain@53869e557de386bd4d04656b275d6691d153bff9
-        with:
-          node-version: "24"
-          package-manager-cache: false
-          cli-global-packages: "vite-plus @webpresso/agent-kit"
-      - name: Expose wp alias from Vite Plus
+      - name: Install shared Webpresso CLIs
         shell: bash
         run: |
           set -euo pipefail
-          vp_bin="$(command -v vp)"
-          install -d "${RUNNER_TEMP}/webpresso-bin"
-          ln -sf "${vp_bin}" "${RUNNER_TEMP}/webpresso-bin/wp"
-          echo "${RUNNER_TEMP}/webpresso-bin" >> "${GITHUB_PATH}"
+          VITE_PLUS_VERSION=$(node -p "require('./package.json').devDependencies['vite-plus'].replace(/^[^0-9]*/, '')")
+          AGENT_KIT_VERSION="${WP_SETUP_AGENT_KIT_VERSION:-2.3.2}"
+          npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - run: vp install --frozen-lockfile
       - run: wp test --mutation
         env:
           GITHUB_BASE_REF: main
 
+  preview-secret:
+    name: Preview token preflight
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' && github.head_ref != 'changeset-release/main' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
+    runs-on: ubuntu-latest
+    outputs:
+      has_preview_token: ${{ steps.secret.outputs.has_preview_token }}
+    steps:
+      - name: Detect preview provider token
+        id: secret
+        shell: bash
+        env:
+          CI_SECRET_PROVIDER_TOKEN_PREVIEW: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${CI_SECRET_PROVIDER_TOKEN_PREVIEW}" ]]; then
+            echo "has_preview_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_preview_token=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping PR preview deploy because CI_SECRET_PROVIDER_TOKEN_PREVIEW is not configured."
+          fi
+
   deploy-preview:
     name: Deploy preview (PR)
-    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' && github.head_ref != 'changeset-release/main' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
-    needs: wp-check
+    if: ${{ needs.preview-secret.outputs.has_preview_token == 'true' }}
+    needs:
+      - wp-check
+      - preview-secret
     permissions:
       contents: read
       packages: read
@@ -160,26 +173,20 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@53869e557de386bd4d04656b275d6691d153bff9
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@aaf5e03cb7b215bcc8232858ebcf4cbbec2a8c0e
     with:
       lane: preview_pr_${{ github.event.pull_request.number }}
       mode: deploy
       install_command: |
         vp install --frozen-lockfile
-      verify_command: wp lint
+      verify_command: |
+        vp run verify:secrets
+        wp lint
+        wp typecheck
+        vp run test
+        wp audit cloudflare-deploy-contract
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane preview-pr-${{ github.event.pull_request.number }}
       secret_profile: preview
       runner: ubuntu-latest
     secrets:
-      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
-      cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-      neon_api_key: ${{ secrets.NEON_API_KEY }}
-      neon_project_id: ${{ secrets.NEON_PROJECT_ID }}
-      neon_parent_branch_id: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
-      jwt_secret: ${{ secrets.JWT_SECRET }}
-      langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-      langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}

@@ -12,8 +12,8 @@ Provider implementation details are intentionally kept behind Webpresso surfaces
 
 Use only these surfaces:
 
-- configure the repo secret selection through `wp config secrets ...`
-- run secret-scoped commands through `with-secrets -- <cmd>`
+- configure the repo secret selection through `wp secrets doctor --profile <profile> --json ...`
+- run secret-scoped commands through `wp secrets run --sink <sink> --profile <profile> -- <cmd>`
 - pass CI through the shared reusable workflow contract using profile-specific Doppler config tokens
 - never persist `.env*` / `.dev.vars*` files
 
@@ -30,21 +30,21 @@ From the repo root:
 
 ```bash
 vp install --frozen-lockfile
-wp config secrets show
+wp secrets doctor --profile <profile> --json show
 ```
 
 If no local runtime selection exists yet, choose one with the canonical Webpresso surface:
 
 ```bash
-wp config secrets --help
+wp secrets doctor --profile <profile> --json --help
 ```
 
 Then run secret-aware commands only through the wrapper:
 
 ```bash
-with-secrets -- pnpm --filter @repo/infra preview
-with-secrets -- pnpm --filter @repo/infra up:prd
-with-secrets -- bun infra/src/deploy/deploy.ts dev
+wp secrets run --sink pulumi --profile preview -- vp run --filter @repo/infra preview
+wp secrets run --sink pulumi --profile production -- vp run --filter @repo/infra up:prd
+wp secrets run --sink deploy-wrangler --profile preview -- bun infra/src/deploy/deploy.ts dev
 ```
 
 ## CI bootstrap
@@ -52,8 +52,8 @@ with-secrets -- bun infra/src/deploy/deploy.ts dev
 GitHub Actions uses the shared reusable workflow contract from
 `webpresso/github-actions`:
 
-- preview and production callers pass `secret_profile: preview|deploy` and map
-  `ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}`
+- preview and production callers pass `secret_profile: preview|production` and map
+  `ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }} (preview) or ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PRODUCTION }} (production)`
 - the shared workflow validates the committed profile name, then uses the
   mapped Doppler config token to inject runtime secrets for that config
 

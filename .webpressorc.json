@@ -56,12 +56,5 @@
     "overrides": []
   },
   "scripts": {},
-  "generatedCleanup": {
-    "removePaths": [
-      "scripts/resolve-webpresso-cli-versions.js",
-      ".github/actions/setup-webpresso/action.yml",
-      ".github/actions/setup-monorepo/action.yml"
-    ]
-  },
   "durablePlanningRoot": ".agent/planning/"
 }

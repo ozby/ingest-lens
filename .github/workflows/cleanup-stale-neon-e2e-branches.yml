@@ -6,90 +6,34 @@ on:
   workflow_dispatch:
 
 jobs:
-  auth-preflight:
-    name: Auth preflight
+  secrets-ready:
     runs-on: ubuntu-latest
     outputs:
-      repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}
-      action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}
+      has_preview_token: ${{ steps.secret.outputs.has_preview_token }}
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-      - name: Probe repository access
-        id: repo
+      - name: Detect preview provider token
+        id: secret
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          CI_SECRET_PROVIDER_TOKEN_PREVIEW: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
         run: |
           set -euo pipefail
-          if git ls-remote "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD >/dev/null 2>&1; then
-            echo "repo_access_ok=true" >> "$GITHUB_OUTPUT"
+          if [[ -n "${CI_SECRET_PROVIDER_TOKEN_PREVIEW}" ]]; then
+            echo "has_preview_token=true" >> "$GITHUB_OUTPUT"
           else
-            echo "repo_access_ok=false" >> "$GITHUB_OUTPUT"
+            echo "has_preview_token=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping cleanup because CI_SECRET_PROVIDER_TOKEN_PREVIEW is not configured."
           fi
-      - name: Probe public action downloads
-        id: actions
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          urls=(
-            "https://api.github.com/repos/actions/checkout/tarball/refs/tags/v6"
-            "https://api.github.com/repos/actions/setup-node/tarball/refs/tags/v6"
-            "https://api.github.com/repos/oven-sh/setup-bun/tarball/refs/tags/v2"
-          )
-          for url in "${urls[@]}"; do
-            if ! curl -fsSIL -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "$url" >/dev/null; then
-              echo "action_downloads_ok=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          done
-          echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
+
   cleanup:
-    if: ${{ needs.auth-preflight.outputs.repo_access_ok == 'true' && needs.auth-preflight.outputs.action_downloads_ok == 'true' }}
-    needs: auth-preflight
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      HAS_DIRECT_NEON_SECRETS: ${{ secrets.NEON_API_KEY != '' && secrets.NEON_PROJECT_ID != '' && secrets.NEON_PARENT_BRANCH_ID != '' && '1' || '' }}
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-      - name: Enable Corepack pnpm
-        shell: bash
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.33.0 --activate
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - uses: voidzero-dev/setup-vp@2dec1e33f4ab2c6d5bce1b0c4607961bb1a3f7a1 # v1.12.0
-        with:
-          node-version: "24"
-          cache: false
-          run-install: false
-      - run: vp install --frozen-lockfile
-
-      - name: Skip when direct Neon credentials are unavailable
-        if: env.HAS_DIRECT_NEON_SECRETS != '1'
-        run: echo "Skipping Neon cleanup because direct Neon credentials are not configured."
-
-      - name: Cleanup stale e2e branches via direct GitHub Secrets
-        env:
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-          NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
-          NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-        if: env.HAS_DIRECT_NEON_SECRETS == '1'
-        run: vp run --filter @repo/e2e db:branch:cleanup
-
-  cleanup-skipped:
-    if: ${{ needs.auth-preflight.outputs.repo_access_ok != 'true' || needs.auth-preflight.outputs.action_downloads_ok != 'true' }}
-    needs: auth-preflight
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Skipping stale Neon cleanup because auth preflight failed (repo access or action downloads)."
+    needs: secrets-ready
+    if: ${{ needs.secrets-ready.outputs.has_preview_token == 'true' }}
+    uses: webpresso/github-actions/.github/workflows/wp-cleanup-preview.yml@aaf5e03cb7b215bcc8232858ebcf4cbbec2a8c0e
+    with:
+      install_command: |
+        vp install --frozen-lockfile
+      cleanup_command: vp run --filter @repo/e2e db:branch:cleanup
+      secret_profile: preview
+      runner: ubuntu-latest
+    secrets:
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}

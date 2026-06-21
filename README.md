@@ -22,7 +22,7 @@ IngestLens is an integration-observability application that validates incoming t
 
 ## Quick start
 
-This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `with-secrets` (secret-provider-wrapped) for secret injection. There are **no `.env` files**.
+This repo uses [vite-plus](https://github.com/webpresso) (`vp`) as its workspace runner and `wp secrets run` (secret-provider-wrapped) for secret injection. There are **no `.env` files**.
 
 Bootstrap through the repo itself:
 
@@ -33,7 +33,7 @@ vp install
 Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local Agent Kit wrapper. Doppler CI for this repo now uses the ozby workplace project `ingest-lens`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
 
 ```bash
-with-secrets -- vp run dev   # or: pnpm dev
+wp secrets run --sink dev-server --profile preview -- vp run dev
 ```
 
 Success signal: secrets are injected and the vite-plus dev server / Cloudflare Worker dev process starts and stays running.
@@ -41,7 +41,7 @@ Success signal: secrets are injected and the vite-plus dev server / Cloudflare W
 Run the dev server without secret injection:
 
 ```bash
-vp run dev                   # or: pnpm dev:offline
+vp run dev                :offline
 ```
 
 Success signal: the dev server starts without secret injection.
@@ -101,8 +101,8 @@ Full maintainer check (mirrors CI; some steps need secrets / a Neon E2E branch â
 ```bash
 vp check                          # aggregate lint + types + format
 vp run build                      # all packages build; client/worker bundles emitted
-wp audit docs-frontmatter         # docs frontmatter audit (pnpm docs:check)
-wp audit blueprint-lifecycle      # blueprint lifecycle audit (pnpm blueprints:check)
+wp audit docs-frontmatter
+wp audit blueprint-lifecycle
 vp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
 ```
 

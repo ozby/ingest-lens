@@ -15,7 +15,7 @@
  *
  * IMPORTANT: Run the following manually with CF credentials to provision:
  *
- *   with-secrets -- pulumi up --yes --stack prd
+ *   wp secrets run --sink pulumi --profile production -- pulumi up --yes --stack prd
  *
  * Prerequisites before first deploy:
  *   1. Provision a Neon prd database and obtain the connection string.

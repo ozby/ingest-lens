@@ -6,6 +6,6 @@ config:
   # ingest-lens:neonConnectionString: <postgresql://... prd connection string>
   #
   # After setting secrets, run from infra/:
-  #   with-secrets -- pulumi up --yes --stack prd
+  #   wp secrets run --sink pulumi --profile production -- pulumi up --yes --stack prd
   # Then sync IDs into wrangler.toml:
-  #   with-secrets -- bun ./src/deploy/sync-wrangler-ids.ts prd
+  #   wp secrets run --sink deploy-wrangler --profile production -- bun ./src/deploy/sync-wrangler-ids.ts prd

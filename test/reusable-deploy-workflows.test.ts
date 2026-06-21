@@ -27,67 +27,76 @@ test("package scripts and changeset config expose the shared release surface", (
   assert.match(readRepoFile(".changeset/config.json"), /"privatePackages"/u);
 });
 
-test("production workflow stays manual-only while release.yml delegates Changesets and deploy finalization through the shared reusable shells", () => {
+test("release preflight skips shared release when vp run version has no diff", () => {
+  const releaseWorkflow = readRepoFile(".github/workflows/release.yml");
+
+  assert.match(releaseWorkflow, /release-preflight:/u);
+  assert.match(releaseWorkflow, /oven-sh\/setup-bun@[0-9a-f]{40}/u);
+  assert.match(releaseWorkflow, /vp run version/u);
+  assert.match(releaseWorkflow, /git status --porcelain/u);
+  assert.match(releaseWorkflow, /has_version_diff=false/u);
+  assert.match(releaseWorkflow, /needs\.release-preflight\.outputs\.has_version_diff == 'true'/u);
+  assert.match(releaseWorkflow, /No versionable release diff; deployment remains skipped/u);
+});
+
+test("production workflows use schema-v1 secret profiles and lane-specific provider tokens", () => {
   const workflow = readRepoFile(".github/workflows/deploy-production.yml");
   const releaseWorkflow = readRepoFile(".github/workflows/release.yml");
 
-  // deploy-production.yml must stay manual-only and never be tag-triggered
   assert.doesNotMatch(workflow, /tags:\s*\["v\*"\]/u);
   assert.match(workflow, /workflow_dispatch:/u);
   assert.match(workflow, /release_version:/u);
-  assert.match(workflow, /secret_profile:\s*deploy/u);
-  assert.match(
-    workflow,
-    /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
-  );
 
-  // release.yml must use the shared Changesets reusable workflow
-  assert.match(
-    releaseWorkflow,
-    new RegExp(
-      String.raw`uses: webpresso/github-actions/.github/workflows/changesets-release.yml@[0-9a-f]{40}`,
-      "u",
-    ),
-  );
-  assert.match(releaseWorkflow, /version_command: vp run version/u);
-  assert.match(releaseWorkflow, /publish_command: vp run release:publish/u);
+  for (const text of [workflow, releaseWorkflow]) {
+    assert.match(text, /secret_profile:\s*production/u);
+    assert.match(
+      text,
+      /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN_PRODUCTION \}\}/u,
+    );
+    assert.doesNotMatch(
+      text,
+      new RegExp(
+        String.raw`ci_secret_provider_token:\s*\$\{\{ secrets\.` +
+          `CI_SECRET_PROVIDER_` +
+          `TOKEN` +
+          String.raw` \}\}`,
+        "u",
+      ),
+    );
+    assert.doesNotMatch(text, new RegExp("cloudflare_" + "api_token:", "u"));
+    assert.match(text, /wp audit cloudflare-deploy-contract/u);
+    assert.match(text, /vp run verify:secrets/u);
+  }
+});
 
-  // release.yml must use the shared cloudflare-production reusable workflow
-  assert.match(
-    releaseWorkflow,
-    new RegExp(
-      String.raw`uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@[0-9a-f]{40}`,
-      "u",
-    ),
-  );
-  assert.match(releaseWorkflow, /secret_profile:\s*deploy/u);
-  assert.match(
-    releaseWorkflow,
-    /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN \}\}/u,
-  );
+test("preview workflows use preview profile and preview provider token only", () => {
+  const ciWorkflow = readRepoFile(".github/workflows/ci.yml");
+  const previewWorkflow = readRepoFile(".github/workflows/deploy-preview.yml");
+  const e2eWorkflow = readRepoFile(".github/workflows/e2e.yml");
+  const cleanupWorkflow = readRepoFile(".github/workflows/cleanup-stale-neon-e2e-branches.yml");
 
-  // GitHub Actions cannot pass reusable-workflow outputs directly into a second
-  // reusable-workflow call's `with:` / `if:`. The `gate` job bridges the two.
-  assert.match(releaseWorkflow, /\bgate:/u);
-  assert.match(
-    releaseWorkflow,
-    /should_deploy: \$\{\{ needs\.release\.outputs\.should_deploy \}\}/u,
-  );
-  assert.match(
-    releaseWorkflow,
-    /release_version: \$\{\{ needs\.gate\.outputs\.release_version \}\}/u,
-  );
+  for (const text of [ciWorkflow, previewWorkflow, e2eWorkflow, cleanupWorkflow]) {
+    if (!text.includes("ci_secret_provider_token")) continue;
+    assert.match(
+      text,
+      /ci_secret_provider_token:\s*\$\{\{ secrets\.CI_SECRET_PROVIDER_TOKEN_PREVIEW \}\}/u,
+    );
+    assert.doesNotMatch(
+      text,
+      new RegExp(
+        String.raw`ci_secret_provider_token:\s*\$\{\{ secrets\.` +
+          `CI_SECRET_PROVIDER_` +
+          `TOKEN` +
+          String.raw` \}\}`,
+        "u",
+      ),
+    );
+    assert.doesNotMatch(text, new RegExp("cloudflare_" + "api_token:", "u"));
+  }
 
-  // Permissions must be declared at the top level so the changesets reusable
-  // workflow receives contents:write and pull-requests:write (repo default is read-only).
-  assert.match(releaseWorkflow, /permissions:/u);
-  assert.match(releaseWorkflow, /contents:\s*write/u);
-  assert.match(releaseWorkflow, /pull-requests:\s*write/u);
-  assert.match(
-    releaseWorkflow,
-    /packages:\s*write/u,
-    "release.yml must grant packages:write so the shared changesets release workflow can publish packages and the downstream deploy call inherits a sufficient caller permission ceiling",
-  );
+  assert.match(previewWorkflow, /secret_profile:\s*preview/u);
+  assert.match(e2eWorkflow, /secret_profile:\s*preview/u);
+  assert.match(cleanupWorkflow, /secret_profile:\s*preview/u);
 });
 
 test("shared Cloudflare workflow callers grant OIDC permissions", () => {
@@ -100,10 +109,10 @@ test("shared Cloudflare workflow callers grant OIDC permissions", () => {
       /\n  deploy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     )?.[0] ?? "",
     previewWorkflow.match(
-      /\n  deploy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+      /\n  preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     )?.[0] ?? "",
     previewWorkflow.match(
-      /\n  destroy-preview:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+      /\n  destroy:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     )?.[0] ?? "",
     productionWorkflow.match(
       /\n  deploy:[\s\S]*?uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
@@ -115,27 +124,5 @@ test("shared Cloudflare workflow callers grant OIDC permissions", () => {
     assert.match(callerBlock, /permissions:[\s\S]*contents:\s*read/u);
     assert.match(callerBlock, /permissions:[\s\S]*packages:\s*read/u);
     assert.match(callerBlock, /permissions:[\s\S]*id-token:\s*write/u);
-  }
-});
-
-test("Cloudflare reusable workflow callers forward direct deploy secrets", () => {
-  const workflows = [
-    readRepoFile(".github/workflows/ci.yml"),
-    readRepoFile(".github/workflows/deploy-preview.yml"),
-    readRepoFile(".github/workflows/deploy-production.yml"),
-    readRepoFile(".github/workflows/release.yml"),
-  ];
-
-  for (const workflow of workflows) {
-    if (!workflow.includes("cloudflare-")) continue;
-    assert.match(workflow, /cloudflare_account_id:\s*\$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/u);
-    assert.match(workflow, /cloudflare_api_token:\s*\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/u);
-    assert.match(workflow, /cloudflare_zone_id:\s*\$\{\{ secrets\.CLOUDFLARE_ZONE_ID \}\}/u);
-    assert.match(workflow, /neon_api_key:\s*\$\{\{ secrets\.NEON_API_KEY \}\}/u);
-    assert.match(workflow, /pulumi_access_token:\s*\$\{\{ secrets\.PULUMI_ACCESS_TOKEN \}\}/u);
-    assert.match(workflow, /better_auth_secret:\s*\$\{\{ secrets\.BETTER_AUTH_SECRET \}\}/u);
-    assert.match(workflow, /jwt_secret:\s*\$\{\{ secrets\.JWT_SECRET \}\}/u);
-    assert.match(workflow, /langfuse_public_key:\s*\$\{\{ secrets\.LANGFUSE_PUBLIC_KEY \}\}/u);
-    assert.match(workflow, /langfuse_secret_key:\s*\$\{\{ secrets\.LANGFUSE_SECRET_KEY \}\}/u);
   }
 });

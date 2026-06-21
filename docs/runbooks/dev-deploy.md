@@ -83,7 +83,7 @@ curl -s https://api.dev.ingest-lens.ozby.dev/health
 
 ```bash
 cd apps/client
-pnpm deploy:dev
+vp run deploy:dev
 ```
 
 This runs `build:dev` + `wrangler deploy --env dev` in one step.

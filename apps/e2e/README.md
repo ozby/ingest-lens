@@ -55,8 +55,8 @@ and protected-route redirect back to the auth landing page.
 All require the repo-selected secret manager:
 
 ```bash
-with-secrets -- vp run --filter @repo/e2e db:branch:create
-with-secrets -- vp run --filter @repo/e2e db:branch:list
-with-secrets -- vp run --filter @repo/e2e db:branch:delete
-with-secrets -- vp run --filter @repo/e2e db:branch:cleanup
+wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:create
+wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:list
+wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:delete
+wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:cleanup
 ```
