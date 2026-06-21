@@ -72,6 +72,10 @@ test("release automation skips heavy PR and merge validations outside the releas
   assert.match(e2eWorkflow, /wp secrets run --sink e2e --profile preview/u);
   assert.doesNotMatch(e2eWorkflow, /\.\/\.github\/actions\/setup-monorepo/u);
   assert.match(e2eWorkflow, /name:\s*Install shared Webpresso CLIs/u);
+  assert.match(
+    e2eWorkflow,
+    /uses: DopplerHQ\/cli-action@cdd4670c26c06688d7afe8ff3b76b1cac918f4da # v4/u,
+  );
   assert.match(e2eWorkflow, /vp install --frozen-lockfile/u);
   assert.match(
     previewWorkflow,
