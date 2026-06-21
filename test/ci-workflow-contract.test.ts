@@ -61,12 +61,14 @@ test("release automation skips heavy PR and merge validations outside the releas
     e2eWorkflow,
     /!startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/u,
   );
-  assert.match(
-    e2eWorkflow,
-    /uses: webpresso\/github-actions\/\.github\/workflows\/wp-e2e\.yml@[0-9a-f]{40}/u,
-  );
+  assert.doesNotMatch(e2eWorkflow, /wp-e2e\.yml/u);
   assert.match(e2eWorkflow, /workflow_dispatch:/u);
   assert.match(e2eWorkflow, /CI_SECRET_PROVIDER_TOKEN_PREVIEW/u);
+  assert.ok(
+    e2eWorkflow.includes(
+      "CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}",
+    ),
+  );
   assert.match(
     previewWorkflow,
     /github\.event\.pull_request\.head\.ref != 'changeset-release\/main'/u,
