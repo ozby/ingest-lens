@@ -69,6 +69,7 @@ test("release automation skips heavy PR and merge validations outside the releas
       "CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}",
     ),
   );
+  assert.match(e2eWorkflow, /wp secrets run --sink e2e --profile preview/u);
   assert.doesNotMatch(e2eWorkflow, /\.\/\.github\/actions\/setup-monorepo/u);
   assert.match(e2eWorkflow, /name:\s*Install shared Webpresso CLIs/u);
   assert.match(e2eWorkflow, /vp install --frozen-lockfile/u);

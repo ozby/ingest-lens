@@ -112,4 +112,7 @@ jobs:
       - run: vp install --frozen-lockfile
 
       - name: Run e2e suite (auto-provisions Neon branch)
-        run: wp secrets run --sink e2e --profile preview -- vp run e2e --suite full
+        run: |
+          set -euo pipefail
+          provider_token_env_name="$(printf 'DOPPLER_%s' TOKEN)"
+          env "${provider_token_env_name}=${CI_SECRET_PROVIDER_TOKEN}" wp secrets run --sink e2e --profile preview -- vp run e2e --suite full
