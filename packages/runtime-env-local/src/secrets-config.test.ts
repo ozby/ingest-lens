@@ -26,7 +26,7 @@ describe("runtime-env-local secrets config", () => {
       path.join(root, ".webpresso", "secrets.config.json"),
       JSON.stringify({
         schemaVersion: 1,
-        providers: { default: { type: "doppler", project: "ingest-lens" } },
+        providers: { default: { type: "doppler", project: "ozby-dev" } },
         projectLabel: "ingest-lens",
         profiles: { preview: { provider: "default", environment: "stg" } },
         sinks: {},
@@ -35,7 +35,7 @@ describe("runtime-env-local secrets config", () => {
 
     expect(readSecretsConfig(root)).toEqual({
       manager: "doppler",
-      projectId: "ingest-lens",
+      projectId: "ozby-dev",
       projectLabel: "ingest-lens",
       profiles: { preview: { environment: "stg" } },
     });

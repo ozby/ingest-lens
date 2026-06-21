@@ -30,7 +30,7 @@ Bootstrap through the repo itself:
 vp install
 ```
 
-Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local Agent Kit wrapper. Doppler CI for this repo now uses the ozby workplace project `ingest-lens`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
+Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local Agent Kit wrapper. Doppler CI for this repo now uses the existing ozby workplace project `ozby-dev`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
 
 ```bash
 wp secrets run --sink dev-server --profile preview -- vp run dev
