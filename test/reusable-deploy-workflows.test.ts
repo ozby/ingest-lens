@@ -95,7 +95,11 @@ test("preview workflows use preview profile and preview provider token only", ()
   }
 
   assert.match(previewWorkflow, /secret_profile:\s*preview/u);
-  assert.match(e2eWorkflow, /secret_profile:\s*preview/u);
+  assert.ok(
+    e2eWorkflow.includes(
+      "CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}",
+    ),
+  );
   assert.match(cleanupWorkflow, /secret_profile:\s*preview/u);
 });
 

@@ -5,7 +5,7 @@ last_updated: "2026-06-17"
 
 # Secret Provider Management Runbook
 
-This runbook documents the **consumer-facing** secret contract for `ingest-lens`. The repo now uses the separate **ozby** Doppler workplace with the per-app project `ingest-lens`.
+This runbook documents the **consumer-facing** secret contract for `ingest-lens`. The repo now uses the existing **ozby** Doppler project `ozby-dev`.
 Provider implementation details are intentionally kept behind Webpresso surfaces.
 
 ## Current repo contract
