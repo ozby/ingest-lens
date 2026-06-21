@@ -36,6 +36,7 @@ Agent-kit owns the generated agent surfaces in this file; the Webpresso CLI host
 Defaults worth preserving:
 - External tools such as `omx`, `omc`, and `gstack` are self-installed and updated with their native installers when you choose to use them.
 - `wp setup` repairs the managed `.gitignore` block for regenerated surfaces.
+- Consumer repos use the global `wp` install and keep only `@webpresso/agent-config` locally; do not add a consumer-local `@webpresso/agent-kit` dependency.
 - Track repo-owned instruction sources (`AGENTS.md`, `agent-rules/`, `agent-skills/`).
 - Ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.omx/`, `.codex/`, `.claude/skills/`, etc.).
 
@@ -48,7 +49,7 @@ Prompt budget contract:
 Codex routing instruction surface:
 <wp_instruction_surface host="codex" artifact="AGENTS.md" source="wp_routing">
   <host_contract>
-    <native_tool_names>wp_session_restore, wp_session_search, wp_session_execute_file, wp_session_execute, wp_session_batch_execute, wp_session_fetch_and_index, wp_session_index, wp_session_capture, wp_session_snapshot, wp_session_stats, wp_session_doctor, wp_session_purge, wp_test, wp_e2e, wp_lint, wp_typecheck, wp_qa, wp_audit, wp_ci_act, wp_worker_tail</native_tool_names>
+    <native_tool_names>wp_session_restore, wp_session_search, wp_session_retrieve, wp_session_execute_file, wp_session_execute, wp_session_batch_execute, wp_session_fetch_and_index, wp_session_index, wp_session_capture, wp_session_snapshot, wp_session_stats, wp_session_doctor, wp_session_purge, wp_test, wp_e2e, wp_lint, wp_typecheck, wp_qa, wp_audit, wp_audits, wp_ci_act, wp_worker_tail, wp_pr_status, wp_bench, wp_gain, wp_release_readiness</native_tool_names>
     <stdout_noop>Codex hook commands with no action write {} on stdout; durable guidance belongs in AGENTS.md.</stdout_noop>
     <lifecycle_notes>
     <note>Codex reads repository instruction files for durable guidance.</note>
@@ -102,7 +103,7 @@ Record durable architecture decisions in the repo's ADR/planning surface if one 
 ## Repo-specific customizations
 
 Add repo-local instructions, preferences, and exceptions here. Content inside
-this block is preserved verbatim across `ak sync` runs.
+this block is preserved verbatim across `wp sync` runs.
 
 ### Tech stack addendum
 
@@ -130,7 +131,7 @@ this block is preserved verbatim across `ak sync` runs.
 
 - Do not commit secrets or credentials.
 - Do not create or persist secret-bearing files like `.env`, `.env.local`, `.env.*.local`, `.dev.vars`, or `.dev.vars.example`.
-- Route secret-scoped commands through the repo contract (`wp config secrets` + `with-secrets -- <cmd>`).
+- Route secret-scoped commands through the repo contract (`wp secrets doctor --profile <profile> --json` + `wp secrets run --sink <sink> --profile <profile> -- <cmd>`).
 - Keep secret/path checks on shared audit surfaces when available.
 - Do not commit agent surfaces (`.agent/`, `.agents/`, `.cursor/`, `.omx/`, `.omc/`, `.codex/`, `.opencode/`).
 - Do not hand-edit generated or derived surfaces; edit the catalog in agent-kit.

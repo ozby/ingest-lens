@@ -92,14 +92,14 @@ flowchart LR
 
 ## Cross-cutting concerns
 
-| Concern         | Where it lives                                                                   |
-| --------------- | -------------------------------------------------------------------------------- |
-| Auth            | `apps/workers/src/middleware/auth.ts` + best-effort KV-backed JWT revocation     |
-| Rate limiting   | API + `AUTH_RATE_LIMITER` bindings (per-PoP token bucket, ADR 0004)              |
-| Replay          | `TopicRoom` DO + Postgres `messages.seq`                                         |
-| Delivery policy | `docs/delivery-guarantees.md` + `apps/workers/src/consumers/deliveryConsumer.ts` |
-| AI safety       | `docs/architecture.md` + ADR 0004; deterministic validation after AI output      |
-| Secrets         | `with-secrets -- <cmd>` + `wp config secrets` contract (no `.env`)               |
+| Concern         | Where it lives                                                                                                                    |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Auth            | `apps/workers/src/middleware/auth.ts` + best-effort KV-backed JWT revocation                                                      |
+| Rate limiting   | API + `AUTH_RATE_LIMITER` bindings (per-PoP token bucket, ADR 0004)                                                               |
+| Replay          | `TopicRoom` DO + Postgres `messages.seq`                                                                                          |
+| Delivery policy | `docs/delivery-guarantees.md` + `apps/workers/src/consumers/deliveryConsumer.ts`                                                  |
+| AI safety       | `docs/architecture.md` + ADR 0004; deterministic validation after AI output                                                       |
+| Secrets         | `wp secrets run --sink <sink> --profile <profile> -- <cmd>` + `wp secrets doctor --profile <profile> --json` contract (no `.env`) |
 
 ## Separate subsystem: Consistency Lab
 

@@ -8,6 +8,10 @@ on:
         required: true
         type: string
 
+concurrency:
+  group: ingest-lens-production-deploy
+  cancel-in-progress: false
+
 jobs:
   validate-release:
     runs-on: ubuntu-latest
@@ -35,27 +39,20 @@ jobs:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@53869e557de386bd4d04656b275d6691d153bff9
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@aaf5e03cb7b215bcc8232858ebcf4cbbec2a8c0e
     with:
       install_command: |
-        set -euo pipefail
         vp install --frozen-lockfile
-      verify_command: vp run lint
+      verify_command: |
+        vp run verify:secrets
+        wp lint
+        wp typecheck
+        vp run test
+        wp audit cloudflare-deploy-contract
       deploy_command: |
         bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"
       release_version: ${{ needs.validate-release.outputs.release_version }}
-      secret_profile: deploy
+      secret_profile: production
       runner: ubuntu-latest
     secrets:
-      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
-      cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-      neon_api_key: ${{ secrets.NEON_API_KEY }}
-      neon_project_id: ${{ secrets.NEON_PROJECT_ID }}
-      neon_parent_branch_id: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
-      jwt_secret: ${{ secrets.JWT_SECRET }}
-      langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-      langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PRODUCTION }}

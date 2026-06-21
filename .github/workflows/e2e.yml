@@ -6,10 +6,7 @@ on:
   pull_request:
 
 jobs:
-  e2e:
-    # Fork-PR safety: only run on same-repo PRs, and skip pure Changesets
-    # version automation because feature branches already proved browser/runtime
-    # behavior before the generated release PR.
+  secrets-ready:
     if: >-
       ${{
         (github.event_name == 'push' &&
@@ -19,94 +16,32 @@ jobs:
           github.event.pull_request.head.ref != 'changeset-release/main')
       }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      ENCRYPTION_KEY: ${{ secrets.JWT_SECRET }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
-      NEON_PARENT_BRANCH_ID: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
-
+    outputs:
+      has_preview_token: ${{ steps.secret.outputs.has_preview_token }}
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Probe repository access
-        id: repo
+      - name: Detect preview provider token
+        id: secret
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          CI_SECRET_PROVIDER_TOKEN_PREVIEW: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
         run: |
           set -euo pipefail
-          if git ls-remote "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD >/dev/null 2>&1; then
-            echo "repo_access_ok=true" >> "$GITHUB_OUTPUT"
+          if [[ -n "${CI_SECRET_PROVIDER_TOKEN_PREVIEW}" ]]; then
+            echo "has_preview_token=true" >> "$GITHUB_OUTPUT"
           else
-            echo "repo_access_ok=false" >> "$GITHUB_OUTPUT"
+            echo "has_preview_token=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping e2e because CI_SECRET_PROVIDER_TOKEN_PREVIEW is not configured."
           fi
 
-      - name: Probe public action downloads
-        id: actions
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          urls=(
-            "https://api.github.com/repos/actions/checkout/tarball/refs/tags/v6"
-            "https://api.github.com/repos/actions/setup-node/tarball/refs/tags/v6"
-            "https://api.github.com/repos/oven-sh/setup-bun/tarball/refs/tags/v2"
-          )
-          for url in "${urls[@]}"; do
-            if ! curl -fsSIL -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "$url" >/dev/null; then
-              echo "action_downloads_ok=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          done
-          echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
-
-      - name: Summarize auth preflight
-        if: ${{ always() }}
-        shell: bash
-        run: |
-          {
-            echo "## Auth preflight"
-            echo ""
-            echo "- repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}"
-            echo "- action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Enforce auth preflight
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "${{ steps.repo.outputs.repo_access_ok }}" = "true"
-          test "${{ steps.actions.outputs.action_downloads_ok }}" = "true"
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-      - name: Enable Corepack pnpm
-        shell: bash
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.33.0 --activate
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - uses: voidzero-dev/setup-vp@2dec1e33f4ab2c6d5bce1b0c4607961bb1a3f7a1 # v1.12.0
-        with:
-          node-version: "24"
-          cache: false
-          run-install: false
-      - run: vp install --frozen-lockfile
-
-      - name: Install Playwright browser
-        run: vp exec --filter @repo/e2e -- playwright install --with-deps chromium
-
-      - name: Run e2e suite (auto-provisions Neon branch)
-        run: bun apps/e2e/scripts/e2e-with-neon.ts --suite full
+  e2e:
+    needs: secrets-ready
+    if: ${{ needs.secrets-ready.outputs.has_preview_token == 'true' }}
+    uses: webpresso/github-actions/.github/workflows/wp-e2e.yml@aaf5e03cb7b215bcc8232858ebcf4cbbec2a8c0e
+    with:
+      install_command: |
+        vp install --frozen-lockfile
+      e2e_command: vp run e2e --suite full
+      secret_profile: preview
+      runner: ubuntu-latest
+    secrets:
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}

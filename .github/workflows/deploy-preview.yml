@@ -4,126 +4,132 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [closed]
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       lane:
-        description: "Preview lane to deploy, for example preview_main or preview_pr_123"
+        description: "Preview lane: preview_main or preview_pr_<n>"
         required: true
         type: string
+      mode:
+        description: "deploy or destroy"
+        required: false
+        default: deploy
+        type: choice
+        options:
+          - deploy
+          - destroy
+
+concurrency:
+  group: ingest-lens-preview-${{ github.event.pull_request.number || github.ref_name || inputs.lane }}
+  cancel-in-progress: true
 
 jobs:
   resolve:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'changeset-release/main' }}
     runs-on: ubuntu-latest
     outputs:
-      canonical_lane: ${{ steps.resolve.outputs.canonical_lane }}
+      lane: ${{ steps.resolve.outputs.lane }}
       dashed_lane: ${{ steps.resolve.outputs.dashed_lane }}
+      mode: ${{ steps.resolve.outputs.mode }}
     steps:
-      - name: Resolve lane
+      - name: Resolve preview lane + mode
         id: resolve
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          GITHUB_REF_NAME: ${{ github.ref }}
           MANUAL_LANE: ${{ inputs.lane }}
+          MANUAL_MODE: ${{ inputs.mode }}
         run: |
           set -euo pipefail
           if [[ "${EVENT_NAME}" == "push" ]]; then
-            canonical_lane="preview_main"
-            dashed_lane="preview-main"
+            lane="preview_main"
+            mode="deploy"
           elif [[ "${EVENT_NAME}" == "pull_request" ]]; then
-            pr_number="${PR_NUMBER}"
-            if [[ -z "${pr_number}" && "${GITHUB_REF_NAME}" =~ ^refs/pull/([0-9]+)/ ]]; then
-              pr_number="${BASH_REMATCH[1]}"
-            fi
-            canonical_lane="preview_pr_${pr_number}"
-            dashed_lane="preview-pr-${pr_number}"
+            lane="preview_pr_${PR_NUMBER}"
+            if [[ "${EVENT_ACTION}" == "closed" ]]; then mode="destroy"; else mode="deploy"; fi
           else
-            canonical_lane="${MANUAL_LANE}"
-            if [[ "${canonical_lane}" == "preview_main" ]]; then
-              dashed_lane="preview-main"
-            elif [[ "${canonical_lane}" =~ ^preview_pr_([0-9]+)$ ]]; then
-              dashed_lane="preview-pr-${BASH_REMATCH[1]}"
-            else
-              echo "Invalid preview lane: ${canonical_lane}" >&2
-              exit 1
-            fi
+            lane="${MANUAL_LANE}"
+            mode="${MANUAL_MODE}"
           fi
-          printf 'canonical_lane=%s\n' "${canonical_lane}" >> "$GITHUB_OUTPUT"
+          if [[ ! "${lane}" =~ ^preview_main$|^preview_pr_[0-9]+$ ]]; then
+            echo "Invalid preview lane: ${lane}" >&2
+            exit 1
+          fi
+          if [[ "${lane}" == "preview_main" ]]; then dashed_lane="preview-main"; else dashed_lane="preview-pr-${lane#preview_pr_}"; fi
+          printf 'lane=%s\n' "${lane}" >> "$GITHUB_OUTPUT"
           printf 'dashed_lane=%s\n' "${dashed_lane}" >> "$GITHUB_OUTPUT"
+          printf 'mode=%s\n' "${mode}" >> "$GITHUB_OUTPUT"
 
-  deploy-preview:
-    if: ${{ github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)) }}
+  secrets-ready:
     needs: resolve
+    runs-on: ubuntu-latest
+    outputs:
+      has_preview_token: ${{ steps.secret.outputs.has_preview_token }}
+    steps:
+      - name: Detect preview provider token
+        id: secret
+        shell: bash
+        env:
+          CI_SECRET_PROVIDER_TOKEN_PREVIEW: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${CI_SECRET_PROVIDER_TOKEN_PREVIEW}" ]]; then
+            echo "has_preview_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_preview_token=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping preview workflow because CI_SECRET_PROVIDER_TOKEN_PREVIEW is not configured."
+          fi
+
+  preview:
+    if: ${{ needs.resolve.outputs.mode == 'deploy' && needs.secrets-ready.outputs.has_preview_token == 'true' && (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association))) }}
+    needs:
+      - resolve
+      - secrets-ready
     permissions:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@53869e557de386bd4d04656b275d6691d153bff9
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@aaf5e03cb7b215bcc8232858ebcf4cbbec2a8c0e
     with:
-      lane: ${{ needs.resolve.outputs.canonical_lane }}
+      lane: ${{ needs.resolve.outputs.lane }}
       mode: deploy
       install_command: |
-        set -euo pipefail
         vp install --frozen-lockfile
-      verify_command: wp lint
-      deploy_command: |
-        bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
+      verify_command: |
+        vp run verify:secrets
+        wp lint
+        wp typecheck
+        vp run test
+        wp audit cloudflare-deploy-contract
+      deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
+      destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
       secret_profile: preview
       runner: ubuntu-latest
     secrets:
-      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
-      cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-      neon_api_key: ${{ secrets.NEON_API_KEY }}
-      neon_project_id: ${{ secrets.NEON_PROJECT_ID }}
-      neon_parent_branch_id: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
-      jwt_secret: ${{ secrets.JWT_SECRET }}
-      langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-      langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
 
-  destroy-preview:
-    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
-    needs: resolve
+  destroy:
+    if: ${{ needs.resolve.outputs.mode == 'destroy' && needs.secrets-ready.outputs.has_preview_token == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
+    needs:
+      - resolve
+      - secrets-ready
     permissions:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@53869e557de386bd4d04656b275d6691d153bff9
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@aaf5e03cb7b215bcc8232858ebcf4cbbec2a8c0e
     with:
-      lane: ${{ needs.resolve.outputs.canonical_lane }}
+      lane: ${{ needs.resolve.outputs.lane }}
       mode: destroy
       install_command: |
-        set -euo pipefail
         vp install --frozen-lockfile
       verify_command: ":"
       deploy_command: ":"
-      destroy_command: |
-        bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
+      destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
       secret_profile: preview
       runner: ubuntu-latest
     secrets:
-      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN }}
-      cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-      neon_api_key: ${{ secrets.NEON_API_KEY }}
-      neon_project_id: ${{ secrets.NEON_PROJECT_ID }}
-      neon_parent_branch_id: ${{ secrets.NEON_PARENT_BRANCH_ID }}
-      pulumi_access_token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      better_auth_secret: ${{ secrets.BETTER_AUTH_SECRET }}
-      jwt_secret: ${{ secrets.JWT_SECRET }}
-      langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-      langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}
-
-  deploy-verify:
-    if: ${{ github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)) }}
-    needs: deploy-preview
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "deploy verification passed via shared preview caller"
+      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}

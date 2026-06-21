@@ -39,16 +39,16 @@ describe("Cloudflare deploy lane contract", () => {
 
     expect(workflow).toContain("branches: [main]");
     expect(workflow).toContain("pull_request:");
-    expect(workflow).toContain("types: [closed]");
-    expect(workflow).not.toContain("types: [opened, synchronize, reopened, closed]");
+    expect(workflow).toContain("types: [opened, synchronize, reopened, closed]");
     expect(ciWorkflow).toContain("name: Deploy preview (PR)");
-    expect(ciWorkflow).toContain("needs: wp-check");
+    expect(ciWorkflow).toContain("- wp-check");
+    expect(ciWorkflow).toContain("- preview-secret");
     expect(workflow).toMatch(
       /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     );
     expect(workflow).toContain("github.event.pull_request.head.ref != 'changeset-release/main'");
     expect(workflow).toContain('dashed_lane="preview-main"');
-    expect(workflow).toContain('canonical_lane="preview_main"');
+    expect(workflow).toContain('lane="preview_main"');
     expect(workflow).toContain("PR_NUMBER: ${{ github.event.pull_request.number }}");
     expect(workflow).toContain(
       "github.event.pull_request.head.repo.full_name == github.repository",
@@ -56,7 +56,7 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).toContain(
       "contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association)",
     );
-    expect(workflow).toContain("printf 'canonical_lane=%s\\n'");
+    expect(workflow).toContain("printf 'lane=%s\\n'");
     expect(workflow).toContain("printf 'dashed_lane=%s\\n'");
     expect(workflow).toContain("--destroy");
     expect(workflow).toContain("vp install --frozen-lockfile");
