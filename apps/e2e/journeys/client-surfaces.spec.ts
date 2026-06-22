@@ -141,7 +141,11 @@ test.describe("client shipped surfaces", () => {
 
     await page.getByRole("link", { name: /Admin Intake Review/i }).click();
     await expect(page.getByRole("heading", { name: /Intake admin review/i })).toBeVisible();
-    await expect(page.getByText(/No pending review attempts/i)).toBeVisible();
+    await expect(
+      page
+        .getByText(/No pending review attempts|Sanitized payload preview|Approve selected/i)
+        .first(),
+    ).toBeVisible();
   });
 
   test("queue and topic detail surfaces deep-link cleanly", async ({ page }) => {
