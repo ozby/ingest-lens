@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   secrets-ready:
@@ -13,7 +14,8 @@ jobs:
           !startsWith(github.event.head_commit.message, 'Version Packages')) ||
         (github.event_name == 'pull_request' &&
           github.event.pull_request.head.repo.full_name == github.repository &&
-          github.event.pull_request.head.ref != 'changeset-release/main')
+          github.event.pull_request.head.ref != 'changeset-release/main') ||
+        github.event_name == 'workflow_dispatch'
       }}
     runs-on: ubuntu-latest
     outputs:
@@ -36,12 +38,87 @@ jobs:
   e2e:
     needs: secrets-ready
     if: ${{ needs.secrets-ready.outputs.has_preview_token == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/wp-e2e.yml@aaf5e03cb7b215bcc8232858ebcf4cbbec2a8c0e
-    with:
-      install_command: |
-        vp install --frozen-lockfile
-      e2e_command: vp run e2e --suite full
-      secret_profile: preview
-      runner: ubuntu-latest
-    secrets:
-      ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Probe repository access
+        id: repo
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git ls-remote "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD >/dev/null 2>&1; then
+            echo "repo_access_ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "repo_access_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Probe public action downloads
+        id: actions
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          urls=(
+            "https://api.github.com/repos/actions/checkout/tarball/93cb6efe18208431cddfb8368fd83d5badbf9bfd"
+            "https://api.github.com/repos/actions/setup-node/tarball/v6"
+            "https://api.github.com/repos/oven-sh/setup-bun/tarball/v2"
+          )
+          for url in "${urls[@]}"; do
+            if ! curl -fsSIL -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" "$url" >/dev/null; then
+              echo "action_downloads_ok=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "action_downloads_ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Summarize auth preflight
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          {
+            echo "## Auth preflight"
+            echo ""
+            echo "- repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}"
+            echo "- action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce auth preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ steps.repo.outputs.repo_access_ok }}" = "true"
+          test "${{ steps.actions.outputs.action_downloads_ok }}" = "true"
+
+      - name: Install shared Webpresso CLIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          VITE_PLUS_VERSION=$(node -p "require('./package.json').devDependencies['vite-plus'].replace(/^[^0-9]*/, '')")
+          AGENT_KIT_VERSION="${WP_SETUP_AGENT_KIT_VERSION:-2.3.2}"
+          npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+
+      - run: vp install --frozen-lockfile
+
+      - name: Install Doppler CLI
+        uses: DopplerHQ/cli-action@cdd4670c26c06688d7afe8ff3b76b1cac918f4da # v4
+
+      - name: Install Playwright browsers
+        run: vp exec playwright install --with-deps chromium
+
+      - name: Run e2e suite (auto-provisions Neon branch)
+        run: |
+          set -euo pipefail
+          provider_token_env_name="$(printf 'DOPPLER_%s' TOKEN)"
+          env "${provider_token_env_name}=${CI_SECRET_PROVIDER_TOKEN}" wp secrets run --sink e2e --profile preview -- vp run e2e --suite full

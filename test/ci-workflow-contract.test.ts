@@ -61,11 +61,23 @@ test("release automation skips heavy PR and merge validations outside the releas
     e2eWorkflow,
     /!startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/u,
   );
+  assert.doesNotMatch(e2eWorkflow, /wp-e2e\.yml/u);
+  assert.match(e2eWorkflow, /workflow_dispatch:/u);
+  assert.match(e2eWorkflow, /CI_SECRET_PROVIDER_TOKEN_PREVIEW/u);
+  assert.ok(
+    e2eWorkflow.includes(
+      "CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}",
+    ),
+  );
+  assert.match(e2eWorkflow, /wp secrets run --sink e2e --profile preview/u);
+  assert.doesNotMatch(e2eWorkflow, /\.\/\.github\/actions\/setup-monorepo/u);
+  assert.match(e2eWorkflow, /name:\s*Install shared Webpresso CLIs/u);
   assert.match(
     e2eWorkflow,
-    /uses: webpresso\/github-actions\/\.github\/workflows\/wp-e2e\.yml@[0-9a-f]{40}/u,
+    /uses: DopplerHQ\/cli-action@cdd4670c26c06688d7afe8ff3b76b1cac918f4da # v4/u,
   );
-  assert.match(e2eWorkflow, /CI_SECRET_PROVIDER_TOKEN_PREVIEW/u);
+  assert.match(e2eWorkflow, /vp exec playwright install --with-deps chromium/u);
+  assert.match(e2eWorkflow, /vp install --frozen-lockfile/u);
   assert.match(
     previewWorkflow,
     /github\.event\.pull_request\.head\.ref != 'changeset-release\/main'/u,

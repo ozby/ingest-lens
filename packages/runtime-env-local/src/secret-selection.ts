@@ -11,7 +11,7 @@ import { secretManagerRegistry } from "./secret-managers/index";
 import { readSecretsConfig } from "./secrets-config";
 
 function hasRequiredSecretsInEnv(env: Record<string, string | undefined>): boolean {
-  return !!(env.ENCRYPTION_KEY && env.CLOUDFLARE_API_TOKEN);
+  return !!(env.CLOUDFLARE_API_TOKEN && env.NEON_API_KEY);
 }
 
 function extractSecretsFromEnv(env: Record<string, string | undefined>): Record<string, string> {
