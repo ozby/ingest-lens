@@ -76,6 +76,7 @@ test("release automation skips heavy PR and merge validations outside the releas
     e2eWorkflow,
     /uses: DopplerHQ\/cli-action@cdd4670c26c06688d7afe8ff3b76b1cac918f4da # v4/u,
   );
+  assert.match(e2eWorkflow, /vp exec playwright install --with-deps chromium/u);
   assert.match(e2eWorkflow, /vp install --frozen-lockfile/u);
   assert.match(
     previewWorkflow,

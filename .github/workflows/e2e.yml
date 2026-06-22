@@ -114,6 +114,9 @@ jobs:
       - name: Install Doppler CLI
         uses: DopplerHQ/cli-action@cdd4670c26c06688d7afe8ff3b76b1cac918f4da # v4
 
+      - name: Install Playwright browsers
+        run: vp exec playwright install --with-deps chromium
+
       - name: Run e2e suite (auto-provisions Neon branch)
         run: |
           set -euo pipefail
