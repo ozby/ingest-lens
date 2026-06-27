@@ -5,8 +5,8 @@ title: "Lightweight version automation"
 status: in-progress
 complexity: S
 created: "2026-06-18"
-last_updated: "2026-06-18"
-progress: "80% (workflow contract changes implemented locally; PR verification running)"
+last_updated: "2026-06-26"
+progress: "90% (release-lane lightening merged; shared workflow Node 24 pin refresh in progress)"
 depends_on: []
 ---
 
@@ -36,6 +36,7 @@ depends_on: []
 - Skip heavy PR workflows for `changeset-release/main`.
 - Skip heavy main-push mutation/e2e jobs for generated `Version Packages` merges.
 - Align preview/production reusable workflow callers to `webpresso/github-actions`.
+- Refresh shared reusable workflow SHAs to the Node-24-safe release proven in ozby.dev.
 
 #### [ci] Task 1.1: Lighten version automation workflow lanes
 
@@ -46,9 +47,11 @@ depends_on: []
 - prove heavy feature-validation lanes already exist on feature branches
 - skip duplicate release-automation PR checks
 - keep release/deploy callers on the current shared reusable workflow surface
+- bump shared preview/production/release reusable workflow pins to the validated Node-24-safe SHA
 
 ## Verification
 
 - Workflow contract tests cover the skip rules and shared reusable workflow pins.
 - `wp audit blueprint-lifecycle`
 - `wp audit architecture-drift --root .`
+- Targeted workflow caller verification passes after the shared SHA refresh.

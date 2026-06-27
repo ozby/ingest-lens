@@ -64,25 +64,28 @@ describe("Cloudflare deploy lane contract", () => {
     expect(workflow).not.toContain("setup-monorepo");
   });
 
-  it("allows production deploy only through release metadata plus an explicit semantic release version", () => {
-    const workflow = readRepoFile(".github/workflows/deploy-production.yml");
+  it("allows production deploy only through the changesets release run plus an explicit semantic release version", () => {
+    // Production deploys are gated by the Changesets release run: no manual
+    // deploy-production.yml and no workflow_dispatch (cloudflare-deploy-contract).
+    expect(() => readRepoFile(".github/workflows/deploy-production.yml")).toThrow();
+
+    const workflow = readRepoFile(".github/workflows/release.yml");
     const metadata = readRepoFile("infra/release-metadata.production.json");
 
-    expect(workflow).not.toContain("branches: [main]");
-    expect(workflow).toContain("workflow_dispatch:");
-    expect(workflow).toContain("release_version:");
+    expect(workflow).not.toContain("workflow_dispatch:");
+    expect(workflow).not.toContain("release-preflight:");
+    expect(workflow).toMatch(/on:\s*\n\s*push:\s*\n\s*branches:\s*\[main\]/u);
+    expect(workflow).toMatch(
+      /uses: webpresso\/github-actions\/.github\/workflows\/changesets-release\.yml@[0-9a-f]{40}/u,
+    );
     expect(workflow).toMatch(
       /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-production\.yml@[0-9a-f]{40}/u,
     );
-    expect(workflow).toContain("if: ${{ github.ref == 'refs/heads/main' }}");
-    expect(workflow).toContain("RELEASE_VERSION_INPUT: ${{ inputs.release_version }}");
-    expect(workflow).toContain("deploy_command: |");
+    expect(workflow).toContain("if: ${{ needs.gate.outputs.should_deploy == 'true' }}");
     expect(workflow).toContain(
       'bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"',
     );
-    expect(workflow).toContain(
-      "release_version: ${{ needs.validate-release.outputs.release_version }}",
-    );
+    expect(workflow).toContain("release_version: ${{ needs.gate.outputs.release_version }}");
     expect(metadata).toContain('"releaseKind": "version_pr"');
     expect(metadata).toContain('"requiredChecks"');
     expect(metadata).toMatch(/"releaseVersion"\s*:\s*"\d+\.\d+\.\d+"/);
