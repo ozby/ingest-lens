@@ -20,4 +20,4 @@ brew "act"            # run GitHub Actions locally: act -j <job>
 brew "oxlint"         # linter (mirrors devDependency version via pnpm catalog)
 
 # --- Agent surface ---
-brew "rtk"             # CLI proxy that compresses command output; default-on via `ak setup`
+brew "rtk"             # CLI proxy that compresses command output; default-on via `wp setup`

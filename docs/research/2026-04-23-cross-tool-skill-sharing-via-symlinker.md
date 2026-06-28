@@ -94,7 +94,7 @@ The ecosystem is moving very fast: "npm took a decade to reach 350,000 packages.
 | [agent-skill-creator](https://github.com/FrancyJGLisboa/agent-skill-creator) | —                   | —                                       | 14+              | Scaffolds skills that install on multiple tools                                                                  |
 | [Vercel skills CLI](https://www.npmjs.com/package/skills)                    | —                   | copy                                    | 19 via Skills.sh | Official Vercel/npm surface; auto-discovery via `/.well-known/skills`                                            |
 
-agent-kit's symlinker is narrower (5–6 surfaces) but tighter-integrated with the broader Blueprint runtime / `ak init` lifecycle.
+agent-kit's symlinker is narrower (5–6 surfaces) but tighter-integrated with the broader Blueprint runtime / `wp init` lifecycle.
 
 ## Positive Signals
 
@@ -110,8 +110,8 @@ agent-kit's symlinker is narrower (5–6 surfaces) but tighter-integrated with t
 
 ### Blueprint runtime integration is distinctive
 
-- None of the competing tools (asm, skillshare, skillkit) integrate with a blueprint/implementation-plan lifecycle. agent-kit ships Blueprint validator, DAG executor, `ak blueprint refine`, and a symlinker in one package. The sync layer is a piece of a bigger story.
-- The `ak init` → `ak symlink sync` flow is coherent for a single-repo adopter whose goal is agent-driven development, not skill distribution.
+- None of the competing tools (asm, skillshare, skillkit) integrate with a blueprint/implementation-plan lifecycle. agent-kit ships Blueprint validator, DAG executor, `wp blueprint refine`, and a symlinker in one package. The sync layer is a piece of a bigger story.
+- The `wp init` → `wp symlink sync` flow is coherent for a single-repo adopter whose goal is agent-driven development, not skill distribution.
 
 ### MIT-licensable SKILL.md spec
 
@@ -203,12 +203,12 @@ The node-pubsub repo is early-mid in its modernization plan. Cost/benefit right 
 ### Short-term (weeks)
 
 5. **Implement the Windows `--copy` mode** that symlinker.md already flags as "planned." Skillshare's per-target `--mode copy` is a good reference pattern.
-6. **Add `ak skills audit` for imported skills.** Flag shell execution, network access, credential exposure, obfuscation. asm's scanner is a reference implementation.
+6. **Add `wp skills audit` for imported skills.** Flag shell execution, network access, credential exposure, obfuscation. asm's scanner is a reference implementation.
 
 ### Longer-term (next quarter+)
 
 7. **Decide agent-kit's relationship with Skills.sh / `npx skills`.** Two paths:
-   - **Complementary**: agent-kit remains repo-local canonical source → native surfaces. Users import shared skills via `npx skills add <url>` into `.agent/skills/`, then `ak symlink sync` derives the per-tool surfaces.
+   - **Complementary**: agent-kit remains repo-local canonical source → native surfaces. Users import shared skills via `npx skills add <url>` into `.agent/skills/`, then `wp symlink sync` derives the per-tool surfaces.
    - **Subsumed**: if Vercel's `skills` CLI matures to cover multi-surface sync + Blueprint integration, agent-kit's symlinker niche shrinks. Watch closely.
 
 ### Conditions that would change the recommendation

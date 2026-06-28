@@ -11,7 +11,7 @@ verdict: adopt-agent-kit-budget-cli-only
 # Cross-repo Vite bundle guardrails and route-splitting abstraction
 
 > **Status update (2026-04-25):** Only the bundle-budget CLI path shipped
-> (`ak audit bundle-budget`). The dynamic-import recovery helper was inlined
+> (`wp audit bundle-budget`). The dynamic-import recovery helper was inlined
 > directly in `apps/client/src/main.tsx` instead of being consumed from
 > `@webpresso/agent-kit/vite`, so this repo no longer imports the library
 > form. The original analysis below is preserved as a record; treat the
@@ -25,7 +25,7 @@ verdict: adopt-agent-kit-budget-cli-only
 
 - The abstraction is viable if the shared layer is **Vite build-output analysis** plus **Vite dynamic-import failure recovery**, not a common React routing implementation.
 - `node-pubsub` is a plain Vite SPA with `BrowserRouter` / `<Routes>`, so `React.lazy` at page-route boundaries is appropriate; Webpresso web apps use React Router framework/file routes, which already provide route-module code splitting.
-- The strongest reusable artifact is now owned by Agent Kit: `ak audit bundle-budget` plus pure `analyzeBundleBudget(options)` helpers that accept built assets, HTML entry content, asset budgets, and ignore rules.
+- The strongest reusable artifact is now owned by Agent Kit: `wp audit bundle-budget` plus pure `analyzeBundleBudget(options)` helpers that accept built assets, HTML entry content, asset budgets, and ignore rules.
 - The second reusable artifact is now owned by Agent Kit: `installChunkLoadRecovery({ target, storage, reload })` from `@webpresso/agent-kit/vite` for Vite `vite:preloadError` recovery.
 - Recommendation: **adopt Agent Kit as the shared guardrail owner** while keeping route splitting and budget thresholds app-local.
 
@@ -134,7 +134,7 @@ For Webpresso, the fit is also strong but different. Webpresso's vision is to he
 
 - Root scripts already use Bun for repository checks.
 - `apps/client` uses Vite 8, React 18, `react-router-dom` v6, and a plain `BrowserRouter` / `<Routes>` entry point.
-- `@webpresso/agent-kit` is already a root dev dependency, so the repo should call `ak audit bundle-budget` instead of adding a duplicate local analyzer script.
+- `@webpresso/agent-kit` is already a root dev dependency, so the repo should call `wp audit bundle-budget` instead of adding a duplicate local analyzer script.
 - `React.lazy` route splitting fits because page modules default export components.
 
 Webpresso stack fit:
@@ -158,17 +158,17 @@ Webpresso stack fit:
 Proceed with the updated boundary:
 
 1. In Agent Kit, own the reusable bundle checker:
-   - `ak audit bundle-budget <dist> --max-js-asset-bytes ...`
+   - `wp audit bundle-budget <dist> --max-js-asset-bytes ...`
    - `analyzeBundleBudget(options)`
    - `analyzeViteDistBundleBudget(options)`
    - `formatBundleBudgetReport(result)`
 2. In Agent Kit, own the dependency-free dynamic-import recovery helper:
    - `installChunkLoadRecovery({ target, storage, reload, key })`
 3. In `node-pubsub`, consume those utilities:
-   - root script calls `ak audit bundle-budget apps/client/dist ...` with app-local thresholds;
+   - root script calls `wp audit bundle-budget apps/client/dist ...` with app-local thresholds;
    - `apps/client/src/main.tsx` imports `installChunkLoadRecovery` from `@webpresso/agent-kit/vite`.
 4. Keep `React.lazy` route conversion local to `apps/client/src/App.tsx`.
-5. In Webpresso, trial `ak audit bundle-budget` against `platform-web` with thresholds derived from its measured build graph.
+5. In Webpresso, trial `wp audit bundle-budget` against `platform-web` with thresholds derived from its measured build graph.
 
 The recommendation would change to **hold** only if Webpresso's React Router framework output needs manifest-aware analysis that cannot be represented as generic built-asset/HTML-reference checks. It would change from **guardrail adopt** to **broader adopt** after one Webpresso web app consumes the same Agent Kit API with no special cases beyond config.
 
