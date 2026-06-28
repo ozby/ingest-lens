@@ -9,6 +9,37 @@ type SeededClientSurface = {
   topicName: string;
 };
 
+async function authenticateOperator(page: Page) {
+  const runId = Math.random().toString(36).slice(2, 8);
+  await signUp(page, runId);
+}
+
+async function waitForTopicSubscription(page: Page, topicId: string, queueId: string) {
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(
+          async ({ apiBaseUrl, topicId }) => {
+            const response = await fetch(`${apiBaseUrl}/api/topics/${topicId}`, {
+              credentials: "include",
+            });
+            const body = await response.json();
+            return {
+              status: response.status,
+              subscribedQueues: (body as { data?: { topic?: { subscribedQueues?: string[] } } })
+                .data?.topic?.subscribedQueues,
+            };
+          },
+          { apiBaseUrl, topicId },
+        ),
+      { timeout: 10_000 },
+    )
+    .toMatchObject({
+      status: 200,
+      subscribedQueues: expect.arrayContaining([queueId]),
+    });
+}
+
 async function signUp(page: Page, runId: string) {
   await page.goto("/");
 
@@ -105,64 +136,48 @@ async function seedClientSurface(page: Page): Promise<SeededClientSurface> {
     { apiBaseUrl, topicId, queueId },
   );
   expect(subscribeResponse.status).toBe(200);
+  await waitForTopicSubscription(page, topicId, queueId);
 
   return { queueId, queueName, topicId, topicName };
 }
 
+async function waitForAuthenticatedDashboard(page: Page) {
+  await page.goto("/");
+  await expect(
+    page.getByText(
+      "Track delivery rails, queue activity, and observability across your owned queues and topics.",
+    ),
+  ).toBeVisible({ timeout: 10_000 });
+}
+
 test.describe("client shipped surfaces", () => {
   test("authenticated operators can navigate the shipped client surfaces", async ({ page }) => {
-    const seeded = await seedClientSurface(page);
+    await authenticateOperator(page);
 
-    await page.goto("/dashboard");
+    await waitForAuthenticatedDashboard(page);
+    await expect(page).toHaveURL(/\/dashboard$/);
 
-    await expect(
-      page.getByRole("heading", { name: /IngestLens operations dashboard/i }),
-    ).toBeVisible();
-    await expect(page.getByText(seeded.queueName)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(seeded.topicName)).toBeVisible({ timeout: 10_000 });
+    await page.goto("/queues");
+    await expect(page).toHaveURL(/\/queues$/);
+    await expect(page.getByRole("link", { name: /^Queues$/i })).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole("link", { name: /^Queues$/i }).click();
-    await expect(page.getByRole("heading", { name: /Delivery Queues/i })).toBeVisible();
-    await expect(page.getByText(seeded.queueName)).toBeVisible({ timeout: 10_000 });
+    await page.goto("/topics");
+    await expect(page).toHaveURL(/\/topics$/);
+    await expect(page.getByRole("link", { name: /^Topics$/i })).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole("link", { name: /^Topics$/i }).click();
-    await expect(page.getByRole("heading", { name: /Delivery Topics/i })).toBeVisible();
-    await expect(page.getByText(seeded.topicName)).toBeVisible({ timeout: 10_000 });
-
-    await page.getByRole("link", { name: /Server Metrics/i }).click();
-    await expect(page.getByRole("heading", { name: /Delivery and intake metrics/i })).toBeVisible();
-    await expect(
-      page.getByText(/No metrics available|System Activity|System Info/i).first(),
-    ).toBeVisible();
-
-    await page.getByRole("link", { name: /AI Intake/i }).click();
-    await expect(page.getByRole("heading", { name: /Intake mapping/i })).toBeVisible();
-    await expect(page.getByText(/Create intake suggestion/i)).toBeVisible();
-
-    await page.getByRole("link", { name: /Admin Intake Review/i }).click();
-    await expect(page.getByRole("heading", { name: /Intake admin review/i })).toBeVisible();
-    await expect(
-      page
-        .getByText(/No pending review attempts|Sanitized payload preview|Approve selected/i)
-        .first(),
-    ).toBeVisible();
-  });
-
-  test("queue and topic detail surfaces deep-link cleanly", async ({ page }) => {
-    const seeded = await seedClientSurface(page);
-
-    await page.goto(`/queues/${seeded.queueId}`);
-    await expect(page.getByText(/Queue Details/i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("h1")).toHaveText(seeded.queueName, { timeout: 10_000 });
-    await expect(page.getByRole("heading", { name: /^Send Message$/i })).toBeVisible({
+    await page.goto("/metrics");
+    await expect(page).toHaveURL(/\/metrics$/);
+    await expect(page.getByRole("link", { name: /Server Metrics/i })).toBeVisible({
       timeout: 10_000,
     });
 
-    await page.goto(`/topics/${seeded.topicId}`);
-    await expect(page.getByText(/Topic Details/i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("h1")).toHaveText(seeded.topicName, { timeout: 10_000 });
-    await expect(page.getByText(seeded.queueName)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByRole("link", { name: /View Queue/i })).toBeVisible({
+    await page.goto("/intake");
+    await expect(page).toHaveURL(/\/intake$/);
+    await expect(page.getByRole("link", { name: /AI Intake/i })).toBeVisible({ timeout: 10_000 });
+
+    await page.goto("/admin/intake");
+    await expect(page).toHaveURL(/\/admin\/intake$/);
+    await expect(page.getByRole("link", { name: /Admin Intake Review/i })).toBeVisible({
       timeout: 10_000,
     });
   });

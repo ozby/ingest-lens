@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const workflow = readFileSync(".github/workflows/ci.yml", "utf8");
+const expectedPreviewCallerSha = "ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0";
 
 test("CI workflow exposes wp-check as the branch-protection-facing gate", () => {
   assert.match(workflow, /\n  wp-check:\n/u);
@@ -34,7 +35,10 @@ test("CI preview deploy caller grants OIDC permissions and uses preview profile 
 
   assert.match(
     deployPreviewJob,
-    /uses: webpresso\/github-actions\/\.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
+    new RegExp(
+      `uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@${expectedPreviewCallerSha}`,
+      "u",
+    ),
   );
   assert.match(deployPreviewJob, /permissions:[\s\S]*contents:\s*read/u);
   assert.match(deployPreviewJob, /permissions:[\s\S]*packages:\s*read/u);
@@ -87,9 +91,14 @@ test("release automation skips heavy PR and merge validations outside the releas
     securityWorkflow,
     /github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.ref != 'changeset-release\/main'/u,
   );
+  assert.match(cleanupWorkflow, /name:\s*cleanup-stale-neon-e2e-branches/u);
+  assert.doesNotMatch(cleanupWorkflow, /wp-cleanup-preview\.yml/u);
+  assert.match(cleanupWorkflow, /uses: actions\/checkout@[0-9a-f]{40}/u);
+  assert.match(cleanupWorkflow, /uses: oven-sh\/setup-bun@[0-9a-f]{40}/u);
   assert.match(
     cleanupWorkflow,
-    /uses: webpresso\/github-actions\/\.github\/workflows\/wp-cleanup-preview\.yml@[0-9a-f]{40}/u,
+    /uses: DopplerHQ\/cli-action@cdd4670c26c06688d7afe8ff3b76b1cac918f4da # v4/u,
   );
+  assert.match(cleanupWorkflow, /wp secrets run --sink e2e --profile preview/u);
   assert.match(cleanupWorkflow, /CI_SECRET_PROVIDER_TOKEN_PREVIEW/u);
 });

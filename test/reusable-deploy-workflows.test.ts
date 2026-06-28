@@ -95,7 +95,12 @@ test("preview workflows use preview profile and preview provider token only", ()
       "CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}",
     ),
   );
-  assert.match(cleanupWorkflow, /secret_profile:\s*preview/u);
+  assert.ok(
+    cleanupWorkflow.includes(
+      "CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}",
+    ),
+  );
+  assert.match(cleanupWorkflow, /wp secrets run --sink e2e --profile preview/u);
 });
 
 test("shared Cloudflare workflow callers grant OIDC permissions", () => {
