@@ -18,11 +18,8 @@ test("package scripts and changeset config expose the shared release surface", (
   assert.match(pkg.version, /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/u);
   assert.equal(pkg.scripts["changeset"], "changeset");
   assert.equal(pkg.scripts["changeset:status"], "changeset status");
-  assert.equal(
-    pkg.scripts["version"],
-    "changeset version && bun scripts/sync-release-metadata-version.ts",
-  );
-  assert.equal(pkg.scripts["release:publish"], "bun scripts/release-publish.ts");
+  assert.equal(pkg.scripts["version"], "changeset version && wp release-metadata sync");
+  assert.equal(pkg.scripts["release:publish"], "wp release-metadata prepare");
   assert.ok(pkg.devDependencies?.["@changesets/cli"]);
   assert.match(readRepoFile(".changeset/config.json"), /"privatePackages"/u);
 });

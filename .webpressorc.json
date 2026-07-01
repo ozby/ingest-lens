@@ -18,7 +18,21 @@
       "testing-philosophy",
       "plan-refine",
       "pll",
-      "best-practice-research"
+      "best-practice-research",
+      "claude",
+      "review",
+      "autoplan",
+      "investigate",
+      "health",
+      "plan-eng-review",
+      "plan-ceo-review",
+      "plan-design-review",
+      "plan-devex-review",
+      "browse",
+      "qa-only",
+      "qa",
+      "devex-review",
+      "design-review"
     ],
     "visibility": {
       "codex": {
@@ -27,7 +41,21 @@
         "testing-philosophy": "visible-after-restart",
         "plan-refine": "visible-after-restart",
         "pll": "visible-after-restart",
-        "best-practice-research": "visible-after-restart"
+        "best-practice-research": "visible-after-restart",
+        "claude": "visible-after-restart",
+        "review": "visible-after-restart",
+        "autoplan": "visible-after-restart",
+        "investigate": "visible-after-restart",
+        "health": "visible-after-restart",
+        "plan-eng-review": "visible-after-restart",
+        "plan-ceo-review": "visible-after-restart",
+        "plan-design-review": "visible-after-restart",
+        "plan-devex-review": "visible-after-restart",
+        "browse": "visible-after-restart",
+        "qa-only": "visible-after-restart",
+        "qa": "visible-after-restart",
+        "devex-review": "visible-after-restart",
+        "design-review": "visible-after-restart"
       },
       "claude": {
         "fix": "visible-after-restart",
@@ -35,7 +63,21 @@
         "testing-philosophy": "visible-after-restart",
         "plan-refine": "visible-after-restart",
         "pll": "visible-after-restart",
-        "best-practice-research": "visible-after-restart"
+        "best-practice-research": "visible-after-restart",
+        "claude": "visible-after-restart",
+        "review": "visible-after-restart",
+        "autoplan": "visible-after-restart",
+        "investigate": "visible-after-restart",
+        "health": "visible-after-restart",
+        "plan-eng-review": "visible-after-restart",
+        "plan-ceo-review": "visible-after-restart",
+        "plan-design-review": "visible-after-restart",
+        "plan-devex-review": "visible-after-restart",
+        "browse": "visible-after-restart",
+        "qa-only": "visible-after-restart",
+        "qa": "visible-after-restart",
+        "devex-review": "visible-after-restart",
+        "design-review": "visible-after-restart"
       },
       "opencode": {
         "fix": "visible-after-restart",
@@ -43,7 +85,21 @@
         "testing-philosophy": "visible-after-restart",
         "plan-refine": "visible-after-restart",
         "pll": "visible-after-restart",
-        "best-practice-research": "visible-after-restart"
+        "best-practice-research": "visible-after-restart",
+        "claude": "visible-after-restart",
+        "review": "visible-after-restart",
+        "autoplan": "visible-after-restart",
+        "investigate": "visible-after-restart",
+        "health": "visible-after-restart",
+        "plan-eng-review": "visible-after-restart",
+        "plan-ceo-review": "visible-after-restart",
+        "plan-design-review": "visible-after-restart",
+        "plan-devex-review": "visible-after-restart",
+        "browse": "visible-after-restart",
+        "qa-only": "visible-after-restart",
+        "qa": "visible-after-restart",
+        "devex-review": "visible-after-restart",
+        "design-review": "visible-after-restart"
       }
     }
   },

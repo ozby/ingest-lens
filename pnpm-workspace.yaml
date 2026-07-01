@@ -38,7 +38,7 @@ catalog:
   # Webpresso package-source split:
   # - agent-config is the consumer-installed package surface
   # - runtime-env is public npm
-  "@webpresso/agent-config": ^0.1.4
+  "@webpresso/agent-config": ^0.3.3
   "@webpresso/runtime-env": 0.1.0
   axios: ^1.15.2
   better-auth: ^1.6.9
@@ -56,13 +56,12 @@ catalog:
   tailwindcss: ^4.2.4
 
   # Task runner
-  vite-plus: ^0.1.20
+  vite-plus: ^0.2.1
   tsx: ^4.22.4
 
 catalogs:
   tooling:
     "@typescript/native-preview": "7.0.0-dev.20260421.2"
-    oxlint: ^1.61.0
     typescript: 6.0.3
     vite: ^8.0.10
     vitest: ^4.1.5
