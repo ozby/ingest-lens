@@ -28,7 +28,8 @@ Consumer repositories had hand-maintained Husky hook entrypoints, including stal
 - Regenerate `.husky/pre-commit`, `.husky/commit-msg`, and `.husky/pre-push` from the upstream agent-kit base-kit hook templates.
 - Preserve repo-local hook commands in `user-owned` sections.
 - Remove stale Lore `--require-lore` commit-msg/pre-push enforcement from generated hooks.
-- Keep migration scoped to hook ownership; no runtime code changes.
+- Keep migration scoped to hook ownership/commit-policy cleanup; no runtime code changes.
+- Remove stale CI commit-message Lore validation so squash-merge workflows are not blocked by per-commit policy.
 
 ## Non-goals
 
@@ -61,7 +62,7 @@ Consumer repositories had hand-maintained Husky hook entrypoints, including stal
 ## Acceptance criteria
 
 - Hook files contain managed and user-owned Webpresso marker sections.
-- No generated hook enforces `--require-lore`.
+- No generated hook or CI branch validation step enforces `--require-lore`.
 - Existing repo-local hook behavior is preserved inside the relevant user-owned section.
 - Verification evidence or explicit pre-existing gate gaps are recorded before merge.
 
@@ -69,6 +70,7 @@ Consumer repositories had hand-maintained Husky hook entrypoints, including stal
 
 - Hook inspection confirmed managed/user-owned sections in `.husky/pre-commit`, `.husky/commit-msg`, and `.husky/pre-push`.
 - `rg -- '--require-lore' .husky` returned no matches.
+- CI workflow branch-level Lore validation block was removed.
 - `wp setup` from merged agent-kit source generated the hook migration.
 - `wp sync --check` gap: existing generated skill/AGENTS drift is present in this worktree and is outside this hook-only PR.
 - Additional repo gates are recorded in the PR after dependency install.
