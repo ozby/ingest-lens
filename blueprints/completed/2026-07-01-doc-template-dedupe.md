@@ -2,25 +2,26 @@
 type: blueprint
 owner: ozby
 title: "Docs template dedupe"
-status: in-progress
+status: completed
 complexity: S
 created: "2026-07-01"
 last_updated: "2026-07-01"
-progress_pct: 25
-progress: "Blueprint created; implementation will remove consumer-owned copies of setup-owned docs templates."
+progress_pct: 100
+progress: "Completed: generic docs templates are setup-owned/ignored, live docs point to shared template flows, and local gates passed."
 depends_on:
   - "@webpresso/agent-kit catalog/docs/templates"
+completed_at: "2026-07-01"
 ---
 
 # Docs template dedupe
 
 ## Status
 
-In progress — consumer migration away from hand-maintained `docs/templates/*` copies that are already shipped and scaffolded by Webpresso setup.
+Completed — this consumer no longer maintains generic `docs/templates/*` copies that are already shipped and scaffolded by Webpresso setup.
 
 ## Problem
 
-This consumer still commits generic documentation and blueprint templates under `docs/templates/`. The current Webpresso toolchain already owns canonical templates in `@webpresso/agent-kit` (`catalog/docs/templates/*`) and materializes them through setup/init, with `docs/templates.local/` reserved for consumer-owned overrides. Keeping identical or near-identical consumer copies creates drift without adding repo-specific behavior.
+This consumer previously committed generic documentation and blueprint templates under `docs/templates/`. The current Webpresso toolchain already owns canonical templates in `@webpresso/agent-kit` (`catalog/docs/templates/*`) and materializes them through setup/init, with `docs/templates.local/` reserved for consumer-owned overrides. Keeping identical or near-identical consumer copies creates drift without adding repo-specific behavior.
 
 ## Scope
 
@@ -52,7 +53,7 @@ The consumer keeps only repo-owned documentation. Generic docs templates are gen
 
 #### [dedupe] Task 1.1: Remove committed generic docs templates
 
-**Status:** in progress
+**Status:** done
 
 **Depends:** None
 
@@ -62,7 +63,7 @@ The consumer keeps only repo-owned documentation. Generic docs templates are gen
 
 #### [qa] Task 1.2: Verify setup and docs contracts
 
-**Status:** in progress
+**Status:** done
 
 **Depends:** Task 1.1
 
@@ -75,3 +76,12 @@ The consumer keeps only repo-owned documentation. Generic docs templates are gen
 - No committed generic `docs/templates/*` template files remain in this consumer.
 - Repo docs do not link to deleted committed template files as if they were source-owned.
 - `wp audit docs-frontmatter`, `wp audit blueprint-lifecycle`, `wp sync --check`, TPH, typecheck/lint, and relevant repo-specific governance gates pass or are documented with evidence.
+
+## Verification evidence
+
+- `wp audit docs-frontmatter` passed.
+- `wp audit blueprint-lifecycle` passed.
+- `wp audit tph` passed.
+- `wp sync --check` passed after setup/sync materialized ignored agent surfaces.
+- Touched files are format-clean.
+- Typecheck, lint, and tests passed for this consumer.
