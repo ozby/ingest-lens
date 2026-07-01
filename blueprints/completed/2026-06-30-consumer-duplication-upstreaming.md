@@ -2,12 +2,12 @@
 type: blueprint
 owner: ozby
 title: "Consumer duplication upstreaming"
-status: in-progress
+status: completed
 complexity: M
 created: "2026-06-30"
-last_updated: "2026-06-30"
-progress_pct: 80
-progress: "Release tooling deduped to upstream wp release-metadata commands; root quality scaffold placeholders removed; remaining smoke Playwright scaffold and runtime-env extraction gated on upstream package release."
+last_updated: "2026-07-01"
+progress_pct: 100
+progress: "Release tooling deduped to upstream wp release-metadata commands; root quality scaffold placeholders removed; remaining smoke Playwright scaffold and runtime-env extraction deferred behind explicit follow-up boundaries."
 depends_on:
   - "webpresso/monorepo: consumer duplication upstreaming"
 ---
@@ -75,9 +75,7 @@ Remove root `src/quality-sample.ts` and `src/quality-sample.test.ts` scaffold pl
 
 #### [qa] Task 1.3: Verify migration contract and record follow-up boundaries
 
-**Status:** blocked
-
-**Blocked:** Waiting for upstream Webpresso CLI PR `webpresso/monorepo#101` to land and publish the `wp release-metadata` command surface before consumer PRs can safely merge.
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -129,4 +127,9 @@ Delete generic agent README placeholders, docs template YAML copies, and templat
 
 ## Landing order
 
-Consumer PRs must land after the upstream Webpresso CLI PR that introduces `wp release-metadata`.
+Consumer PRs land after upstream `webpresso/monorepo#101`, `webpresso/agent-kit#332`, and the `@webpresso/agent-config@0.3.3` / `@webpresso/agent-core@0.1.2` npm releases.
+
+## Progress log
+
+- 2026-07-01: Dedupe Vite+-owned ox tooling across consumers: no direct `oxfmt`/`oxlint` pins remain, all consumers resolve `@webpresso/agent-config@0.3.3`, Vite+ owns the `oxfmt`/`oxlint` binaries via `vite-plus@0.2.1`, and `edge-matte` no longer carries consumer-local `@webpresso/agent-kit`.
+- 2026-07-01: Ignored setup-owned generic scaffold outputs so `wp setup` can materialize them without making consumers dirty, while the hand-maintained duplicates remain deleted from git.

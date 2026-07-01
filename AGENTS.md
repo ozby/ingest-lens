@@ -4,18 +4,8 @@
   Current-state agent-kit scaffolding (`wp setup`) renders this file with:
   - Repository map: bulleted list of workspace packages inferred from
     pnpm-workspace.yaml / package.json workspaces.
-  - Tech stack: short description generated from package.json + detected
-    frameworks (React, Hono, Drizzle, etc.).
-  - Escalation map: user-edited section. Left as a TODO placeholder if
-    not specified.
-  - Durable planning root: defaults to `.agent/planning/`. Override via
-    .webpressorc.json.
-  - Blueprints directory: defaults to `blueprints`. Override via
-    .webpressorc.json#blueprintsDir.
-
-  Managed sections in this file are refreshed by agent-kit. Sync uses `wp sync`.
-  Repo-specific edits belong only inside `user-owned` blocks; agent-kit preserves
-  those blocks verbatim when it rewrites managed content.
+  Managed sections refresh via `wp sync`; repo-specific edits belong in
+  `user-owned` blocks and are preserved verbatim.
 -->
 
 <!-- >>> managed by webpresso (operating-contract) -->
@@ -34,7 +24,7 @@ agent-kit's catalog is the single source of truth for generated agent surfaces.
 Agent-kit owns the generated agent surfaces in this file; the Webpresso CLI host owns the end-user command surface.
 
 Defaults worth preserving:
-- External tools such as `omx`, `omc`, and `gstack` are self-installed and updated with their native installers when you choose to use them.
+- External tools such as `omx` and `omc` are self-installed and updated with their native installers when you choose to use them; Webpresso workflow/browser skills are package defaults.
 - `wp setup` repairs the managed `.gitignore` block for regenerated surfaces.
 - Consumer repos use the global `wp` install and keep only `@webpresso/agent-config` locally; do not add a consumer-local `@webpresso/agent-kit` dependency.
 - Track repo-owned instruction sources (`AGENTS.md`, `agent-rules/`, `agent-skills/`).
@@ -49,7 +39,7 @@ Prompt budget contract:
 Codex routing instruction surface:
 <wp_instruction_surface host="codex" artifact="AGENTS.md" source="wp_routing">
   <host_contract>
-    <native_tool_names>wp_session_restore, wp_session_search, wp_session_retrieve, wp_session_execute_file, wp_session_execute, wp_session_batch_execute, wp_session_fetch_and_index, wp_session_index, wp_session_capture, wp_session_snapshot, wp_session_stats, wp_session_doctor, wp_session_purge, wp_test, wp_e2e, wp_lint, wp_typecheck, wp_qa, wp_audit, wp_audits, wp_ci_act, wp_worker_tail, wp_pr_status, wp_bench, wp_gain, wp_release_readiness</native_tool_names>
+    <native_tool_names>wp_audit, wp_audits, wp_bench, wp_ci_act, wp_e2e, wp_format, wp_gain, wp_lint, wp_pr_status, wp_qa, wp_release_readiness, wp_session_batch_execute, wp_session_capture, wp_session_doctor, wp_session_execute, wp_session_execute_file, wp_session_fetch_and_index, wp_session_index, wp_session_purge, wp_session_retrieve, wp_session_restore, wp_session_search, wp_session_snapshot, wp_session_stats, wp_test, wp_typecheck, wp_worker_tail, wp_worktree</native_tool_names>
     <stdout_noop>Codex hook commands with no action write {} on stdout; durable guidance belongs in AGENTS.md.</stdout_noop>
     <lifecycle_notes>
     <note>Codex reads repository instruction files for durable guidance.</note>
@@ -65,8 +55,14 @@ Use blueprints for non-trivial work. Specs live in
 [`blueprints/`](./blueprints/) with lifecycle directories such as
 `planned/`, `in-progress/`, and `completed/`. Keep tasks, dependencies,
 verification commands, and acceptance criteria current before execution.
+
+For any non-trivial change, run the gate **before the first edit**, in order:
+**worktree → blueprint → draft PR** — create a git worktree on a fresh branch
+and switch into it, create the blueprint on that branch, then open a draft PR
+early and push implementation commits to it. Never implement on `main`.
 PRs with any non-`*.md` changes must include a changed blueprint, unless a
 commit carries `Blueprint-exempt: <reason>` for a genuinely trivial exception.
+Full rule: `.agent/rules/pre-implementation.md` § Blueprint gate.
 
 Catalog-owned surfaces:
 - `.agent/commands/` — slash-command sources
