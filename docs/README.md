@@ -66,8 +66,7 @@ last_updated: "YYYY-MM-DD"
 ---
 ```
 
-Templates per type live under `docs/templates/`. Start every new doc
-from the matching template.
+Generic templates are setup-owned by Webpresso and can be materialized by `wp setup`; consumer-specific overrides belong in `docs/templates.local/`. Start every new doc from the matching setup-owned template.
 
 ## Linting
 

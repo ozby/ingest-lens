@@ -37,7 +37,7 @@ ADRs record **decisions**. Blueprints track **execution**. Both coexist:
 
 ## Format
 
-Use `docs/templates/adr.md` as the canonical template. Every ADR must
+Use the setup-owned Webpresso ADR template (materialized by `wp setup`) as the canonical template. Every ADR must
 include `Status`, `Context`, `Decision`, `Consequences`, and
 `Alternatives considered`.
 

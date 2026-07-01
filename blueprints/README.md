@@ -12,8 +12,8 @@ Each subdirectory represents a lifecycle state:
 
 ## Authoring
 
-- Use `docs/templates/blueprint.md` as the starting point.
-- Blueprint YAML keys validated against `docs/templates/blueprint.yaml`.
+- Use `wp blueprint new` or the setup-owned Webpresso blueprint template as the starting point.
+- Blueprint metadata is validated by `wp audit blueprint-lifecycle` against the shared Webpresso blueprint contract.
 - For iterative refinement, load the `plan-refine` skill
   (`.agent/skills/plan-refine/SKILL.md`).
 

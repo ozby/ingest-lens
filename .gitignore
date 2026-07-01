@@ -240,6 +240,15 @@ agent-rules/README.md
 agent-skills/README.md
 docs/templates/core-doc.yaml
 docs/templates/guide.yaml
+docs/templates/adr.md
+docs/templates/blueprint.md
+docs/templates/blueprint.yaml
+docs/templates/guide.md
+docs/templates/postmortem.md
+docs/templates/research.md
+docs/templates/runbook.md
+docs/templates/system.md
+docs/templates/tech-debt.md
 scripts/release-publish.ts
 scripts/sync-release-metadata-version.ts
 src/quality-sample.ts
