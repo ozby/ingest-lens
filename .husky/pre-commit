@@ -1,5 +1,23 @@
 #!/usr/bin/env sh
 set -eu
+
+# >>> managed by webpresso (husky-pre-commit)
+wp format --affected || exit 1
+
+# Re-stage formatter rewrites for files that were already staged.
+if ! git diff --cached --quiet --diff-filter=ACMR; then
+  git diff -z --cached --name-only --diff-filter=ACMR |
+    git add --pathspec-from-file=- --pathspec-file-nul || exit 1
+fi
+
+wp audit guardrails --affected
+
+# Full whole-repo guardrails are CI-owned — see .github/workflows/ci.yml —
+# and are intentionally NOT run per-commit.
+# <<< managed by webpresso (husky-pre-commit)
+
+# >>> user-owned (husky-pre-commit)
+# Migrated from a pre-existing local hook by `wp setup`.
 WP_SKIP_UPDATE_CHECK=1 wp audit docs-frontmatter
 WP_SKIP_UPDATE_CHECK=1 wp audit secrets-policy
 WP_SKIP_UPDATE_CHECK=1 wp audit no-dev-vars
@@ -7,10 +25,9 @@ WP_SKIP_UPDATE_CHECK=1 wp audit secret-provider-quarantine
 WP_SKIP_UPDATE_CHECK=1 wp audit secrets-config
 WP_SKIP_UPDATE_CHECK=1 wp audit absolute-path-policy --root .
 # webpresso audit hooks (affected mode — fast)
-wp format --affected || exit 1
 wp sync || exit 1
 if ! git diff --cached --quiet --diff-filter=ACMR; then
   git diff -z --cached --name-only --diff-filter=ACMR |
     git add --pathspec-from-file=- --pathspec-file-nul || exit 1
 fi
-wp audit guardrails --affected
+# <<< user-owned (husky-pre-commit)
