@@ -6,8 +6,8 @@ status: in-progress
 complexity: M
 created: "2026-06-30"
 last_updated: "2026-06-30"
-progress_pct: 70
-progress: "Release tooling deduped to upstream wp release-metadata commands; root quality scaffold placeholders removed; remaining setup/template and runtime-env extraction gated on upstream regeneration/package work."
+progress_pct: 80
+progress: "Release tooling deduped to upstream wp release-metadata commands; root quality scaffold placeholders removed; remaining smoke Playwright scaffold and runtime-env extraction gated on upstream package release."
 depends_on:
   - "webpresso/monorepo: consumer duplication upstreaming"
 ---
@@ -87,7 +87,21 @@ Run the targeted release-contract/static checks for this consumer, record the up
 
 - [x] Targeted consumer test evidence is recorded below.
 - [x] Landing order documents the dependency on the upstream Webpresso CLI PR.
-- [x] Deferred setup/template and runtime-env extraction boundaries are called out explicitly.
+- [x] Deferred smoke Playwright scaffold and runtime-env extraction boundaries are called out explicitly.
+
+#### [scaffold] Task 1.4: Remove setup-owned placeholder documentation
+
+**Status:** done
+
+**Depends:** Task 1.2
+
+Delete generic agent README placeholders, docs template YAML copies, and template-only changelog boilerplate where present. These surfaces are setup/package-owned and should not be hand-maintained in consumers.
+
+**Acceptance:**
+
+- [x] `agent-skills/README.md` and `agent-rules/README.md` are no longer duplicated consumer files.
+- [x] `docs/templates/core-doc.yaml` and `docs/templates/guide.yaml` are no longer duplicated consumer files.
+- [x] Template-only `CHANGELOG.md` boilerplate is removed where this repo carried it.
 
 ## Acceptance criteria
 
@@ -101,8 +115,9 @@ Run the targeted release-contract/static checks for this consumer, record the up
 - Replaced duplicated local release/version-sync scripts with thin package scripts that call the upstream `wp release-metadata sync` and `wp release-metadata prepare` surfaces.
 - Deleted the root `src/quality-sample.ts` and `src/quality-sample.test.ts` scaffold placeholders.
 - Updated release contract tests to pin the new upstream command surface.
-- Left file-based Playwright smoke specs and docs-template files in place until the upstream setup/template release can regenerate them reliably in consumers.
+- Removed setup-owned agent README placeholders, docs-template YAML copies, and template-only changelog boilerplate. File-based Playwright smoke specs remain until `@webpresso/agent-config/playwright/quality-scaffold` is published and consumers can import it safely.
 - Runtime-env package extraction remains a follow-up for `ingest-lens`; current local code includes secret-manager/profile policy and should not be moved blindly.
+- `webpresso/agent-kit#332` now owns the future Playwright quality-scaffold package surface; consumer smoke file deletion waits for that package release.
 
 ## Verification evidence
 
