@@ -1,10 +1,6 @@
-import { defineConfig } from "@playwright/test";
+import { createQualityScaffoldConfig } from "@webpresso/agent-config/playwright/quality-scaffold";
 
-export default defineConfig({
+// Keep the repo-specific client-shell spec while reusing the shared Playwright defaults.
+export default createQualityScaffoldConfig({
   testDir: "./e2e",
-  fullyParallel: true,
-  reporter: [["list"]],
-  use: {
-    trace: "retain-on-failure",
-  },
 });
