@@ -79,9 +79,8 @@ Runtime helper ownership:
 
 - provider-neutral runtime profile / env loading is extracted into the public
   `@webpresso/runtime-env` package
-- `ingest-lens` consumes that core through its local
-  `@repo/runtime-env-local` adapter, which keeps provider-specific secret
-  manager wiring repo-local
+- `ingest-lens` consumes that core directly through published
+  `@webpresso/runtime-env`, with only repo-specific required-secret keys kept local
 - Neon branch lifecycle helpers remain repo-local to `ingest-lens`
 - `agent-kit` stays the tooling / verification surface (`wp`, `wp_*`, config
   subpaths), not the runtime/provider helper owner

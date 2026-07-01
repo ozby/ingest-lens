@@ -16,8 +16,5 @@ brew "dopplerhq/cli/doppler"  # all secrets managed via Doppler — no .env file
 brew "gh"             # GitHub CLI: PR review, branch protection checks, Actions runs
 brew "act"            # run GitHub Actions locally: act -j <job>
 
-# --- Code quality ---
-brew "oxlint"         # linter (mirrors devDependency version via pnpm catalog)
-
 # --- Agent surface ---
 brew "rtk"             # CLI proxy that compresses command output; default-on via `ak setup`

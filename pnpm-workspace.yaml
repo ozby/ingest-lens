@@ -39,7 +39,7 @@ catalog:
   # - agent-config is the consumer-installed package surface
   # - runtime-env is public npm
   "@webpresso/agent-config": ^0.3.3
-  "@webpresso/runtime-env": 0.1.0
+  "@webpresso/runtime-env": 0.3.0
   axios: ^1.15.2
   better-auth: ^1.6.9
   bunchee: ^6.10.0

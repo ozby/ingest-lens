@@ -43,7 +43,9 @@ describe("global wp contract", () => {
 
     expect(huskyPreCommit).toContain("wp audit secret-provider-quarantine");
     expect(huskyPreCommit).not.toContain("node_modules/.bin/wp");
-    expect(huskyCommitMsg).toContain('wp audit commit-message --message-file "$1"');
+    expect(huskyCommitMsg).toContain(">>> managed by webpresso (husky-commit-msg)");
+    expect(huskyCommitMsg).toContain(">>> user-owned (husky-commit-msg)");
+    expect(huskyCommitMsg).not.toContain("wp audit commit-message");
     expect(huskyCommitMsg).not.toContain("node_modules/.bin/wp");
     expect(e2eReadme).toContain("wp e2e --suite foundation");
     expect(e2eReadme).not.toContain("webpresso agent e2e");

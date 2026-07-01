@@ -73,9 +73,9 @@ wp audit architecture-drift --root .
 
 Shared helper boundary:
 
-- use the public `@webpresso/runtime-env` core through the local
-  `@repo/runtime-env-local` adapter for provider-neutral runtime profile / env
-  resolution
+- use the public `@webpresso/runtime-env` core directly for provider-neutral
+  runtime profile / env resolution, with only repo-specific required-secret keys
+  kept local
 - keep Neon branch lifecycle helpers repo-local in `ingest-lens`
 - do not move runtime/provider-specific logic into `@webpresso/agent-kit`
 

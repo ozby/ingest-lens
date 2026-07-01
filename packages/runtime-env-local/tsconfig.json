@@ -1,4 +1,0 @@
-{
-  "extends": "@webpresso/agent-config/tsconfig/base.json",
-  "include": ["src/**/*.ts"]
-}

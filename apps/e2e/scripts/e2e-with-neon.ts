@@ -14,7 +14,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
 import process from "node:process";
-import { resolveRuntimeProfile } from "@repo/runtime-env-local";
+import { createSecretsRuntimeEnv } from "@webpresso/runtime-env";
 import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
 import {
@@ -36,6 +36,8 @@ const repoRoot = findE2eRepoRoot(import.meta.url);
 const CLIENT_ASSET_LOCK_PARENT_DIR = resolveFromRepoRoot(repoRoot, ".tmp");
 const CLIENT_ASSET_LOCK_DIR = resolveFromRepoRoot(repoRoot, ".tmp", "e2e-client-assets.lock");
 const vpCommand = resolveVpCommand(repoRoot);
+const REQUIRED_RUNTIME_SECRET_KEYS = ["CLOUDFLARE_API_TOKEN", "NEON_API_KEY"] as const;
+const runtimeEnv = createSecretsRuntimeEnv({ requiredEnvKeys: REQUIRED_RUNTIME_SECRET_KEYS });
 async function getAvailablePort(): Promise<number> {
   for (const host of ["::1", "127.0.0.1"] as const) {
     try {
@@ -73,7 +75,7 @@ const clientInspectorPort = requiresClientWorker ? await getAvailablePort() : 92
 const clientBaseUrl = `http://localhost:${clientPort}`;
 
 // ── Load secrets from the selected secret manager ──────────────────────
-const runtimeSecrets = await resolveRuntimeProfile("secrets-only", { fresh: true });
+const runtimeSecrets = await runtimeEnv.resolveRuntimeProfile("secrets-only", { fresh: true });
 const secretEnv = {
   ...process.env,
   ...runtimeSecrets,
