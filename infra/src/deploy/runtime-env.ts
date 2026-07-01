@@ -1,8 +1,11 @@
 import process from "node:process";
 
-import { resolveRuntimeProfile } from "@repo/runtime-env-local";
+import { createSecretsRuntimeEnv } from "@webpresso/runtime-env";
 
 type ResolveRuntimeProfile = (profile: "secrets-only") => Promise<Record<string, string>>;
+
+const REQUIRED_RUNTIME_SECRET_KEYS = ["CLOUDFLARE_API_TOKEN", "NEON_API_KEY"] as const;
+const runtimeEnv = createSecretsRuntimeEnv({ requiredEnvKeys: REQUIRED_RUNTIME_SECRET_KEYS });
 
 export const DIRECT_DEPLOY_RUNTIME_ENV_NAMES = [
   "CLOUDFLARE_ACCOUNT_ID",
@@ -17,7 +20,8 @@ let cachedResolveRuntimeProfile: ResolveRuntimeProfile | null = null;
 
 export function loadResolveRuntimeProfile(): ResolveRuntimeProfile {
   if (cachedResolveRuntimeProfile) return cachedResolveRuntimeProfile;
-  cachedResolveRuntimeProfile = (profile) => resolveRuntimeProfile(profile, { fresh: true });
+  cachedResolveRuntimeProfile = (profile) =>
+    runtimeEnv.resolveRuntimeProfile(profile, { fresh: true });
   return cachedResolveRuntimeProfile;
 }
 

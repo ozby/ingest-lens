@@ -2,6 +2,7 @@
   "name": "@repo/infra",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "preview": "just run dev pulumi preview",
     "up:dev": "just deploy dev",
@@ -14,8 +15,8 @@
     "@pulumi/cloudflare": "^6.14.0",
     "@pulumi/pulumi": "^3.232.0",
     "@pulumiverse/doppler": "^0.9.0",
-    "@repo/runtime-env-local": "workspace:*",
-    "@repo/wrangler-sync": "workspace:*"
+    "@repo/wrangler-sync": "workspace:*",
+    "@webpresso/runtime-env": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

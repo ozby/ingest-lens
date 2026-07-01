@@ -76,7 +76,6 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@playwright/test": "catalog:",
-    "@repo/runtime-env-local": "workspace:*",
     "@secretlint/secretlint-rule-preset-recommend": "^9.3.0",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/typescript-checker": "catalog:",
