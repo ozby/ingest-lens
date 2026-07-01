@@ -1,1 +1,11 @@
+#!/usr/bin/env sh
+set -eu
+
+# >>> managed by webpresso (husky-pre-push)
+# Webpresso keeps whole-repo push/merge gates in CI; no local pre-push check is installed by default.
+# <<< managed by webpresso (husky-pre-push)
+
+# >>> user-owned (husky-pre-push)
+# Migrated from a pre-existing local hook by `wp setup`.
 vp check
+# <<< user-owned (husky-pre-push)
