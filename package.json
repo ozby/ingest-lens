@@ -28,8 +28,8 @@
   "scripts": {
     "changeset": "changeset",
     "changeset:status": "changeset status",
-    "version": "changeset version && wp release-metadata sync",
-    "release:publish": "wp release-metadata prepare",
+    "version": "changeset version && bun scripts/sync-release-metadata-version.ts",
+    "release:publish": "bun scripts/release-publish.ts",
     "act:ci": "wp ci act --workflow ci --event-name push --execute",
     "act:cleanup": "wp ci act --workflow cleanup-stale-neon-e2e-branches --event-name workflow_dispatch --job cleanup --execute",
     "act:e2e": "wp ci act --workflow e2e-act --event-name workflow_dispatch --job e2e-local --execute",
