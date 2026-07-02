@@ -249,8 +249,6 @@ docs/templates/research.md
 docs/templates/runbook.md
 docs/templates/system.md
 docs/templates/tech-debt.md
-scripts/release-publish.ts
-scripts/sync-release-metadata-version.ts
 src/quality-sample.ts
 src/quality-sample.test.ts
 e2e/.gitkeep
