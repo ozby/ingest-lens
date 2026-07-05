@@ -491,12 +491,12 @@ band comment from docs/project/TODOS.md.
 
 ## Cross-Plan References
 
-| Type       | Blueprint                                                                               | Relationship                               |
-| ---------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Design     | durable design notes               | Approved design this blueprint implements  |
-| Eng review | durable project test-plan notes    | Test plan                                  |
-| Follow-on  | `topicroom-dedupe-then-notify-before-ack` (to be drafted)                               | B3 deferred                                |
-| Follow-on  | `delivery-payload-attempt-removal` (to be drafted)                                      | Remove `attempt?` field after queue drains |
+| Type       | Blueprint                                                 | Relationship                               |
+| ---------- | --------------------------------------------------------- | ------------------------------------------ |
+| Design     | durable design notes                                      | Approved design this blueprint implements  |
+| Eng review | durable project test-plan notes                           | Test plan                                  |
+| Follow-on  | `topicroom-dedupe-then-notify-before-ack` (to be drafted) | B3 deferred                                |
+| Follow-on  | `delivery-payload-attempt-removal` (to be drafted)        | Remove `attempt?` field after queue drains |
 
 ## Non-goals
 
