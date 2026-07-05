@@ -64,9 +64,7 @@
     "deploy:preview": "wp deploy --lane preview_main",
     "deploy:production": "wp deploy --lane prd",
     "deploy:dry-run": "wp deploy --lane prd --dry-run",
-    "act:list": "wp ci act --workflow ci",
-    "setup:agent": "wp setup",
-    "postinstall": "test -n \"$CI\" || wp setup"
+    "act:list": "wp ci act --workflow ci"
   },
   "dependencies": {
     "rulesync": "8.15.1"

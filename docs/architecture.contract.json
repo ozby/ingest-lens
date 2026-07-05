@@ -10,7 +10,7 @@
   "rules": [
     {
       "id": "reviewer-path-mentions-architecture-contract",
-      "paths": ["README.md", "docs/architecture.md", "CLAUDE.md"],
+      "paths": ["README.md", "docs/architecture.md"],
       "mustContain": ["docs/architecture.contract.json"]
     }
   ],

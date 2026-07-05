@@ -18,8 +18,8 @@ describe("global wp contract", () => {
 
     expect(packageJson.devDependencies?.["@webpresso/agent-config"]).toBe("catalog:");
     expect(packageJson.devDependencies?.["@webpresso/agent-kit"]).toBeUndefined();
-    expect(packageJson.scripts?.["setup:agent"]).toBe("wp setup");
-    expect(packageJson.scripts?.postinstall).toContain("wp setup");
+    expect(packageJson.scripts?.["setup:agent"]).toBeUndefined();
+    expect(packageJson.scripts?.postinstall).toBeUndefined();
     expect(JSON.stringify(packageJson.scripts ?? {})).not.toContain("run-webpresso-cli");
     expect(JSON.stringify(packageJson.scripts ?? {})).not.toContain("AK_SKIP_GSTACK");
     expect(readFileSync(resolve(REPO_ROOT, "pnpm-workspace.yaml"), "utf8")).not.toContain(
@@ -27,13 +27,8 @@ describe("global wp contract", () => {
     );
   });
 
-  it("routes OpenCode MCP surfaces through wp", () => {
-    const opencode = readJson<{
-      mcp?: Record<string, { command?: string[] }>;
-    }>("opencode.json");
-
-    expect(opencode.mcp?.["agent-kit"]?.command).toEqual(["wp", "mcp"]);
-    expect(opencode.mcp?.["webpresso"]?.command).toEqual(["wp", "mcp"]);
+  it("does not keep a project-local OpenCode surface", () => {
+    expect(() => readFileSync(resolve(REPO_ROOT, "opencode.json"), "utf8")).toThrow();
   });
 
   it("keeps contributor-facing entrypoints on the global wp surface", () => {

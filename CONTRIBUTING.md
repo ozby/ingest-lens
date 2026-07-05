@@ -12,9 +12,9 @@ files** — never add one.
 - Bun (used by the repo's scripts)
 - `vp` + the repo-local `wp` wrapper exposed after install
 
-`vp install` pulls in the repo's pinned `@webpresso/agent-kit` dependency and
-runs `wp setup` during `postinstall`. If hooks or bootstrap drift later, prefer
-`wp ...` directly when available, otherwise `vp exec wp ...` inside the repo.
+`vp install` pulls in the repo's pinned `@webpresso/agent-kit` dependency. If
+shared tooling drifts later, prefer `wp ...` directly when available,
+otherwise `vp exec wp ...` inside the repo.
 
 ## Setup
 
@@ -22,9 +22,9 @@ runs `wp setup` during `postinstall`. If hooks or bootstrap drift later, prefer
 vp install
 ```
 
-`vp install` runs `postinstall`, which invokes `wp setup` to bootstrap agent
-hooks/links. If hooks or bootstrap drift, diagnose with `wp hooks doctor` and
-repair with `wp setup`.
+This repo no longer materializes project-local Claude/Codex/OpenCode host
+surfaces. If shared tooling drifts, diagnose with the relevant `wp audit ...`
+command rather than reintroducing repo-local host scaffolding.
 
 Start the dev server (secrets injected) or offline:
 
