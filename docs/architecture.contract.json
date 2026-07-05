@@ -1,6 +1,8 @@
 {
   "version": 1,
-  "architectureDocs": ["docs/architecture.md"],
+  "architectureDocs": [
+    "docs/architecture.md"
+  ],
   "requiredFiles": [
     "blueprints/completed/system-clarity-hardening/_overview.md",
     "blueprints/completed/surface-test-traceability-hardening/_overview.md",
@@ -10,14 +12,24 @@
   "rules": [
     {
       "id": "reviewer-path-mentions-architecture-contract",
-      "paths": ["README.md", "docs/architecture.md"],
-      "mustContain": ["docs/architecture.contract.json"]
+      "paths": [
+        "README.md",
+        "docs/architecture.md"
+      ],
+      "mustContain": [
+        "docs/architecture.contract.json"
+      ]
     }
   ],
   "blueprintPolicy": {
     "enabled": true,
-    "blueprintGlobs": ["blueprints/in-progress/**/*.md", "blueprints/planned/**/*.md"],
-    "architectureDocGlobs": ["docs/architecture.md"],
+    "blueprintGlobs": [
+      "blueprints/in-progress/**/*.md",
+      "blueprints/planned/**/*.md"
+    ],
+    "architectureDocGlobs": [
+      "docs/architecture.md"
+    ],
     "requireArchitectureLinks": true,
     "requireBeforeAfterWhenArchitectureChanging": true,
     "architectureChangeMarkers": [
@@ -27,11 +39,17 @@
     ],
     "beforeHeading": "Architecture before",
     "afterHeading": "Architecture after",
-    "exemptStatuses": ["completed", "archived"]
+    "exemptStatuses": [
+      "completed",
+      "archived"
+    ]
   },
   "deployment": {
     "canonicalProductionTarget": "ingest-lens.ozby.dev",
-    "workers": ["ingest-lens-api", "ingest-lens-client"],
+    "workers": [
+      "ingest-lens-api",
+      "ingest-lens-client"
+    ],
     "lanes": {
       "dev": {
         "kind": "persistent",
