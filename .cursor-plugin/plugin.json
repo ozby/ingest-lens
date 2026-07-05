@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Agent-kit: blueprint lifecycle, skill compiler, audits for Claude Code",
   "rules": [
-    "rules/gstack-routing.md",
     "rules/cmd-execution.md",
     "rules/extraction-parity.md",
     "rules/repo-restrictions.md",
