@@ -24,7 +24,7 @@ completed_at: "2026-04-26"
 incoming payloads and self-heal using the existing LLM mapping engine — without
 human review for high-confidence cases — streaming observable state transitions
 (`DETECTED → ANALYZING → REWRITING → HEALED`) via SSE. Operators can revert any
-auto-heal via a rollback endpoint. Design: `~/.gstack/projects/ozby-ingest-lens/ozby-main-design-20260426-195719.md`.
+auto-heal via a rollback endpoint. Design tracked in the durable project design notes.
 
 ## Planning Summary
 
@@ -56,7 +56,7 @@ auto-heal via a rollback endpoint. Design: `~/.gstack/projects/ozby-ingest-lens/
 - `DELIVERY_QUEUE` — wired, used for delivery consumer; adding audit message type.
 - `@cloudflare/vitest-pool-workers` — already in repo for DO testing.
 - `wrangler.toml` per-env DO declaration pattern — confirmed via `TOPIC_ROOMS`.
-- Eng-review test plan at `~/.gstack/projects/ozby-ingest-lens/ozby-main-eng-review-test-plan-20260426-201126.md`.
+- Eng-review test plan tracked in the durable project test-plan notes.
 
 ## Architecture
 
@@ -491,12 +491,12 @@ band comment from docs/project/TODOS.md.
 
 ## Cross-Plan References
 
-| Type       | Blueprint                                                                               | Relationship                               |
-| ---------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Design     | `~/.gstack/projects/ozby-ingest-lens/ozby-main-design-20260426-195719.md`               | Approved design this blueprint implements  |
-| Eng review | `~/.gstack/projects/ozby-ingest-lens/ozby-main-eng-review-test-plan-20260426-201126.md` | Test plan                                  |
-| Follow-on  | `topicroom-dedupe-then-notify-before-ack` (to be drafted)                               | B3 deferred                                |
-| Follow-on  | `delivery-payload-attempt-removal` (to be drafted)                                      | Remove `attempt?` field after queue drains |
+| Type       | Blueprint                                                 | Relationship                               |
+| ---------- | --------------------------------------------------------- | ------------------------------------------ |
+| Design     | durable design notes                                      | Approved design this blueprint implements  |
+| Eng review | durable project test-plan notes                           | Test plan                                  |
+| Follow-on  | `topicroom-dedupe-then-notify-before-ack` (to be drafted) | B3 deferred                                |
+| Follow-on  | `delivery-payload-attempt-removal` (to be drafted)        | Remove `attempt?` field after queue drains |
 
 ## Non-goals
 

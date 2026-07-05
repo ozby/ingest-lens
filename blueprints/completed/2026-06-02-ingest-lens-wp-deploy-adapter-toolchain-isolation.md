@@ -129,7 +129,7 @@ Root QA/deploy verbs route through `wp`, the root `test` script no longer shells
 
 **Status:** done
 
-The upstream audit surface is locally proven fixed in `webpresso/agent-kit` (it now skips `.windsurf` and honors `audit.toolchainIsolation.allowDependencies`), and this repo now carries the truthful allowlist (`tsx`, `vitest`, `@playwright/test`, `wrangler`). Under the local-link boundary, the installed `wp` consumed that fix and the audit passed.
+The upstream audit surface is locally proven fixed in `webpresso/agent-kit`, and this repo now carries the truthful allowlist (`tsx`, `vitest`, `@playwright/test`, `wrangler`). Under the local-link boundary, the installed `wp` consumed that fix and the audit passed.
 
 **Acceptance:**
 

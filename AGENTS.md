@@ -28,7 +28,7 @@ Defaults worth preserving:
 - `wp setup` repairs the managed `.gitignore` block for regenerated surfaces.
 - Consumer repos use the global `wp` install and keep only `@webpresso/agent-config` locally; do not add a consumer-local `@webpresso/agent-kit` dependency.
 - Track repo-owned instruction sources (`AGENTS.md`, `agent-rules/`, `agent-skills/`).
-- Ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.omx/`, `.codex/`, `.claude/skills/`, etc.).
+- Ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.omx/`, etc.).
 
 Current-state bootstrap commands remain `wp setup` / `wp sync`; future unified CLI replacements are `webpresso agent setup` / `webpresso agent sync`.
 
@@ -129,7 +129,7 @@ this block is preserved verbatim across `wp sync` runs.
 - Do not create or persist secret-bearing files like `.env`, `.env.local`, `.env.*.local`, `.dev.vars`, or `.dev.vars.example`.
 - Route secret-scoped commands through the repo contract (`wp secrets doctor --profile <profile> --json` + `wp secrets run --sink <sink> --profile <profile> -- <cmd>`).
 - Keep secret/path checks on shared audit surfaces when available.
-- Do not commit agent surfaces (`.agent/`, `.agents/`, `.cursor/`, `.omx/`, `.omc/`, `.codex/`, `.opencode/`).
+- Do not commit generated agent/runtime surfaces (`.agent/`, `.agents/`, `.cursor/`, `.omx/`, `.omc/`).
 - Do not hand-edit generated or derived surfaces; edit the catalog in agent-kit.
 - Do not push directly to `main`; use PRs and keep CI green.
 - Do not bypass hooks or verification gates.
