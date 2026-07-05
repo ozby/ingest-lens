@@ -41,7 +41,7 @@ lands. Do not describe a folder as existing before it does.
 | Architecture decision records                             | `docs/adrs/`                                     |
 | Tooling/infra migration notes                             | `docs/migrations/`                               |
 | Agent instructions and workflows                          | `.agent/`                                        |
-| Local agent/runtime surfaces (generated, never committed) | local dotdirs like `.codex/`, `.omx/`, `.agent/` |
+| Local agent/runtime surfaces (generated, never committed) | local dotdirs like `.omx/`, `.agent/` |
 | Package-specific behavior                                 | `packages/<name>/README.md`                      |
 | App- or worker-specific behavior                          | `apps/<name>/README.md`                          |
 | Implementation plans                                      | `blueprints/<lifecycle>/<slug>/_overview.md`     |

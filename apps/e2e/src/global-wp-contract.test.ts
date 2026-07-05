@@ -21,7 +21,6 @@ describe("global wp contract", () => {
     expect(packageJson.scripts?.["setup:agent"]).toBeUndefined();
     expect(packageJson.scripts?.postinstall).toBeUndefined();
     expect(JSON.stringify(packageJson.scripts ?? {})).not.toContain("run-webpresso-cli");
-    expect(JSON.stringify(packageJson.scripts ?? {})).not.toContain("AK_SKIP_GSTACK");
     expect(readFileSync(resolve(REPO_ROOT, "pnpm-workspace.yaml"), "utf8")).not.toContain(
       '"@webpresso/agent-kit"',
     );

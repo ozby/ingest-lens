@@ -58,8 +58,8 @@ vp run e2e --suite foundation                 # maintainer-only; needs a Neon E2
 
 Non-trivial work is tracked as blueprints under `blueprints/`. The blueprint
 lifecycle is gated by `wp audit blueprint-lifecycle`. Do not
-hand-edit generated agent surfaces (`.agent/`, `.claude/`, `.cursor/`,
-`.gemini/`, `.windsurf/`, `catalog/`, `agent-rules/`, `agent-skills/`,
+hand-edit generated agent surfaces (`.agent/`, `.cursor/`,
+`catalog/`, `agent-rules/`, `agent-skills/`,
 `blueprints/` runtime files) — those are kept in sync by the agent-kit
 symlinker.
 

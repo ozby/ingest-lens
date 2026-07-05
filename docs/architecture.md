@@ -137,7 +137,8 @@ Normalization/envelope builders now have one canonical implementation in
 compatibility re-exports.
 
 ADR: [0004](adrs/0004-ingestlens-ai-intake-architecture.md). Self-healing
-stream design: `~/.gstack/projects/ozby-ingest-lens/ozby-main-design-20260426-195719.md`.
+stream design is tracked in the durable design notes referenced by the completed
+blueprint set.
 
 ### Human review path (v1 baseline)
 
