@@ -37,12 +37,7 @@
   },
   "audit": {
     "toolchainIsolation": {
-      "allowDependencies": [
-        "@playwright/test",
-        "tsx",
-        "vitest",
-        "wrangler"
-      ]
+      "allowDependencies": ["@playwright/test", "tsx", "vitest", "wrangler"]
     }
   },
   "rules": {
