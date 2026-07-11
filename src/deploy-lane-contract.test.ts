@@ -182,7 +182,6 @@ describe("Cloudflare deploy lane contract", () => {
   it("uses repo-local deploy helpers that can be imported at runtime", async () => {
     const lanes = await import("../infra/src/deploy/lanes");
     const neonBranches = await import("../infra/src/deploy/neon-branches");
-    const deployScript = readRepoFile("infra/src/deploy/deploy.ts");
     const previewScript = readRepoFile("infra/src/deploy/deploy-preview.ts");
 
     expect(lanes.resolvePreviewLane("preview-main").clientHost).toBe(
