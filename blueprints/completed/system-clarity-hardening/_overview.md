@@ -186,9 +186,9 @@ Split the intake route cluster into smaller owner modules so the top-level route
 
 **Acceptance:**
 
-- [ ] Intake route file loses mixed responsibilities
-- [ ] Behavior remains covered by Worker tests
-- [ ] Scoped lint/typecheck/tests pass
+- [x] Intake route file loses mixed responsibilities
+- [x] Behavior remains covered by Worker tests
+- [x] Scoped lint/typecheck/tests pass
 
 #### Task 2.2: [backend] Decompose AI mapping adapter into explicit stages
 

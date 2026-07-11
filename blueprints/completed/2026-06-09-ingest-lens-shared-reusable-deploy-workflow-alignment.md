@@ -16,6 +16,8 @@ tags:
   - github-actions
   - cloudflare
   - deploy
+historical_zero_task_waiver: true
+historical_zero_task_rationale: Completed before task-heading lifecycle tracking; the completion summary, checked acceptance list, and verification record preserve the original evidence.
 ---
 
 # IngestLens: shared reusable deploy workflow alignment cleanup
