@@ -2,23 +2,22 @@
 type: blueprint
 owner: webpresso
 title: "Immutable agent-kit setup migration"
-status: in-progress
+status: completed
 complexity: M
 created: "2026-07-11"
 last_updated: "2026-07-11"
-progress_pct: 85
-progress: "Setup-owned migration and regression contract are complete; draft PR CI verification is pending."
+progress_pct: 100
+progress: "Completed: setup owns the immutable Vite+/agent-kit bootstrap, workflow policy is self-enforcing, and local plus clean-Linux verification passes."
+completed_at: "2026-07-11"
 depends_on:
   - "webpresso/agent-kit#509 from e7f4cd01566ff6473fc2aa1a4ca3b1f800216a12 through the rebased setup migration at f7cbc2677e16fa7b56ac3b1abf903598498cf1f0"
-worktree_owner_id: owner-6e077df09547
-worktree_owner_branch: bp/2026-07-11-immutable-agent-kit-setup
 ---
 
 # Immutable agent-kit setup migration
 
 ## Status
 
-In progress — migrate every consumer workflow from mutable, duplicated agent-kit installs to the setup-owned immutable `setup-wp` action contract.
+Completed — every consumer workflow now uses setup-owned immutable Vite+ and agent-kit actions, backed by all-workflow regression coverage.
 
 ## Architecture references
 
@@ -66,7 +65,7 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 
 #### [qa] Task 1.3: Verify and publish draft PR
 
-**Status:** in-progress
+**Status:** done
 
 **Depends:** Task 1.1, Task 1.2
 
@@ -84,4 +83,8 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 
 ## Verification evidence
 
-Pending.
+- Setup source at `f7cbc2677e16fa7b56ac3b1abf903598498cf1f0` produced six immutable `setup-wp` calls and the official full-SHA `setup-vp` bootstrap; repeated setup output converged byte-for-byte.
+- `node scripts/check-workflow-action-pins.ts` and `node --test test/ci-workflow-contract.test.ts` pass while scanning every workflow YAML file.
+- Agent-kit 3.1.11 audits passed for catalog drift, blueprint lifecycle, secret-provider quarantine, no-dev-vars, absolute paths, and Cloudflare deploy contracts; 3.1.10 lifecycle and quarantine compatibility checks also pass.
+- Repo formatting/lint, typecheck, tests, and changed-workflow `actionlint` checks passed before publication.
+- A clean Linux 3.1.11 reproduction identified and resolved the final CI-only local worktree-binding issue by completing this blueprint.
