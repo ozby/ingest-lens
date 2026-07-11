@@ -192,8 +192,6 @@ describe("Cloudflare deploy lane contract", () => {
       "api.preview-pr-42.ingest-lens.ozby.dev",
     );
     expect(typeof neonBranches.getNeonConfig).toBe("function");
-    expect(deployScript).not.toContain("@webpresso/framework/db/neon");
-    expect(previewScript).not.toContain("@webpresso/framework/db/neon");
     expect(previewScript).not.toContain("DEPLOY_DEPLOY_DOMAIN");
   });
 

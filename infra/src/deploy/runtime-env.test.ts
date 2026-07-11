@@ -17,6 +17,8 @@ describe("runtime env deploy resolution", () => {
       PATH: "/usr/bin",
       CI: "",
     };
+    delete process.env.CLOUDFLARE_API_TOKEN;
+    delete process.env.NEON_API_KEY;
   });
 
   afterEach(() => {

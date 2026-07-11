@@ -78,9 +78,9 @@ The Consistency Lab is a separate Worker used to measure delivery-path behavior;
 Runtime helper ownership:
 
 - provider-neutral runtime profile / env loading is extracted into the public
-  `@webpresso/runtime-env` package
+  `@webpresso/runtime/env` subpath
 - `ingest-lens` consumes that core directly through published
-  `@webpresso/runtime-env`, with only repo-specific required-secret keys kept local
+  `@webpresso/runtime/env`, with only repo-specific required-secret keys kept local
 - Neon branch lifecycle helpers remain repo-local to `ingest-lens`
 - `agent-kit` stays the tooling / verification surface (`wp`, `wp_*`, config
   subpaths), not the runtime/provider helper owner
