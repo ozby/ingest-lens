@@ -17,4 +17,4 @@ brew "gh"             # GitHub CLI: PR review, branch protection checks, Actions
 brew "act"            # run GitHub Actions locally: act -j <job>
 
 # --- Agent surface ---
-brew "rtk"             # CLI proxy that compresses command output; default-on via `ak setup`
+brew "rtk"             # CLI proxy that compresses command output; default-on via `wp setup`

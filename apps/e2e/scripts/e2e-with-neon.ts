@@ -14,7 +14,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
 import process from "node:process";
-import { createSecretsRuntimeEnv } from "@webpresso/runtime-env";
+import { createSecretsRuntimeEnv } from "@webpresso/runtime/env";
 import { getNeonConfig, NeonBranchProvider } from "../src/neon-branches";
 import { listE2ESuites, resolveE2ESuiteId } from "../src/e2e-suite-manifest";
 import {

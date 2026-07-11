@@ -1,6 +1,6 @@
 import process from "node:process";
 
-import { createSecretsRuntimeEnv } from "@webpresso/runtime-env";
+import { createSecretsRuntimeEnv } from "@webpresso/runtime/env";
 
 type ResolveRuntimeProfile = (profile: "secrets-only") => Promise<Record<string, string>>;
 
