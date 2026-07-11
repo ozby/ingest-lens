@@ -43,9 +43,11 @@ jobs:
         run: |
           set -euo pipefail
           VITE_PLUS_VERSION=$(node -p "require('./package.json').devDependencies['vite-plus'].replace(/^[^0-9]*/, '')")
-          AGENT_KIT_VERSION="${WP_SETUP_AGENT_KIT_VERSION:-2.3.2}"
-          npm install -g "vite-plus@${VITE_PLUS_VERSION}" "@webpresso/agent-kit@${AGENT_KIT_VERSION}"
+          npm install -g "vite-plus@${VITE_PLUS_VERSION}"
 
+      - uses: webpresso/agent-kit/.github/actions/setup-wp@3c28da8510d9da977654757e049c76d50bef4c07
+      - name: Check workflow action pins
+        run: vp run workflow-actions:check
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
 
       - run: vp install --frozen-lockfile

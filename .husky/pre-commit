@@ -7,7 +7,7 @@ wp format --affected || exit 1
 # Re-stage formatter rewrites for files that were already staged.
 if ! git diff --cached --quiet --diff-filter=ACMR; then
   git diff -z --cached --name-only --diff-filter=ACMR |
-    git add --pathspec-from-file=- --pathspec-file-nul || exit 1
+    git add -f --pathspec-from-file=- --pathspec-file-nul || exit 1
 fi
 
 wp audit guardrails --affected

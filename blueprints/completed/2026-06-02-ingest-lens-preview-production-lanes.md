@@ -13,6 +13,8 @@ tags:
   - deploy
   - preview
   - production
+historical_zero_task_waiver: true
+historical_zero_task_rationale: Completed before task-heading lifecycle tracking; the checked task list and verification record preserve the original execution evidence.
 ---
 
 # IngestLens: preview and release-gated production lanes

@@ -6,10 +6,12 @@ status: in-progress
 complexity: M
 created: "2026-07-11"
 last_updated: "2026-07-11"
-progress_pct: 10
-progress: "Worktree created; setup-owned migration and verification pending."
+progress_pct: 85
+progress: "Setup-owned migration and regression contract are complete; draft PR CI verification is pending."
 depends_on:
-  - "webpresso/agent-kit#509 at e7f4cd01566ff6473fc2aa1a4ca3b1f800216a12"
+  - "webpresso/agent-kit#509 from e7f4cd01566ff6473fc2aa1a4ca3b1f800216a12 through 3c28da8510d9da977654757e049c76d50bef4c07"
+worktree_owner_id: owner-6e077df09547
+worktree_owner_branch: bp/2026-07-11-immutable-agent-kit-setup
 ---
 
 # Immutable agent-kit setup migration
@@ -45,7 +47,7 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 
 #### [migration] Task 1.1: Run owner-checkpoint setup
 
-**Status:** in progress
+**Status:** done
 
 **Depends:** None
 
@@ -55,7 +57,7 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 
 #### [contract] Task 1.2: Harden workflow discovery
 
-**Status:** pending
+**Status:** done
 
 **Depends:** Task 1.1
 
@@ -64,7 +66,7 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 
 #### [qa] Task 1.3: Verify and publish draft PR
 
-**Status:** pending
+**Status:** in-progress
 
 **Depends:** Task 1.1, Task 1.2
 

@@ -1,8 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
-const workflow = readFileSync(".github/workflows/ci.yml", "utf8");
+const workflowsDirectory = ".github/workflows";
+const workflowFiles = readdirSync(workflowsDirectory, { withFileTypes: true })
+  .filter((entry) => entry.isFile() && /\.ya?ml$/u.test(entry.name))
+  .map((entry) => join(workflowsDirectory, entry.name))
+  .sort();
+const workflow = readFileSync(join(workflowsDirectory, "ci.yml"), "utf8");
 const expectedPreviewCallerSha = "ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0";
 
 test("CI workflow exposes wp-check as the branch-protection-facing gate", () => {
@@ -15,12 +21,22 @@ test("CI skips mutation for generated Version Packages merges", () => {
   assert.match(workflow, /!startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/u);
 });
 
-test("CI installs global Webpresso CLIs without legacy local setup helpers", () => {
-  assert.match(workflow, /name:\s*Install shared Webpresso CLIs/u);
-  assert.match(
-    workflow,
-    /npm install -g "vite-plus@\$\{VITE_PLUS_VERSION\}" "@webpresso\/agent-kit@\$\{AGENT_KIT_VERSION\}"/u,
-  );
+test("every workflow rejects legacy agent-kit installs and mutable setup refs", () => {
+  for (const workflowFile of workflowFiles) {
+    const contents = readFileSync(workflowFile, "utf8");
+
+    assert.doesNotMatch(contents, /WP_SETUP_AGENT_KIT_VERSION|AGENT_KIT_VERSION/u, workflowFile);
+    assert.doesNotMatch(contents, /@webpresso\/agent-kit@/u, workflowFile);
+    for (const match of contents.matchAll(
+      /webpresso\/agent-kit\/\.github\/actions\/setup-wp@([^\s#]+)/gu,
+    )) {
+      assert.match(match[1] ?? "", /^[0-9a-f]{40}$/u, workflowFile);
+    }
+  }
+});
+
+test("CI uses setup-owned Webpresso tooling without legacy local setup helpers", () => {
+  assert.match(workflow, /uses:\s*webpresso\/agent-kit\/\.github\/actions\/setup-wp@[0-9a-f]{40}/u);
   assert.match(workflow, /uses: oven-sh\/setup-bun@[0-9a-f]{40}/u);
   assert.doesNotMatch(workflow, /name:\s*Expose wp alias from Vite Plus/u);
   assert.doesNotMatch(workflow, /ln -sf "\$\{vp_bin\}" "\$\{RUNNER_TEMP\}\/webpresso-bin\/wp"/u);
