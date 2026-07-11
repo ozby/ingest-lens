@@ -9,7 +9,7 @@ last_updated: "2026-07-11"
 progress_pct: 85
 progress: "Setup-owned migration and regression contract are complete; draft PR CI verification is pending."
 depends_on:
-  - "webpresso/agent-kit#509 from e7f4cd01566ff6473fc2aa1a4ca3b1f800216a12 through 3c28da8510d9da977654757e049c76d50bef4c07"
+  - "webpresso/agent-kit#509 from e7f4cd01566ff6473fc2aa1a4ca3b1f800216a12 through the rebased setup migration at f7cbc2677e16fa7b56ac3b1abf903598498cf1f0"
 worktree_owner_id: owner-6e077df09547
 worktree_owner_branch: bp/2026-07-11-immutable-agent-kit-setup
 ---
@@ -34,7 +34,7 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 - Run `wp setup` and `wp sync` from the agent-kit owner checkpoint for PR #509.
 - Accept setup-owned migrations for workflows, hooks, local dependencies, harness manifests, and generated contracts.
 - Add a repo-owned regression contract only if setup does not generate equivalent all-workflow coverage.
-- Verify setup idempotency and the exact 3.1.10 audit surface.
+- Verify setup idempotency, the current 3.1.11 audit surface, and 3.1.10 compatibility where relevant.
 - Verify typecheck, lint, tests, and workflow policy checks.
 
 ## Non-goals
@@ -71,7 +71,7 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 **Depends:** Task 1.1, Task 1.2
 
 - Run setup twice and prove the second pass is clean.
-- Run exact 3.1.10 audits plus repo typecheck, lint, and tests.
+- Run exact 3.1.11 audits, relevant 3.1.10 compatibility checks, plus repo typecheck, lint, and tests.
 - Commit, push, and keep the PR in draft state.
 
 ## Acceptance criteria
@@ -79,7 +79,7 @@ CI jobs install a duplicated `@webpresso/agent-kit@2.3.2` pin directly. Every ag
 - Every workflow uses the immutable setup-owned `setup-wp` action contract with no direct agent-kit install or legacy version pin.
 - Adding a future workflow with a legacy/direct pin fails the repo contract test.
 - Setup and sync are idempotent at the owner checkpoint.
-- Exact agent-kit 3.1.10 audits and affected repo gates pass, or a precise upstream setup gap is reported.
+- Exact agent-kit 3.1.11 audits, relevant 3.1.10 compatibility checks, and affected repo gates pass, or a precise upstream setup gap is reported.
 - A draft PR is open; no merge is performed.
 
 ## Verification evidence

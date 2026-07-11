@@ -42,7 +42,7 @@ test("CI uses setup-owned Webpresso tooling without legacy local setup helpers",
   assert.doesNotMatch(workflow, /ln -sf "\$\{vp_bin\}" "\$\{RUNNER_TEMP\}\/webpresso-bin\/wp"/u);
   assert.match(workflow, /wp typecheck/u);
   assert.doesNotMatch(workflow, new RegExp("setup-" + "webpresso-toolchain", "u"));
-  assert.doesNotMatch(workflow, /voidzero-dev\/setup-vp/u);
+  assert.match(workflow, /uses:\s*voidzero-dev\/setup-vp@[0-9a-f]{40}/u);
   assert.doesNotMatch(workflow, new RegExp("corepack prepare " + "pnpm@10\\.33\\.0", "u"));
 });
 
@@ -91,7 +91,11 @@ test("release automation skips heavy PR and merge validations outside the releas
   );
   assert.match(e2eWorkflow, /wp secrets run --sink e2e --profile preview/u);
   assert.doesNotMatch(e2eWorkflow, /\.\/\.github\/actions\/setup-monorepo/u);
-  assert.match(e2eWorkflow, /name:\s*Install shared Webpresso CLIs/u);
+  assert.match(e2eWorkflow, /uses:\s*voidzero-dev\/setup-vp@[0-9a-f]{40}/u);
+  assert.match(
+    e2eWorkflow,
+    /uses:\s*webpresso\/agent-kit\/\.github\/actions\/setup-wp@[0-9a-f]{40}/u,
+  );
   assert.match(
     e2eWorkflow,
     /uses: DopplerHQ\/cli-action@cdd4670c26c06688d7afe8ff3b76b1cac918f4da # v4/u,
