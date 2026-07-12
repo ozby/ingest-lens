@@ -1,15 +1,15 @@
 ---
 type: blueprint
 status: completed
-completed_at: '2026-07-12'
+completed_at: "2026-07-12"
 title: "Harden consumer secret authority contract"
 owner: ozby
 worktree_owner_id: owner-ca92350439a9
 worktree_owner_branch: bp/harden-consumer-secret-authority-contract
 complexity: S
-created: '2026-07-12'
-last_updated: '2026-07-12'
-progress: '100% (complete)'
+created: "2026-07-12"
+last_updated: "2026-07-12"
+progress: "100% (complete)"
 depends_on: []
 cross_repo_depends_on:
   - repo: webpresso/agent-kit
@@ -170,10 +170,10 @@ injection through the global `wp` facade.
 
 ### Promotion Gates
 
-| Gate      | Command      | Expected outcome | Last result       |
-| --------- | ------------ | ---------------- | ----------------- |
-| Lint | wp lint | pass | pass at 2026-07-12T03:25:45.796Z |
-| Typecheck | wp typecheck | pass | pass at 2026-07-12T03:25:45.796Z |
+| Gate      | Command      | Expected outcome | Last result                      |
+| --------- | ------------ | ---------------- | -------------------------------- |
+| Lint      | wp lint      | pass             | pass at 2026-07-12T03:25:45.796Z |
+| Typecheck | wp typecheck | pass             | pass at 2026-07-12T03:25:45.796Z |
 
 ### Residual Unknowns
 

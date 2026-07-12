@@ -1,6 +1,4 @@
 {
-  "plugin": [
-    "@webpresso/opencode-plugin"
-  ],
+  "plugin": ["@webpresso/opencode-plugin"],
   "mcp": {}
 }
