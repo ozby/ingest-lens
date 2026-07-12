@@ -9,35 +9,42 @@
       "web-design-guidelines"
     ]
   },
-  "integrations": {},
   "hosts": {
     "selected": [],
     "requiredCapabilities": [
-      "fix",
       "verify",
-      "testing-philosophy",
+      "fix",
       "plan-refine",
-      "pll",
       "best-practice-research",
+      "testing-philosophy",
+      "tph",
       "claude",
-      "review",
-      "autoplan",
-      "investigate",
-      "health",
+      "codex",
+      "opencode-go",
       "plan-eng-review",
       "plan-ceo-review",
       "plan-design-review",
       "plan-devex-review",
       "browse",
-      "qa-only",
-      "qa",
       "devex-review",
-      "design-review"
-    ]
+      "design-review",
+      "hooks-doctor",
+      "tech-debt",
+      "lore-protocol",
+      "deep-research",
+      "goal",
+      "autopilot"
+    ],
+    "visibility": {}
   },
   "audit": {
     "toolchainIsolation": {
-      "allowDependencies": ["@playwright/test", "tsx", "vitest", "wrangler"]
+      "allowDependencies": [
+        "@playwright/test",
+        "tsx",
+        "vitest",
+        "wrangler"
+      ]
     }
   },
   "rules": {

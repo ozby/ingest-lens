@@ -65,7 +65,8 @@
     "deploy:production": "wp deploy --lane prd",
     "deploy:dry-run": "wp deploy --lane prd --dry-run",
     "act:list": "wp ci act --workflow ci",
-    "workflow-actions:check": "node scripts/check-workflow-action-pins.ts"
+    "workflow-actions:check": "node scripts/check-workflow-action-pins.ts",
+    "setup:agent": "wp setup"
   },
   "dependencies": {
     "rulesync": "8.15.1"

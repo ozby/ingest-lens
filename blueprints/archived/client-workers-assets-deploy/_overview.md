@@ -347,7 +347,7 @@ loading + one authenticated API call.
 - `apps/client/` — React + Vite + Tailwind + components scaffold
 - `apps/workers/wrangler.toml` — the API's `[env.dev] / [env.prd]` + `custom_domain = true` pattern is the exact template to copy
 - `infra/src/deploy/deploy.ts` — the 3-phase orchestrator; extending to 4 phases is additive
-- configured secret provider `ozby-shell/dev` — holds the CF token that already deploys Workers; no new secrets needed for the client
+- configured secret provider `ozby-dev/stg` — holds the CF token that already deploys Workers, so no new secrets were needed for the client
 - CF token scopes already granted for Workers Scripts:Edit, KV, R2, Hyperdrive, Routes, DNS — static-assets deploy uses Workers Scripts:Edit which is already present
 
 ## Risks

@@ -19,7 +19,7 @@ jobs:
           node-version: "24.16.0"
           cache: true
           run-install: false
-      - uses: webpresso/agent-kit/.github/actions/setup-wp@9e10b3494d4db019c89fe56f6a0286995b5ce772
+      - uses: webpresso/agent-kit/.github/actions/setup-wp@e02badc2ba922b2d8cbfe7f3f35fb9cf56848182
       - name: Check workflow action pins
         run: node scripts/check-workflow-action-pins.ts
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
