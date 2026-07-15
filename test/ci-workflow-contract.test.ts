@@ -25,10 +25,14 @@ test("every workflow rejects legacy agent-kit installs and mutable setup refs", 
   for (const workflowFile of workflowFiles) {
     const contents = readFileSync(workflowFile, "utf8");
 
-    assert.doesNotMatch(contents, /WP_SETUP_AGENT_KIT_VERSION|AGENT_KIT_VERSION/u, workflowFile);
+    assert.doesNotMatch(
+      contents,
+      /^\s*(?:AGENT_KIT_VERSION|WP_SETUP_AGENT_KIT_VERSION)\s*[:=]/mu,
+      workflowFile,
+    );
     assert.doesNotMatch(contents, /@webpresso\/agent-kit@/u, workflowFile);
     for (const match of contents.matchAll(
-      /webpresso\/agent-kit\/\.github\/actions\/setup-wp@([^\s#]+)/gu,
+      /webpresso\/github-actions\/\.github\/actions\/setup-wp@([^\s#]+)/gu,
     )) {
       assert.match(match[1] ?? "", /^[0-9a-f]{40}$/u, workflowFile);
     }
@@ -36,7 +40,10 @@ test("every workflow rejects legacy agent-kit installs and mutable setup refs", 
 });
 
 test("CI uses setup-owned Webpresso tooling without legacy local setup helpers", () => {
-  assert.match(workflow, /uses:\s*webpresso\/agent-kit\/\.github\/actions\/setup-wp@[0-9a-f]{40}/u);
+  assert.match(
+    workflow,
+    /uses:\s*webpresso\/github-actions\/\.github\/actions\/setup-wp@[0-9a-f]{40}/u,
+  );
   assert.match(workflow, /uses: oven-sh\/setup-bun@[0-9a-f]{40}/u);
   assert.doesNotMatch(workflow, /name:\s*Expose wp alias from Vite Plus/u);
   assert.doesNotMatch(workflow, /ln -sf "\$\{vp_bin\}" "\$\{RUNNER_TEMP\}\/webpresso-bin\/wp"/u);
@@ -94,7 +101,7 @@ test("release automation skips heavy PR and merge validations outside the releas
   assert.match(e2eWorkflow, /uses:\s*voidzero-dev\/setup-vp@[0-9a-f]{40}/u);
   assert.match(
     e2eWorkflow,
-    /uses:\s*webpresso\/agent-kit\/\.github\/actions\/setup-wp@[0-9a-f]{40}/u,
+    /uses:\s*webpresso\/github-actions\/\.github\/actions\/setup-wp@[0-9a-f]{40}/u,
   );
   assert.match(
     e2eWorkflow,

@@ -79,7 +79,13 @@ jobs:
           node-version: "24.16.0"
           cache: true
           run-install: false
-      - uses: webpresso/agent-kit/.github/actions/setup-wp@e02badc2ba922b2d8cbfe7f3f35fb9cf56848182
+      - name: Resolve wp version
+        id: wp_version
+        shell: bash
+        run: echo "version=${WP_SETUP_AGENT_KIT_VERSION:-2.3.2}" >> "$GITHUB_OUTPUT"
+      - uses: webpresso/github-actions/.github/actions/setup-wp@c2c71a7a4be446fc6858e6b57bf55a11ccfa2d88
+        with:
+          version: ${{ steps.wp_version.outputs.version }}
       - name: Check workflow action pins
         run: node scripts/check-workflow-action-pins.ts
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
