@@ -22,7 +22,7 @@ jobs:
       - name: Resolve wp version
         id: wp_version
         shell: bash
-        run: echo "version=${WP_SETUP_AGENT_KIT_VERSION:-2.3.2}" >> "$GITHUB_OUTPUT"
+        run: echo "version=${WP_SETUP_AGENT_KIT_VERSION:-3.1.17}" >> "$GITHUB_OUTPUT"
       - uses: webpresso/github-actions/.github/actions/setup-wp@c2c71a7a4be446fc6858e6b57bf55a11ccfa2d88
         with:
           version: ${{ steps.wp_version.outputs.version }}
