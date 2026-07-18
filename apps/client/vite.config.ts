@@ -44,6 +44,29 @@ export default defineConfig(({ mode }) => {
     server: {
       port: parseInt(CLIENT_PORT, 10),
     },
+    build: {
+      rolldownOptions: {
+        output: {
+          manualChunks(id) {
+            if (
+              id.includes("node_modules/react") ||
+              id.includes("node_modules/react-dom") ||
+              id.includes("node_modules/react-router")
+            ) {
+              return "react";
+            }
+            if (
+              id.includes("node_modules/lucide-react") ||
+              id.includes("node_modules/sonner") ||
+              id.includes("packages/ui/")
+            ) {
+              return "ui";
+            }
+            return undefined;
+          },
+        },
+      },
+    },
     define: {
       "import.meta.env.API_URL": JSON.stringify(API_URL),
       "import.meta.env.VITE_API_BASE_URL": JSON.stringify(VITE_API_BASE_URL),
