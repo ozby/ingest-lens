@@ -48,11 +48,13 @@ export default defineConfig(({ mode }) => {
       rolldownOptions: {
         output: {
           manualChunks(id) {
-            if (
-              id.includes("node_modules/react") ||
-              id.includes("node_modules/react-dom") ||
-              id.includes("node_modules/react-router")
-            ) {
+            if (id.includes("node_modules/react-dom")) {
+              return "react-dom";
+            }
+            if (id.includes("node_modules/react-router")) {
+              return "react-router";
+            }
+            if (id.includes("node_modules/react/")) {
               return "react";
             }
             if (
