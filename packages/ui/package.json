@@ -60,12 +60,12 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@typescript/native-preview": "catalog:tooling",
     "@vitejs/plugin-react": "catalog:",
     "@webpresso/agent-config": "catalog:",
     "bunchee": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "typescript": "catalog:tooling"
   },
   "peerDependencies": {
     "@types/react": ">=19",

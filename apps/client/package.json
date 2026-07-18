@@ -81,10 +81,10 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@typescript/native-preview": "catalog:tooling",
     "@vitejs/plugin-react": "catalog:",
     "@webpresso/agent-config": "catalog:",
     "tailwindcss": "catalog:",
+    "typescript": "catalog:tooling",
     "vite": "catalog:tooling",
     "wrangler": "catalog:workers"
   }

@@ -33,7 +33,7 @@ vp install
 Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local Agent Kit wrapper. Doppler CI for this repo now uses the existing ozby workplace project `ozby-dev`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
 
 ```bash
-wp secrets run --sink dev-server --profile preview -- vp run dev
+wp secrets run --sink dev-server --profile preview -- wp run dev
 ```
 
 Success signal: secrets are injected and the vite-plus dev server / Cloudflare Worker dev process starts and stays running.
@@ -41,7 +41,7 @@ Success signal: secrets are injected and the vite-plus dev server / Cloudflare W
 Run the dev server without secret injection:
 
 ```bash
-vp run dev                :offline
+wp run dev                :offline
 ```
 
 Success signal: the dev server starts without secret injection.
@@ -90,19 +90,19 @@ Runtime helper ownership:
 Fast contributor check (no secrets required):
 
 ```bash
-vp run lint          # oxlint + per-package lint
-vp run check-types   # tsc, no type errors
-vp run test          # vitest suites
+wp run lint          # oxlint + per-package lint
+wp run check-types   # tsc, no type errors
+wp run test          # vitest suites
 ```
 
 Full maintainer check (mirrors CI; some steps need secrets / a Neon E2E branch — **maintainer-only**):
 
 ```bash
 vp check                          # aggregate lint + types + format
-vp run build                      # all packages build; client/worker bundles emitted
+wp run build                      # all packages build; client/worker bundles emitted
 wp audit docs-frontmatter
 wp audit blueprint-lifecycle
-vp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
+wp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
 ```
 
 PRs are gated by the canonical four checks:
