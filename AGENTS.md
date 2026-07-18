@@ -3,12 +3,12 @@
 # Operating Contract
 
 Prefer repo-local instructions when more specific.
-Keep changes small, reviewable, and verified.
+Keep changes small.
 
 ## Setup after clone
 
 ```bash
-vp install && vp run setup:agent  # setup:agent runs wp setup, which scaffolds .agent/, AGENTS.md, hooks, and runs wp sync
+vp install && vp run setup:agent && wp sync  # setup and sync are separate, idempotent steps
 ```
 
 agent-kit's catalog is the single source of truth for generated agent surfaces.
@@ -16,17 +16,16 @@ Agent-kit owns generated agent surfaces here; Webpresso CLI owns the end-user co
 
 - Optional agent tools can be WP-owned with `wp install codex|claude-code|opencode` or `wp install oh-my opencode`; `openagent` aliases the latter, and WP-owned scopes use `wp update`.
 - `wp setup` repairs the managed `.gitignore` block for regenerated surfaces.
-- Consumer repos use the global `wp` install and keep only `@webpresso/agent-config` locally; do not add a consumer-local `@webpresso/agent-kit` dependency.
-- Track repo-owned instruction sources (`AGENTS.md`, `agent-rules/`, `agent-skills/`).
-- Ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.codex/`, `.opencode/`, etc.).
+- Consumer repos use global `wp`, keep only `@webpresso/agent-config` locally, and do not add local `@webpresso/agent-kit`.
+- Track repo-owned instruction sources (`AGENTS.md`, `agent-rules/`, `agent-skills/`); ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.codex/`, `.opencode/`, etc.).
 
 - Keep the generated default `AGENTS.md` under 8 KB.
-- Move handbook prose to docs; keep only durable rules and command contracts here.
+- Move handbook prose to docs; keep only durable rules here.
 
 Codex routing instruction surface:
 <wp_instruction_surface host="codex" artifact="AGENTS.md" source="wp_routing">
 <host_contract>
-<native_tool_names>wp_audit, wp_audits, wp_bench, wp_ci_act, wp_e2e, wp_fleet_status, wp_format, wp_gain, wp_goal_cancel, wp_goal_handoff, wp_goal_new, wp_goal_run, wp_goal_status, wp_lint, wp_pr_status, wp_pr_upsert, wp_pr_wait, wp_qa, wp_release_readiness, wp_session_batch_execute, wp_session_capture, wp_session_doctor, wp_session_execute, wp_session_execute_file, wp_session_fetch_and_index, wp_session_index, wp_session_purge, wp_session_retrieve, wp_session_restore, wp_session_search, wp_session_snapshot, wp_session_stats, wp_test, wp_typecheck, wp_worker_tail, wp_worktree</native_tool_names>
+<native_tool_names>wp_audit, wp_audits, wp_bench, wp_ci_act, wp_e2e, wp_fleet_status, wp_format, wp_gain, wp_lint, wp_pr_status, wp_pr_upsert, wp_pr_wait, wp_qa, wp_release_readiness, wp_session_batch_execute, wp_session_capture, wp_session_context, wp_session_doctor, wp_session_execute, wp_session_execute_file, wp_session_fetch_and_index, wp_session_index, wp_session_purge, wp_session_retrieve, wp_session_restore, wp_session_search, wp_session_snapshot, wp_session_stats, wp_test, wp_typecheck, wp_ultragoal_cancel, wp_ultragoal_handoff, wp_ultragoal_new, wp_ultragoal_run, wp_ultragoal_status, wp_worker_tail, wp_worktree</native_tool_names>
 <stdout_noop>Codex hook commands with no action write {} on stdout; durable guidance belongs in AGENTS.md.</stdout_noop>
 <lifecycle_notes>
 <note>Codex reads repository instruction files for durable guidance.</note>
@@ -53,7 +52,8 @@ for review/landing. Non-`*.md` PRs need a changed blueprint unless
 Ultragoal: never use main as controller. Use `./bin/wp worktree new
 bp/ultragoal-<slug> --base origin/main`; run `./bin/wp blueprint start
 <slug>` there. After merge run `./bin/wp worktree merge-cleanup
-<merged-worktree> --base origin/main`; do not claim done while the
+<merged-worktree> --base origin/main` (or `--stash-primary` if primary is
+dirty); do not claim done while the
 merged worktree remains.
 
 Catalog-owned surfaces:
@@ -69,6 +69,10 @@ Catalog-owned surfaces:
 - Apply DRY, SOLID, YAGNI, and KISS.
 - No hardcoded relative paths in executable code or config; derive from an explicit absolute anchor.
 
+Hook invariant: global hooks use the canonical contract; skill hooks never
+project into host settings. Bound hot paths; do not raise timeouts or hide work
+asynchronously.
+
 ## Verify
 
 Before claiming completion, run the narrowest checks that prove the change:
@@ -81,11 +85,11 @@ Before claiming completion, run the narrowest checks that prove the change:
 - docs or blueprint validation when docs/plans changed
 - `wp sync --check` after template/catalog changes
 
-If a gate fails, fix the root cause or record the blocker with evidence.
+If a gate fails, fix root cause or record the blocker with evidence.
 
 ## Communicate
 
-Explain why the change exists, the tradeoffs, and what was verified.
+Explain why the change exists, tradeoffs, and what was verified.
 Before opening/updating a PR, prefill `.github/PULL_REQUEST_TEMPLATE.md`
 AI/model disclosure (`Execution model(s)`, `Planning/refinement model(s)`,
 `Review/verification model(s)`, `Review artifact/verdict`, `Session id` via
@@ -99,8 +103,10 @@ Record durable architecture decisions in the repo's ADR/planning surface if one 
 
 ## Repo-specific customizations
 
-Add repo-local instructions, preferences, and exceptions here. Content inside
-this block is preserved verbatim across `wp sync` runs.
+Command routing is a hard invariant: prefer `wp`, then `vp`, then `pnpm`.
+Use `vp` only when `wp` has no equivalent, and raw `pnpm` only when neither
+facade can perform the operation. All documentation, instructions, scripts,
+and workflow examples must follow this hierarchy without exception.
 
 ### Tech stack addendum
 

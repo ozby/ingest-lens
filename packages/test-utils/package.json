@@ -31,8 +31,8 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-config": "catalog:",
-    "bunchee": "catalog:"
+    "bunchee": "catalog:",
+    "typescript": "catalog:tooling"
   }
 }

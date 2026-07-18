@@ -7,7 +7,7 @@ Repo-owned end-to-end surface for IngestLens. Zero manual env vars — secrets a
 ```bash
 wp e2e --suite full                          # from repo root — auto-provisions Neon branch
 wp e2e --suite foundation                    # host-adapter path against an already-running worker
-vp run --filter @repo/e2e auth:dev-bench     # against deployed dev.ingest-lens.ozby.dev
+wp run --filter @repo/e2e auth:dev-bench     # against deployed dev.ingest-lens.ozby.dev
 ```
 
 The root `wp e2e` script (`apps/e2e/scripts/e2e-with-neon.ts`):
@@ -40,7 +40,7 @@ Reviewer-facing claim mapping lives in
 
 ## Deployed dev auth bench
 
-`vp run --filter @repo/e2e auth:dev-bench` exercises the deployed Webpresso auth
+`wp run --filter @repo/e2e auth:dev-bench` exercises the deployed Webpresso auth
 flow end to end against:
 
 - `https://dev.ingest-lens.ozby.dev`
@@ -55,8 +55,8 @@ and protected-route redirect back to the auth landing page.
 All require the repo-selected secret manager:
 
 ```bash
-wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:create
-wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:list
-wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:delete
-wp secrets run --sink db-branch --profile preview -- vp run --filter @repo/e2e db:branch:cleanup
+wp secrets run --sink db-branch --profile preview -- wp run --filter @repo/e2e db:branch:create
+wp secrets run --sink db-branch --profile preview -- wp run --filter @repo/e2e db:branch:list
+wp secrets run --sink db-branch --profile preview -- wp run --filter @repo/e2e db:branch:delete
+wp secrets run --sink db-branch --profile preview -- wp run --filter @repo/e2e db:branch:cleanup
 ```

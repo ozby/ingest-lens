@@ -11,8 +11,8 @@ Date: 2026-04-22
 
 | Before                                 | After                                 |
 | -------------------------------------- | ------------------------------------- |
-| `turbo run <task>`                     | `vp run <task>`                       |
-| `turbo.json` task graph                | pnpm workspace deps + `vp run --deps` |
+| `turbo run <task>`                     | `wp run <task>`                       |
+| `turbo.json` task graph                | pnpm workspace deps + `wp run --deps` |
 | `"turbo": "^2.4.4"` devDep             | `"vite-plus": "0.1.19"` devDep        |
 | `eslint-plugin-turbo` in config-eslint | removed                               |
 
@@ -22,16 +22,16 @@ Cold-run benchmarks were not available pre-migration. Run the following after
 deploying to record the new baseline:
 
 ```bash
-time vp run build 2>&1 | tail -5
-time vp run test  2>&1 | tail -5
+time wp run build 2>&1 | tail -5
+time wp run test  2>&1 | tail -5
 ```
 
 ## Rollback recipe
 
 1. `git revert <this-commit-sha>` — restores `turbo.json`, reverts all
-   `vp run` → `turbo run` script replacements, and restores `turbo` devDependency.
+   `wp run` → `turbo run` script replacements, and restores `turbo` devDependency.
 2. `vp install` — reinstalls turbo.
-3. Verify: `vp run build && vp run test`.
+3. Verify: `wp run build && wp run test`.
 
 No data migrations or database changes; rollback is purely a config revert.
 
