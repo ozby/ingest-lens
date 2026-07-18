@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => {
       port: parseInt(CLIENT_PORT, 10),
     },
     build: {
+      modulePreload: false,
       rolldownOptions: {
         output: {
           manualChunks(id) {
