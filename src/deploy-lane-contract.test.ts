@@ -194,15 +194,15 @@ describe("Cloudflare deploy lane contract", () => {
     expect(previewScript).not.toContain("DEPLOY_DEPLOY_DOMAIN");
   });
 
-  it("aliases shared UI package source for Vite without requiring prebuilt dist artifacts", () => {
+  it("consumes public @webpresso/ui instead of private workspace UI aliases", () => {
     const viteConfig = readRepoFile("apps/client/vite.config.ts");
+    const clientPkg = readRepoFile("apps/client/package.json");
 
-    expect(viteConfig).toContain("function findRepoRoot");
-    expect(viteConfig).toContain('"@repo/ui/components"');
-    expect(viteConfig).toContain('"@repo/ui/lib"');
-    expect(viteConfig).toContain('"packages"');
-    expect(viteConfig).toContain('"ui"');
-    expect(viteConfig).toContain('"src"');
+    expect(clientPkg).toContain('"@webpresso/ui"');
+    expect(clientPkg).not.toContain('"@repo/ui"');
+    expect(viteConfig).not.toContain('"@repo/ui/components"');
+    expect(viteConfig).not.toContain('"@repo/ui/lib"');
+    expect(viteConfig).toContain("node_modules/@webpresso/ui");
   });
 
   it("creates Neon preview branches with a read-write endpoint before reading connection URIs", async () => {

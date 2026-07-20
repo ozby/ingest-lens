@@ -1,10 +1,10 @@
 import React from "react";
 import { IMessage } from "@repo/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components";
+import { Card, CardContent, CardHeader, CardTitle } from "@webpresso/ui";
 import { formatDistanceToNow } from "date-fns";
 import { Eye, EyeOff, Trash2 } from "lucide-react";
-import { Button } from "@repo/ui/components";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@repo/ui/components";
+import { Button } from "@webpresso/ui";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@webpresso/ui";
 
 interface MessageListProps {
   messages: IMessage[];

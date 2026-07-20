@@ -5,7 +5,7 @@ import { IQueue, IQueueMetrics } from "@repo/types";
 import apiService from "@/services/api";
 import NavBar from "@/components/NavBar";
 import Sidebar from "@/components/Sidebar";
-import { Button } from "@repo/ui/components";
+import { Button } from "@webpresso/ui";
 import {
   Card,
   CardContent,
@@ -13,8 +13,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components";
-import { Input } from "@repo/ui/components";
+} from "@webpresso/ui";
+import { Input } from "@webpresso/ui";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/ui/components";
+} from "@webpresso/ui";
 import { List, PlusCircle, Search, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";

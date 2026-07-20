@@ -2,7 +2,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "@repo/ui/components";
+import { Button } from "@webpresso/ui";
 import {
   Form,
   FormControl,
@@ -11,9 +11,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@repo/ui/components";
-import { Input } from "@repo/ui/components";
-import { Textarea } from "@repo/ui/components";
+} from "@webpresso/ui";
+import { Input } from "@webpresso/ui";
+import { Textarea } from "@webpresso/ui";
 import { CreateQueueRequest } from "@repo/types";
 import {
   Dialog,
@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/ui/components";
+} from "@webpresso/ui";
 import { PlusCircle } from "lucide-react";
 
 const queueFormSchema = z.object({

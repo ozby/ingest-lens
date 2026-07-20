@@ -1,7 +1,7 @@
 import { MappingSuggestion, SuggestionReviewStatus } from "@repo/types";
-import { Checkbox } from "@repo/ui/components";
-import { Badge } from "@repo/ui/components";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components";
+import { Checkbox } from "@webpresso/ui";
+import { Badge } from "@webpresso/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@webpresso/ui";
 
 interface MappingSuggestionReviewProps {
   suggestion: MappingSuggestion;
