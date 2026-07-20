@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@webpresso/ui";
 import { formatDistanceToNow } from "date-fns";
 import { Eye, EyeOff, Trash2 } from "lucide-react";
 import { Button } from "@webpresso/ui";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/ui-primitives/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@webpresso/ui";
 
 interface MessageListProps {
   messages: IMessage[];

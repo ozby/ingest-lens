@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@webpresso/ui";
 import { Badge } from "@webpresso/ui";
-import { Alert, AlertDescription, AlertTitle } from "@/ui-primitives/alert";
+import { Alert, AlertDescription, AlertTitle } from "@webpresso/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@webpresso/ui";
 import { Label } from "@webpresso/ui";
 

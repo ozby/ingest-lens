@@ -24,7 +24,7 @@ import MetricsCard from "@/components/MetricsCard";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@webpresso/ui";
 import { Badge } from "@webpresso/ui";
-import { Alert, AlertDescription, AlertTitle } from "@/ui-primitives/alert";
+import { Alert, AlertDescription, AlertTitle } from "@webpresso/ui";
 
 function parseJsonPayload(raw: string): { ok: true; data: unknown } | { ok: false } {
   try {
