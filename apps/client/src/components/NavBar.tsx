@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/ui/components";
+} from "@webpresso/ui";
 
 interface NavBarProps {
   toggleSidebar: () => void;

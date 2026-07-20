@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { IServerMetrics } from "@repo/types";
 import { Activity, Clock, MailCheck, Server, XCircle } from "lucide-react";
 import MetricsCard from "./MetricsCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components";
+import { Card, CardContent, CardHeader, CardTitle } from "@webpresso/ui";
 import { formatDistanceToNow } from "date-fns";
 import {
   AreaChart,

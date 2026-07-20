@@ -1,7 +1,13 @@
+/**
+ * Temporary local primitive until @webpresso/ui exports this (framework PR #75).
+ * Delete and import from @webpresso/ui when version >= 0.2.2.
+ * TODO(webpresso-ui): remove local copy after public release.
+ */
+
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
-import { cn } from "../lib";
+import { cn } from "@webpresso/ui";
 
 const TooltipProvider = TooltipPrimitive.Provider;
 

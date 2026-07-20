@@ -2,7 +2,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "@repo/ui/components";
+import { Button } from "@webpresso/ui";
 import {
   Form,
   FormControl,
@@ -11,8 +11,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@repo/ui/components";
-import { Input } from "@repo/ui/components";
+} from "@webpresso/ui";
+import { Input } from "@webpresso/ui";
 import { CreateTopicRequest } from "@repo/types";
 import {
   Dialog,
@@ -22,9 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/ui/components";
+} from "@webpresso/ui";
 import { PlusCircle, Users } from "lucide-react";
-import { Checkbox } from "@repo/ui/components";
+import { Checkbox } from "@webpresso/ui";
 
 // Updated schema to include subscribers
 const topicFormSchema = z.object({

@@ -10,7 +10,7 @@ import {
   List,
   ShieldCheck,
 } from "lucide-react";
-import { cn } from "@repo/ui/lib";
+import { cn } from "@webpresso/ui";
 
 interface SidebarProps {
   isOpen: boolean;

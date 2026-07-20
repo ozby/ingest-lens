@@ -3,12 +3,11 @@
 # Operating Contract
 
 Prefer repo-local instructions when more specific.
-Keep changes small.
 
 ## Setup after clone
 
 ```bash
-vp install && vp run setup:agent && wp sync  # setup and sync are separate, idempotent steps
+wp install && wp run setup:agent && wp sync  # setup and sync are separate, idempotent steps
 ```
 
 agent-kit's catalog is the single source of truth for generated agent surfaces.
@@ -20,7 +19,6 @@ Agent-kit owns generated agent surfaces here; Webpresso CLI owns the end-user co
 - Track repo-owned instruction sources (`AGENTS.md`, `agent-rules/`, `agent-skills/`); ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.codex/`, `.opencode/`, etc.).
 
 - Keep the generated default `AGENTS.md` under 8 KB.
-- Move handbook prose to docs; keep only durable rules here.
 
 Codex routing instruction surface:
 <wp_instruction_surface host="codex" artifact="AGENTS.md" source="wp_routing">
@@ -42,19 +40,13 @@ Use blueprints for non-trivial work. Specs live in
 `planned/`, `in-progress/`, and `completed/`. Keep tasks, dependencies,
 verification commands, and acceptance criteria current before execution.
 
-For non-trivial changes, run repo lifecycle tooling before edits. Single
-blueprint: `./bin/wp blueprint start <slug>` creates/binds its owner worktree;
-do not pre-create `wp worktree new bp/<slug>`. Never edit on `main`. PRs are
-for review/landing. Non-`*.md` PRs need a changed blueprint unless
-`Blueprint-exempt: <reason>` or Dependabot dependency-only. Full rule:
-`.agent/rules/pre-implementation.md` § Blueprint gate.
+For non-trivial changes, run repo lifecycle tooling before edits. Start a
+single blueprint with `./bin/wp blueprint start <slug>`; never edit on `main`.
+PRs are for review/landing. Non-`*.md` PRs need a changed blueprint unless
+`Blueprint-exempt: <reason>` or Dependabot dependency-only.
 
-Ultragoal: never use main as controller. Use `./bin/wp worktree new
-bp/ultragoal-<slug> --base origin/main`; run `./bin/wp blueprint start
-<slug>` there. After merge run `./bin/wp worktree merge-cleanup
-<merged-worktree> --base origin/main` (or `--stash-primary` if primary is
-dirty); do not claim done while the
-merged worktree remains.
+Ultragoal: use `./bin/wp worktree new bp/ultragoal-<slug> --base origin/main`,
+start the blueprint there, and run `./bin/wp worktree merge-cleanup` after merge.
 
 Catalog-owned surfaces:
 
@@ -63,6 +55,10 @@ Catalog-owned surfaces:
 
 ## Implement
 
+- Command routing is a hard invariant: prefer `wp`, then `vp`, then `pnpm`.
+  Use `vp` only when `wp` has no equivalent, and raw `pnpm` only when
+  neither facade can perform the operation. All documentation, instructions,
+  scripts, and workflow examples must follow this order.
 - Prefer repo scripts/wrappers over ad-hoc commands.
 - Repo hook/tool denial: switch to the named facade/lifecycle; do not retry raw.
 - Reuse nearby utilities and patterns before adding new abstractions.
@@ -159,7 +155,7 @@ Packages use **Changesets**. Release-visible changes need `.changeset/*.md`; non
 Flow: changeset → commit → merge; Version PR uses `release.yml` only. Never local publish; `npm view` is registry evidence.
 
 ```bash
-vp run changeset:status
+wp run changeset:status
 ```
 
 Protocol: `.agent/rules/changeset-release.md`
@@ -168,7 +164,8 @@ Protocol: `.agent/rules/changeset-release.md`
 
 - No `../` parent-relative imports — use workspace deps + subpath exports.
 - No `.mjs` source files — write `.ts`.
-- Use `vp` as the command facade; no `npm install`/`npx` setup guidance.
+- Use the `wp` > `vp` > `pnpm` command hierarchy; no `npm install`/`npx`
+  setup guidance.
 - All packages: `"type": "module"`, public npm `publishConfig`.
 - Publishing: `release.yml`/OIDC only; no local publish or token fallbacks.
 
@@ -186,7 +183,6 @@ Full details: `.agent/rules/package-conventions.md`
 - `@repo/test-utils` — `packages/test-utils`
 - `@repo/types` — `packages/types`
 - `@repo/typescript-config` — `packages/config-typescript`
-- `@repo/ui` — `packages/ui`
 - `@repo/workers` — `apps/workers`
 - `@repo/wrangler-sync` — `packages/wrangler-sync`
 - `client` — `apps/client`
@@ -204,7 +200,7 @@ Full details: `.agent/rules/package-conventions.md`
 
 ## Escalation map
 
-- Client UI (`apps/client`, `packages/ui`) — frontend lane owner / UI maintainer
+- Client UI (`apps/client`) — frontend lane owner / UI maintainer
 - Workers API (`apps/workers`) — backend lane owner / Workers maintainer
 - Infra + deploy (`infra`, Wrangler, Pulumi, configured secret provider) — infrastructure operator
 - E2E + Neon branch tooling (`apps/e2e`) — QA / release lane owner

@@ -7,9 +7,9 @@ import { SendMessageRequest } from "@repo/types";
 import NavBar from "@/components/NavBar";
 import Sidebar from "@/components/Sidebar";
 import MessageList from "@/components/MessageList";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@repo/ui/components";
-import { Button } from "@repo/ui/components";
-import { Textarea } from "@repo/ui/components";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@webpresso/ui";
+import { Button } from "@webpresso/ui";
+import { Textarea } from "@webpresso/ui";
 import { ArrowLeft, ArrowRight, RefreshCcw, SendHorizontal, Trash2 } from "lucide-react";
 import {
   Dialog,
@@ -18,13 +18,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/ui/components";
+} from "@webpresso/ui";
 import { toast } from "sonner";
 import MetricsCard from "@/components/MetricsCard";
 import { format } from "date-fns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components";
-import { Badge } from "@repo/ui/components";
-import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@webpresso/ui";
+import { Badge } from "@webpresso/ui";
+import { Alert, AlertDescription, AlertTitle } from "@/ui-primitives/alert";
 
 function parseJsonPayload(raw: string): { ok: true; data: unknown } | { ok: false } {
   try {

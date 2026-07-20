@@ -6,9 +6,9 @@ import { PublishTopicRequest, SubscribeTopicRequest } from "@repo/types";
 import { ITopic, IQueue } from "@repo/types";
 import NavBar from "@/components/NavBar";
 import Sidebar from "@/components/Sidebar";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@repo/ui/components";
-import { Button } from "@repo/ui/components";
-import { Textarea } from "@repo/ui/components";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@webpresso/ui";
+import { Button } from "@webpresso/ui";
+import { Textarea } from "@webpresso/ui";
 import { ArrowLeft, Hash, Link2, SendHorizontal, Trash2 } from "lucide-react";
 import {
   Dialog,
@@ -17,14 +17,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/ui/components";
+} from "@webpresso/ui";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components";
-import { Badge } from "@repo/ui/components";
-import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@repo/ui/components";
-import { Label } from "@repo/ui/components";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@webpresso/ui";
+import { Badge } from "@webpresso/ui";
+import { Alert, AlertDescription, AlertTitle } from "@/ui-primitives/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@webpresso/ui";
+import { Label } from "@webpresso/ui";
 
 function parseJsonPayload(raw: string): { ok: true; data: unknown } | { ok: false } {
   try {

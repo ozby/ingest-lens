@@ -1,7 +1,13 @@
+/**
+ * Temporary local primitive until @webpresso/ui exports this (framework PR #75).
+ * Delete and import from @webpresso/ui when version >= 0.2.2.
+ * TODO(webpresso-ui): remove local copy after public release.
+ */
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "../lib";
+import { cn } from "@webpresso/ui";
 
 const alertVariants = cva(
   "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
