@@ -94,6 +94,9 @@ jobs:
       - run: vp install --frozen-lockfile
       - run: vp check
       - run: wp typecheck
+      - name: Run wp audit guardrails
+        continue-on-error: true
+        run: wp audit guardrails
       - name: Run targeted test suites
         run: |
           bun test \

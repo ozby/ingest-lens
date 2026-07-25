@@ -30,7 +30,7 @@ catalog:
   # Webpresso package-source split:
   # - agent-config is the consumer-installed package surface
   # - runtime exposes environment tooling through its explicit env subpath
-  "@webpresso/agent-config": ^0.3.3
+  "@webpresso/agent-config": "0.4.4"
   "@webpresso/runtime": 0.7.2
   axios: ^1.15.2
   better-auth: ^1.6.9
