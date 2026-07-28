@@ -84,10 +84,11 @@ jobs:
       - name: Resolve wp version
         id: wp_version
         shell: bash
-        run: echo "version=${WP_SETUP_AGENT_KIT_VERSION:-3.1.17}" >> "$GITHUB_OUTPUT"
-      - uses: webpresso/github-actions/.github/actions/setup-wp@c2c71a7a4be446fc6858e6b57bf55a11ccfa2d88
+        run: echo "version=${WP_SETUP_AGENT_KIT_VERSION:-3.3.6}" >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/setup-wp-release
         with:
           version: ${{ steps.wp_version.outputs.version }}
+          github-token: ${{ secrets.CI_AGENT_KIT_TOKEN || github.token }}
       - name: Check workflow action pins
         run: node scripts/check-workflow-action-pins.ts
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
@@ -123,10 +124,11 @@ jobs:
       - name: Resolve wp version
         id: wp_version
         shell: bash
-        run: echo "version=${WP_SETUP_AGENT_KIT_VERSION:-3.1.17}" >> "$GITHUB_OUTPUT"
-      - uses: webpresso/github-actions/.github/actions/setup-wp@c2c71a7a4be446fc6858e6b57bf55a11ccfa2d88
+        run: echo "version=${WP_SETUP_AGENT_KIT_VERSION:-3.3.6}" >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/setup-wp-release
         with:
           version: ${{ steps.wp_version.outputs.version }}
+          github-token: ${{ secrets.CI_AGENT_KIT_TOKEN || github.token }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - run: vp install --frozen-lockfile
       - run: wp test --mutation
