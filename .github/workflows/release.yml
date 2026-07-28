@@ -20,13 +20,15 @@ env:
 
 jobs:
   release:
-    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0
+    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
     with:
       install_command: |
         vp install --frozen-lockfile
       version_command: vp run version
       publish_command: vp run release:publish
       runner: ubuntu-latest
+    secrets:
+      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}
 
   # GitHub Actions does not support referencing a reusable-workflow job's
   # outputs directly in a second reusable-workflow job's `with:` or `if:`.
@@ -44,7 +46,7 @@ jobs:
   deploy:
     needs: gate
     if: ${{ needs.gate.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
     with:
       install_command: |
         vp install --frozen-lockfile
@@ -57,6 +59,9 @@ jobs:
       deploy_command: bun infra/src/deploy/deploy-production.ts --release-version "${RELEASE_VERSION}"
       release_version: ${{ needs.gate.outputs.release_version }}
       secret_profile: production
+      secret_sink: pulumi
+      github_environment: production
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PRODUCTION }}
+      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}
