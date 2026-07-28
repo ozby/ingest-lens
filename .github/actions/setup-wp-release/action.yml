@@ -1,4 +1,4 @@
-# D-ARCHIVE SSOT: keep in sync with webpresso/github-actions setup-wp (PR #32 / a390669).
+# D-ARCHIVE SSOT: keep in sync with webpresso/github-actions setup-wp (D-ARCHIVE; release host webpresso/app).
 name: Setup global wp
 description: >
   Install a caller-pinned agent-kit release binary and package root (D-ARCHIVE).
@@ -8,12 +8,12 @@ description: >
 inputs:
   version:
     description: >
-      Exact agent-kit GitHub release semver without leading v (no ranges/tags).
+      Exact app monorepo GitHub release semver without leading v (no ranges/tags).
     required: false
     default: "3.3.6"
   github-token:
     description: >
-      Token that can read private webpresso/agent-kit releases. Defaults to
+      Token that can read private webpresso/app (source monorepo) releases. Defaults to
       github.token; pass CI_AGENT_KIT_TOKEN when the monorepo token cannot.
     required: false
     default: ""
@@ -21,7 +21,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install wp binary + package root from agent-kit GitHub release
+    - name: Install wp binary + package root from app monorepo GitHub release
       shell: bash
       env:
         WP_VERSION: ${{ inputs.version }}
@@ -54,7 +54,7 @@ runs:
             ;;
         esac
 
-        release_api="https://api.github.com/repos/webpresso/agent-kit/releases/tags/v${WP_VERSION}"
+        release_api="https://api.github.com/repos/webpresso/app/releases/tags/v${WP_VERSION}"
         http_code="$(curl -sS -o /tmp/ak-release.json -w '%{http_code}' \
           -H "Authorization: Bearer ${token}" \
           -H "Accept: application/vnd.github+json" \
@@ -109,7 +109,7 @@ runs:
           # Fallback for releases that predate agent-kit-package.tgz:
           # tag source tree still ships src/ migrations + catalog.
           echo "agent-kit-package.tgz missing; falling back to tag source archive"
-          archive_url="https://api.github.com/repos/webpresso/agent-kit/tarball/v${WP_VERSION}"
+          archive_url="https://api.github.com/repos/webpresso/app/tarball/v${WP_VERSION}"
           curl -fsSL --retry 3 --retry-delay 2 \
             -H "Authorization: Bearer ${token}" \
             -H "Accept: application/vnd.github+json" \
