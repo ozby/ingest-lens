@@ -1,49 +1,167 @@
-name: Setup wp from agent-kit GitHub release
-description: Install pinned private agent-kit release binary (npm dist is a deprecation stub).
+# D-ARCHIVE SSOT: keep in sync with webpresso/github-actions setup-wp (PR #32 / a390669).
+name: Setup global wp
+description: >
+  Install a caller-pinned agent-kit release binary and package root (D-ARCHIVE).
+  Public npm is a no-bin stub; install from GitHub release assets and export
+  WEBPRESSO_AGENT_KIT_ROOT so wp audits resolve migrations/catalog assets.
+
 inputs:
   version:
-    description: agent-kit release semver without v
+    description: >
+      Exact agent-kit GitHub release semver without leading v (no ranges/tags).
     required: false
     default: "3.3.6"
   github-token:
-    description: Token that can read private webpresso/agent-kit releases
+    description: >
+      Token that can read private webpresso/agent-kit releases. Defaults to
+      github.token; pass CI_AGENT_KIT_TOKEN when the monorepo token cannot.
     required: false
     default: ""
+
 runs:
   using: composite
   steps:
-    - name: Install wp binary from GitHub release
+    - name: Install wp binary + package root from agent-kit GitHub release
       shell: bash
       env:
         WP_VERSION: ${{ inputs.version }}
         GITHUB_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
       run: |
         set -euo pipefail
+
         if [[ ! "${WP_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
-          echo "::error::WP_VERSION must be exact semver, got ${WP_VERSION}"
+          echo "::error::setup-wp 'version' must be exact semver, got '${WP_VERSION}'"
           exit 2
         fi
+
+        token="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+        if [[ -z "${token}" ]]; then
+          echo "::error::GITHUB_TOKEN required to download private agent-kit release assets"
+          exit 5
+        fi
+
         arch="$(uname -m)"
         case "${arch}" in
           x86_64|amd64) asset="wp-linux-x64" ;;
-          aarch64|arm64) asset="wp-linux-arm64" ;;
-          *) echo "::error::unsupported arch ${arch}"; exit 3 ;;
+          aarch64|arm64)
+            if [[ "$(uname -s)" == "Darwin" ]]; then asset="wp-darwin-arm64"
+            else asset="wp-linux-arm64"
+            fi
+            ;;
+          *)
+            echo "::error::unsupported runner arch '${arch}'"
+            exit 3
+            ;;
         esac
-        token="${GITHUB_TOKEN:-}"
-        if [[ -z "${token}" ]]; then echo "::error::GITHUB_TOKEN required for private agent-kit release"; exit 5; fi
+
         release_api="https://api.github.com/repos/webpresso/agent-kit/releases/tags/v${WP_VERSION}"
-        http_code="$(curl -sS -o /tmp/ak-release.json -w "%{http_code}" -H "Authorization: Bearer ${token}" -H "Accept: application/vnd.github+json" "${release_api}" || true)"
+        http_code="$(curl -sS -o /tmp/ak-release.json -w '%{http_code}' \
+          -H "Authorization: Bearer ${token}" \
+          -H "Accept: application/vnd.github+json" \
+          "${release_api}" || true)"
         if [[ "${http_code}" != "200" ]]; then
           echo "::error::cannot read agent-kit release v${WP_VERSION} (HTTP ${http_code})"
-          head -c 300 /tmp/ak-release.json || true
+          head -c 500 /tmp/ak-release.json || true
           exit 6
         fi
-        asset_api="$(python3 -c "import json; assets=json.load(open(\"/tmp/ak-release.json\")).get(\"assets\",[]); print(next((a[\"url\"] for a in assets if a.get(\"name\")==\"${asset}\"),\"\"))")"
-        if [[ -z "${asset_api}" ]]; then echo "::error::no asset ${asset}"; exit 7; fi
+
+        asset_url() {
+          local name="$1"
+          python3 -c "import json; assets=json.load(open('/tmp/ak-release.json')).get('assets',[]); print(next((a['url'] for a in assets if a.get('name')=='${name}'),''))"
+        }
+
+        bin_url="$(asset_url "${asset}")"
+        if [[ -z "${bin_url}" ]]; then
+          echo "::error::release v${WP_VERSION} has no asset ${asset}"
+          exit 7
+        fi
+
         install_dir="${RUNNER_TEMP:-/tmp}/webpresso-wp"
-        mkdir -p "${install_dir}"
-        curl -fsSL --retry 3 -H "Authorization: Bearer ${token}" -H "Accept: application/octet-stream" -o "${install_dir}/wp" "${asset_api}"
+        package_root="${RUNNER_TEMP:-/tmp}/webpresso-agent-kit-package"
+        mkdir -p "${install_dir}" "${package_root}"
+
+        echo "Downloading ${asset} from agent-kit v${WP_VERSION}"
+        curl -fsSL --retry 3 --retry-delay 2 \
+          -H "Authorization: Bearer ${token}" \
+          -H "Accept: application/octet-stream" \
+          -o "${install_dir}/wp" \
+          "${bin_url}"
         chmod +x "${install_dir}/wp"
+
+        pack_url="$(asset_url "agent-kit-package.tgz")"
+        if [[ -n "${pack_url}" ]]; then
+          echo "Downloading agent-kit-package.tgz from agent-kit v${WP_VERSION}"
+          curl -fsSL --retry 3 --retry-delay 2 \
+            -H "Authorization: Bearer ${token}" \
+            -H "Accept: application/octet-stream" \
+            -o /tmp/agent-kit-package.tgz \
+            "${pack_url}"
+          tar -xzf /tmp/agent-kit-package.tgz -C "${package_root}"
+          # npm pack nests as package/
+          if [[ -d "${package_root}/package" ]]; then
+            # flatten
+            shopt -s dotglob
+            mv "${package_root}/package"/* "${package_root}/"
+            rmdir "${package_root}/package"
+            shopt -u dotglob
+          fi
+        else
+          # Fallback for releases that predate agent-kit-package.tgz:
+          # tag source tree still ships src/ migrations + catalog.
+          echo "agent-kit-package.tgz missing; falling back to tag source archive"
+          archive_url="https://api.github.com/repos/webpresso/agent-kit/tarball/v${WP_VERSION}"
+          curl -fsSL --retry 3 --retry-delay 2 \
+            -H "Authorization: Bearer ${token}" \
+            -H "Accept: application/vnd.github+json" \
+            -o /tmp/agent-kit-src.tar.gz \
+            "${archive_url}"
+          mkdir -p /tmp/ak-src-extract
+          tar -xzf /tmp/agent-kit-src.tar.gz -C /tmp/ak-src-extract
+          src_dir="$(find /tmp/ak-src-extract -mindepth 1 -maxdepth 1 -type d | head -1)"
+          if [[ -z "${src_dir}" || ! -f "${src_dir}/package.json" ]]; then
+            echo "::error::failed to extract agent-kit source archive for v${WP_VERSION}"
+            exit 8
+          fi
+          # Copy package-root essentials (not full node_modules tree)
+          cp "${src_dir}/package.json" "${package_root}/package.json"
+          for dir in catalog src dist bin tsconfig; do
+            if [[ -d "${src_dir}/${dir}" ]]; then
+              cp -R "${src_dir}/${dir}" "${package_root}/${dir}"
+            fi
+          done
+        fi
+
+        if [[ ! -f "${package_root}/package.json" ]]; then
+          echo "::error::package root missing package.json at ${package_root}"
+          exit 9
+        fi
+
+        # Node module layout so createRequire(cwd).resolve('@webpresso/agent-kit/package.json')
+        # works for existing release binaries that predate WEBPRESSO_AGENT_KIT_ROOT.
+        modules_root="${RUNNER_TEMP:-/tmp}/webpresso-node-modules"
+        mkdir -p "${modules_root}/@webpresso"
+        rm -rf "${modules_root}/@webpresso/agent-kit"
+        ln -s "${package_root}" "${modules_root}/@webpresso/agent-kit"
+
         echo "${install_dir}" >> "${GITHUB_PATH}"
+        {
+          echo "WEBPRESSO_AGENT_KIT_ROOT=${package_root}"
+          echo "WP_AGENT_KIT_PACKAGE_ROOT=${package_root}"
+          echo "NODE_PATH=${modules_root}${NODE_PATH:+:${NODE_PATH}}"
+        } >> "${GITHUB_ENV}"
         export PATH="${install_dir}:${PATH}"
-        "${install_dir}/wp" --version
+        export WEBPRESSO_AGENT_KIT_ROOT="${package_root}"
+        export NODE_PATH="${modules_root}${NODE_PATH:+:${NODE_PATH}}"
+
+        installed="$("${install_dir}/wp" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?' | head -1 || true)"
+        if [[ -z "${installed}" ]]; then
+          echo "::error::wp binary failed to report a version"
+          exit 10
+        fi
+        echo "setup-wp: installed wp ${installed} (pin ${WP_VERSION}) package_root=${package_root}"
+        if [[ ! -d "${package_root}/src/blueprint/db/migrations" && ! -d "${package_root}/dist/esm/blueprint/db/migrations" ]]; then
+          echo "::error::package root lacks blueprint migrations under src/ or dist/esm/"
+          exit 11
+        fi
+        # Prove Node can resolve the package the same way findPackageAsset does.
+        node -e "const {createRequire}=require('module'); const r=createRequire(require('path').join(process.cwd(),'noop.cjs')); console.log(r.resolve('@webpresso/agent-kit/package.json'))"
