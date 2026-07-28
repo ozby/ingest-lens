@@ -1,0 +1,49 @@
+name: Setup wp from agent-kit GitHub release
+description: Install pinned private agent-kit release binary (npm dist is a deprecation stub).
+inputs:
+  version:
+    description: agent-kit release semver without v
+    required: false
+    default: "3.3.6"
+  github-token:
+    description: Token that can read private webpresso/agent-kit releases
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Install wp binary from GitHub release
+      shell: bash
+      env:
+        WP_VERSION: ${{ inputs.version }}
+        GITHUB_TOKEN: ${{ inputs.github-token != '' && inputs.github-token || github.token }}
+      run: |
+        set -euo pipefail
+        if [[ ! "${WP_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+          echo "::error::WP_VERSION must be exact semver, got ${WP_VERSION}"
+          exit 2
+        fi
+        arch="$(uname -m)"
+        case "${arch}" in
+          x86_64|amd64) asset="wp-linux-x64" ;;
+          aarch64|arm64) asset="wp-linux-arm64" ;;
+          *) echo "::error::unsupported arch ${arch}"; exit 3 ;;
+        esac
+        token="${GITHUB_TOKEN:-}"
+        if [[ -z "${token}" ]]; then echo "::error::GITHUB_TOKEN required for private agent-kit release"; exit 5; fi
+        release_api="https://api.github.com/repos/webpresso/agent-kit/releases/tags/v${WP_VERSION}"
+        http_code="$(curl -sS -o /tmp/ak-release.json -w "%{http_code}" -H "Authorization: Bearer ${token}" -H "Accept: application/vnd.github+json" "${release_api}" || true)"
+        if [[ "${http_code}" != "200" ]]; then
+          echo "::error::cannot read agent-kit release v${WP_VERSION} (HTTP ${http_code})"
+          head -c 300 /tmp/ak-release.json || true
+          exit 6
+        fi
+        asset_api="$(python3 -c "import json; assets=json.load(open(\"/tmp/ak-release.json\")).get(\"assets\",[]); print(next((a[\"url\"] for a in assets if a.get(\"name\")==\"${asset}\"),\"\"))")"
+        if [[ -z "${asset_api}" ]]; then echo "::error::no asset ${asset}"; exit 7; fi
+        install_dir="${RUNNER_TEMP:-/tmp}/webpresso-wp"
+        mkdir -p "${install_dir}"
+        curl -fsSL --retry 3 -H "Authorization: Bearer ${token}" -H "Accept: application/octet-stream" -o "${install_dir}/wp" "${asset_api}"
+        chmod +x "${install_dir}/wp"
+        echo "${install_dir}" >> "${GITHUB_PATH}"
+        export PATH="${install_dir}:${PATH}"
+        "${install_dir}/wp" --version
