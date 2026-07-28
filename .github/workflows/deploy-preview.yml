@@ -92,7 +92,7 @@ jobs:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: deploy
@@ -107,9 +107,12 @@ jobs:
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
       secret_profile: preview
+      secret_sink: pulumi
+      github_environment: preview
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
+      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}
 
   destroy:
     if: ${{ needs.resolve.outputs.mode == 'destroy' && needs.secrets-ready.outputs.has_preview_token == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
@@ -120,7 +123,7 @@ jobs:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: destroy
@@ -130,6 +133,9 @@ jobs:
       deploy_command: ":"
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
       secret_profile: preview
+      secret_sink: pulumi
+      github_environment: preview
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
+      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}
