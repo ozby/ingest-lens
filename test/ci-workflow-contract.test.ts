@@ -39,6 +39,24 @@ test("every workflow rejects legacy agent-kit installs and mutable setup refs", 
   }
 });
 
+test("wp is installed from the shared action on the public app-releases version line", () => {
+  for (const workflowFile of workflowFiles) {
+    const contents = readFileSync(workflowFile, "utf8");
+
+    // The repo-local copy read releases from the private pre-rename repository,
+    // whose API path now 301s; only the shared public-sourced action installs wp.
+    assert.doesNotMatch(contents, /\.\/\.github\/actions\/setup-wp-release/u, workflowFile);
+
+    for (const match of contents.matchAll(
+      /uses:\s*webpresso\/github-actions\/\.github\/actions\/setup-wp@[0-9a-f]{40}\n\s*with:\n\s*version:\s*"([^"]+)"/gu,
+    )) {
+      // The public webpresso/app-releases line restarted at 0.0.x; a 3.x pin
+      // resolves to the deprecated npm tombstone that ships no `wp` binary.
+      assert.match(match[1] ?? "", /^0\.\d+\.\d+$/u, `${workflowFile}: ${match[1]}`);
+    }
+  }
+});
+
 test("CI uses setup-owned Webpresso tooling without legacy local setup helpers", () => {
   assert.match(
     workflow,

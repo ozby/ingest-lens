@@ -6,6 +6,9 @@ const RETIRED_LOCAL_SETUP_ACTIONS = new Set([
   "setup-" + "webpresso",
   "setup-" + "monorepo",
   "setup-wp",
+  // Vendored copy of the shared action. It read wp releases from the private
+  // pre-rename repo, which now 301s, so it can never install a wp binary again.
+  "setup-wp-release",
 ]);
 const DIGEST_PATTERN = /@sha256:[a-f0-9]{64}$/i;
 const PACKAGE_MANAGER_BINS = new Set([
