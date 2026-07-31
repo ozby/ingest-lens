@@ -33,16 +33,30 @@ describe("Cloudflare deploy lane contract", () => {
     ]);
   });
 
-  it("keeps standalone preview deploys manual/main/cleanup-only so PR deploys stay behind CI", () => {
+  it("keeps standalone preview deploys manual/main/cleanup-only so ci.yml is the sole PR-lane deployer", () => {
     const workflow = readRepoFile(".github/workflows/deploy-preview.yml");
     const ciWorkflow = readRepoFile(".github/workflows/ci.yml");
 
     expect(workflow).toContain("branches: [main]");
     expect(workflow).toContain("pull_request:");
-    expect(workflow).toContain("types: [opened, synchronize, reopened, closed]");
+    // deploy-preview.yml only reacts to PR close (destroy path); it must
+    // never deploy on opened/synchronize/reopened, or it races ci.yml's
+    // gated deploy-preview job for the same preview_pr_<n> lane.
+    expect(workflow).toContain("types: [closed]");
+    expect(workflow).not.toContain("opened, synchronize, reopened");
     expect(ciWorkflow).toContain("name: Deploy preview (PR)");
     expect(ciWorkflow).toContain("- wp-check");
-    expect(ciWorkflow).toContain("- preview-secret");
+    expect(ciWorkflow).toContain("vars.CI_HAS_PREVIEW_TOKEN == 'true'");
+    expect(workflow).toContain("vars.CI_HAS_PREVIEW_TOKEN == 'true'");
+    // ci.yml owns PR-lane deploys; deploy-preview.yml's destroy job carries a
+    // job-level concurrency group matching ci.yml's exactly, so a PR close
+    // cancels an in-flight deploy of the same lane instead of racing it.
+    expect(ciWorkflow).toContain(
+      "group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}",
+    );
+    expect(workflow).toContain(
+      "group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}",
+    );
     expect(workflow).toMatch(
       /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     );

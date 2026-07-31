@@ -65,12 +65,13 @@ test("production release workflow uses schema-v1 secret profiles and lane-specif
 });
 
 test("preview workflows use preview profile and preview provider token only", () => {
+  // The e2e job now lives inside ci.yml (see ci-workflow-contract.test.ts),
+  // not a standalone e2e.yml.
   const ciWorkflow = readRepoFile(".github/workflows/ci.yml");
   const previewWorkflow = readRepoFile(".github/workflows/deploy-preview.yml");
-  const e2eWorkflow = readRepoFile(".github/workflows/e2e.yml");
   const cleanupWorkflow = readRepoFile(".github/workflows/cleanup-stale-neon-e2e-branches.yml");
 
-  for (const text of [ciWorkflow, previewWorkflow, e2eWorkflow, cleanupWorkflow]) {
+  for (const text of [ciWorkflow, previewWorkflow, cleanupWorkflow]) {
     if (!text.includes("ci_secret_provider_token")) continue;
     assert.match(
       text,
@@ -91,7 +92,7 @@ test("preview workflows use preview profile and preview provider token only", ()
 
   assert.match(previewWorkflow, /secret_profile:\s*preview/u);
   assert.ok(
-    e2eWorkflow.includes(
+    ciWorkflow.includes(
       "CI_SECRET_PROVIDER_TOKEN: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}",
     ),
   );
