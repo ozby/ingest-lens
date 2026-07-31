@@ -57,6 +57,25 @@ test("wp is installed from the shared action on the public app-releases version 
   }
 });
 
+test("wp installs the package root so on-disk assets resolve", () => {
+  for (const workflowFile of workflowFiles) {
+    const contents = readFileSync(workflowFile, "utf8");
+
+    const setupCallSites = contents.match(
+      /uses:\s*webpresso\/github-actions\/\.github\/actions\/setup-wp@[0-9a-f]{40}/gu,
+    );
+    if (setupCallSites === null) continue;
+
+    // `bun build --compile` embeds no assets, so a bare release binary has no
+    // catalog and no blueprint migrations: `wp audit blueprint-lifecycle` dies
+    // with "Missing blueprint migrations at dist/esm/blueprint/db/migrations".
+    // The package root ships as a public, tokenless asset on the same release,
+    // so every call site opts in.
+    const packageRootOptIns = contents.match(/^\s*package-root:\s*true$/gmu) ?? [];
+    assert.strictEqual(packageRootOptIns.length, setupCallSites.length, workflowFile);
+  }
+});
+
 test("CI uses setup-owned Webpresso tooling without legacy local setup helpers", () => {
   assert.match(
     workflow,
