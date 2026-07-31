@@ -1,6 +1,6 @@
 import { DEPLOY_DOMAIN, PREVIEW_API_SECRET_NAMES } from "./infra/src/deploy/lanes.ts";
 
-export const agentKitConfig = {
+export const appConfigExport = {
   e2e: {
     hostAdapterModule: "./apps/e2e/src/agent-kit-host-adapter.ts",
   },
@@ -57,4 +57,4 @@ export const agentKitConfig = {
   },
 } as const;
 
-export default agentKitConfig;
+export default appConfigExport;
