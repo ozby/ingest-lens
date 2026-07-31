@@ -9,7 +9,7 @@ const workflowFiles = readdirSync(workflowsDirectory, { withFileTypes: true })
   .map((entry) => join(workflowsDirectory, entry.name))
   .sort();
 const workflow = readFileSync(join(workflowsDirectory, "ci.yml"), "utf8");
-const expectedPreviewCallerSha = "ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0";
+const expectedPreviewCallerSha = "8ef11734f666ea86f41a129e634ba68e91638df6";
 
 test("CI workflow exposes wp-check as the branch-protection-facing gate", () => {
   assert.match(workflow, /\n  wp-check:\n/u);

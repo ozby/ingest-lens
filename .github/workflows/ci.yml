@@ -196,20 +196,26 @@ jobs:
       - name: Summarize auth preflight
         if: ${{ always() }}
         shell: bash
+        env:
+          REPO_ACCESS_OK: ${{ steps.repo.outputs.repo_access_ok }}
+          ACTION_DOWNLOADS_OK: ${{ steps.actions.outputs.action_downloads_ok }}
         run: |
           {
             echo "## Auth preflight"
             echo ""
-            echo "- repo_access_ok: ${{ steps.repo.outputs.repo_access_ok }}"
-            echo "- action_downloads_ok: ${{ steps.actions.outputs.action_downloads_ok }}"
+            echo "- repo_access_ok: ${REPO_ACCESS_OK}"
+            echo "- action_downloads_ok: ${ACTION_DOWNLOADS_OK}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Enforce auth preflight
         shell: bash
+        env:
+          REPO_ACCESS_OK: ${{ steps.repo.outputs.repo_access_ok }}
+          ACTION_DOWNLOADS_OK: ${{ steps.actions.outputs.action_downloads_ok }}
         run: |
           set -euo pipefail
-          test "${{ steps.repo.outputs.repo_access_ok }}" = "true"
-          test "${{ steps.actions.outputs.action_downloads_ok }}" = "true"
+          test "${REPO_ACCESS_OK}" = "true"
+          test "${ACTION_DOWNLOADS_OK}" = "true"
 
       - uses: voidzero-dev/setup-vp@13e7afb99c66525824db54e107d667216e795d37 # v1.14.0
         with:
@@ -254,7 +260,7 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@8ef11734f666ea86f41a129e634ba68e91638df6
     with:
       lane: preview_pr_${{ github.event.pull_request.number }}
       mode: deploy
@@ -273,4 +279,3 @@ jobs:
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
-      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}

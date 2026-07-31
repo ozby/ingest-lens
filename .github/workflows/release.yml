@@ -20,15 +20,13 @@ env:
 
 jobs:
   release:
-    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
+    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@8ef11734f666ea86f41a129e634ba68e91638df6
     with:
       install_command: |
         vp install --frozen-lockfile
       version_command: vp run version
       publish_command: vp run release:publish
       runner: ubuntu-latest
-    secrets:
-      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}
 
   # GitHub Actions does not support referencing a reusable-workflow job's
   # outputs directly in a second reusable-workflow job's `with:` or `if:`.
@@ -46,7 +44,7 @@ jobs:
   deploy:
     needs: gate
     if: ${{ needs.gate.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@8ef11734f666ea86f41a129e634ba68e91638df6
     with:
       install_command: |
         vp install --frozen-lockfile
@@ -64,4 +62,3 @@ jobs:
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PRODUCTION }}
-      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}

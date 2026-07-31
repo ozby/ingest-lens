@@ -75,7 +75,7 @@ jobs:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@8ef11734f666ea86f41a129e634ba68e91638df6
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: deploy
@@ -95,7 +95,6 @@ jobs:
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
-      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}
 
   destroy:
     if: ${{ needs.resolve.outputs.mode == 'destroy' && vars.CI_HAS_PREVIEW_TOKEN == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
@@ -113,7 +112,7 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@7a7cd0b92d7e751f42f8ec8614a8ca84e8d5e20f
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@8ef11734f666ea86f41a129e634ba68e91638df6
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: destroy
@@ -128,4 +127,3 @@ jobs:
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
-      CI_AGENT_KIT_TOKEN: ${{ secrets.CI_AGENT_KIT_TOKEN }}
