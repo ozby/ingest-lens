@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@webpresso/agent-config": "catalog:",
+    "@webpresso/app-config": "catalog:",
     "vitest": "catalog:tooling"
   }
 }

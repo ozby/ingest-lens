@@ -26,7 +26,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:workers",
     "@cloudflare/workers-types": "catalog:workers",
-    "@webpresso/agent-config": "catalog:",
+    "@webpresso/app-config": "catalog:",
     "drizzle-kit": "catalog:workers",
     "typescript": "catalog:tooling",
     "wrangler": "catalog:workers"

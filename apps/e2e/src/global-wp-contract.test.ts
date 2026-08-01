@@ -16,7 +16,7 @@ describe("global wp contract", () => {
       devDependencies?: Record<string, string>;
     }>("package.json");
 
-    expect(packageJson.devDependencies?.["@webpresso/agent-config"]).toBe("catalog:");
+    expect(packageJson.devDependencies?.["@webpresso/app-config"]).toBe("catalog:");
     expect(packageJson.devDependencies?.["@webpresso/agent-kit"]).toBeUndefined();
     expect(packageJson.scripts?.["setup:agent"]).toBeUndefined();
     expect(packageJson.scripts?.postinstall).toBeUndefined();

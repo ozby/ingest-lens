@@ -1,3 +1,3 @@
-import { typescriptWorkersBaseConfig } from "@webpresso/agent-config/stryker";
+import { typescriptWorkersBaseConfig } from "@webpresso/app-config/stryker";
 
 export default { ...typescriptWorkersBaseConfig };
