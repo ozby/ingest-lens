@@ -54,7 +54,7 @@ test("consumer setup keeps agent-config local and agent-kit out of package depen
   ].filter((value) => value !== undefined);
 
   assert.equal(object(packageJson.scripts, "scripts")["setup:agent"], "wp setup");
-  assert.equal(devDependencies["@webpresso/agent-config"], "catalog:");
+  assert.equal(devDependencies["@webpresso/app-config"], "catalog:");
 
   for (const dependencySection of dependencySections) {
     assert.equal(
