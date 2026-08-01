@@ -245,6 +245,9 @@ jobs:
       contents: read
       packages: read
       id-token: write
+      # cloudflare-preview requests `checks: read`; a job-level permissions block
+      # REPLACES defaults, so omitting it fails the whole caller at startup.
+      checks: read
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
