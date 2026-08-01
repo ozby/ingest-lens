@@ -16,8 +16,8 @@ afterEach(() => {
 
 describe("Cloudflare deploy lane contract", () => {
   it("declares dev, preview_main, preview_pr, and release-gated prd lanes for both deployed Workers", async () => {
-    const { default: agentKitConfig } = await import("../agent-kit.config");
-    const cloudflare = agentKitConfig.deploy.cloudflare;
+    const { default: webpressoConfig } = await import("../webpresso.config");
+    const cloudflare = webpressoConfig.deploy.cloudflare;
 
     expect(cloudflare.lanes.dev).toMatchObject({ wranglerEnvName: "dev" });
     expect(cloudflare.lanes.preview_main).toMatchObject({ wranglerEnvName: "preview-main" });
@@ -106,7 +106,7 @@ describe("Cloudflare deploy lane contract", () => {
   });
 
   it("uses a no-secret deploy dry-run plan while keeping production metadata validation in-repo", async () => {
-    const { default: adapter } = await import("../infra/src/deploy/agent-kit-deploy-adapter");
+    const { default: adapter } = await import("../infra/src/deploy/webpresso-deploy-adapter");
     const plan = adapter.createPlan({
       lane: "prd",
       dryRun: true,

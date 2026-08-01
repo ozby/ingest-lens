@@ -75,7 +75,7 @@ jobs:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@8ef11734f666ea86f41a129e634ba68e91638df6
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: deploy
@@ -112,7 +112,7 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@8ef11734f666ea86f41a129e634ba68e91638df6
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: destroy

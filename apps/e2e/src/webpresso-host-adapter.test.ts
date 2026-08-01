@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { agentKitE2eHostAdapter } from "./agent-kit-host-adapter.ts";
+import { webpressoE2eHostAdapter } from "./webpresso-host-adapter.ts";
 
-describe("agent-kit-host-adapter", () => {
+describe("webpresso-host-adapter", () => {
   it("routes foundation through the repo-owned e2e-with-neon orchestrator", () => {
-    const [batch] = agentKitE2eHostAdapter.buildExecutionPlan({ suite: "foundation" });
+    const [batch] = webpressoE2eHostAdapter.buildExecutionPlan({ suite: "foundation" });
 
     expect(batch.batchKey).toBe("foundation");
     expect(batch.runs).toEqual([
@@ -19,7 +19,7 @@ describe("agent-kit-host-adapter", () => {
 
   it("maps a root-level journey file back to the owning suite", () => {
     expect(
-      agentKitE2eHostAdapter.resolveSuiteForFile("apps/e2e/journeys/worker-health.e2e.ts"),
+      webpressoE2eHostAdapter.resolveSuiteForFile("apps/e2e/journeys/worker-health.e2e.ts"),
     ).toEqual({
       normalizedPath: "apps/e2e/journeys/worker-health.e2e.ts",
       suiteId: "foundation",

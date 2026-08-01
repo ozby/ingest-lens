@@ -43,7 +43,7 @@ jobs:
           node-version: "24.16.0"
           cache: true
           run-install: false
-      - uses: webpresso/github-actions/.github/actions/setup-wp@8ef11734f666ea86f41a129e634ba68e91638df6
+      - uses: webpresso/github-actions/.github/actions/setup-wp@2003ca953f336efb779165f748e1ad8408565428
         with:
           version: "0.0.5"
           package-root: true

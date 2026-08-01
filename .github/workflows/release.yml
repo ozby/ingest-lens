@@ -21,7 +21,7 @@ env:
 
 jobs:
   release:
-    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@8ef11734f666ea86f41a129e634ba68e91638df6
+    uses: webpresso/github-actions/.github/workflows/changesets-release.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       install_command: |
         vp install --frozen-lockfile
@@ -45,7 +45,7 @@ jobs:
   deploy:
     needs: gate
     if: ${{ needs.gate.outputs.should_deploy == 'true' }}
-    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@3430411170ca684377741b0ecac4849396cc9789
+    uses: webpresso/github-actions/.github/workflows/cloudflare-production.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       install_command: |
         vp install --frozen-lockfile
