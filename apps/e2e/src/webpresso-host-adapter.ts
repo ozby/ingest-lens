@@ -94,7 +94,7 @@ function resolveRequestedSuite(request: E2eExecutionRequest): string {
   return getDefaultSuiteId();
 }
 
-export const agentKitE2eHostAdapter = {
+export const webpressoE2eHostAdapter = {
   listSuites: () => rootifySuites(),
   resolveSuiteId: (name: string) => resolveE2ESuiteId(name),
   normalizeFilePath: (filePath: string) => normalizeRootPath(filePath),
@@ -121,4 +121,4 @@ export const agentKitE2eHostAdapter = {
   },
 };
 
-export default agentKitE2eHostAdapter;
+export default webpressoE2eHostAdapter;

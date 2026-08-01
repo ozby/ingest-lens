@@ -1,11 +1,11 @@
 import { DEPLOY_DOMAIN, PREVIEW_API_SECRET_NAMES } from "./infra/src/deploy/lanes.ts";
 
-export const appConfigExport = {
+export const webpressoConfig = {
   e2e: {
-    hostAdapterModule: "./apps/e2e/src/agent-kit-host-adapter.ts",
+    hostAdapterModule: "./apps/e2e/src/webpresso-host-adapter.ts",
   },
   deploy: {
-    adapterModule: "./infra/src/deploy/agent-kit-deploy-adapter.ts",
+    adapterModule: "./infra/src/deploy/webpresso-deploy-adapter.ts",
     cloudflare: {
       lanes: {
         dev: { wranglerEnvName: "dev" },
@@ -57,4 +57,4 @@ export const appConfigExport = {
   },
 } as const;
 
-export default appConfigExport;
+export default webpressoConfig;

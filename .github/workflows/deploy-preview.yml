@@ -75,7 +75,11 @@ jobs:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@8ef11734f666ea86f41a129e634ba68e91638df6
+      # cloudflare-preview/production request `checks: read`; a job-level
+      # permissions block REPLACES defaults, so omitting it fails the entire
+      # caller at startup before any job is scheduled.
+      checks: read
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: deploy
@@ -104,6 +108,10 @@ jobs:
       contents: read
       packages: read
       id-token: write
+      # cloudflare-preview/production request `checks: read`; a job-level
+      # permissions block REPLACES defaults, so omitting it fails the entire
+      # caller at startup before any job is scheduled.
+      checks: read
     # Job-level concurrency matches ci.yml's deploy-preview group exactly
     # (rather than this workflow's own `ingest-lens-preview-<n>` group), so
     # closing a PR cancels an in-flight ci.yml deploy of the same lane instead
@@ -112,7 +120,7 @@ jobs:
     concurrency:
       group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
       cancel-in-progress: true
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@8ef11734f666ea86f41a129e634ba68e91638df6
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: destroy
