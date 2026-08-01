@@ -3,9 +3,9 @@ import {
   createMockHyperdrive,
   createMockDurableObjectNamespace,
   createMockExecutionContext,
-} from "@webpresso/agent-config/workers-test";
+} from "@webpresso/app-config/workers-test";
 
-describe("@webpresso/agent-config/workers-test — mock factory smoke tests", () => {
+describe("@webpresso/app-config/workers-test — mock factory smoke tests", () => {
   it("createMockHyperdrive() returns an object with connectionString", () => {
     const hyperdrive = createMockHyperdrive();
     expect(hyperdrive).toBeDefined();

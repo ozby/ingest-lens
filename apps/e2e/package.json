@@ -22,7 +22,7 @@
   "devDependencies": {
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",
-    "@webpresso/agent-config": "catalog:",
+    "@webpresso/app-config": "catalog:",
     "typescript": "catalog:tooling",
     "vitest": "catalog:tooling"
   }

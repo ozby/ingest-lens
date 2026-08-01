@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@webpresso/agent-config": "catalog:",
+    "@webpresso/app-config": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:tooling"
   }

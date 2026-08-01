@@ -30,7 +30,7 @@ catalog:
   # Webpresso package-source split:
   # - agent-config is the consumer-installed package surface
   # - runtime exposes environment tooling through its explicit env subpath
-  "@webpresso/agent-config": "0.4.4"
+  "@webpresso/app-config": "0.5.0"
   "@webpresso/runtime": 0.7.2
   axios: ^1.15.2
   better-auth: ^1.6.9
@@ -88,3 +88,12 @@ overrides:
 peerDependencyRules:
   allowedVersions:
     "vite>esbuild": "*"
+
+# Stryker core bare-imports `typescript` (undeclared) for its sandbox tsconfig
+# preprocessor; under this repo's TypeScript 7 that import lacks
+# ts.parseConfigFileTextToJson and every mutation run dies at startup. Inject the
+# TS6 compiler-API bridge as core's own dependency so only stryker sees it.
+packageExtensions:
+  "@stryker-mutator/core":
+    dependencies:
+      typescript: npm:@typescript/typescript6@^6.0.2
