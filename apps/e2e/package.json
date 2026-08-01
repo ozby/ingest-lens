@@ -22,8 +22,8 @@
   "devDependencies": {
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-config": "catalog:",
+    "typescript": "catalog:tooling",
     "vitest": "catalog:tooling"
   }
 }

@@ -33,7 +33,7 @@ vp install
 Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local Agent Kit wrapper. Doppler CI for this repo now uses the existing ozby workplace project `ozby-dev`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
 
 ```bash
-wp secrets run --sink dev-server --profile preview -- vp run dev
+wp secrets run --sink dev-server --profile preview -- wp run dev
 ```
 
 Success signal: secrets are injected and the vite-plus dev server / Cloudflare Worker dev process starts and stays running.
@@ -41,22 +41,22 @@ Success signal: secrets are injected and the vite-plus dev server / Cloudflare W
 Run the dev server without secret injection:
 
 ```bash
-vp run dev                :offline
+wp run dev                :offline
 ```
 
 Success signal: the dev server starts without secret injection.
 
 ## Features
 
-| Feature                                                                                                                                                 | Proof                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Adaptive intake repair — detect payload drift, AI-propose mapping fixes, validate deterministically, route low-confidence to human review               | [`apps/e2e/journeys/intake-mapping-flow.e2e.ts`](apps/e2e/journeys/intake-mapping-flow.e2e.ts), [`apps/e2e/journeys/intake-heal-ui.spec.ts`](apps/e2e/journeys/intake-heal-ui.spec.ts)                                                                                                                                                                                                                     |
-| Delivery primitives — queues, topic fan-out, push retries/DLQ, replay-aware operator workflows                                                          | [`apps/e2e/journeys/queue-message-flow.e2e.ts`](apps/e2e/journeys/queue-message-flow.e2e.ts), [`apps/e2e/journeys/topic-publish-flow.e2e.ts`](apps/e2e/journeys/topic-publish-flow.e2e.ts)                                                                                                                                                                                                                 |
-| Ownership/security hardening on delivery paths                                                                                                          | [`apps/e2e/journeys/ownership-hardening.e2e.ts`](apps/e2e/journeys/ownership-hardening.e2e.ts)                                                                                                                                                                                                                                                                                                             |
-| Consistency Lab — compares delivery paths for correctness, latency, operational cost                                                                    | [`apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts), [`apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts)                                                                                                                                                     |
-| Cloudflare Worker API + React Router/React SPA, Postgres via Hyperdrive, DELIVERY_QUEUE, Realtime Durable Objects, Workers AI mapping                   | [`apps/workers`](apps/workers), [`apps/client`](apps/client), [`docs/system-architecture.md`](docs/system-architecture.md)                                                                                                                                                                                                                                                                                 |
-| Canonical PR check contract — `check`, `e2e`, `architecture-drift`, `deploy-verify` — plus local GitHub Actions via `act` and Neon E2E branch lifecycle | [`.github/workflows/ci.yml`](.github/workflows/ci.yml), [`.github/workflows/e2e.yml`](.github/workflows/e2e.yml), [`.github/workflows/architecture-drift.yml`](.github/workflows/architecture-drift.yml), [`.github/workflows/deploy-preview.yml`](.github/workflows/deploy-preview.yml), [`.github/workflows/cleanup-stale-neon-e2e-branches.yml`](.github/workflows/cleanup-stale-neon-e2e-branches.yml) |
-| Agent-kit governance — bundle-budget, catalog-drift, docs-frontmatter, blueprint-lifecycle, Lore commit trailers                                        | [`package.json`](package.json) scripts, [`.github/workflows/ci.yml`](.github/workflows/ci.yml)                                                                                                                                                                                                                                                                                                             |
+| Feature                                                                                                                                                 | Proof                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Adaptive intake repair — detect payload drift, AI-propose mapping fixes, validate deterministically, route low-confidence to human review               | [`apps/e2e/journeys/intake-mapping-flow.e2e.ts`](apps/e2e/journeys/intake-mapping-flow.e2e.ts), [`apps/e2e/journeys/intake-heal-ui.spec.ts`](apps/e2e/journeys/intake-heal-ui.spec.ts)                                                                                                                                                                                           |
+| Delivery primitives — queues, topic fan-out, push retries/DLQ, replay-aware operator workflows                                                          | [`apps/e2e/journeys/queue-message-flow.e2e.ts`](apps/e2e/journeys/queue-message-flow.e2e.ts), [`apps/e2e/journeys/topic-publish-flow.e2e.ts`](apps/e2e/journeys/topic-publish-flow.e2e.ts)                                                                                                                                                                                       |
+| Ownership/security hardening on delivery paths                                                                                                          | [`apps/e2e/journeys/ownership-hardening.e2e.ts`](apps/e2e/journeys/ownership-hardening.e2e.ts)                                                                                                                                                                                                                                                                                   |
+| Consistency Lab — compares delivery paths for correctness, latency, operational cost                                                                    | [`apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts), [`apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts)                                                                                                                           |
+| Cloudflare Worker API + React Router/React SPA, Postgres via Hyperdrive, DELIVERY_QUEUE, Realtime Durable Objects, Workers AI mapping                   | [`apps/workers`](apps/workers), [`apps/client`](apps/client), [`docs/system-architecture.md`](docs/system-architecture.md)                                                                                                                                                                                                                                                       |
+| Canonical PR check contract — `check`, `e2e`, `architecture-drift`, `deploy-verify` — plus local GitHub Actions via `act` and Neon E2E branch lifecycle | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (wp-check, e2e, deploy-preview), [`.github/workflows/architecture-drift.yml`](.github/workflows/architecture-drift.yml), [`.github/workflows/deploy-preview.yml`](.github/workflows/deploy-preview.yml), [`.github/workflows/cleanup-stale-neon-e2e-branches.yml`](.github/workflows/cleanup-stale-neon-e2e-branches.yml) |
+| Agent-kit governance — bundle-budget, catalog-drift, docs-frontmatter, blueprint-lifecycle, Lore commit trailers                                        | [`package.json`](package.json) scripts, [`.github/workflows/ci.yml`](.github/workflows/ci.yml)                                                                                                                                                                                                                                                                                   |
 
 ## Architecture
 
@@ -90,19 +90,19 @@ Runtime helper ownership:
 Fast contributor check (no secrets required):
 
 ```bash
-vp run lint          # oxlint + per-package lint
-vp run check-types   # tsc, no type errors
-vp run test          # vitest suites
+wp run lint          # oxlint + per-package lint
+wp run check-types   # tsc, no type errors
+wp run test          # vitest suites
 ```
 
 Full maintainer check (mirrors CI; some steps need secrets / a Neon E2E branch — **maintainer-only**):
 
 ```bash
 vp check                          # aggregate lint + types + format
-vp run build                      # all packages build; client/worker bundles emitted
+wp run build                      # all packages build; client/worker bundles emitted
 wp audit docs-frontmatter
 wp audit blueprint-lifecycle
-vp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
+wp run e2e --suite foundation     # maintainer-only: E2E suite against a Neon E2E branch (or --suite full)
 ```
 
 PRs are gated by the canonical four checks:

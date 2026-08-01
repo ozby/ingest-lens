@@ -18,8 +18,8 @@
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:workers",
     "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:tooling",
     "@webpresso/agent-config": "catalog:",
-    "drizzle-kit": "catalog:workers"
+    "drizzle-kit": "catalog:workers",
+    "typescript": "catalog:tooling"
   }
 }

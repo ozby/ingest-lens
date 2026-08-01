@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [closed]
   workflow_dispatch:
     inputs:
       lane:
@@ -63,36 +63,23 @@ jobs:
           printf 'dashed_lane=%s\n' "${dashed_lane}" >> "$GITHUB_OUTPUT"
           printf 'mode=%s\n' "${mode}" >> "$GITHUB_OUTPUT"
 
-  secrets-ready:
-    needs: resolve
-    runs-on: ubuntu-latest
-    outputs:
-      has_preview_token: ${{ steps.secret.outputs.has_preview_token }}
-    steps:
-      - name: Detect preview provider token
-        id: secret
-        shell: bash
-        env:
-          CI_SECRET_PROVIDER_TOKEN_PREVIEW: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
-        run: |
-          set -euo pipefail
-          if [[ -n "${CI_SECRET_PROVIDER_TOKEN_PREVIEW}" ]]; then
-            echo "has_preview_token=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_preview_token=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Skipping preview workflow because CI_SECRET_PROVIDER_TOKEN_PREVIEW is not configured."
-          fi
-
   preview:
-    if: ${{ needs.resolve.outputs.mode == 'deploy' && needs.secrets-ready.outputs.has_preview_token == 'true' && (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association))) }}
+    # pull_request now only fires on `closed` (see `on:` above), which always
+    # resolves to mode=destroy, so this deploy path is only ever reachable via
+    # push:main or workflow_dispatch — the pull_request fork/collaborator
+    # guard that used to gate PR-triggered deploys here is dead code.
+    if: ${{ needs.resolve.outputs.mode == 'deploy' && vars.CI_HAS_PREVIEW_TOKEN == 'true' }}
     needs:
       - resolve
-      - secrets-ready
     permissions:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0
+      # cloudflare-preview/production request `checks: read`; a job-level
+      # permissions block REPLACES defaults, so omitting it fails the entire
+      # caller at startup before any job is scheduled.
+      checks: read
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: deploy
@@ -107,20 +94,33 @@ jobs:
       deploy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }}
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
       secret_profile: preview
+      secret_sink: pulumi
+      github_environment: preview
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}
 
   destroy:
-    if: ${{ needs.resolve.outputs.mode == 'destroy' && needs.secrets-ready.outputs.has_preview_token == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
+    if: ${{ needs.resolve.outputs.mode == 'destroy' && vars.CI_HAS_PREVIEW_TOKEN == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && contains('OWNER,MEMBER,COLLABORATOR', github.event.pull_request.author_association) }}
     needs:
       - resolve
-      - secrets-ready
     permissions:
       contents: read
       packages: read
       id-token: write
-    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@ba439b2d66ece6f16d3e7fee34bdee3ac5c987c0
+      # cloudflare-preview/production request `checks: read`; a job-level
+      # permissions block REPLACES defaults, so omitting it fails the entire
+      # caller at startup before any job is scheduled.
+      checks: read
+    # Job-level concurrency matches ci.yml's deploy-preview group exactly
+    # (rather than this workflow's own `ingest-lens-preview-<n>` group), so
+    # closing a PR cancels an in-flight ci.yml deploy of the same lane instead
+    # of racing it — the two workflows no longer own separate, colliding
+    # deploys of preview_pr_<n>.
+    concurrency:
+      group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    uses: webpresso/github-actions/.github/workflows/cloudflare-preview.yml@2003ca953f336efb779165f748e1ad8408565428
     with:
       lane: ${{ needs.resolve.outputs.lane }}
       mode: destroy
@@ -130,6 +130,8 @@ jobs:
       deploy_command: ":"
       destroy_command: bun infra/src/deploy/deploy-preview.ts --lane ${{ needs.resolve.outputs.dashed_lane }} --destroy
       secret_profile: preview
+      secret_sink: pulumi
+      github_environment: preview
       runner: ubuntu-latest
     secrets:
       ci_secret_provider_token: ${{ secrets.CI_SECRET_PROVIDER_TOKEN_PREVIEW }}

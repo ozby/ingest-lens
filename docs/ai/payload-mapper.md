@@ -184,6 +184,6 @@ suggestion batch:
 - `promptVersion` is stored on suggestion attempts and decision logs;
 - `data/payload-mapper/evals/eval-contract.json` mirrors the structured batch
   shape rather than an older flat `suggested_mapping` payload;
-- `pnpm ai:eval` runs a deterministic, credential-free harness over the checked-in
+- `wp run ai:eval` runs a deterministic, credential-free harness over the checked-in
   eval/adversarial tasks so contract drift is caught before any optional live AI
   comparison is attempted.

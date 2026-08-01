@@ -6,6 +6,9 @@ const RETIRED_LOCAL_SETUP_ACTIONS = new Set([
   "setup-" + "webpresso",
   "setup-" + "monorepo",
   "setup-wp",
+  // Vendored copy of the shared action. It read wp releases from the private
+  // pre-rename repo, which now 301s, so it can never install a wp binary again.
+  "setup-wp-release",
 ]);
 const DIGEST_PATTERN = /@sha256:[a-f0-9]{64}$/i;
 const PACKAGE_MANAGER_BINS = new Set([
@@ -148,16 +151,6 @@ function scanWorkflow(file: string, root: string): Violation[] {
   const text = readFileSync(file, "utf8");
   const violations: Violation[] = [];
   const lines = text.split("\n");
-  const legacyVersionInput = /setup-wp@[^\n]+\n\s+with:\n\s+version\s*:/u.exec(text);
-  if (legacyVersionInput) {
-    violations.push({
-      file: relative(root, file),
-      line: text.slice(0, legacyVersionInput.index).split("\n").length,
-      ref: "setup-wp with.version",
-      reason:
-        "setup-wp derives its exact package version from its immutable checkout; remove the retired version input.",
-    });
-  }
   for (const [index, line] of lines.entries()) {
     const match = /^\s*(?:-\s*)?uses:\s*(.+?)\s*$/u.exec(line);
     if (match?.[1]) {
@@ -193,7 +186,7 @@ function scanWorkflow(file: string, root: string): Violation[] {
         line: index + 1,
         ref: line.trim(),
         reason:
-          "Do not install @webpresso/agent-kit directly; use the immutable external setup-wp action.",
+          "Do not install @webpresso/agent-kit directly; use the public webpresso/github-actions setup-wp action.",
       });
     }
     if (/^\s*(?:AGENT_KIT_VERSION|WP_SETUP_AGENT_KIT_VERSION)(?::|=)/u.test(line)) {
@@ -201,7 +194,8 @@ function scanWorkflow(file: string, root: string): Violation[] {
         file: relative(root, file),
         line: index + 1,
         ref: line.trim(),
-        reason: "Remove legacy agent-kit version pins; setup-wp is self-versioning.",
+        reason:
+          "Do not hardcode a top-level agent-kit version pin; resolve it from WP_SETUP_AGENT_KIT_VERSION inside the version-resolution step and pass it via setup-wp's version input.",
       });
     }
 

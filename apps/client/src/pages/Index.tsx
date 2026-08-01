@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/components";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@webpresso/ui";
 import {
   Card,
   CardContent,
@@ -9,10 +9,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components";
-import { Input } from "@repo/ui/components";
-import { Button } from "@repo/ui/components";
-import { Label } from "@repo/ui/components";
+} from "@webpresso/ui";
+import { Input } from "@webpresso/ui";
+import { Button } from "@webpresso/ui";
+import { Label } from "@webpresso/ui";
 import { toast } from "sonner";
 
 const Index = () => {

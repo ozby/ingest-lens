@@ -22,7 +22,7 @@ This directory contains the evaluation contract, rubric, and metrics spec for th
 Run the deterministic v1 harness with:
 
 ```bash
-pnpm ai:eval
+wp run ai:eval
 ```
 
 The current v1 harness is intentionally credential-free and deterministic. It

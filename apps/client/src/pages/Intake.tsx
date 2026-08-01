@@ -14,7 +14,7 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-} from "@repo/ui/components";
+} from "@webpresso/ui";
 import NavBar from "@/components/NavBar";
 import Sidebar from "@/components/Sidebar";
 import MappingSuggestionReview from "@/components/MappingSuggestionReview";

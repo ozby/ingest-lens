@@ -16,8 +16,8 @@ afterEach(() => {
 
 describe("Cloudflare deploy lane contract", () => {
   it("declares dev, preview_main, preview_pr, and release-gated prd lanes for both deployed Workers", async () => {
-    const { default: agentKitConfig } = await import("../agent-kit.config");
-    const cloudflare = agentKitConfig.deploy.cloudflare;
+    const { default: webpressoConfig } = await import("../webpresso.config");
+    const cloudflare = webpressoConfig.deploy.cloudflare;
 
     expect(cloudflare.lanes.dev).toMatchObject({ wranglerEnvName: "dev" });
     expect(cloudflare.lanes.preview_main).toMatchObject({ wranglerEnvName: "preview-main" });
@@ -33,16 +33,30 @@ describe("Cloudflare deploy lane contract", () => {
     ]);
   });
 
-  it("keeps standalone preview deploys manual/main/cleanup-only so PR deploys stay behind CI", () => {
+  it("keeps standalone preview deploys manual/main/cleanup-only so ci.yml is the sole PR-lane deployer", () => {
     const workflow = readRepoFile(".github/workflows/deploy-preview.yml");
     const ciWorkflow = readRepoFile(".github/workflows/ci.yml");
 
     expect(workflow).toContain("branches: [main]");
     expect(workflow).toContain("pull_request:");
-    expect(workflow).toContain("types: [opened, synchronize, reopened, closed]");
+    // deploy-preview.yml only reacts to PR close (destroy path); it must
+    // never deploy on opened/synchronize/reopened, or it races ci.yml's
+    // gated deploy-preview job for the same preview_pr_<n> lane.
+    expect(workflow).toContain("types: [closed]");
+    expect(workflow).not.toContain("opened, synchronize, reopened");
     expect(ciWorkflow).toContain("name: Deploy preview (PR)");
     expect(ciWorkflow).toContain("- wp-check");
-    expect(ciWorkflow).toContain("- preview-secret");
+    expect(ciWorkflow).toContain("vars.CI_HAS_PREVIEW_TOKEN == 'true'");
+    expect(workflow).toContain("vars.CI_HAS_PREVIEW_TOKEN == 'true'");
+    // ci.yml owns PR-lane deploys; deploy-preview.yml's destroy job carries a
+    // job-level concurrency group matching ci.yml's exactly, so a PR close
+    // cancels an in-flight deploy of the same lane instead of racing it.
+    expect(ciWorkflow).toContain(
+      "group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}",
+    );
+    expect(workflow).toContain(
+      "group: ingest-lens-preview-pr-${{ github.event.pull_request.number }}",
+    );
     expect(workflow).toMatch(
       /uses: webpresso\/github-actions\/.github\/workflows\/cloudflare-preview\.yml@[0-9a-f]{40}/u,
     );
@@ -92,7 +106,7 @@ describe("Cloudflare deploy lane contract", () => {
   });
 
   it("uses a no-secret deploy dry-run plan while keeping production metadata validation in-repo", async () => {
-    const { default: adapter } = await import("../infra/src/deploy/agent-kit-deploy-adapter");
+    const { default: adapter } = await import("../infra/src/deploy/webpresso-deploy-adapter");
     const plan = adapter.createPlan({
       lane: "prd",
       dryRun: true,
@@ -194,15 +208,15 @@ describe("Cloudflare deploy lane contract", () => {
     expect(previewScript).not.toContain("DEPLOY_DEPLOY_DOMAIN");
   });
 
-  it("aliases shared UI package source for Vite without requiring prebuilt dist artifacts", () => {
+  it("consumes public @webpresso/ui instead of private workspace UI aliases", () => {
     const viteConfig = readRepoFile("apps/client/vite.config.ts");
+    const clientPkg = readRepoFile("apps/client/package.json");
 
-    expect(viteConfig).toContain("function findRepoRoot");
-    expect(viteConfig).toContain('"@repo/ui/components"');
-    expect(viteConfig).toContain('"@repo/ui/lib"');
-    expect(viteConfig).toContain('"packages"');
-    expect(viteConfig).toContain('"ui"');
-    expect(viteConfig).toContain('"src"');
+    expect(clientPkg).toContain('"@webpresso/ui"');
+    expect(clientPkg).not.toContain('"@repo/ui"');
+    expect(viteConfig).not.toContain('"@repo/ui/components"');
+    expect(viteConfig).not.toContain('"@repo/ui/lib"');
+    expect(viteConfig).toContain("node_modules/@webpresso/ui");
   });
 
   it("creates Neon preview branches with a read-write endpoint before reading connection URIs", async () => {

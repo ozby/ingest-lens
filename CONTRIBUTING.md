@@ -14,7 +14,7 @@ files** — never add one.
 
 `vp install` pulls in the repo's pinned `@webpresso/agent-kit` dependency. If
 shared tooling drifts later, prefer `wp ...` directly when available,
-otherwise `vp exec wp ...` inside the repo.
+otherwise `wp exec wp ...` inside the repo.
 
 ## Setup
 
@@ -29,8 +29,8 @@ command rather than reintroducing repo-local host scaffolding.
 Start the dev server (secrets injected) or offline:
 
 ```bash
-wp secrets run --sink dev-server --profile preview -- vp run dev
-vp run dev                  :offline (no secret injection)
+wp secrets run --sink dev-server --profile preview -- wp run dev
+wp run dev                  :offline (no secret injection)
 ```
 
 ## Verify before you open a PR
@@ -38,9 +38,9 @@ vp run dev                  :offline (no secret injection)
 Run the fast contributor check locally — it needs no secrets:
 
 ```bash
-vp run lint          # oxlint + per-package lint
-vp run check-types   # tsc, no type errors
-vp run test          # vitest suites
+wp run lint          # oxlint + per-package lint
+wp run check-types   # tsc, no type errors
+wp run test          # vitest suites
 ```
 
 The full maintainer check mirrors CI. Some steps require secrets or a Neon E2E
@@ -48,10 +48,10 @@ branch and are **maintainer-only**:
 
 ```bash
 vp check                                      # aggregate lint + types + format
-vp run build                                  # all packages build
+wp run build                                  # all packages build
 wp audit docs-frontmatter                     # docs:check
 wp audit blueprint-lifecycle      # blueprints:check
-vp run e2e --suite foundation                 # maintainer-only; needs a Neon E2E branch (or --suite full)
+wp run e2e --suite foundation                 # maintainer-only; needs a Neon E2E branch (or --suite full)
 ```
 
 ## Planned work goes through blueprints

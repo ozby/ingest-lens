@@ -1,6 +1,6 @@
 import React from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@repo/ui/components";
-import { cn } from "@repo/ui/lib";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@webpresso/ui";
+import { cn } from "@webpresso/ui";
 import { LucideIcon } from "lucide-react";
 
 interface MetricsCardProps {

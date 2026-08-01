@@ -20,9 +20,9 @@ Shared primitives for the Consistency Lab. Zero external runtime dependencies �
 
 ```bash
 # From repo root
-pnpm --filter @repo/lab-core test        # run all unit tests
-pnpm --filter @repo/lab-core check-types # type-check (tsgo --noEmit)
-pnpm --filter @repo/lab-core lint        # oxlint
+wp run --filter=@repo/lab-core test        # run all unit tests
+wp run --filter=@repo/lab-core check-types # type-check with TypeScript 7
+wp run --filter=@repo/lab-core lint        # oxlint
 ```
 
 ## Key invariants
@@ -37,5 +37,5 @@ pnpm --filter @repo/lab-core lint        # oxlint
 
 1. Create `src/<name>.ts` and `src/<name>.test.ts`.
 2. Export from `src/index.ts`.
-3. Run `pnpm --filter @repo/lab-core test` — all tests must pass.
-4. Run `pnpm --filter @repo/lab-core check-types` — zero type errors.
+3. Run `wp run --filter=@repo/lab-core test` — all tests must pass.
+4. Run `wp run --filter=@repo/lab-core check-types` — zero type errors.
