@@ -12,8 +12,6 @@ IGNORE_DIRS = {
     ".agent",
     ".agents",
     ".cursor",
-    ".omc",
-    ".omx",
     "node_modules",
     "dist",
     "coverage",
