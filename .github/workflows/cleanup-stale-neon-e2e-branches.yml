@@ -45,7 +45,7 @@ jobs:
           run-install: false
       - uses: webpresso/github-actions/.github/actions/setup-wp@2003ca953f336efb779165f748e1ad8408565428
         with:
-          version: "0.0.5"
+          version: "0.0.6"
           package-root: true
       - name: Check workflow action pins
         run: node scripts/check-workflow-action-pins.ts
