@@ -4,11 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "preview": "just run dev pulumi preview",
-    "up:dev": "just deploy dev",
-    "up:prd": "just deploy prd",
-    "destroy": "just run dev pulumi destroy --yes",
-    "test": "wp test --file vitest.config.ts",
+    "test": "wp test --files vitest.config.ts",
     "check-types": "wp typecheck"
   },
   "dependencies": {

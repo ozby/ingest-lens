@@ -12,7 +12,7 @@ describe("run-e2e", () => {
       parseRunE2eArgs([
         "--suite",
         "auth",
-        "--file",
+        "--files",
         "apps/e2e/journeys/auth-session.e2e.ts",
         "--workers",
         "2",

@@ -79,7 +79,7 @@ Trailer format (match existing `git log`):
 <body explaining the decision>
 
 Verified:
-- <command or check that was run, e.g. wp test --file ...>
+- <command or check that was run, e.g. wp test --files ...>
 - <command or check>
 
 Co-Authored-By: <Name> <email>

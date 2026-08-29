@@ -42,8 +42,8 @@ wp secrets doctor --profile <profile> --json --help
 Then run secret-aware commands only through the wrapper:
 
 ```bash
-wp secrets run --sink pulumi --profile preview -- wp run --filter @repo/infra preview
-wp secrets run --sink pulumi --profile production -- wp run --filter @repo/infra up:prd
+wp secrets run --sink pulumi --profile preview -- wp deploy --lane preview_main --dry-run
+wp secrets run --sink pulumi --profile production -- wp deploy --lane prd
 wp secrets run --sink deploy-wrangler --profile preview -- bun infra/src/deploy/deploy.ts dev
 ```
 
