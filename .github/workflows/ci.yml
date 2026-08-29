@@ -83,7 +83,7 @@ jobs:
           run-install: false
       - uses: webpresso/github-actions/.github/actions/setup-wp@2003ca953f336efb779165f748e1ad8408565428
         with:
-          version: "0.0.6"
+          version: "0.0.10"
           package-root: true
       - name: Check workflow action pins
         run: node scripts/check-workflow-action-pins.ts
@@ -119,7 +119,7 @@ jobs:
           run-install: false
       - uses: webpresso/github-actions/.github/actions/setup-wp@2003ca953f336efb779165f748e1ad8408565428
         with:
-          version: "0.0.6"
+          version: "0.0.10"
           package-root: true
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - run: vp install --frozen-lockfile
@@ -216,7 +216,7 @@ jobs:
           run-install: false
       - uses: webpresso/github-actions/.github/actions/setup-wp@2003ca953f336efb779165f748e1ad8408565428
         with:
-          version: "0.0.6"
+          version: "0.0.10"
           package-root: true
       - name: Check workflow action pins
         run: node scripts/check-workflow-action-pins.ts
