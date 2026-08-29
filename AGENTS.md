@@ -5,21 +5,23 @@
 ## Setup after clone
 
 ```bash
-wp install && wp run setup:agent && wp sync  # separate, idempotent steps
+vp install && wp run setup:agent
 ```
 
-agent-kit catalog is SSOT for generated agent surfaces; Webpresso CLI owns the end-user command surface.
+The agent-kit catalog is the source of truth for generated agent surfaces; `wp`
+owns the end-user command surface.
 
 - Optional agent tools: `wp install codex|claude-code|opencode` or `wp install oh-my opencode` (`openagent`); WP scopes use `wp update`.
 - `wp setup` repairs the managed `.gitignore` block for regenerated surfaces.
-- Consumers use global `wp` + local `@webpresso/app-config`, never local `@webpresso/agent-kit`.
-- Track instruction sources; ignore generated/runtime surfaces (`.agent/`, `.agents/`, `.codex/`, `.opencode/`).
+- Keep `@webpresso/app-config` as the only local Webpresso config package.
+- `.agent/rules/` is authoritative policy: read the rule matching your task.
+- Track instruction sources; ignore other generated/runtime surfaces (`.agents/`, `.codex/`, `.opencode/`).
 - Keep the generated default `AGENTS.md` under 8 KB.
 
 Codex routing instruction surface:
 <wp_instruction_surface host="codex" artifact="AGENTS.md" source="wp_routing">
 <host_contract>
-<native_tool_families>blueprint, quality, pr-workflow, release, review, session-memory, tool-discovery, ui, worktree, ultragoal, worker. Call wp_tool_surface for exact tool names within a family.</native_tool_families>
+<native_tool_families>blueprint, quality, pr-workflow, release, review, session-memory, tool-discovery, ui, worktree, ultragoal, worker</native_tool_families>
 <stdout_noop>Codex hook commands with no action write {} on stdout; durable guidance belongs in AGENTS.md.</stdout_noop>
 <lifecycle_notes>
 <note>Codex reads repository instruction files for durable guidance.</note>
@@ -35,9 +37,10 @@ Use blueprints for non-trivial work. Keep specs, tasks, dependencies, checks,
 and acceptance criteria current in [`blueprints/`](./blueprints/)
 lifecycle directories.
 
-For non-trivial changes, create the blueprint through the native MCP flow below before edits; use `wp blueprint start <slug>` only when MCP is unavailable. Never edit `main`. Non-`*.md` PRs need one unless `Blueprint-exempt: <reason>` or Dependabot-only.
+For non-trivial changes, create and start a blueprint before edits. Never edit
+`main`. Non-`*.md` PRs need one unless `Blueprint-exempt: <reason>` or Dependabot-only.
 
-Ultragoal: use `wp_ultragoal_new` and `wp_worktree`; CLI fallback is global `wp worktree new` / `wp worktree merge-cleanup`, never repo-local `./bin/wp`.
+Use `wp ultragoal` and `wp worktree`; never use a repo-local launcher as the normal command surface.
 
 Catalog-owned surfaces:
 
@@ -51,15 +54,19 @@ Catalog-owned surfaces:
 - Repo hook/tool denial: switch to the named facade/lifecycle; do not retry raw.
 - Reuse nearby patterns; apply DRY, SOLID, YAGNI, and KISS.
 - No hardcoded relative paths in executable code or config; derive from an explicit absolute anchor.
-- Efficiency: MCP `wp_*` over shell; `/goal` + `autopilot`/`ultragoal`; `/verify`
-  local vs `--merge-ready` (1 outside voice); `fix_budget`=1.
+- Prefer the exact native MCP route when one exists; otherwise use the matching
+  `wp` command.
+- Legacy-removal work deletes obsolete implementation, prose, fixtures, and
+  assertions. Update positive authority and expected-output contracts; do not
+  add permanent tests or audits that enumerate retired tokens. Prefer net
+  deletion across affected implementation, test, and instruction files.
 
 Hook invariant: global hooks use the canonical contract; skill hooks never enter
 host settings. Bound hot paths; never raise timeouts or hide work asynchronously.
 
 ## Verify
 
-Before completion, run narrow MCP/`wp` checks: typecheck, lint/format, affected tests, policy, docs/blueprint, and `wp sync --check` after catalog changes. Fix root causes or record blockers; run `wp_ci_preflight` before push.
+Before completion, run narrow MCP/`wp` checks: typecheck, lint/format, affected tests, policy, docs/blueprint, and `wp sync --check` after catalog changes. Fix root causes or record blockers.
 
 ## Communicate
 
@@ -120,13 +127,8 @@ and workflow examples must follow this hierarchy without exception.
 
 ## Releases
 
-**Published product is the Webpresso app** (desktop + CLI `wp`), not npm install of this monorepo root.
-Canonical **source monorepo** GitHub repo: **`webpresso/app`**. Product binary tags live on **`webpresso/app-releases`** (release shell; app version axis `v0.0.x`). See `docs/OWNERSHIP_MAP.md`.
-
-- This monorepo is the source/JIT harness surface (`WP_FORCE_JIT_PATH`) and builds `wp-*` binaries.
-- Product ship: app-owned path (`app-release.yml` → `webpresso/app-releases`); launcher `$HOME/.webpresso/bin/wp`.
-- Root package is **private** — not a public product npm package. Prefer `Changeset-exempt: app monorepo is source/JIT; published product is app (desktop+wp)` for harness-only PRs.
-- Library packages (`@webpresso/app-config`, etc.) may still use Changesets if intentionally published; default **patch** only. Never invent product install via `npm install @webpresso/agent-kit`.
+Release-visible package changes use Changesets. Default to `patch`; do not
+bump versions or publish locally.
 
 ```bash
 wp run changeset:status
@@ -140,7 +142,6 @@ Protocol: `.agent/rules/changeset-release.md`
 - No `.mjs` source files — write `.ts`.
 - Use `wp` > `vp` > `pnpm`; no `npm install`/`npx` setup guidance.
 - All packages: `"type": "module"`.
-- End-user product installs come from the **app** path (desktop + CLI `wp`); treat this monorepo as source/JIT, not `npm install` product.
 
 Full details: `.agent/rules/package-conventions.md`
 

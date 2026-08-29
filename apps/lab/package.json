@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wp exec wrangler dev",
     "build": "wp exec wrangler deploy --dry-run",
-    "test": "wp test --file vitest.config.ts",
+    "test": "wp test --files vitest.config.ts",
     "check-types": "wp typecheck",
     "lint": "wp lint"
   },

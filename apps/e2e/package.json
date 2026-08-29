@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "wp lint",
     "check-types": "wp typecheck",
-    "test": "wp test --file vitest.config.ts",
+    "test": "wp test --files vitest.config.ts",
     "test:journeys": "wp e2e",
     "auth:dev-bench": "wp exec playwright test journeys/webpresso-auth-dev.spec.ts",
     "e2e:run": "bun src/cli/run-e2e.ts",

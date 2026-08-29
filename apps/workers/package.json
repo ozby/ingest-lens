@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun ./scripts/run-workers-dev.ts",
     "build": "wp exec wrangler deploy --dry-run",
-    "test": "wp test --file vitest.config.ts",
+    "test": "wp test --files vitest.config.ts",
     "mutation": "wp test --mutation",
     "check-types": "wp typecheck",
     "lint": "wp lint"

@@ -26,7 +26,7 @@
     "dev": "bunchee --watch",
     "lint": "wp lint",
     "check-types": "wp typecheck",
-    "test": "wp test --file vitest.config.ts",
+    "test": "wp test --files vitest.config.ts",
     "mutation": "wp test --mutation"
   },
   "devDependencies": {

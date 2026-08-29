@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "wp lint",
     "check-types": "wp typecheck",
-    "test": "wp test --file vitest.config.ts"
+    "test": "wp test --files vitest.config.ts"
   },
   "dependencies": {
     "@repo/lab-core": "workspace:*"

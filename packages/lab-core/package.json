@@ -10,7 +10,7 @@
     "lint": "wp lint",
     "check-types": "wp typecheck",
     "mutation": "wp test --mutation",
-    "test": "wp test --file vitest.config.ts"
+    "test": "wp test --files vitest.config.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:workers"

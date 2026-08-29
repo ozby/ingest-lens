@@ -33,7 +33,7 @@ export function parseRunE2eArgs(argv: readonly string[]): RunE2eArgs {
       parsed.suite = rawArgs[++i];
       continue;
     }
-    if (arg === "--file") {
+    if (arg === "--files") {
       const file = rawArgs[++i];
       if (file) parsed.files.push(file);
       continue;
