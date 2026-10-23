@@ -24,7 +24,7 @@ Current local drift check:
 python3 scripts/check_architecture_drift.py
 ```
 
-Target shared surface once released from agent-kit:
+Target shared surface once released in `wp`:
 
 ```bash
 wp audit architecture-drift --root .

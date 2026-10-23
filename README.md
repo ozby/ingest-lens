@@ -30,7 +30,7 @@ Bootstrap through the repo itself:
 vp install
 ```
 
-Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local Agent Kit wrapper. Doppler CI for this repo now uses the existing ozby workplace project `ozby-dev`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
+Success signal: dependencies install and `postinstall` runs `wp setup` to bootstrap agent hooks/links, completing with no error. This repo uses the shared global `wp` runtime contract, so repair/doctor flows should keep invoking `wp ...` directly instead of reintroducing a project-local wp wrapper. Doppler CI for this repo now uses the existing ozby workplace project `ozby-dev`, with preview and production config tokens mapped from GitHub secrets into the shared reusable workflow caller.
 
 ```bash
 wp secrets run --sink dev-server --profile preview -- wp run dev
@@ -56,7 +56,7 @@ Success signal: the dev server starts without secret injection.
 | Consistency Lab — compares delivery paths for correctness, latency, operational cost                                                                    | [`apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1a-correctness/test/e2e/full-run.test.ts), [`apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts`](apps/lab/scenarios/s1b-latency/test/e2e/full-run.test.ts)                                                                                                                           |
 | Cloudflare Worker API + React Router/React SPA, Postgres via Hyperdrive, DELIVERY_QUEUE, Realtime Durable Objects, Workers AI mapping                   | [`apps/workers`](apps/workers), [`apps/client`](apps/client), [`docs/system-architecture.md`](docs/system-architecture.md)                                                                                                                                                                                                                                                       |
 | Canonical PR check contract — `check`, `e2e`, `architecture-drift`, `deploy-verify` — plus local GitHub Actions via `act` and Neon E2E branch lifecycle | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (wp-check, e2e, deploy-preview), [`.github/workflows/architecture-drift.yml`](.github/workflows/architecture-drift.yml), [`.github/workflows/deploy-preview.yml`](.github/workflows/deploy-preview.yml), [`.github/workflows/cleanup-stale-neon-e2e-branches.yml`](.github/workflows/cleanup-stale-neon-e2e-branches.yml) |
-| Agent-kit governance — bundle-budget, catalog-drift, docs-frontmatter, blueprint-lifecycle, Lore commit trailers                                        | [`package.json`](package.json) scripts, [`.github/workflows/ci.yml`](.github/workflows/ci.yml)                                                                                                                                                                                                                                                                                   |
+| Webpresso governance — bundle-budget, catalog-drift, docs-frontmatter, blueprint-lifecycle, Lore commit trailers                                        | [`package.json`](package.json) scripts, [`.github/workflows/ci.yml`](.github/workflows/ci.yml)                                                                                                                                                                                                                                                                                   |
 
 ## Architecture
 
@@ -82,7 +82,7 @@ Runtime helper ownership:
 - `ingest-lens` consumes that core directly through published
   `@webpresso/runtime/env`, with only repo-specific required-secret keys kept local
 - Neon branch lifecycle helpers remain repo-local to `ingest-lens`
-- `agent-kit` stays the tooling / verification surface (`wp`, `wp_*`, config
+- The Webpresso app stays the tooling / verification surface (`wp`, `wp_*`, config
   subpaths), not the runtime/provider helper owner
 
 ## Verify

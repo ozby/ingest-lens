@@ -65,7 +65,6 @@ The repo currently has one active simplification program:
 | public-dataset-demo-ingestion      | Demo packaged around public ATS fixture data with optional allowlisted live fetch |
 | adopt-workers-test-kit             | Replace hand-rolled CF mock factories with `@webpresso/agent-workers-test`        |
 | adopt-db-branching                 | Adopt `@webpresso/db-branching` `BranchProvider` interface for Neon E2E branches  |
-| bump-agent-kit                     | Track `@webpresso/agent-kit` via catalog (git+ssh) — tech-debt + Lore CI          |
 
 ## Recently shipped (post-wave hardening)
 

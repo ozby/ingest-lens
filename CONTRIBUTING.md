@@ -10,11 +10,9 @@ files** — never add one.
 - Node `>=24`
 - the repo package manager through `vp install`
 - Bun (used by the repo's scripts)
-- `vp` + the repo-local `wp` wrapper exposed after install
+- `vp`, plus the global `wp` CLI from the Webpresso app
 
-`vp install` pulls in the repo's pinned `@webpresso/agent-kit` dependency. If
-shared tooling drifts later, prefer `wp ...` directly when available,
-otherwise `wp exec wp ...` inside the repo.
+`wp` is installed globally, not as a repo dependency. Run `wp ...` directly.
 
 ## Setup
 
@@ -60,7 +58,7 @@ Non-trivial work is tracked as blueprints under `blueprints/`. The blueprint
 lifecycle is gated by `wp audit blueprint-lifecycle`. Do not
 hand-edit generated agent surfaces (`.agent/`, `.cursor/`,
 `catalog/`, `agent-rules/`, `agent-skills/`,
-`blueprints/` runtime files) — those are kept in sync by the agent-kit
+`blueprints/` runtime files) — those are kept in sync by the `wp`
 symlinker.
 
 ## Branch and commit conventions

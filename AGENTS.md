@@ -84,7 +84,7 @@ and workflow examples must follow this hierarchy without exception.
 - TypeScript
 - Pulumi
 - configured secret provider
-- Webpresso/Agent Kit (`wp`, blueprints, audits)
+- Webpresso app (`wp`, blueprints, audits)
 
 ### Architecture governance
 
@@ -93,7 +93,7 @@ and workflow examples must follow this hierarchy without exception.
 - Active blueprints must link both files
 - Architecture-changing blueprints must include `## Architecture before` and `## Architecture after`
 - Local drift check: `python3 scripts/check_architecture_drift.py`
-- Shared target surface once released from agent-kit: `wp audit architecture-drift --root .`
+- Shared target surface once released in `wp`: `wp audit architecture-drift --root .`
 
 <!-- <<< user-owned (repo-customizations) -->
 
