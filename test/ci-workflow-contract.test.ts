@@ -21,7 +21,7 @@ test("CI skips mutation for generated Version Packages merges", () => {
   assert.match(workflow, /!startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/u);
 });
 
-test("every workflow rejects legacy agent-kit installs and mutable setup refs", () => {
+test("every workflow rejects retired agent-kit installs and mutable setup refs", () => {
   for (const workflowFile of workflowFiles) {
     const contents = readFileSync(workflowFile, "utf8");
 
