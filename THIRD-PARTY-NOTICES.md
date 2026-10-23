@@ -6,6 +6,6 @@ the guardrail manifest.
 
 ## Vendored agent-skill templates
 
-| Component                            | Upstream                                                        | License | Notes                                                             |
-| ------------------------------------ | --------------------------------------------------------------- | ------- | ----------------------------------------------------------------- |
-| `monorepo-navigation` skill template | [`webpresso/app`](https://github.com/webpresso/app)             | MIT     | Repo-local navigation guidance generated from workspace metadata. |
+| Component                            | Upstream                                            | License | Notes                                                             |
+| ------------------------------------ | --------------------------------------------------- | ------- | ----------------------------------------------------------------- |
+| `monorepo-navigation` skill template | [`webpresso/app`](https://github.com/webpresso/app) | MIT     | Repo-local navigation guidance generated from workspace metadata. |
