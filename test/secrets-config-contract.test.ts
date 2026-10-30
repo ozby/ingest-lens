@@ -43,7 +43,7 @@ test("consumer secret authority uses the schema-v1 Doppler ozby-dev contract", (
   );
 });
 
-test("consumer setup keeps agent-config local and agent-kit out of package dependencies", () => {
+test("consumer setup keeps app-config local and the retired agent-kit package out of dependencies", () => {
   const packageJson = readJson("package.json");
   const devDependencies = object(packageJson.devDependencies, "devDependencies");
   const dependencySections = [
